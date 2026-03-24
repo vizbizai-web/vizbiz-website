@@ -111,7 +111,7 @@ export default async function ThankYouPage({
 
             {/* Subtle info line above booking card */}
             <p className="text-center text-xs text-[var(--text-secondary)]/70">
-              We&apos;ve sent a summary of your mini snapshot to your email. Review it before your call.
+              We&apos;ll follow up with your snapshot summary before your call.
             </p>
 
             <div className="glass-card rounded-[2rem] p-6">
