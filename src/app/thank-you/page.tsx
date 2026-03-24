@@ -1,102 +1,144 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Calendar, CheckCircle2, LineChart, SearchCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle2, Lock } from "lucide-react";
+import { CALENDLY_URL } from "@/lib/lead-flow";
 
 export const metadata: Metadata = {
-  title: "Snapshot in Progress | VizBiz",
+  title: "Your AI Visibility Snapshot Is Being Prepared | VizBiz",
   description:
-    "Your VizBiz AI Visibility Snapshot is in progress. The next step is booking a 15-minute review call.",
+    "We're checking how your dealership appears in AI-driven search and where nearby competitors may be winning attention first.",
 };
 
-const nextSteps = [
-  {
-    icon: CheckCircle2,
-    title: "Lead captured",
-    body: "We’ve got your dealership, website, market, and contact details.",
-  },
-  {
-    icon: SearchCheck,
-    title: "Snapshot in progress",
-    body: "We’ll use those inputs to frame how your dealership appears in AI-driven search and where competitors may be beating you.",
-  },
-  {
-    icon: Calendar,
-    title: "Review call next",
-    body: "Book the 15-minute review call now so the funnel keeps moving while intent is still high.",
-  },
+const expectations = [
+  "We've received your dealership details.",
+  "We're checking how your dealership appears in AI-driven search.",
+  "We're comparing where nearby competitors may be winning attention first.",
 ];
 
-export default function ThankYouPage() {
+function formatBand(value: string | undefined) {
+  if (!value) return "Moderate";
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatServiceVisibility(value: string | undefined) {
+  if (!value) return "Weak";
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+const blurredRows = [
+  "Prompt-by-prompt AI answer breakdown",
+  "Additional competitor mentions and visibility gaps",
+  "Recommended fixes prioritized by impact",
+];
+
+export default async function ThankYouPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string }>;
+}) {
+  const params = await searchParams;
+  const appeared = Number(params.appeared || "3");
+  const band = formatBand(params.band);
+  const serviceVisibility = formatServiceVisibility(params.service);
+  const competitorMention = typeof params.competitor === "string" && params.competitor.trim()
+    ? params.competitor
+    : "nearby competitors";
+
   return (
-    <main className="min-h-screen bg-[#060e1a] text-white">
-      <section className="section-shell relative isolate overflow-hidden bg-[#0a1628] pb-16 pt-28 sm:pb-20 sm:pt-32 lg:pb-24 lg:pt-36">
-        <div className="hero-mesh" aria-hidden="true" />
-        <div className="hero-grid-overlay" aria-hidden="true" />
-        <div className="hero-glow hero-glow-one" aria-hidden="true" />
-        <div className="hero-glow hero-glow-two" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent_36%)]" aria-hidden="true" />
+    <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <header className="site-header">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <Link href="/" className="logo-wordmark text-xl sm:text-[1.35rem]">
+            <span>VizBiz</span>
+            <span className="logo-ai">.ai</span>
+          </Link>
+        </div>
+      </header>
 
-        <div className="relative mx-auto max-w-5xl px-3 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-[1.6rem] border border-emerald-300/20 bg-emerald-400/12 text-emerald-200 shadow-[0_20px_60px_rgba(16,185,129,0.14)]">
-              <LineChart className="h-9 w-9" />
-            </div>
-
-            <div className="section-kicker mt-8">Snapshot in progress</div>
-            <h1 className="mt-6 text-[3rem] font-bold leading-[0.96] tracking-[-0.03em] text-white sm:text-[3.8rem] lg:text-[4.6rem]">
-              Your AI Visibility Snapshot is in progress.
+      <section className="section-shell px-4 pb-20 pt-14 sm:px-6 sm:pb-24 sm:pt-18 lg:px-8 lg:pt-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="section-kicker">Step 2 of 2</div>
+            <h1 className="display-font mt-6 text-[2.8rem] font-semibold leading-[0.96] tracking-[-0.05em] sm:text-[3.8rem]">
+              Your AI Visibility Snapshot Is Being Prepared
             </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-[1.05rem] leading-8 text-white/72 sm:text-[1.16rem] sm:leading-9 lg:text-[1.22rem]">
-              We’ve got the lead. Don’t let it stall here. The next move is booking the 15-minute review call so there’s a real handoff instead of a dead end.
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
+              Here&apos;s what we found so far. Book a 15-minute call to review the full picture.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
-            {nextSteps.map((step) => {
-              const Icon = step.icon;
+          <div className="mt-10 mx-auto max-w-4xl space-y-6">
+            <div className="glass-card rounded-[2rem] p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Free mini snapshot</p>
 
-              return (
-                <div key={step.title} className="glass-card rounded-[1.7rem] p-5 text-left sm:p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/18 bg-cyan-400/10 text-cyan-100">
-                    <Icon className="h-5 w-5" />
+              {/* Row 1: Appeared in */}
+              <div className="mt-5 border-b border-white/8 pb-5">
+                <p className="text-4xl font-semibold text-[var(--text-primary)]">Appeared in {appeared} of 7 prompts</p>
+              </div>
+
+              {/* Row 2: Overall AI Visibility */}
+              <div className="border-b border-white/8 py-5">
+                <p className="text-4xl font-semibold text-[var(--text-primary)]">Overall AI Visibility: {band}</p>
+              </div>
+
+              {/* Row 3: Service Department Visibility */}
+              <div className="border-b border-white/8 py-5">
+                <p className="text-4xl font-semibold text-[var(--text-primary)]">Service Department Visibility: {serviceVisibility}</p>
+              </div>
+
+              {/* Visible insight lines */}
+              <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
+                <p>{competitorMention} may be appearing more often in at least 2 of 7 prompts.</p>
+                <p>AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.</p>
+              </div>
+
+              {/* Blurred locked rows */}
+              <div className="mt-6 space-y-3">
+                {blurredRows.map((row) => (
+                  <div
+                    key={row}
+                    className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-[var(--text-secondary)]"
+                  >
+                    <span className="blur-[2px] select-none">{row}</span>
+                    <Lock className="h-4 w-4 text-[var(--neon-cyan)]/80" />
                   </div>
-                  <h2 className="mt-5 text-xl font-semibold text-white">{step.title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/66 sm:text-[0.98rem]">{step.body}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="glass-card mx-auto mt-10 max-w-3xl rounded-[2rem] px-5 py-7 text-center shadow-[0_30px_90px_rgba(2,8,23,0.34)] sm:px-8 sm:py-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-100/82">
-              Keep the funnel moving
-            </p>
-            <h2 className="mt-4 text-[2rem] font-semibold tracking-[-0.02em] text-white sm:text-[2.5rem]">
-              Book your 15-minute review call now.
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-[1rem] leading-8 text-white/68 sm:text-[1.08rem]">
-              This is the conversion step after the lead magnet. Pick a time and we’ll review the dealership, market, and likely competitor context with you.
-            </p>
-
-            <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/book-call"
-                className="premium-button inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base font-semibold"
-              >
-                Book a 15-Minute Review Call
-                <ArrowRight className="h-4.5 w-4.5" />
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-white/12 bg-white/6 px-6 py-4 text-base font-medium text-white/84 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                Back to homepage
-              </Link>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/54">
-              <Sparkles className="h-4 w-4" />
-              Your snapshot request is in the system.
+            {/* Subtle info line above booking card */}
+            <p className="text-center text-xs text-[var(--text-secondary)]/70">
+              We&apos;ve sent a summary of your mini snapshot to your email. Review it before your call.
+            </p>
+
+            <div className="glass-card rounded-[2rem] p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[rgba(0,240,255,0.06)] text-[var(--neon-cyan)]">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <h2 className="mt-5 text-2xl font-semibold">Book Your 15-Minute Review Call</h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                This is the next step. We'll review your snapshot, where competitors are showing up first, and whether a deeper audit is worth doing.
+              </p>
+              <ul className="mt-6 space-y-3 text-sm text-[var(--text-secondary)]">
+                {expectations.map((item) => (
+                  <li key={item} className="flex items-start gap-3 leading-7">
+                    <CheckCircle2 className="mt-1 h-4.5 w-4.5 flex-shrink-0 text-[var(--neon-cyan)]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="premium-button mt-8 min-h-13 w-full rounded-2xl px-6 py-3.5 text-sm font-semibold"
+              >
+                Book Your 15-Minute Review Call
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
             </div>
           </div>
         </div>

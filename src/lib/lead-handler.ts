@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildMiniSnapshot } from "@/lib/mini-snapshot";
+import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
 
 export type LeadInput = {
   timestamp: string;
@@ -540,6 +541,66 @@ export async function handleNewLead(data: LeadInput) {
     } catch (error) {
       console.error("[lead] HubSpot sync failed", error);
       throw error;
+    }
+  }
+
+  // Draft email generation — dev only, never runs on Vercel
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      const bookingUrl =
+        process.env.NEXT_PUBLIC_CALENDLY_URL ||
+        "https://calendly.com/vizbiz-ai/avi-assessment";
+
+      const emailData: SnapshotEmailData = {
+        dealershipName: data.dealershipName,
+        contactName: data.name,
+        appearedIn: snapshotSummary.appeared_in_prompts,
+        overallVisibility: snapshotSummary.visibility_status,
+        serviceDeptVisibility: snapshotSummary.service_visibility,
+        competitorInsight: snapshotSummary.competitor_summary,
+        whyItMatters: snapshotSummary.why_it_matters,
+        bookingUrl,
+      };
+
+      const html = buildSnapshotEmailHtml(emailData);
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/:/g, "-")
+        .replace(/\..+/, "");
+      const slug = data.dealershipName
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+
+      const emailDraftsDir = path.join(process.cwd(), "..", "data", "email-drafts");
+      await mkdir(emailDraftsDir, { recursive: true });
+
+      const baseName = `${timestamp}-${slug}`;
+      const htmlPath = path.join(emailDraftsDir, `${baseName}.html`);
+      const jsonPath = path.join(emailDraftsDir, `${baseName}.json`);
+
+      await writeFile(htmlPath, html, "utf8");
+      await writeFile(
+        jsonPath,
+        JSON.stringify(
+          {
+            to: data.email,
+            subject: `Your AI Visibility Mini Snapshot — ${data.dealershipName}`,
+            dealershipName: data.dealershipName,
+            contactName: data.name,
+            generatedAt: new Date().toISOString(),
+            status: "draft",
+          },
+          null,
+          2,
+        ) + "\n",
+        "utf8",
+      );
+
+      console.info("[lead] draft email written", { htmlPath, jsonPath });
+    } catch (draftError) {
+      console.warn("[lead] draft email generation failed (non-fatal)", draftError);
     }
   }
 
