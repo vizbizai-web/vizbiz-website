@@ -1,138 +1,84 @@
 "use client";
 
-import { Sparkles, Target, LineChart, Brain } from "lucide-react";
+import { BarChart3, CheckCircle2, MapPinned, Search, Target } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimateIn from "@/components/AnimateIn";
+
+const findings = [
+  {
+    icon: BarChart3,
+    title: "AI Visibility Score",
+    description: "A simple score that shows how often your dealership appears across the AI platforms tested.",
+  },
+  {
+    icon: Search,
+    title: "Platform-by-platform findings",
+    description: "See where you show up in ChatGPT, Gemini, Perplexity, Claude, and Copilot — and where you don't.",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Prompt-level examples",
+    description: "Real prompts, captured responses, and clear examples of how AI talks about your store.",
+  },
+  {
+    icon: MapPinned,
+    title: "Local competitor comparison",
+    description: "Spot which nearby dealerships get recommended first and where they are beating you.",
+  },
+  {
+    icon: Target,
+    title: "Ranked action plan",
+    description: "A practical fix list ordered by what matters first, so your team or agency knows where to start.",
+  },
+];
 
 export default function Solution() {
-  const features = [
-    {
-      icon: Brain,
-      title: "AI Systems Analysis",
-      description: "We analyze exactly how ChatGPT, Google AI, Perplexity, and other AI systems see your dealership.",
-    },
-    {
-      icon: Target,
-      title: "Competitor Intelligence",
-      description: "Identify why AI might be choosing your competitors and get the exact playbook to beat them.",
-    },
-    {
-      icon: LineChart,
-      title: "Clear Roadmap",
-      description: "Get a prioritized action plan with specific steps to improve your AI visibility score.",
-    },
-    {
-      icon: Sparkles,
-      title: "Ongoing Monitoring",
-      description: "Track your AVI Score over time and stay ahead as AI algorithms evolve.",
-    },
-  ];
-
   return (
-    <section className="py-20 lg:py-32 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium mb-6">
-            <Sparkles className="w-4 h-4" />
-            The Solution
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            AI Visibility Intelligence for Car Dealerships
+    <section
+      className="section-shell section-transition section-divider bg-[#111722] py-16 sm:py-20 lg:py-28"
+      style={{ ["--transition-from" as string]: "#0b1019" }}
+    >
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <AnimateIn className="max-w-3xl">
+          <div className="section-kicker">Audit output</div>
+          <h2 className="display-font mt-6 text-[2.45rem] font-bold leading-[0.96] tracking-[-0.04em] text-white sm:text-[2.9rem] lg:text-[3.45rem]">
+            What the Audit Tells You
           </h2>
-          <p className="text-lg text-gray-600 mb-4">
-            We help car dealerships become the answer AI systems recommend—across ChatGPT, 
-            Google AI Overviews, Perplexity, and emerging AI search platforms.
+          <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/70 sm:text-[1.18rem] sm:leading-9">
+            We show you where your dealership appears, where it doesn&apos;t, and which competitors AI
+            recommends instead.
           </p>
-          <p className="text-blue-600 font-semibold">
-            Not generic SEO. Not traditional marketing. AI-specific visibility.
-          </p>
-        </div>
-        
-        {/* Description */}
-        <div className="max-w-3xl mx-auto mb-16">
-          <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
-            <p className="text-gray-700 text-lg leading-relaxed">
-              We analyze exactly how AI systems see your dealership, identify why they might be 
-              choosing your competitors, and give you a clear roadmap to fix it.
-            </p>
-          </div>
-        </div>
-        
-        {/* Features Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className="group bg-white rounded-2xl p-6 border border-gray-200 card-hover"
+        </AnimateIn>
+
+        <AnimateIn stagger className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-5">
+          {findings.map((item) => (
+            <motion.div
+              key={item.title}
+              whileHover={{ y: -2, boxShadow: "0 26px 60px rgba(2, 8, 23, 0.28)" }}
+              className="glass-card rounded-[1.6rem] p-5 sm:p-6"
             >
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-                <feature.icon className="w-6 h-6 text-blue-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/8 text-[color:var(--primary)]">
+                <item.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-gray-600 text-sm">{feature.description}</p>
-            </div>
+              <h3 className="display-font mt-4 text-lg font-bold tracking-[-0.03em] text-white">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-white/66">{item.description}</p>
+            </motion.div>
           ))}
-        </div>
-        
-        {/* AVI Score Explanation */}
-        <div className="mt-16 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 lg:p-12">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                What is the AVI Score™?
-              </h3>
-              <p className="text-gray-300 mb-6">
-                The AI Visibility Intelligence Score is a proprietary metric (0-100) that measures 
-                how likely AI systems are to recommend your dealership. It&apos;s calculated across 
-                23 data points in 5 critical categories.
+        </AnimateIn>
+
+        <AnimateIn className="mt-8 rounded-[1.8rem] border border-[#ffb161]/16 bg-[radial-gradient(circle_at_right_top,rgba(255,122,0,0.18),transparent_32%),rgba(255,255,255,0.05)] p-5 shadow-[0_20px_60px_rgba(2,8,23,0.24)] backdrop-blur-xl sm:mt-10 sm:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="display-font text-[11px] font-bold uppercase tracking-[0.24em] text-[#ffd8a8]/74 sm:text-sm">
+                Evidence, not guesswork
               </p>
-              <ul className="space-y-3">
-                {[
-                  "AI query response rate",
-                  "Review sentiment analysis",
-                  "Entity recognition strength",
-                  "Citation consistency",
-                  "Technical schema markup",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-gray-300">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <p className="mt-2 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8">
+                Not opinions. Actual AI responses captured and reviewed.
+              </p>
             </div>
-            <div className="flex justify-center">
-              <div className="relative">
-                {/* Score Visualization */}
-                <div className="flex items-end gap-4">
-                  <div className="text-center">
-                    <div className="w-20 h-32 bg-red-500 rounded-t-lg flex items-end justify-center pb-2">
-                      <span className="text-white font-bold">0-40</span>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-2">Poor</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-40 bg-orange-500 rounded-t-lg flex items-end justify-center pb-2">
-                      <span className="text-white font-bold">41-60</span>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-2">Average</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-48 bg-blue-500 rounded-t-lg flex items-end justify-center pb-2">
-                      <span className="text-white font-bold">61-80</span>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-2">Good</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-56 bg-green-500 rounded-t-lg flex items-end justify-center pb-2">
-                      <span className="text-white font-bold">81-100</span>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-2">Excellent</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div className="instrument-badge self-start">Built to share with your team or agency</div>
           </div>
-        </div>
+        </AnimateIn>
       </div>
     </section>
   );

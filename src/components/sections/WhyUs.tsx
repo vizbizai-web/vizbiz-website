@@ -1,121 +1,74 @@
 "use client";
 
-import { Car, MapPin, Award, DollarSign, ShieldCheck } from "lucide-react";
+import { Eye, Search, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimateIn from "@/components/AnimateIn";
+
+const reasons = [
+  {
+    icon: Search,
+    title: "Buyers already use AI to narrow choices",
+    description: "Shoppers now ask AI who to trust and where to shop before they compare inventory pages or listing sites.",
+  },
+  {
+    icon: Eye,
+    title: "Existing reports don't show AI answers",
+    description: "Your agency can show rankings, traffic, and ad spend. That still doesn't tell you what ChatGPT or Gemini says about your store.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Competitors can win share before you know",
+    description: "If a rival dealership is the name AI recommends first, they get researched first — and often visited first.",
+  },
+];
 
 export default function WhyUs() {
-  const differentiators = [
-    {
-      icon: Car,
-      title: "We're Dealership Specialists",
-      description: "Not a generic marketing agency. We only work with car dealerships. We know your business, your customers, and your competition.",
-    },
-    {
-      icon: MapPin,
-      title: "Local Market Experts",
-      description: "We focus on the GTA—Oakville, Mississauga, Burlington, Hamilton. We know these markets, these customers, and these competitors.",
-    },
-    {
-      icon: Award,
-      title: "Proprietary Methodology",
-      description: "The AVI Score™ isn't a generic audit. It's a scoring system we developed specifically for dealerships, tested against thousands of real AI queries.",
-    },
-    {
-      icon: DollarSign,
-      title: "Transparent Pricing",
-      description: "No hidden fees. No 'contact us for pricing.' You know exactly what you're paying for upfront.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Results-Based Guarantee",
-      description: "Our Full Management clients get a guarantee: 10+ AVI Score points in 90 days or month 4 is free.",
-    },
-  ];
-
   return (
-    <section className="py-20 lg:py-32 bg-gradient-to-br from-gray-900 to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-            Why Work With Us?
+    <section
+      className="section-shell section-transition section-divider relative isolate overflow-hidden bg-[#081220] py-16 text-white sm:py-20 lg:py-28"
+      style={{ ["--transition-from" as string]: "#0d1f3a" }}
+    >
+      <div className="hero-mesh opacity-45" aria-hidden="true" />
+      <div className="hero-glow hero-glow-one opacity-30" aria-hidden="true" />
+      <div className="hero-glow hero-glow-two opacity-25" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_24%,rgba(6,182,212,0.04))]" aria-hidden="true" />
+
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <AnimateIn className="max-w-3xl">
+          <div className="section-kicker">Why now</div>
+          <h2 className="mt-6 text-[2.2rem] font-semibold tracking-[-0.02em] text-white sm:text-[2.5rem] lg:text-[3rem]">
+            Why Dealerships Buy This Now
           </h2>
-          <p className="text-lg text-gray-300">
-            We&apos;re not another marketing agency. We&apos;re AI visibility specialists for car dealerships.
+          <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/72 sm:text-[1.18rem] sm:leading-9">
+            This is not about chasing a trend. It&apos;s about seeing a visibility layer that already
+            affects who gets considered, compared, and contacted.
           </p>
-        </div>
-        
-        {/* Differentiators Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {differentiators.map((item, index) => (
-            <div
-              key={item.title}
-              className={`bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 ${
-                index === 4 ? "md:col-span-2 lg:col-span-1" : ""
-              }`}
+        </AnimateIn>
+
+        <AnimateIn stagger className="mt-10 grid gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+          {reasons.map((reason) => (
+            <motion.div
+              key={reason.title}
+              whileHover={{ y: -2, boxShadow: "0 28px 70px rgba(2, 8, 23, 0.32)" }}
+              className="glass-card rounded-[1.6rem] p-5 sm:p-6 lg:p-7"
             >
-              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
-                <item.icon className="w-6 h-6 text-blue-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-[color:var(--accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+                <reason.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-              <p className="text-gray-400">{item.description}</p>
-            </div>
+              <h3 className="mt-5 text-lg font-semibold text-white sm:text-xl">{reason.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/70 sm:text-base sm:leading-7">{reason.description}</p>
+            </motion.div>
           ))}
-        </div>
-        
-        {/* Comparison Table */}
-        <div className="mt-16 bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-          <h3 className="text-2xl font-bold text-white mb-8 text-center">
-            VizBiz.ai vs. Traditional SEO Agencies
-          </h3>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium">Feature</th>
-                  <th className="text-center py-4 px-4 text-blue-400 font-bold">VizBiz.ai</th>
-                  <th className="text-center py-4 px-4 text-gray-400 font-medium">Traditional SEO</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { feature: "AI-specific optimization", vizbiz: true, traditional: false },
-                  { feature: "Dealership-only focus", vizbiz: true, traditional: false },
-                  { feature: "AVI Score tracking", vizbiz: true, traditional: false },
-                  { feature: "ChatGPT visibility", vizbiz: true, traditional: false },
-                  { feature: "Google ranking", vizbiz: true, traditional: true },
-                  { feature: "Local market expertise", vizbiz: true, traditional: "Maybe" },
-                ].map((row) => (
-                  <tr key={row.feature} className="border-b border-white/5">
-                    <td className="py-4 px-4 text-gray-300">{row.feature}</td>
-                    <td className="py-4 px-4 text-center">
-                      {row.vizbiz === true ? (
-                        <svg className="w-6 h-6 text-green-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-gray-500">{row.vizbiz}</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      {row.traditional === true ? (
-                        <svg className="w-6 h-6 text-green-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : row.traditional === false ? (
-                        <svg className="w-6 h-6 text-red-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      ) : (
-                        <span className="text-yellow-400 text-sm">{row.traditional}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        </AnimateIn>
+
+        <AnimateIn className="mt-8 rounded-[1.8rem] border border-white/8 bg-white/[0.05] p-5 shadow-[0_24px_70px_rgba(2,8,23,0.28)] backdrop-blur-xl sm:mt-10 sm:p-7">
+          <p className="max-w-4xl text-base leading-7 text-white/84 sm:text-lg sm:leading-8">
+            You already pay for visibility on Google, Cars.com, and AutoTrader. AI is now another layer.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-white/60 sm:text-base sm:leading-7">
+            If you can&apos;t see how that layer treats your store, you can&apos;t manage it early.
+          </p>
+        </AnimateIn>
       </div>
     </section>
   );

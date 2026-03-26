@@ -74,28 +74,29 @@ export default async function ThankYouPage({
             <div className="glass-card rounded-[2rem] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Free mini snapshot</p>
 
-              {/* Row 1: Appeared in */}
               <div className="mt-5 border-b border-white/8 pb-5">
                 <p className="text-4xl font-semibold text-[var(--text-primary)]">Appeared in {appeared} of 7 prompts</p>
               </div>
 
-              {/* Row 2: Overall AI Visibility */}
               <div className="border-b border-white/8 py-5">
                 <p className="text-4xl font-semibold text-[var(--text-primary)]">Overall AI Visibility: {band}</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
+                  How often your dealership appeared across buyer-intent search prompts
+                </p>
               </div>
 
-              {/* Row 3: Service Department Visibility */}
               <div className="border-b border-white/8 py-5">
                 <p className="text-4xl font-semibold text-[var(--text-primary)]">Service Department Visibility: {serviceVisibility}</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
+                  How your service department and fixed ops show up compared to nearby competitors in AI-driven search
+                </p>
               </div>
 
-              {/* Visible insight lines */}
               <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
                 <p>{competitorMention} may be appearing more often in at least 2 of 7 prompts.</p>
                 <p>AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.</p>
               </div>
 
-              {/* Blurred locked rows */}
               <div className="mt-6 space-y-3">
                 {blurredRows.map((row) => (
                   <div
@@ -109,9 +110,8 @@ export default async function ThankYouPage({
               </div>
             </div>
 
-            {/* Subtle info line above booking card */}
             <p className="text-center text-xs text-[var(--text-secondary)]/70">
-              We&apos;ll follow up with your snapshot summary before your call.
+              We&apos;ll send your mini snapshot recap by email within 24 hours.
             </p>
 
             <div className="glass-card rounded-[2rem] p-6">

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow mission control (internal tool)
+Disallow: /mission-control/
+
+# Sitemap
+Sitemap: https://vizbiz.ai/sitemap.xml

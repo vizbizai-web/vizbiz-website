@@ -1,173 +1,148 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ArrowRight, Sparkles, Shield } from "lucide-react";
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimateIn from "@/components/AnimateIn";
+
+const plans = [
+  {
+    name: "Starter",
+    price: "$497",
+    description: "Best if you want a clear baseline on where your dealership stands now.",
+    features: ["Full audit", "20 prompts", "3 competitors", "PDF report"],
+    featured: false,
+    helper: "Good for a first look",
+  },
+  {
+    name: "Standard",
+    price: "$997",
+    description: "Best fit for most dealerships that want a fuller competitive picture.",
+    features: [
+      "Full audit",
+      "25 prompts",
+      "5 competitors",
+      "PDF report",
+      "30-minute walkthrough call",
+    ],
+    featured: true,
+    helper: "Best fit for most dealerships",
+  },
+  {
+    name: "Premium",
+    price: "$1,500+",
+    description: "Best for multi-location groups or custom scope that needs more depth.",
+    features: [
+      "Expanded audit",
+      "25+ prompts",
+      "5+ competitors",
+      "Walkthrough call",
+      "Multi-location/custom scope",
+    ],
+    featured: false,
+    helper: "Custom scope available",
+  },
+];
 
 export default function Pricing() {
-  const plans = [
-    {
-      name: "AVI Audit Only",
-      price: "$1,500-2,500",
-      description: "Complete AI visibility assessment",
-      features: [
-        "Complete AI visibility assessment",
-        "AVI Score with competitor benchmarking",
-        "20 AI query test results",
-        "Priority action roadmap",
-        "1-hour strategy call",
-      ],
-      cta: "Get Started",
-      popular: false,
-    },
-    {
-      name: "Audit + Implementation",
-      price: "$3,500-5,000",
-      description: "We implement the quick wins for you",
-      features: [
-        "Everything in Audit Only",
-        "We implement the quick wins for you",
-        "Google Business Profile optimization",
-        "Schema markup installation",
-        "Review response templates",
-        "30-day implementation support",
-      ],
-      cta: "Most Popular",
-      popular: true,
-    },
-    {
-      name: "Monthly Monitoring",
-      price: "$750-1,500",
-      period: "/month",
-      description: "Ongoing tracking and optimization",
-      features: [
-        "Monthly AVI Score updates",
-        "Competitor movement alerts",
-        "Ongoing optimization",
-        "Quarterly strategy reviews",
-        "Priority support",
-      ],
-      cta: "Subscribe",
-      popular: false,
-    },
-    {
-      name: "Full AI Visibility Management",
-      price: "$2,000-3,500",
-      period: "/month",
-      description: "Complete AI visibility management",
-      features: [
-        "Everything in Monthly Monitoring",
-        "We handle all ongoing optimization",
-        "Content updates and schema maintenance",
-        "Review monitoring and response",
-        "Monthly performance reports",
-        "Guaranteed 10+ point AVI Score improvement in 90 days or month 4 is free",
-      ],
-      cta: "Get Full Management",
-      popular: false,
-      guarantee: true,
-    },
-  ];
-
   return (
-    <section id="pricing" className="py-20 lg:py-32 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Investment
+    <section
+      id="pricing"
+      className="section-shell section-transition section-divider bg-[#0c1018] py-14 sm:py-18 lg:py-24"
+      style={{ ["--transition-from" as string]: "#070a11" }}
+    >
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <AnimateIn className="mx-auto max-w-3xl text-center">
+          <div className="section-kicker">One-time pricing</div>
+          <h2 className="display-font mt-5 text-[2.3rem] font-bold leading-[0.96] tracking-[-0.04em] text-white sm:text-[2.7rem] lg:text-[3.15rem]">
+            Pick the audit scope and move.
           </h2>
-          <p className="text-lg text-gray-600">
-            Transparent pricing. No hidden fees. Know exactly what you&apos;re paying for upfront.
+          <p className="mt-5 text-[1.02rem] leading-7 text-white/70 sm:text-[1.12rem] sm:leading-8">
+            Choose the level of competitive detail you need, complete the intake, and we handle the
+            rest.
           </p>
-        </div>
-        
-        {/* Pricing Grid */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative bg-white rounded-2xl p-8 border ${
-                plan.popular
-                  ? "border-blue-500 ring-2 ring-blue-500/20 shadow-xl"
-                  : "border-gray-200 shadow-sm"
-              }`}
-            >
-              {/* Popular Badge */}
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                    <Sparkles className="w-4 h-4" />
-                    Most Popular
-                  </div>
-                </div>
-              )}
-              
-              {/* Guarantee Badge */}
-              {plan.guarantee && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-full">
-                    <Shield className="w-4 h-4" />
-                    Guaranteed Results
-                  </div>
-                </div>
-              )}
-              
-              {/* Plan Header */}
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600 text-sm">{plan.description}</p>
-              </div>
-              
-              {/* Price */}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                {plan.period && (
-                  <span className="text-gray-500">{plan.period}</span>
-                )}
-              </div>
-              
-              {/* Features */}
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                      <Check className="w-3 h-3 text-blue-600" />
-                    </div>
-                    <span className="text-gray-600 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              {/* CTA */}
-              <Link
-                href="#contact"
-                className={`block w-full text-center py-3 px-6 rounded-xl font-semibold transition-colors ${
-                  plan.popular
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+        </AnimateIn>
+
+        <AnimateIn className="mx-auto mt-6 max-w-4xl rounded-[1.6rem] border border-[#ffb161]/18 bg-[linear-gradient(180deg,rgba(255,122,0,0.12)_0%,rgba(255,255,255,0.03)_100%)] p-4 text-sm text-[#ffe7c4]/90 shadow-[0_18px_48px_rgba(2,8,23,0.22)] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-5 sm:text-base">
+          <p>One-time purchase. No subscription. No long-term contract.</p>
+          <Link href="/book-call" className="mt-3 inline-flex font-semibold text-white transition-colors hover:text-[#ffd8a8] sm:mt-0">
+            Need custom scope? Book a quick call.
+          </Link>
+        </AnimateIn>
+
+        <div className="mt-8 grid gap-4 overflow-visible lg:grid-cols-3 lg:items-stretch lg:gap-5">
+          {plans.map((plan, index) => (
+            <AnimateIn key={plan.name} delay={index === 1 ? 0.16 : index * 0.08}>
+              <motion.div
+                whileHover={{
+                  y: -2,
+                  boxShadow: plan.featured
+                    ? "0 34px 90px rgba(255, 122, 0, 0.2)"
+                    : "0 28px 70px rgba(2, 8, 23, 0.3)",
+                }}
+                className={`relative flex h-full flex-col overflow-hidden rounded-[1.8rem] border shadow-[0_24px_70px_rgba(2,8,23,0.26)] backdrop-blur-xl ${
+                  plan.featured ? "p-6 pt-10 sm:p-7 sm:pt-10" : "p-6 sm:p-7"
+                } ${
+                  plan.featured
+                    ? "border-[#ffb161]/45 bg-[radial-gradient(circle_at_50%_0%,rgba(255,122,0,0.18),transparent_28%),rgba(255,255,255,0.07)]"
+                    : "border-white/8 bg-white/[0.05]"
                 }`}
               >
-                {plan.cta}
-              </Link>
-            </div>
+                {plan.featured && (
+                  <>
+                    <div className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-[radial-gradient(circle_at_center,rgba(255,122,0,0.18)_0%,transparent_62%)]" />
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffd278]/80 to-transparent" />
+                    <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[calc(50%+1px)]">
+                      <span className="instrument-badge whitespace-nowrap border-[#ffd278]/30 bg-[#ffb161]/14 text-[#fff0d5]">
+                        Recommended
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/42">{plan.helper}</p>
+                  <h3 className="display-font mt-3 text-[2rem] font-bold tracking-[-0.04em] text-white">{plan.name}</h3>
+                  <p className="display-font mt-3 text-[2.9rem] font-bold tracking-[-0.05em] text-white sm:text-[3.2rem]">
+                    {plan.price}
+                  </p>
+                  <p className="mt-4 text-sm leading-6 text-white/66 sm:text-base sm:leading-7">{plan.description}</p>
+                </div>
+
+                <div className="mt-5 accent-rule" />
+
+                <ul className="mt-6 space-y-3.5 sm:space-y-4">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm text-white/78 sm:text-base">
+                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-[#ffb161]/20 bg-[#ff8a2c]/10 text-[#ffe6b9]">
+                        <Check className="h-4 w-4" />
+                      </div>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-6 rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/62">
+                  Start with intake. We confirm scope before delivery.
+                </div>
+
+                <div className="mt-7 flex-1" />
+
+                <motion.div whileHover={{ scale: 1.02, y: -1 }} className="mt-7">
+                  <Link
+                    href={`/intake?plan=${plan.name.toLowerCase()}`}
+                    className={`inline-flex min-h-13 w-full items-center justify-center rounded-2xl px-6 py-3.5 text-base font-bold transition-all duration-200 ${
+                      plan.featured
+                        ? "premium-button"
+                        : "border border-white/12 bg-white/6 text-white hover:border-white/18 hover:bg-white/10"
+                    }`}
+                  >
+                    Choose {plan.name}
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </AnimateIn>
           ))}
-        </div>
-        
-        {/* Bottom CTA */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
-            Not sure which plan is right for you?
-          </p>
-          <Link
-            href="#contact"
-            className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700"
-          >
-            Schedule a Free Assessment
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <p className="text-sm text-gray-500 mt-2">
-            No commitment required. See your score before you decide anything.
-          </p>
         </div>
       </div>
     </section>

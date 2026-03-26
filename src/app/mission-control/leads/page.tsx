@@ -166,6 +166,24 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
             {lead.sendFrom ?? "vizbiz.ai@gmail.com"}
           </div>
 
+          {lead.emailDraftHtml ? (
+            <details className="mb-4 rounded-[1.25rem] border border-white/8 bg-slate-950/40 p-4">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
+                <span className="inline-flex items-center gap-2">
+                  <span className="transition group-open:rotate-90">▶</span>
+                  Preview HTML
+                </span>
+              </summary>
+              <div className="mt-4 overflow-hidden rounded-[1rem] border border-white/10 bg-black">
+                <iframe
+                  title={`Email preview for ${displayName}`}
+                  srcDoc={lead.emailDraftHtml}
+                  className="h-[720px] w-full bg-black"
+                />
+              </div>
+            </details>
+          ) : null}
+
           <textarea
             readOnly
             value={lead.emailDraftBody ?? "No email draft body available."}
@@ -176,6 +194,7 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
             <LeadCardActions
               subject={lead.emailDraftSubject}
               body={lead.emailDraftBody}
+              html={lead.emailDraftHtml}
             />
           </div>
         </section>

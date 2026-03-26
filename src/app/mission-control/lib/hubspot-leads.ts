@@ -19,6 +19,7 @@ export type HubSpotLead = {
   competitorSummary: string | null;
   emailDraftSubject: string | null;
   emailDraftBody: string | null;
+  emailDraftHtml: string | null;
   researchBrief: string | null;
   sendFrom: string | null;
 };
@@ -69,7 +70,8 @@ function extractSection(body: string, startMarker: string, endMarker?: string): 
 }
 
 function parseEmailDraftBody(body: string): string | null {
-  const emailSection = extractSection(body, "[EMAIL DRAFT]\n", "\n\n[RESEARCH BRIEF]");
+  const emailSection = extractSection(body, "[EMAIL DRAFT]\n", "\n\n[EMAIL HTML]")
+    ?? extractSection(body, "[EMAIL DRAFT]\n", "\n\n[RESEARCH BRIEF]");
   if (!emailSection) return null;
 
   const marker = "Body:\n";
@@ -245,6 +247,10 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       const contact = assoc.contactId ? (contactMap[assoc.contactId] ?? null) : null;
       const company = assoc.companyId ? (companyMap[assoc.companyId] ?? null) : null;
       const noteBody = assoc.noteId ? (noteBodyMap[assoc.noteId] ?? null) : null;
+      const emailDraftSection = noteBody
+        ? extractSection(noteBody, "[EMAIL DRAFT]\n", "\n\n[RESEARCH BRIEF]")
+          ?? extractSection(noteBody, "[EMAIL DRAFT]\n", "\n\n[EMAIL HTML]")
+        : null;
 
       return {
         dealId: deal.id,
@@ -273,15 +279,18 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
         competitorSummary: noteBody
           ? parseNoteField(noteBody, "- Competitor summary: ")
           : null,
-        emailDraftSubject: noteBody
-          ? parseNoteField(noteBody, "Subject: ")
+        emailDraftSubject: emailDraftSection
+          ? parseNoteField(emailDraftSection, "Subject: ")
           : null,
         emailDraftBody: noteBody ? parseEmailDraftBody(noteBody) : null,
+        emailDraftHtml: noteBody
+          ? extractSection(noteBody, "[EMAIL HTML]\n", "\n[RESEARCH BRIEF]") ?? null
+          : null,
         researchBrief: noteBody
           ? extractSection(noteBody, "[RESEARCH BRIEF]\n")
           : null,
-        sendFrom: noteBody
-          ? parseNoteField(noteBody, "Send from: ")
+        sendFrom: emailDraftSection
+          ? parseNoteField(emailDraftSection, "Send from: ")
           : null,
       };
     });

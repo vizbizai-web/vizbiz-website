@@ -107,27 +107,13 @@ function buildResearchBriefText(input: LeadInput) {
   const brief = buildResearchBrief(input);
 
   return [
-    "Dealership context:",
-    `- Market: ${brief.dealershipContext.market}`,
-    `- Website: ${brief.dealershipContext.website}`,
-    `- Size hint: ${brief.dealershipContext.sizeHint}`,
-    "",
-    "Competitive context:",
-    brief.competitiveContext,
-    "",
-    "Recommended talking points:",
-    ...brief.talkingPoints.map((point, index) => `${index + 1}. ${point}`),
-    "",
-    "Suggested subject line:",
-    brief.suggestedSubjectLine,
-    "",
-    "Call prep:",
-    ...brief.callPrep.map((point, index) => `- ${point}`),
+    "[RESEARCH BRIEF]",
+    `Status: ${brief.status}`,
+    `Note: ${brief.note}`,
   ].join("\n");
 }
 
 function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredSnapshotSummary) {
-  const brief = buildResearchBrief(input);
   const bookingUrl =
     process.env.NEXT_PUBLIC_CALENDLY_URL ||
     "https://calendly.com/vizbiz-ai/avi-assessment";
@@ -135,20 +121,24 @@ function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredS
   const greetingName = input.name.split(" ")[0] || input.name;
 
   return {
-    subject: brief.suggestedSubjectLine,
+    subject: `Your AI Visibility Mini Snapshot — ${input.dealershipName}`,
     sendFrom: DEFAULT_SEND_FROM,
     body: [
       `Hi ${greetingName},`,
       "",
-      `Thanks for requesting a mini snapshot for ${input.dealershipName}.`,
+      `Thanks for requesting your AI Visibility Mini Snapshot for ${input.dealershipName}.`,
       "",
-      `Here’s the quick read: ${input.dealershipName} appeared in ${snapshotSummary.appeared_in_prompts}, with an overall visibility status of ${snapshotSummary.visibility_status}. ${snapshotSummary.competitor_summary}`,
+      "Here's the quick read:",
       "",
-      `What matters most from here is ${snapshotSummary.why_it_matters}`,
+      `- Appeared in: ${snapshotSummary.appeared_in_prompts}`,
+      `- Overall AI Visibility: ${snapshotSummary.visibility_status}`,
+      `- Service Department Visibility: ${snapshotSummary.service_visibility}`,
       "",
-      `On a short discovery call, I’d walk you through where AI visibility is helping, where it’s falling short, and the fastest actions to improve how ${input.dealershipName} gets surfaced in ${input.city}.`,
+      snapshotSummary.competitor_summary,
       "",
-      `If you want, you can grab a time here: ${bookingUrl}`,
+      "The full picture — including the prompt-by-prompt breakdown, exact competitor gaps, and what to fix first — is what we cover on the review call.",
+      "",
+      `Book your free 15-minute review: ${bookingUrl}`,
       "",
       "Best,",
       "Alex",
@@ -162,6 +152,25 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
 
   const emailDraft = buildPlainTextEmailDraft(input, snapshotSummary);
   const researchBrief = buildResearchBriefText(input);
+  const snapshotDate = new Date(input.timestamp || Date.now()).toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const emailHtmlData: SnapshotEmailData = {
+    dealershipName: input.dealershipName,
+    contactName: input.name,
+    city: input.city,
+    snapshotDate,
+    appearedIn: snapshotSummary.appeared_in_prompts,
+    overallVisibility: snapshotSummary.visibility_status,
+    serviceDeptVisibility: snapshotSummary.service_visibility,
+    competitorInsight: snapshotSummary.competitor_summary,
+    bookingUrl:
+      process.env.NEXT_PUBLIC_CALENDLY_URL ||
+      "https://calendly.com/vizbiz-ai/avi-assessment",
+  };
+  const emailHtml = buildSnapshotEmailHtml(emailHtmlData).slice(0, 10000);
 
   return [
     `Intake submission for ${input.dealershipName}`,
@@ -192,7 +201,9 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     "Body:",
     emailDraft.body,
     "",
-    "[RESEARCH BRIEF]",
+    "[EMAIL HTML]",
+    emailHtml,
+    "",
     researchBrief,
   ].join("\n");
 }
@@ -617,11 +628,16 @@ export async function handleNewLead(data: LeadInput) {
     const emailData: SnapshotEmailData = {
       dealershipName: data.dealershipName,
       contactName: data.name,
+      city: data.city,
+      snapshotDate: new Date().toLocaleDateString("en-CA", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
       appearedIn: snapshotSummary.appeared_in_prompts,
       overallVisibility: snapshotSummary.visibility_status,
       serviceDeptVisibility: snapshotSummary.service_visibility,
       competitorInsight: snapshotSummary.competitor_summary,
-      whyItMatters: snapshotSummary.why_it_matters,
       bookingUrl,
     };
 

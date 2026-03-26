@@ -1,160 +1,199 @@
 "use client";
 
+import { FormEvent } from "react";
 import Link from "next/link";
-import { ArrowRight, Shield, Zap, Smartphone } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimateIn from "@/components/AnimateIn";
+import PhoneMockup, { AuditReportScreen, ScoreScreen } from "@/components/PhoneMockup";
+
+const proofPills = ["5 AI platforms tested", "20–25 buyer prompts", "Same-day audit delivery"];
+const trustStats = [
+  { value: "5", label: "AI platforms checked" },
+  { value: "20–25", label: "Buyer-intent prompts" },
+  { value: "Same day", label: "Full audit turnaround" },
+];
 
 export default function Hero() {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    window.location.hash = "pricing";
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-hero">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20"></div>
-      </div>
-      
-      {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-blue-100 text-sm font-medium mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              Serving dealerships across the GTA
-            </div>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              The World Doesn&apos;t Search. It{" "}
-              <span className="text-blue-300">Asks.</span>
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto lg:mx-0">
-              ChatGPT, Google AI Overviews, and Perplexity don&apos;t show links anymore—{" "}
-              <strong className="text-white">they generate answers.</strong>
-            </p>
-            
-            <p className="text-blue-200 mb-8 max-w-xl mx-auto lg:mx-0">
-              When a customer asks <em>&quot;best Honda dealership near me&quot;</em> or{" "}
-              <em>&quot;where to buy a Civic in Oakville,&quot;</em> does AI recommend{" "}
-              <strong className="text-white">your</strong> dealership or your competitor&apos;s?
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link
-                href="#contact"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
-              >
-                Get Your Free AVI Score Assessment
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="#pricing"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-700/50 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-blue-700/70 transition-colors border border-blue-400/30"
-              >
-                See Pricing
-              </Link>
-            </div>
-            
-            <p className="text-blue-200 text-sm mt-4">
-              30 minutes, no obligation
-            </p>
-          </div>
-          
-          {/* Right Content - AVI Score Card */}
-          <div className="hidden lg:block">
-            <div className="relative">
-              {/* Main Score Card */}
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform rotate-2 hover:rotate-0 transition-transform duration-300">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium uppercase tracking-wide">Your AVI Score</p>
-                    <h3 className="text-2xl font-bold text-gray-900">AI Visibility Intelligence</h3>
-                  </div>
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold">V</span>
-                  </div>
-                </div>
-                
-                {/* Score Gauge */}
-                <div className="flex items-center justify-center mb-6">
-                  <div className="relative">
-                    <svg className="w-40 h-40 transform -rotate-90">
-                      <circle
-                        cx="80"
-                        cy="80"
-                        r="70"
-                        stroke="#e5e7eb"
-                        strokeWidth="12"
-                        fill="none"
-                      />
-                      <circle
-                        cx="80"
-                        cy="80"
-                        r="70"
-                        stroke="url(#gradient)"
-                        strokeWidth="12"
-                        fill="none"
-                        strokeDasharray="440"
-                        strokeDashoffset="220"
-                        strokeLinecap="round"
-                      />
-                      <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#f59e0b" />
-                          <stop offset="100%" stopColor="#22c55e" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-5xl font-bold text-gray-900">47</span>
-                      <span className="text-sm text-gray-500">of 100</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                    Room for Improvement
+    <section
+      className="section-shell relative isolate overflow-hidden bg-[#050505] pt-24 text-white sm:pt-28 lg:pt-32"
+      style={{ ["--transition-from" as string]: "#030303" }}
+    >
+      <div className="hero-mesh" aria-hidden="true" />
+      <div className="hero-grid-overlay" aria-hidden="true" />
+      <div className="hero-glow hero-glow-one" aria-hidden="true" />
+      <div className="hero-glow hero-glow-two" aria-hidden="true" />
+      <div className="hero-orb hero-orb-one" aria-hidden="true" />
+      <div className="hero-orb hero-orb-two" aria-hidden="true" />
+      <div className="hero-sweep" aria-hidden="true" />
+      <div className="hero-noise" aria-hidden="true" />
+      <div className="hero-halo-ring" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent_34%)]"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto flex min-h-[100svh] max-w-7xl items-center px-3 pb-12 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
+        <div className="grid w-full gap-12 lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.98fr)] lg:items-center lg:gap-14">
+          <div className="max-w-3xl text-left">
+            <AnimateIn stagger className="space-y-0">
+              <div className="section-kicker max-w-full">
+                <span className="min-w-0 break-words">AI-assisted, expert-reviewed audit for car dealerships</span>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2.5 sm:gap-3">
+                {proofPills.map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/72 sm:text-xs"
+                  >
+                    {item}
                   </span>
+                ))}
+              </div>
+
+              <h1 className="display-font mt-6 max-w-4xl text-[3rem] font-black uppercase leading-[0.88] tracking-[-0.06em] text-white sm:text-[4.15rem] lg:text-[5.1rem]">
+                Is AI Recommending <span className="text-accent-gradient">Your Dealership?</span>
+              </h1>
+
+              <p className="mt-5 max-w-2xl text-[1rem] leading-7 text-white/70 sm:text-[1.12rem] sm:leading-8 lg:text-[1.18rem]">
+                VizBiz shows how visible your dealership is when buyers ask ChatGPT, Gemini,
+                Perplexity, and other AI tools who to trust, where to shop, and which dealer to
+                choose.
+              </p>
+
+              <form onSubmit={handleSubmit} className="hero-form-panel mt-8 max-w-2xl rounded-[1.9rem] p-4 sm:p-5">
+                <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[rgba(212,255,114,0.86)] sm:text-xs">
+                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[var(--primary)] shadow-[0_0_16px_rgba(182,255,46,0.8)]" />
+                  Get your score first
                 </div>
-                
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">vs. Top Competitor</span>
-                    <span className="font-semibold text-red-600">-23 points</span>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <label htmlFor="hero-email" className="sr-only">
+                    Enter your email
+                  </label>
+                  <input
+                    id="hero-email"
+                    type="email"
+                    required
+                    placeholder="Enter your email"
+                    className="h-14 w-full rounded-2xl border border-white/12 bg-[#0a0a0a] px-4 text-base text-white outline-none transition placeholder:text-white/28 focus:border-[rgba(182,255,46,0.55)] focus:bg-[#101010]"
+                  />
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="premium-button inline-flex h-14 shrink-0 items-center justify-center rounded-2xl px-7 text-base font-bold uppercase tracking-[0.04em] sm:min-w-[230px]"
+                  >
+                    Get My Free Score
+                  </motion.button>
+                </div>
+                <p className="mt-3 text-sm text-white/56">
+                  Free score first. Upgrade only if you want the full audit and competitor detail.
+                </p>
+              </form>
+
+              <div className="hero-trust-strip mt-5 grid max-w-3xl gap-3 rounded-[1.7rem] p-4 sm:grid-cols-3 sm:p-5">
+                {trustStats.map((stat) => (
+                  <div key={stat.label} className="hero-stat-card rounded-[1.2rem] px-4 py-3">
+                    <p className="display-font text-xl font-black uppercase tracking-[-0.05em] text-white sm:text-2xl">
+                      {stat.value}
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-white/56">{stat.label}</p>
                   </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-white/62 sm:text-[0.95rem]">
+                <span className="font-semibold text-white/86">Free score first</span>
+                <span className="text-white/24">•</span>
+                <span>One-time audit pricing</span>
+                <span className="text-white/24">•</span>
+                <span>No subscription</span>
+              </div>
+
+              <div className="mt-7 flex flex-wrap items-center gap-4 text-sm sm:text-base">
+                <motion.div whileHover={{ y: -1 }}>
+                  <Link href="#pricing" className="font-semibold text-[rgba(212,255,114,0.9)] transition-colors hover:text-white">
+                    See pricing
+                  </Link>
+                </motion.div>
+                <span className="text-white/20">•</span>
+                <motion.div whileHover={{ y: -1 }}>
+                  <Link href="/book-call" className="font-semibold text-white/72 transition-colors hover:text-white">
+                    Book a 15-minute call
+                  </Link>
+                </motion.div>
+              </div>
+            </AnimateIn>
+
+            <AnimateIn className="mt-10 flex justify-center overflow-hidden lg:hidden">
+              <div className="relative w-full max-w-[330px]">
+                <div className="phone-stage-glow" aria-hidden="true" />
+                <div className="hero-device-card rounded-[1.9rem] p-3">
+                  <PhoneMockup className="mx-auto max-w-[260px] sm:max-w-[285px]">
+                    <ScoreScreen />
+                  </PhoneMockup>
                 </div>
               </div>
-              
-              {/* Floating Elements */}
-              <div className="absolute -bottom-4 -left-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform -rotate-3">
-                <span className="text-sm font-semibold">AI Mentions: 3/20</span>
-              </div>
-              <div className="absolute -top-4 -right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg transform rotate-3">
-                <span className="text-sm font-semibold">Rank: #4 in Market</span>
-              </div>
-            </div>
+            </AnimateIn>
           </div>
-        </div>
-        
-        {/* Trust Bar */}
-        <div className="mt-16 pt-8 border-t border-white/10">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-blue-200 text-sm">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>SSL Secured</span>
+
+          <AnimateIn className="hidden lg:block lg:justify-self-end" delay={0.15}>
+            <div className="relative flex min-h-[720px] w-full max-w-[620px] items-center justify-center">
+              <div className="phone-stage-glow" aria-hidden="true" />
+
+              <div className="hero-proof-card absolute left-0 top-18 z-30 max-w-[260px] rounded-[1.6rem] p-4">
+                <p className="display-font text-[11px] font-bold uppercase tracking-[0.22em] text-[rgba(212,255,114,0.82)]">
+                  What you see fast
+                </p>
+                <div className="mt-3 space-y-3">
+                  {[
+                    "Your AI Visibility Score",
+                    "Where competitors get named first",
+                    "What to fix before you lose more leads",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3 text-sm text-white/72">
+                      <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--primary)] shadow-[0_0_12px_rgba(182,255,46,0.8)]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <motion.div
+                whileHover={{ y: -8, rotate: -3, boxShadow: "0 42px 110px rgba(0, 0, 0, 0.54)" }}
+                className="absolute left-8 top-28 z-10"
+              >
+                <PhoneMockup className="max-w-[285px] [transform:perspective(1600px)_rotateY(18deg)_rotateX(3deg)_rotate(-7deg)]">
+                  <ScoreScreen />
+                </PhoneMockup>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ y: -8, rotate: 3, boxShadow: "0 42px 110px rgba(0, 0, 0, 0.54)" }}
+                className="absolute right-2 top-10 z-20"
+              >
+                <PhoneMockup className="max-w-[320px] [transform:perspective(1600px)_rotateY(-14deg)_rotateX(4deg)_rotate(4deg)]" priority>
+                  <AuditReportScreen />
+                </PhoneMockup>
+              </motion.div>
+
+              <div className="hero-proof-card absolute bottom-18 right-6 z-30 max-w-[300px] rounded-[1.6rem] p-4">
+                <p className="display-font text-[11px] font-bold uppercase tracking-[0.22em] text-[rgba(212,255,114,0.82)]">
+                  Built for action
+                </p>
+                <p className="mt-3 text-base font-semibold leading-7 text-white">
+                  Start with the free score. Upgrade when you want the full report and competitor detail.
+                </p>
+              </div>
             </div>
-            <div className="hidden sm:block w-1 h-1 bg-blue-400 rounded-full"></div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              <span>Lightning Fast</span>
-            </div>
-            <div className="hidden sm:block w-1 h-1 bg-blue-400 rounded-full"></div>
-            <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4" />
-              <span>Mobile Optimized</span>
-            </div>
-            <div className="hidden sm:block w-1 h-1 bg-blue-400 rounded-full"></div>
-            <span>Serving Oakville, Mississauga, Burlington & Hamilton</span>
-          </div>
+          </AnimateIn>
         </div>
       </div>
     </section>

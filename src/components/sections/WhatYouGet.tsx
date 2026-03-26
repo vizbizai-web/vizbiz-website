@@ -1,185 +1,147 @@
 "use client";
 
-import { 
-  Gauge, 
-  Search, 
-  Users, 
-  Star, 
-  Shield, 
-  Map, 
-  BarChart3, 
-  HeadphonesIcon 
+import {
+  BadgeCheck,
+  ClipboardList,
+  FileText,
+  Gauge,
+  ScanSearch,
+  Target,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimateIn from "@/components/AnimateIn";
+
+const deliverables = [
+  {
+    icon: FileText,
+    title: "Executive summary",
+    description:
+      "A clear first-page summary of the biggest takeaways, what matters most, and where your store stands now.",
+  },
+  {
+    icon: Gauge,
+    title: "AI Visibility Score",
+    description:
+      "A score across the major AI platforms tested so you can see how often your dealership shows up in buyer-facing answers.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Prompt-by-prompt findings",
+    description:
+      "The actual buyer-intent prompts we tested, plus captured responses showing where you appear, where you do not, and who gets named instead.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "Competitor comparison",
+    description:
+      "A local benchmark against the dealerships AI recommends in your market so you can see who leads and why.",
+  },
+  {
+    icon: ScanSearch,
+    title: "Gap analysis",
+    description:
+      "A breakdown of the blind spots, missing trust signals, and weak areas that cause AI to skip over your store.",
+  },
+  {
+    icon: Target,
+    title: "Prioritized fix list",
+    description:
+      "The clearest next moves, ordered by what to fix first so your team or agency can act without guessing.",
+  },
+];
 
 export default function WhatYouGet() {
-  const deliverables = [
-    {
-      icon: Gauge,
-      title: "AVI Score™ (0-100)",
-      description: "Your proprietary AI Visibility Intelligence score. See exactly where you stand and how you compare to every competitor in your market.",
-      highlight: true,
-    },
-    {
-      icon: Search,
-      title: "AI Query Test Results",
-      description: "We test 20 real queries your customers are asking. See which ones mention you, which ones don't, and why.",
-    },
-    {
-      icon: Users,
-      title: "Competitor Benchmarking",
-      description: "Head-to-head comparison against the top 5 dealerships competing for your customers. See their scores, their gaps, and exactly how to beat them.",
-    },
-    {
-      icon: Star,
-      title: "Review Sentiment Analysis",
-      description: "AI systems analyze sentiment, not just star ratings. We show you what AI sees when it reads your reviews—and your competitors'.",
-    },
-    {
-      icon: Shield,
-      title: "Trust Signals Audit",
-      description: "The 15 trust markers AI systems look for (FAQ schema, entity recognition, citation consistency). See what's missing and the exact impact of fixing each one.",
-    },
-    {
-      icon: Map,
-      title: "Priority Action Roadmap",
-      description: "Not a generic to-do list. A prioritized sequence of actions based on effort vs. impact. Quick wins first, strategic plays second.",
-    },
-    {
-      icon: BarChart3,
-      title: "Monthly Monitoring Dashboard",
-      description: "Track your AVI Score over time. Get alerts when competitors move, when your score changes, and when new AI platforms emerge.",
-    },
-    {
-      icon: HeadphonesIcon,
-      title: "Implementation Support",
-      description: "We don't just hand you a report and disappear. We help you implement the recommendations—whether that's optimizing your Google Business Profile, adding schema markup, or restructuring your content.",
-    },
-  ];
-
   return (
-    <section id="what-you-get" className="py-20 lg:py-32 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Your AI Visibility Audit Includes:
+    <section
+      id="what-you-get"
+      className="section-shell section-transition section-divider bg-[#0d1f3a] py-16 sm:py-20 lg:py-28"
+      style={{ ["--transition-from" as string]: "#0a1628" }}
+    >
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <AnimateIn className="max-w-3xl">
+          <div className="section-kicker">Report contents</div>
+          <h2 className="mt-6 text-[2.2rem] font-semibold tracking-[-0.02em] text-white sm:text-[2.5rem] lg:text-[3rem]">
+            What You Get
           </h2>
-          <p className="text-lg text-gray-600">
-            Everything you need to understand and improve your AI visibility
+          <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/70 sm:text-[1.18rem] sm:leading-9">
+            You get a report that shows what AI is saying, who it recommends, and what to fix first.
           </p>
-        </div>
-        
-        {/* Deliverables Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {deliverables.map((item, index) => (
-            <div
+        </AnimateIn>
+
+        <AnimateIn stagger className="mt-10 grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {deliverables.map((item) => (
+            <motion.div
               key={item.title}
-              className={`group bg-white rounded-2xl p-6 border card-hover ${
-                item.highlight 
-                  ? "border-blue-500 ring-2 ring-blue-500/20" 
-                  : "border-gray-200"
-              }`}
+              whileHover={{ y: -2, boxShadow: "0 26px 60px rgba(2, 8, 23, 0.28)" }}
+              className="glass-card rounded-[1.6rem] p-5 sm:p-6"
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                item.highlight 
-                  ? "bg-blue-600" 
-                  : "bg-blue-50 group-hover:bg-blue-100"
-              } transition-colors`}>
-                <item.icon className={`w-6 h-6 ${
-                  item.highlight ? "text-white" : "text-blue-600"
-                }`} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/8 text-[color:var(--accent)]">
+                <item.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
-            </div>
+              <h3 className="mt-5 text-xl font-semibold text-white sm:text-2xl">{item.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/66 sm:text-base sm:leading-7">{item.description}</p>
+            </motion.div>
           ))}
-        </div>
-        
-        {/* Sample Report Preview */}
-        <div className="mt-16 bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-gray-200">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Sample AVI Scorecard Preview</h3>
-            <p className="text-gray-600">See exactly what you&apos;ll receive</p>
+        </AnimateIn>
+
+        <AnimateIn className="mt-8 rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-4 shadow-[0_24px_70px_rgba(2,8,23,0.24)] backdrop-blur-xl sm:mt-10 sm:p-6 lg:p-8">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-center lg:gap-8">
+            <div>
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-white/46 sm:text-sm">
+                Report format
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-[1.9rem]">
+                Built to be reviewed fast and shared easily
+              </h3>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 sm:text-base sm:leading-7">
+                The deliverable is structured for owners, GMs, and agency partners. You can skim the
+                headline findings first, then drop into the detailed prompt evidence and action list.
+              </p>
+              <p className="mt-4 inline-flex items-center rounded-full border border-cyan-400/16 bg-cyan-400/8 px-4 py-2 text-sm font-medium text-cyan-100">
+                Delivered as a branded PDF
+              </p>
+            </div>
+
+            <motion.div
+              whileHover={{ y: -2, boxShadow: "0 26px 60px rgba(2, 8, 23, 0.28)" }}
+              className="glass-card rounded-[1.8rem] p-4 sm:p-5"
+            >
+              <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-white/46">
+                      Audit preview
+                    </p>
+                    <h4 className="mt-2 text-lg font-semibold text-white sm:text-xl">Dealer visibility report</h4>
+                  </div>
+                  <div className="shrink-0 rounded-2xl border border-white/10 bg-white/8 px-3 py-2.5 text-right sm:px-4 sm:py-3">
+                    <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white/46 sm:text-[11px]">
+                      Score
+                    </p>
+                    <p className="font-mono text-2xl font-semibold text-white sm:text-3xl">42/100</p>
+                  </div>
+                </div>
+
+                <AnimateIn stagger className="mt-5 space-y-3 sm:mt-6">
+                  {[
+                    "Executive summary and key findings",
+                    "Platform-by-platform score breakdown",
+                    "Competitor comparison and market gaps",
+                    "Priority fixes ranked by impact",
+                  ].map((line) => (
+                    <div
+                      key={line}
+                      className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3"
+                    >
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[color:var(--accent)]" />
+                      <span className="text-sm font-medium text-white/76">{line}</span>
+                    </div>
+                  ))}
+                </AnimateIn>
+              </div>
+            </motion.div>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Score Overview */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h4 className="font-semibold text-gray-900 mb-4">Your Score Overview</h4>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-20 h-20 rounded-full border-8 border-orange-400 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">47</span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Current Score</p>
-                  <p className="text-orange-600 font-medium">Needs Work</p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Market Rank</span>
-                  <span className="font-medium text-gray-900">#4 of 8</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">vs. Leader</span>
-                  <span className="font-medium text-red-600">-23 pts</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Top Opportunities */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h4 className="font-semibold text-gray-900 mb-4">Top 3 Opportunities</h4>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Add FAQ schema markup</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Optimize GBP categories</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Improve review responses</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  Potential score improvement: <span className="font-semibold text-green-600">+15 points</span>
-                </p>
-              </div>
-            </div>
-            
-            {/* AI Mentions */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h4 className="font-semibold text-gray-900 mb-4">AI Query Performance</h4>
-              <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Mention Rate</span>
-                  <span className="font-medium text-gray-900">15%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-orange-400 h-2 rounded-full" style={{ width: "15%" }}></div>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Queries tested</span>
-                  <span className="font-medium text-gray-900">20</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">You mentioned</span>
-                  <span className="font-medium text-gray-900">3</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Leader mentioned</span>
-                  <span className="font-medium text-green-600">18</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </AnimateIn>
       </div>
     </section>
   );
