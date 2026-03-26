@@ -54,6 +54,10 @@ function SnapshotRow({ label, value }: { label: string; value: string | null }) 
 function LeadCard({ lead }: { lead: HubSpotLead }) {
   const displayName =
     lead.companyName || lead.dealName || "Unknown Dealership";
+  const hubspotDealUrl = `https://app.hubspot.com/contacts/343102280/deal/${lead.dealId}`;
+  const researchBrief = lead.researchBrief?.trim() ?? "";
+  const showPendingResearchBrief =
+    !researchBrief || /pending/i.test(researchBrief);
 
   return (
     <article className="glass-card rounded-[2rem] p-6 sm:p-7">
@@ -114,7 +118,7 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
           <div className="flex flex-wrap items-center gap-3">
             {stageBadge(lead.dealStage)}
             <a
-              href={`https://app.hubspot.com/contacts/343102280/deal/${lead.dealId}`}
+              href={hubspotDealUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
@@ -201,17 +205,34 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
 
         <section className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
           <p className="section-kicker mb-4">Research Brief</p>
-          <details className="group">
-            <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
-              <span className="inline-flex items-center gap-2">
-                <span className="transition group-open:rotate-90">▶</span>
-                View call prep and talking points
-              </span>
-            </summary>
-            <pre className="mt-4 whitespace-pre-wrap rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
-              {lead.researchBrief ?? "No research brief available."}
-            </pre>
-          </details>
+          {showPendingResearchBrief ? (
+            <div className="rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
+              <p>
+                Research not yet completed. Add findings manually to the HubSpot
+                note before the call.
+              </p>
+              <a
+                href={hubspotDealUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex text-blue-400 hover:text-blue-300 hover:underline"
+              >
+                Open in HubSpot →
+              </a>
+            </div>
+          ) : (
+            <details className="group">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
+                <span className="inline-flex items-center gap-2">
+                  <span className="transition group-open:rotate-90">▶</span>
+                  View call prep and talking points
+                </span>
+              </summary>
+              <pre className="mt-4 whitespace-pre-wrap rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
+                {researchBrief}
+              </pre>
+            </details>
+          )}
         </section>
       </div>
     </article>

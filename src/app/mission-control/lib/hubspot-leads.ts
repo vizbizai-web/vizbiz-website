@@ -284,7 +284,7 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
           : null,
         emailDraftBody: noteBody ? parseEmailDraftBody(noteBody) : null,
         emailDraftHtml: noteBody
-          ? extractSection(noteBody, "[EMAIL HTML]\n", "\n[RESEARCH BRIEF]") ?? null
+          ? extractSection(noteBody, "[EMAIL HTML]\n", "\n\n[RESEARCH BRIEF]") ?? null
           : null,
         researchBrief: noteBody
           ? extractSection(noteBody, "[RESEARCH BRIEF]\n")

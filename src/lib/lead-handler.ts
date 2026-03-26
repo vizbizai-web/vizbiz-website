@@ -23,6 +23,7 @@ export type StructuredSnapshotSummary = {
   visibility_status: string;
   service_visibility: string;
   competitor_summary: string;
+  competitor_categories: string;
   why_it_matters: string;
   next_step: string;
 };
@@ -98,6 +99,7 @@ function buildSnapshotSummary(input: LeadInput): StructuredSnapshotSummary {
     visibility_status: snapshot.statusBand,
     service_visibility: snapshot.serviceVisibility,
     competitor_summary: snapshot.competitorLine,
+    competitor_categories: snapshot.competitorCategories.join(", "),
     why_it_matters: snapshot.whyThisMatters,
     next_step: snapshot.recommendedNextStep,
   };
@@ -107,7 +109,6 @@ function buildResearchBriefText(input: LeadInput) {
   const brief = buildResearchBrief(input);
 
   return [
-    "[RESEARCH BRIEF]",
     `Status: ${brief.status}`,
     `Note: ${brief.note}`,
   ].join("\n");
@@ -119,6 +120,7 @@ function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredS
     "https://calendly.com/vizbiz-ai/avi-assessment";
 
   const greetingName = input.name.split(" ")[0] || input.name;
+  const competitorName = input.competitors?.split(",")[0]?.trim() || "Nearby competitors";
 
   return {
     subject: `Your AI Visibility Mini Snapshot — ${input.dealershipName}`,
@@ -126,23 +128,34 @@ function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredS
     body: [
       `Hi ${greetingName},`,
       "",
-      `Thanks for requesting your AI Visibility Mini Snapshot for ${input.dealershipName}.`,
+      `Here's your AI Visibility Mini Snapshot for ${input.dealershipName} in ${input.city}.`,
       "",
-      "Here's the quick read:",
+      "---",
+      "WHAT WE FOUND",
+      "---",
       "",
-      `- Appeared in: ${snapshotSummary.appeared_in_prompts}`,
-      `- Overall AI Visibility: ${snapshotSummary.visibility_status}`,
-      `- Service Department Visibility: ${snapshotSummary.service_visibility}`,
+      `Appeared in: ${snapshotSummary.appeared_in_prompts}`,
+      `Overall AI Visibility: ${snapshotSummary.visibility_status}`,
+      `Service Department Visibility: ${snapshotSummary.service_visibility}`,
       "",
-      snapshotSummary.competitor_summary,
+      `${competitorName} may be appearing more often in AI-driven search for your market.`,
       "",
-      "The full picture — including the prompt-by-prompt breakdown, exact competitor gaps, and what to fix first — is what we cover on the review call.",
+      `Likely signals: ${snapshotSummary.competitor_categories}.`,
+      "",
+      "---",
+      "WHAT'S NEXT",
+      "---",
+      "",
+      "On a short review call, we'll walk through:",
+      `- where ${input.dealershipName} is showing up well`,
+      "- where competitors may be ahead",
+      "- the 2-3 fastest moves to improve visibility",
       "",
       `Book your free 15-minute review: ${bookingUrl}`,
       "",
       "Best,",
       "Alex",
-      "VizBiz.ai",
+      "VizBiz.ai | vizbiz.ai@gmail.com",
     ].join("\n"),
   };
 }
@@ -157,6 +170,7 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     month: "long",
     day: "numeric",
   });
+  const competitorName = input.competitors?.split(",")[0]?.trim() || "Nearby competitors";
   const emailHtmlData: SnapshotEmailData = {
     dealershipName: input.dealershipName,
     contactName: input.name,
@@ -165,7 +179,8 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     appearedIn: snapshotSummary.appeared_in_prompts,
     overallVisibility: snapshotSummary.visibility_status,
     serviceDeptVisibility: snapshotSummary.service_visibility,
-    competitorInsight: snapshotSummary.competitor_summary,
+    competitorName,
+    competitorCategories: snapshotSummary.competitor_categories,
     bookingUrl:
       process.env.NEXT_PUBLIC_CALENDLY_URL ||
       "https://calendly.com/vizbiz-ai/avi-assessment",
@@ -187,6 +202,7 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     `- Visibility status: ${snapshotSummary.visibility_status}`,
     `- Service visibility: ${snapshotSummary.service_visibility}`,
     `- Competitor summary: ${snapshotSummary.competitor_summary}`,
+    `- Competitor categories: ${snapshotSummary.competitor_categories}`,
     `- Why it matters: ${snapshotSummary.why_it_matters}`,
     `- Next step: ${snapshotSummary.next_step}`,
     "",
@@ -204,6 +220,7 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     "[EMAIL HTML]",
     emailHtml,
     "",
+    "[RESEARCH BRIEF]",
     researchBrief,
   ].join("\n");
 }
@@ -238,6 +255,7 @@ function buildLeadReviewMarkdown(leads: StoredLead[]) {
         `  - Visibility status: ${snapshot?.visibility_status || "Not available"}`,
         `  - Service visibility: ${snapshot?.service_visibility || "Not available"}`,
         `  - Competitor summary: ${snapshot?.competitor_summary || "Not available"}`,
+        `  - Competitor categories: ${snapshot?.competitor_categories || "Not available"}`,
         `  - Why it matters: ${snapshot?.why_it_matters || "Not available"}`,
         `  - Next step: ${snapshot?.next_step || "Not available"}`,
       ].join("\n");
@@ -624,6 +642,7 @@ export async function handleNewLead(data: LeadInput) {
     const bookingUrl =
       process.env.NEXT_PUBLIC_CALENDLY_URL ||
       "https://calendly.com/vizbiz-ai/avi-assessment";
+    const competitorName = data.competitors?.split(",")[0]?.trim() || "Nearby competitors";
 
     const emailData: SnapshotEmailData = {
       dealershipName: data.dealershipName,
@@ -637,7 +656,8 @@ export async function handleNewLead(data: LeadInput) {
       appearedIn: snapshotSummary.appeared_in_prompts,
       overallVisibility: snapshotSummary.visibility_status,
       serviceDeptVisibility: snapshotSummary.service_visibility,
-      competitorInsight: snapshotSummary.competitor_summary,
+      competitorName,
+      competitorCategories: snapshotSummary.competitor_categories,
       bookingUrl,
     };
 

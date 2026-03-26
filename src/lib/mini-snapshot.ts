@@ -95,6 +95,42 @@ function getCompetitorMention(input: MiniSnapshotInput) {
   return provided.split(",")[0]?.trim() || "nearby competitors";
 }
 
+function getCompetitorCategories({
+  make,
+  appearedCount,
+  serviceVisibility,
+  independentUsed,
+}: {
+  make?: string;
+  appearedCount: number;
+  serviceVisibility: string;
+  independentUsed: boolean;
+}) {
+  const categories: string[] = [];
+
+  if (make) {
+    categories.push("stronger brand service search signals");
+  }
+
+  if (appearedCount <= 3) {
+    categories.push("stronger local review presence");
+  }
+
+  if (serviceVisibility === "Not surfaced" || serviceVisibility === "Weak") {
+    categories.push("clearer service and fixed ops pages");
+  }
+
+  if (independentUsed) {
+    categories.push("stronger affordability and inventory signals");
+  }
+
+  if (categories.length === 0) {
+    categories.push("stronger local review presence");
+  }
+
+  return categories.slice(0, 2);
+}
+
 export function buildMiniSnapshot(input: MiniSnapshotInput) {
   const make = inferMake(input);
   const independentUsed = isIndependentUsedDealer(input);
@@ -123,6 +159,12 @@ export function buildMiniSnapshot(input: MiniSnapshotInput) {
   const competitorLine = input.competitor?.trim()
     ? `${competitorMention} appears more often in at least one local prompt.`
     : `Nearby competitors appear more often in the local prompt set.`;
+  const competitorCategories = getCompetitorCategories({
+    make,
+    appearedCount,
+    serviceVisibility,
+    independentUsed,
+  });
 
   return {
     prompts,
@@ -131,6 +173,7 @@ export function buildMiniSnapshot(input: MiniSnapshotInput) {
     serviceVisibility,
     competitorMention,
     competitorLine,
+    competitorCategories,
     whyThisMatters:
       "AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.",
     recommendedNextStep:

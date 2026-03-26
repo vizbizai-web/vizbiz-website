@@ -6,7 +6,8 @@ export type SnapshotEmailData = {
   appearedIn: string;
   overallVisibility: string;
   serviceDeptVisibility: string;
-  competitorInsight: string;
+  competitorName: string;
+  competitorCategories: string;
   bookingUrl: string;
 };
 
@@ -27,7 +28,8 @@ export function buildSnapshotEmailHtml(data: SnapshotEmailData): string {
   const appearedIn = escapeHtml(data.appearedIn);
   const overallVisibility = escapeHtml(data.overallVisibility);
   const serviceDeptVisibility = escapeHtml(data.serviceDeptVisibility);
-  const competitorInsight = escapeHtml(data.competitorInsight);
+  const competitorName = escapeHtml(data.competitorName);
+  const competitorCategories = escapeHtml(data.competitorCategories);
   const bookingUrl = escapeHtml(data.bookingUrl);
 
   return `<!DOCTYPE html>
@@ -51,7 +53,7 @@ export function buildSnapshotEmailHtml(data: SnapshotEmailData): string {
           <tr>
             <td style="padding:28px 28px 10px 28px;">
               <p style="margin:0 0 10px 0;font-size:15px;line-height:1.7;color:#d4d4d4;">Hi ${contactName},</p>
-              <p style="margin:0;font-size:15px;line-height:1.7;color:#d4d4d4;">Thanks for requesting your AI Visibility Mini Snapshot for <span style="color:#ffffff;font-weight:700;">${dealershipName}</span>.</p>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:#d4d4d4;">Here&apos;s your AI Visibility Mini Snapshot for <span style="color:#ffffff;font-weight:700;">${dealershipName}</span> in ${city}.</p>
             </td>
           </tr>
 
@@ -111,7 +113,7 @@ export function buildSnapshotEmailHtml(data: SnapshotEmailData): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.2);border-radius:18px;">
                 <tr>
                   <td style="padding:18px 20px;">
-                    <p style="margin:0;font-size:14px;line-height:1.7;color:#d4d4d4;">${competitorInsight}</p>
+                    <p style="margin:0;font-size:14px;line-height:1.7;color:#d4d4d4;">${competitorName} may be appearing more often in AI-driven search for ${city}. Likely signals: ${competitorCategories}.</p>
                   </td>
                 </tr>
               </table>
@@ -119,26 +121,24 @@ export function buildSnapshotEmailHtml(data: SnapshotEmailData): string {
           </tr>
 
           <tr>
-            <td style="padding:24px 28px 0 28px;">
-              <p style="margin:0 0 14px 0;font-size:15px;font-weight:700;color:#ffffff;">What&apos;s in your full review</p>
+            <td style="padding:20px 28px 0 28px;">
+              <p style="margin:0 0 12px 0;font-size:14px;font-weight:700;color:#ffffff;">What happens next</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                ${[
-                  'Prompt-by-prompt AI answer breakdown',
-                  'Competitor visibility gaps',
-                  'Recommended fixes prioritized by impact',
-                ]
-                  .map(
-                    (item) => `<tr>
-                  <td style="padding:0 0 10px 0;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0a;border:1px solid #202020;border-radius:16px;">
-                      <tr>
-                        <td style="padding:14px 16px;font-size:14px;line-height:1.6;color:#7f7f7f;filter:blur(2px);">${item}</td>
-                      </tr>
-                    </table>
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #1f1f1f;">
+                    <p style="margin:0;font-size:14px;color:#d4d4d4;">✓ Review call — walk through the full snapshot together</p>
                   </td>
-                </tr>`
-                  )
-                  .join("")}
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #1f1f1f;">
+                    <p style="margin:0;font-size:14px;color:#d4d4d4;">✓ Competitor breakdown — see exactly where gaps are</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;">
+                    <p style="margin:0;font-size:14px;color:#d4d4d4;">✓ Priority fixes — the 2-3 highest-impact improvements</p>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>
