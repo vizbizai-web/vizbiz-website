@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildMiniSnapshot } from "@/lib/mini-snapshot";
+import { buildResearchBrief } from "@/lib/research-brief";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
 
 export type LeadInput = {
@@ -64,6 +65,7 @@ const HUBSPOT_STAGE_ID = process.env.HUBSPOT_STAGE_NEW_LEAD || process.env.HUBSP
 const HUBSPOT_PIPELINE_LABEL = process.env.HUBSPOT_PIPELINE_LABEL || "VizBiz Pipeline";
 const HUBSPOT_STAGE_LABEL = process.env.HUBSPOT_STAGE_LABEL || "New Lead";
 const HUBSPOT_DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_SEND_FROM = "vizbiz.ai@gmail.com";
 
 function normalizeWebsiteUrl(value: string) {
   const trimmed = value.trim();
@@ -101,8 +103,65 @@ function buildSnapshotSummary(input: LeadInput): StructuredSnapshotSummary {
   };
 }
 
+function buildResearchBriefText(input: LeadInput) {
+  const brief = buildResearchBrief(input);
+
+  return [
+    "Dealership context:",
+    `- Market: ${brief.dealershipContext.market}`,
+    `- Website: ${brief.dealershipContext.website}`,
+    `- Size hint: ${brief.dealershipContext.sizeHint}`,
+    "",
+    "Competitive context:",
+    brief.competitiveContext,
+    "",
+    "Recommended talking points:",
+    ...brief.talkingPoints.map((point, index) => `${index + 1}. ${point}`),
+    "",
+    "Suggested subject line:",
+    brief.suggestedSubjectLine,
+    "",
+    "Call prep:",
+    ...brief.callPrep.map((point, index) => `- ${point}`),
+  ].join("\n");
+}
+
+function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredSnapshotSummary) {
+  const brief = buildResearchBrief(input);
+  const bookingUrl =
+    process.env.NEXT_PUBLIC_CALENDLY_URL ||
+    "https://calendly.com/vizbiz-ai/avi-assessment";
+
+  const greetingName = input.name.split(" ")[0] || input.name;
+
+  return {
+    subject: brief.suggestedSubjectLine,
+    sendFrom: DEFAULT_SEND_FROM,
+    body: [
+      `Hi ${greetingName},`,
+      "",
+      `Thanks for requesting a mini snapshot for ${input.dealershipName}.`,
+      "",
+      `Here’s the quick read: ${input.dealershipName} appeared in ${snapshotSummary.appeared_in_prompts}, with an overall visibility status of ${snapshotSummary.visibility_status}. ${snapshotSummary.competitor_summary}`,
+      "",
+      `What matters most from here is ${snapshotSummary.why_it_matters}`,
+      "",
+      `On a short discovery call, I’d walk you through where AI visibility is helping, where it’s falling short, and the fastest actions to improve how ${input.dealershipName} gets surfaced in ${input.city}.`,
+      "",
+      `If you want, you can grab a time here: ${bookingUrl}`,
+      "",
+      "Best,",
+      "Alex",
+      "VizBiz.ai",
+    ].join("\n"),
+  };
+}
+
 function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSnapshotSummary) {
   if (!snapshotSummary) return undefined;
+
+  const emailDraft = buildPlainTextEmailDraft(input, snapshotSummary);
+  const researchBrief = buildResearchBriefText(input);
 
   return [
     `Intake submission for ${input.dealershipName}`,
@@ -126,6 +185,15 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
     `Original CTA: ${input.originalCta || "Not provided"}`,
     `Original page: ${input.originalPage || "Not provided"}`,
     `Intake timestamp: ${input.timestamp}`,
+    "",
+    "[EMAIL DRAFT]",
+    `Subject: ${emailDraft.subject}`,
+    `Send from: ${emailDraft.sendFrom}`,
+    "Body:",
+    emailDraft.body,
+    "",
+    "[RESEARCH BRIEF]",
+    researchBrief,
   ].join("\n");
 }
 
@@ -168,8 +236,6 @@ function buildLeadReviewMarkdown(leads: StoredLead[]) {
 }
 
 async function storeLeadLocally(lead: StoredLead) {
-  // Local file backup is only available outside of production (Vercel's runtime
-  // does not allow writes to arbitrary paths on the filesystem).
   if (process.env.NODE_ENV === "production") {
     console.info("[lead] skipping local file backup in production");
     return;
@@ -531,7 +597,6 @@ export async function handleNewLead(data: LeadInput) {
     });
     console.info("[lead] stored locally", { file: leadsFilePath });
   } catch (localError) {
-    // Non-fatal: local backup failure must never block HubSpot or the intake flow.
     console.warn("[lead] local backup failed (non-fatal)", localError);
   }
 
@@ -544,26 +609,25 @@ export async function handleNewLead(data: LeadInput) {
     }
   }
 
-  // Draft email generation — dev only, never runs on Vercel
-  if (process.env.NODE_ENV !== "production") {
-    try {
-      const bookingUrl =
-        process.env.NEXT_PUBLIC_CALENDLY_URL ||
-        "https://calendly.com/vizbiz-ai/avi-assessment";
+  try {
+    const bookingUrl =
+      process.env.NEXT_PUBLIC_CALENDLY_URL ||
+      "https://calendly.com/vizbiz-ai/avi-assessment";
 
-      const emailData: SnapshotEmailData = {
-        dealershipName: data.dealershipName,
-        contactName: data.name,
-        appearedIn: snapshotSummary.appeared_in_prompts,
-        overallVisibility: snapshotSummary.visibility_status,
-        serviceDeptVisibility: snapshotSummary.service_visibility,
-        competitorInsight: snapshotSummary.competitor_summary,
-        whyItMatters: snapshotSummary.why_it_matters,
-        bookingUrl,
-      };
+    const emailData: SnapshotEmailData = {
+      dealershipName: data.dealershipName,
+      contactName: data.name,
+      appearedIn: snapshotSummary.appeared_in_prompts,
+      overallVisibility: snapshotSummary.visibility_status,
+      serviceDeptVisibility: snapshotSummary.service_visibility,
+      competitorInsight: snapshotSummary.competitor_summary,
+      whyItMatters: snapshotSummary.why_it_matters,
+      bookingUrl,
+    };
 
-      const html = buildSnapshotEmailHtml(emailData);
+    const html = buildSnapshotEmailHtml(emailData);
 
+    if (process.env.NODE_ENV !== "production") {
       const timestamp = new Date()
         .toISOString()
         .replace(/:/g, "-")
@@ -598,10 +662,14 @@ export async function handleNewLead(data: LeadInput) {
         "utf8",
       );
 
-      console.info("[lead] draft email written", { htmlPath, jsonPath });
-    } catch (draftError) {
-      console.warn("[lead] draft email generation failed (non-fatal)", draftError);
+      console.info("[lead] draft email written", { htmlPath, jsonPath, htmlLength: html.length });
+    } else {
+      console.info("[lead] email draft HTML generated for production-safe note storage", {
+        htmlLength: html.length,
+      });
     }
+  } catch (draftError) {
+    console.warn("[lead] draft email generation failed (non-fatal)", draftError);
   }
 
   return snapshotSummary;

@@ -17,6 +17,10 @@ export type HubSpotLead = {
   overallVisibility: string | null;
   serviceDeptVisibility: string | null;
   competitorSummary: string | null;
+  emailDraftSubject: string | null;
+  emailDraftBody: string | null;
+  researchBrief: string | null;
+  sendFrom: string | null;
 };
 
 const BASE = "https://api.hubapi.com";
@@ -52,6 +56,30 @@ function parseNoteField(body: string, prefix: string): string | null {
   return null;
 }
 
+function extractSection(body: string, startMarker: string, endMarker?: string): string | null {
+  const startIndex = body.indexOf(startMarker);
+  if (startIndex === -1) return null;
+
+  const contentStart = startIndex + startMarker.length;
+  const sliced = body.slice(contentStart);
+  const endIndex = endMarker ? sliced.indexOf(endMarker) : -1;
+  const raw = endIndex === -1 ? sliced : sliced.slice(0, endIndex);
+  const cleaned = raw.trim();
+  return cleaned || null;
+}
+
+function parseEmailDraftBody(body: string): string | null {
+  const emailSection = extractSection(body, "[EMAIL DRAFT]\n", "\n\n[RESEARCH BRIEF]");
+  if (!emailSection) return null;
+
+  const marker = "Body:\n";
+  const markerIndex = emailSection.indexOf(marker);
+  if (markerIndex === -1) return null;
+
+  const draftBody = emailSection.slice(markerIndex + marker.length).trim();
+  return draftBody || null;
+}
+
 export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
   const token = getToken();
   if (!token) {
@@ -60,7 +88,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
   }
 
   try {
-    // 1. Fetch deals (limit 50, newest first)
     const dealsUrl =
       `${BASE}/crm/v3/objects/deals?limit=50` +
       `&properties=dealname,dealstage,closedate,createdate` +
@@ -71,7 +98,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
 
     if (deals.length === 0) return [];
 
-    // 2 & 3 & 6. Fetch associations for all deals in parallel
     const assocResults = await Promise.allSettled(
       deals.map(async (deal) => {
         const [contactAssoc, companyAssoc, noteAssoc] = await Promise.allSettled([
@@ -108,7 +134,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       })
     );
 
-    // Build lookup maps
     const dealAssocMap: Record<
       string,
       { contactId: string | null; companyId: string | null; noteId: string | null }
@@ -121,7 +146,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       }
     });
 
-    // 4. Batch fetch contacts
     const contactIds = [
       ...new Set(
         Object.values(dealAssocMap)
@@ -158,7 +182,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       }
     }
 
-    // 5. Batch fetch companies
     const companyIds = [
       ...new Set(
         Object.values(dealAssocMap)
@@ -193,7 +216,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       }
     }
 
-    // 6. Fetch notes (individual — no batch endpoint for notes)
     const noteIds = [
       ...new Set(
         Object.values(dealAssocMap)
@@ -218,7 +240,6 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
       })
     );
 
-    // 7 & 8. Assemble leads
     return deals.map((deal) => {
       const assoc = dealAssocMap[deal.id] ?? { contactId: null, companyId: null, noteId: null };
       const contact = assoc.contactId ? (contactMap[assoc.contactId] ?? null) : null;
@@ -251,6 +272,16 @@ export async function getHubSpotLeads(): Promise<HubSpotLead[]> {
           : null,
         competitorSummary: noteBody
           ? parseNoteField(noteBody, "- Competitor summary: ")
+          : null,
+        emailDraftSubject: noteBody
+          ? parseNoteField(noteBody, "Subject: ")
+          : null,
+        emailDraftBody: noteBody ? parseEmailDraftBody(noteBody) : null,
+        researchBrief: noteBody
+          ? extractSection(noteBody, "[RESEARCH BRIEF]\n")
+          : null,
+        sendFrom: noteBody
+          ? parseNoteField(noteBody, "Send from: ")
           : null,
       };
     });

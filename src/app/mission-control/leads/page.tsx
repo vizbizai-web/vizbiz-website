@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { LeadCardActions } from "./LeadCardActions";
 import { getHubSpotLeads } from "../lib/hubspot-leads";
 import type { HubSpotLead } from "../lib/hubspot-leads";
 
@@ -56,9 +57,7 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
 
   return (
     <article className="glass-card rounded-[2rem] p-6 sm:p-7">
-      {/* Two-column body */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* LEFT — deal / contact info */}
         <div className="flex flex-col gap-4">
           <div>
             <h2 className="display-font text-2xl font-semibold text-white">
@@ -125,7 +124,6 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
           </div>
         </div>
 
-        {/* RIGHT — Mini Snapshot */}
         <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
           <p className="section-kicker mb-4">Mini Snapshot</p>
           <div className="space-y-2">
@@ -149,12 +147,53 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
         </div>
       </div>
 
-      {/* Draft email status row */}
-      <div className="mt-5 flex items-center gap-3 border-t border-white/6 pt-4">
-        <span className="text-sm text-slate-500">Snapshot Email:</span>
-        <span className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-0.5 text-xs font-medium text-blue-300">
-          Draft pending review
-        </span>
+      <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <section className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="section-kicker">Email Draft</p>
+              <h3 className="mt-2 text-lg font-semibold text-white">
+                {lead.emailDraftSubject ?? "No draft subject available"}
+              </h3>
+            </div>
+            <span className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300">
+              Draft — Not Sent
+            </span>
+          </div>
+
+          <div className="mb-3 text-sm text-slate-400">
+            <span className="text-slate-200">Send from:</span>{" "}
+            {lead.sendFrom ?? "vizbiz.ai@gmail.com"}
+          </div>
+
+          <textarea
+            readOnly
+            value={lead.emailDraftBody ?? "No email draft body available."}
+            className="min-h-[220px] max-h-[320px] w-full resize-none overflow-y-auto rounded-[1.25rem] border border-white/10 bg-slate-950/60 px-4 py-3 text-sm leading-6 text-slate-300 outline-none"
+          />
+
+          <div className="mt-4">
+            <LeadCardActions
+              subject={lead.emailDraftSubject}
+              body={lead.emailDraftBody}
+            />
+          </div>
+        </section>
+
+        <section className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
+          <p className="section-kicker mb-4">Research Brief</p>
+          <details className="group">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
+              <span className="inline-flex items-center gap-2">
+                <span className="transition group-open:rotate-90">▶</span>
+                View call prep and talking points
+              </span>
+            </summary>
+            <pre className="mt-4 whitespace-pre-wrap rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
+              {lead.researchBrief ?? "No research brief available."}
+            </pre>
+          </details>
+        </section>
       </div>
     </article>
   );
@@ -187,7 +226,6 @@ export default async function LeadsPage() {
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8 flex items-center gap-4">
         <div>
           <p className="section-kicker">Pipeline</p>
@@ -196,13 +234,12 @@ export default async function LeadsPage() {
           </h1>
         </div>
         {leads.length > 0 && (
-          <span className="mt-4 inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-blue-500/20 px-2 text-sm font-semibold text-blue-300 border border-blue-500/30">
+          <span className="mt-4 inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full border border-blue-500/30 bg-blue-500/20 px-2 text-sm font-semibold text-blue-300">
             {leads.length}
           </span>
         )}
       </div>
 
-      {/* Lead cards */}
       <div className="space-y-5">
         {leads.length === 0 ? (
           <div className="glass-card rounded-[2rem] p-6 text-sm text-slate-400">
