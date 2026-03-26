@@ -5,9 +5,12 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   // Serve Google Search Console verification file
   if (request.nextUrl.pathname === '/googlefffa2894f075b012.html') {
-    return new NextResponse('google-site-verification: googlefffa2894f075b012', {
+    return new NextResponse('google-site-verification: googlefffa2894f075b012\n', {
       status: 200,
-      headers: { 'Content-Type': 'text/html' },
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      },
     });
   }
 
