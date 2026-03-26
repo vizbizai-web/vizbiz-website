@@ -1,4 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/googlefffa2894f075b012.html",
+      "destination": "/googlefffa2894f075b012.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/googlefffa2894f075b012.html",
+      "headers": [
+        { "key": "Content-Type", "value": "text/html" }
+      ]
+    }
+  ]
 }
