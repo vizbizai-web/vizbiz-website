@@ -14,26 +14,15 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  verification: {
-    google: "UsciMz9QyGJczouaUP3mPrVVWUlGnTLQkU9EOQiMDF8",
-  },
-  title: "VizBiz | AI Visibility Intelligence for Automotive Retailers",
+  title: "VizBiz.ai | AI Visibility Intelligence for Car Dealerships",
   description:
-    "VizBiz helps dealerships understand how they show up in AI-driven search, compare local visibility, and identify the next moves to improve discovery.",
+    "VizBiz helps car dealerships understand how they appear in AI-driven search, compare local visibility, and improve the signals that influence ChatGPT, Google AI Overviews, Gemini, and Perplexity.",
   keywords:
-    "AI visibility, automotive retailers, dealerships, AI-driven search, dealership marketing, ChatGPT, Gemini, Perplexity, competitor visibility",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-icon.png",
-  },
+    "AI visibility for car dealerships, dealership AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, dealership marketing, automotive retail AI",
   openGraph: {
-    title: "VizBiz | AI Visibility Intelligence for Automotive Retailers",
+    title: "VizBiz.ai | AI Visibility Intelligence for Car Dealerships",
     description:
-      "VizBiz helps dealerships understand how they show up in AI-driven search and what to improve next.",
+      "Understand how your dealership shows up in AI-driven search, compare local visibility, and improve the signals that shape AI recommendations.",
     type: "website",
   },
 };
