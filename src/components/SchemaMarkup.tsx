@@ -159,6 +159,35 @@ export default function SchemaMarkup() {
     ]
   };
 
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "VizBiz AI Visibility Intelligence",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "url": "https://vizbiz.ai",
+    "description": "VizBiz is the AI visibility intelligence platform for car dealerships. Audit, measure, and improve how your dealership appears in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search. Includes proprietary AVI scoring, competitor gap analysis, and actionable improvement recommendations.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CAD",
+      "description": "Free AI visibility snapshot for car dealerships"
+    },
+    "featureList": [
+      "AI Visibility Index (AVI) scoring",
+      "Competitor gap analysis",
+      "Buyer-intent prompt testing across AI platforms",
+      "Category-weighted visibility breakdown",
+      "Actionable improvement recommendations",
+      "Ongoing visibility monitoring"
+    ],
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Car Dealerships, Automotive Retailers"
+    },
+    "keywords": "AI visibility, car dealership AI, ChatGPT dealership, AI SEO, generative engine optimization, AI visibility audit, AVI score, dealership AI visibility"
+  };
+
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -195,6 +224,11 @@ export default function SchemaMarkup() {
         id="schema-faq"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="schema-software"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
       <Script
         id="schema-website"
