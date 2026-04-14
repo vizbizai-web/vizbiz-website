@@ -14,15 +14,15 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "VizBiz.ai | AI Visibility Intelligence for Car Dealerships",
+  title: "VizBiz — AI Visibility Intelligence for Car Dealerships",
   description:
-    "VizBiz helps car dealerships understand how they appear in AI-driven search, compare local visibility, and improve the signals that influence ChatGPT, Google AI Overviews, Gemini, and Perplexity.",
+    "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
   keywords:
     "AI visibility for car dealerships, dealership AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, dealership marketing, automotive retail AI",
   openGraph: {
-    title: "VizBiz.ai | AI Visibility Intelligence for Car Dealerships",
+    title: "VizBiz — AI Visibility Intelligence for Car Dealerships",
     description:
-      "Understand how your dealership shows up in AI-driven search, compare local visibility, and improve the signals that shape AI recommendations.",
+      "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
     type: "website",
   },
 };

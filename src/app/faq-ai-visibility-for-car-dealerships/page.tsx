@@ -69,8 +69,32 @@ const relatedPages = [
 ];
 
 export default function FaqAiVisibilityForCarDealershipsPage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer },
+    })),
+  };
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "FAQ: AI Visibility for Automotive Retailers",
+    "description": "Answers to common dealership questions about AI visibility, inventory, reviews, service pages, competitor comparisons, and audits.",
+    "datePublished": "2026-04-01",
+    "dateModified": "2026-04-12",
+    "author": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
+    "publisher": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
+    "mainEntityOfPage": "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships",
+  };
 
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <SiteHeader ctaLabel="Get My Snapshot" />
 
@@ -85,6 +109,15 @@ export default function FaqAiVisibilityForCarDealershipsPage() {
             <p className="text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               This page answers the questions dealerships are most likely to ask about AI visibility, AI-driven search inclusion, competitor visibility, inventory relevance, and audit value.
             </p>
+            <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
+              <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Takeaways</h2>
+              <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz measures how often your dealership appears in AI answers vs. competitors</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>Two offerings: <strong className="text-white">Snapshot</strong> (quick first look) and <strong className="text-white">Audit</strong> (deep analysis with action plan)</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>GEO is complementary to SEO — same trust signals, different optimization targets</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz provides implementation-ready materials your webmaster can use directly</span></li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -130,5 +163,6 @@ export default function FaqAiVisibilityForCarDealershipsPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

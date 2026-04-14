@@ -1,0 +1,59 @@
+# VizBiz — AI Visibility Intelligence Platform
+
+## What VizBiz Does
+VizBiz helps car dealerships measure and improve how often they appear in AI-generated answers and recommendations across ChatGPT, Google AI Overviews, Perplexity, and other AI platforms.
+
+We run real buyer-intent queries against multiple AI platforms, track which dealerships appear, score visibility signals, and deliver prioritized action plans so dealerships know exactly what to fix.
+
+## The Problem We Solve
+Car buyers are shifting from Google search to AI chatbots for dealership recommendations. When a buyer asks ChatGPT "What's the best Toyota dealership near me?", someone gets recommended — and someone doesn't. Most dealerships have no visibility into whether they appear, how they're described, or why competitors are being surfaced instead.
+
+VizBiz makes AI visibility measurable, trackable, and actionable.
+
+## Services
+
+### AI Visibility Snapshot (Free)
+A quick readout showing whether your dealership appears in AI-driven answers across major platforms. Includes basic scoring and top-level recommendations.
+
+### AI Visibility Audit (Paid)
+Comprehensive analysis across dozens of buyer-intent queries on ChatGPT, Google AI Overviews, Perplexity, and other AI platforms. Scores your dealership across entity consistency, review depth, content quality, and authority signals. Benchmarks against local competitors. Delivers a prioritized action plan.
+
+### Ongoing AI Visibility Monitoring (Subscription)
+Monthly tracking of your AI visibility across platforms. Measures changes over time, alerts you to competitor movements, and updates your action plan as AI models evolve.
+
+## Pricing
+- **Free Snapshot**: No cost. Quick assessment of your AI visibility.
+- **Full Audit**: Contact for pricing. Deep-dive analysis with competitive benchmarking.
+- **Monthly Monitoring**: Contact for pricing. Ongoing tracking and recommendations.
+
+## Target Market
+- Car dealerships (new, used, franchise, independent)
+- Automotive retailer groups
+- Dealer marketing agencies managing multiple rooftops
+
+## Key URLs
+- Website: https://vizbiz.ai
+- Free Snapshot: https://vizbiz.ai/intake
+- AI Visibility Audit: https://vizbiz.ai/ai-visibility-audit-for-car-dealerships
+- Sample Report: https://vizbiz.ai/sample-ai-visibility-report-for-car-dealerships
+- FAQ: https://vizbiz.ai/faq-ai-visibility-for-car-dealerships
+
+## Resources
+- How to show up in ChatGPT: https://vizbiz.ai/how-to-show-up-in-chatgpt-car-dealerships
+- ChatGPT recommendations explained: https://vizbiz.ai/chatgpt-car-dealership-recommendations
+- AI search optimization guide: https://vizbiz.ai/ai-search-optimization-for-car-dealerships
+- What is GEO: https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships
+- Why your dealership isn't showing up: https://vizbiz.ai/why-dealership-not-showing-up-in-ai-search
+
+## Contact
+- Email: hello@vizbiz.ai
+- Book a call: https://vizbiz.ai/book-call
+
+## About VizBiz
+VizBiz is an independent platform focused exclusively on AI visibility intelligence for automotive retailers. We are not affiliated with any AI platform or search engine. Our data comes from direct measurement — we query AI systems with real buyer questions and report what we find.
+
+## Technology
+- Queries: ChatGPT, Google AI Overviews, Perplexity, and expanding
+- Scoring dimensions: Entity consistency, review depth, content quality, service signals, authority mentions
+- Reporting: Visual dashboards, competitive benchmarks, prioritized action plans
+- Tracking: Monthly measurement cadence with trend analysis
