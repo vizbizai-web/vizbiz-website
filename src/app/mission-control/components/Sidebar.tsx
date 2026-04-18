@@ -9,8 +9,11 @@ const navItems = [
   { id: 'kanban', label: 'Tasks', icon: '✅', href: '/mission-control/kanban' },
   { id: 'projects', label: 'Projects', icon: '📁', href: '/mission-control/projects' },
   { id: 'calendar', label: 'Calendar', icon: '📅', href: '/mission-control/calendar' },
+  { id: 'scores', label: 'Scores', icon: '📊', href: '/mission-control/scores' },
+  { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
   { id: 'memory', label: 'Memory', icon: '🧠', href: '/mission-control/memory' },
   { id: 'docs', label: 'Docs', icon: '📄', href: '/mission-control/docs' },
+  { id: 'x-strategy', label: 'X Strategy', icon: '🐦', href: '/mission-control/x-strategy' },
   { id: 'team', label: 'Team', icon: '👥', href: '/mission-control/team' },
   { id: 'settings', label: 'Settings', icon: '⚙️', href: '/mission-control/settings' },
 ];

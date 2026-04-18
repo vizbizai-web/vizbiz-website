@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { Metadata } from 'next';
 import { Sidebar } from './components/Sidebar';
+import { QuickActions } from './components/QuickActions';
 
 export const metadata: Metadata = {
   title: 'Mission Control | VizBiz.ai',
@@ -18,8 +19,9 @@ export default function MissionControlLayout({
     <div className="min-h-screen bg-[#0a0a0f] text-slate-200">
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-64 min-h-screen">
-          <div className="p-8 max-w-7xl mx-auto">
+        <main className="flex-1 ml-64 min-h-screen flex flex-col">
+          <QuickActions />
+          <div className="p-8 max-w-7xl mx-auto flex-1">
             {children}
           </div>
         </main>

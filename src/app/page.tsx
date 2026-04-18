@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
 };
 
-const platformNames = ["ChatGPT", "Google AI", "Perplexity"];
+const platformNames = ["ChatGPT", "Gemini", "Google AI", "Perplexity"];
 
 const heroCards = [
   {
@@ -31,7 +31,7 @@ const howItWorks = [
   {
     number: "01",
     title: "Tell us about your dealership",
-    body: "VizBiz starts by collecting your dealership\u2019s website, location, inventory, and service details. This feeds our 84-prompt analysis engine that evaluates visibility across ChatGPT, Google AI, and Perplexity.",
+    body: "VizBiz starts by collecting your dealership\u2019s website, location, inventory, and service details. This feeds our 84-prompt analysis engine that evaluates visibility across ChatGPT, Gemini, Google AI, and Perplexity.",
   },
   {
     number: "02",
@@ -82,7 +82,7 @@ const faqs = [
   {
     question: "Does VizBiz replace SEO?",
     answer:
-      "No. VizBiz measures and improves how your dealership appears in AI-generated answers and recommendations across ChatGPT, Google AI Overviews, and Perplexity. VizBiz complements traditional SEO \u2014 our research shows 30% of car buyers now use AI to research vehicles (Ekho, 2026), a channel SEO tools don\u2019t measure.",
+      "No. VizBiz measures and improves how your dealership appears in AI-generated answers and recommendations across ChatGPT, Gemini, Google AI Overviews, and Perplexity. VizBiz complements traditional SEO \u2014 our research shows 30% of car buyers now use AI to research vehicles (Ekho, 2026), a channel SEO tools don\u2019t measure.",
   },
   {
     question: "Does VizBiz work with Dealer.com, CDK, WordPress, or custom sites?",
@@ -92,7 +92,7 @@ const faqs = [
   {
     question: "What do I actually receive from VizBiz?",
     answer:
-      "You receive an AVI score (0\u2013100), a competitor comparison showing which local dealerships AI recommends instead of you, platform-specific visibility findings across ChatGPT, Google AI, and Perplexity, and a prioritized action plan. VizBiz analyzes 84 buyer-intent prompts producing 252 data points per dealership.",
+      "You receive an AVI score (0\u2013100), a competitor comparison showing which local dealerships AI recommends instead of you, platform-specific visibility findings across ChatGPT, Gemini, Google AI, and Perplexity, and a prioritized action plan. VizBiz analyzes 84 buyer-intent prompts producing 252 data points per dealership.",
   },
   {
     question: "How does VizBiz measure improvement over time?",
@@ -302,7 +302,7 @@ export default function HomePage() {
     "@type": "Organization",
     "name": "VizBiz",
     "url": "https://vizbiz.ai",
-    "description": "AI visibility intelligence platform for car dealerships. Measures and improves how dealerships appear in ChatGPT, Google AI Overviews, and Perplexity.",
+    "description": "AI visibility intelligence platform for car dealerships. Measures and improves how dealerships appear in ChatGPT, Gemini, Google AI Overviews, and Perplexity.",
     "email": "hello@vizbiz.ai",
   };
 
@@ -312,7 +312,7 @@ export default function HomePage() {
     "name": "VizBiz AI Visibility Audit",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
-    "description": "Measures and improves how car dealerships appear in AI-generated answers across ChatGPT, Google AI Overviews, and Perplexity. Runs 84 buyer-intent prompts generating 252 data points per dealership.",
+    "description": "Measures and improves how car dealerships appear in AI-generated answers across ChatGPT, Gemini, Google AI Overviews, and Perplexity. Runs 84 buyer-intent prompts generating 252 data points per dealership.",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD", "description": "Free AI Visibility Snapshot" },
   };
 
@@ -332,7 +332,7 @@ export default function HomePage() {
               Is AI recommending your dealership — or someone else first?
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              See how your dealership appears in ChatGPT, Google AI, and Perplexity. Get your AVI score, competitor comparison, and clear actions to improve visibility. <strong className="text-white">84% of dealerships score below 60/100.</strong> Find out where you stand.
+              See how your dealership appears in ChatGPT, Gemini, Google AI, and Perplexity. Get your AVI score, competitor comparison, and clear actions to improve visibility. <strong className="text-white">84% of dealerships score below 60/100.</strong> Find out where you stand.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PrimaryCTA className="min-h-12 w-full justify-center px-5 sm:min-h-13 sm:w-auto sm:px-6" />
@@ -366,7 +366,7 @@ export default function HomePage() {
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">84% of dealerships</strong> score below 60/100 on AI visibility (VizBiz data, 2026)</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">30% of car buyers</strong> now use AI to research vehicles before visiting a dealership (Ekho, 2026)</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>Only <strong className="text-white">5–6 brands dominate</strong> AI recommendations nationally regardless of local presence (Arcalea AEO Index, 2026)</span></li>
-                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz runs <strong className="text-white">84 buyer-intent prompts</strong> across ChatGPT, Google AI, and Perplexity — generating 252 data points per dealership</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz runs <strong className="text-white">84 buyer-intent prompts</strong> across ChatGPT, Gemini, Google AI, and Perplexity — generating 252 data points per dealership</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>An AVI audit shows where you appear, where competitors appear instead, and what to fix first</span></li>
               </ul>
             </div>
@@ -385,7 +385,7 @@ export default function HomePage() {
             How Does AI Decide Which Dealership to Recommend?
           </h2>
           <p className="mt-6 max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
-            AI platforms like ChatGPT, Google AI Overviews, and Perplexity evaluate visibility, trust, comparison, and recommendation signals for each dealership. Our research across 84 buyer-intent prompts found that only 5\u20136 brands dominate AI recommendations nationally, regardless of what local dealers are actually nearby (Metricus, 2026). The dealerships that get surfaced earlier often win trust earlier.
+            AI platforms like ChatGPT, Gemini, Google AI Overviews, and Perplexity evaluate visibility, trust, comparison, and recommendation signals for each dealership. Our research across 84 buyer-intent prompts found that only 5\u20136 brands dominate AI recommendations nationally, regardless of what local dealers are actually nearby (Metricus, 2026). The dealerships that get surfaced earlier often win trust earlier.
           </p>
         </div>
       </section>
@@ -547,7 +547,7 @@ export default function HomePage() {
             See whether AI recommends your dealership.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-[var(--text-secondary)]">
-            Get your AVI score, competitor comparison, and a clear view of where your dealership stands across ChatGPT, Google AI, and Perplexity.
+            Get your AVI score, competitor comparison, and a clear view of where your dealership stands across ChatGPT, Gemini, Google AI, and Perplexity.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <PrimaryCTA className="min-h-13 px-6" />

@@ -46,6 +46,11 @@ export default function BookCallPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-10 border-t border-[var(--border)] pt-8 text-sm text-[var(--text-secondary)] leading-7 space-y-3">
+              <p><strong className="text-[var(--text-primary)]">What happens on the call:</strong> We walk through your AVI score (0–100), show which AI platforms are — and aren’t — recommending your dealership, and identify the highest-impact fixes for your market.</p>
+              <p><strong className="text-[var(--text-primary)]">Who it’s for:</strong> Dealership owners, GMs, and marketing managers who want to understand how ChatGPT, Gemini, Google AI, and Perplexity surface their business to local buyers.</p>
+              <p><strong className="text-[var(--text-primary)]">No pressure:</strong> This is a 15-minute review of real data. No sales pitch, no obligation.</p>
+            </div>
             <a
               href={CALENDLY_URL}
               target="_blank"

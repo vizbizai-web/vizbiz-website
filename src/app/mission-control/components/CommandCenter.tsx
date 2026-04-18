@@ -90,6 +90,58 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
         />
       </div>
 
+      {/* X Accounts & AVI Status */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <span className="text-xl">📊</span>
+            VizBiz AVI Score
+          </h2>
+          <div className="flex items-end gap-2">
+            <span className="text-4xl font-bold text-amber-400">22</span>
+            <span className="text-slate-500 text-lg mb-1">/100</span>
+          </div>
+          <p className="text-slate-500 text-sm mt-2">Latest audit — room to grow</p>
+          <div className="mt-3 h-2 bg-slate-800/50 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style={{ width: '22%' }} />
+          </div>
+        </div>
+
+        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <span className="text-xl">🐦</span>
+            X Accounts
+          </h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">@VizBizAI</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">Ready</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">@AlexBuildsAI</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <span className="text-xl">🧙</span>
+            Sage Status
+          </h2>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-slate-300">Installed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="text-slate-300">2 configs active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-6">
         {/* Priority Missions */}
         <div className="col-span-2 bg-[#111118] border border-slate-800/50 rounded-xl p-6">

@@ -13,31 +13,100 @@ interface Project {
   priority: 'Critical' | 'High' | 'Medium' | 'Low';
   description: string;
   agents: { name: string; emoji: string }[];
+  recentActivity: string[];
 }
 
 const projects: Project[] = [
   {
-    name: 'VizBiz',
+    name: 'VizBiz Platform',
     status: 'Active',
-    progress: 45,
+    progress: 55,
     priority: 'Critical',
-    description: 'AI visibility for automotive retailers',
+    description: 'AI visibility intelligence for car dealerships',
     agents: [
       { name: 'Vlad', emoji: '🎯' },
       { name: 'Reko', emoji: '🔍' },
       { name: 'Forge', emoji: '🔨' },
       { name: 'Pulse', emoji: '📡' },
     ],
+    recentActivity: [
+      'Deployed schema fixes to production',
+      'Scored 22/100 on AVI benchmark',
+      'CORE-EEAT audit completed',
+    ],
+  },
+  {
+    name: 'VizBiz X Account (@VizBizAI)',
+    status: 'Active',
+    progress: 30,
+    priority: 'High',
+    description: 'AI visibility content strategy — "AI Visibility Guy"',
+    agents: [
+      { name: 'Pulse', emoji: '📡' },
+      { name: 'Sage', emoji: '🧙' },
+    ],
+    recentActivity: [
+      'Sage installed and configured',
+      '10 posts drafted and finalized',
+      'Content strategy document complete',
+    ],
+  },
+  {
+    name: 'Builder X Account (@AlexBuildsAI)',
+    status: 'Active',
+    progress: 25,
+    priority: 'High',
+    description: 'AI builder journal — one guy, five agents, three projects',
+    agents: [
+      { name: 'Pulse', emoji: '📡' },
+      { name: 'Sage', emoji: '🧙' },
+    ],
+    recentActivity: [
+      'Strategy document complete',
+      '10 posts drafted',
+      'Sage configured for builder persona',
+    ],
   },
   {
     name: 'Gekko Trading Bot',
     status: 'Planning',
-    progress: 10,
-    priority: 'High',
-    description: 'Polymarket trading bot',
+    progress: 15,
+    priority: 'Medium',
+    description: 'Polymarket trading bot for BTC 5-minute markets',
     agents: [
-      { name: 'Vlad', emoji: '🎯' },
       { name: 'Gekko', emoji: '📈' },
+      { name: 'Forge', emoji: '🔨' },
+    ],
+    recentActivity: [
+      'Architecture designed',
+      'TypeScript scaffold created',
+      'Market data pipeline researched',
+    ],
+  },
+  {
+    name: 'AI Visibility for Real Estate',
+    status: 'Planning',
+    progress: 5,
+    priority: 'Low',
+    description: 'Future vertical — reuse VizBiz engine for real estate agents',
+    agents: [],
+    recentActivity: [
+      'Identified as future vertical',
+      'Engine reuse feasibility confirmed',
+      'Pending VizBiz platform maturity',
+    ],
+  },
+  {
+    name: 'Tow Company Automation',
+    status: 'Planning',
+    progress: 3,
+    priority: 'Low',
+    description: 'Future — operational SaaS/automation for small tow companies',
+    agents: [],
+    recentActivity: [
+      'Market opportunity identified',
+      'Waiting for bandwidth',
+      'No active development',
     ],
   },
 ];
@@ -86,7 +155,7 @@ export default function ProjectsPage() {
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-6">
+            <div className="mb-4">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-slate-400">Progress</span>
                 <span className="text-white font-medium">{project.progress}%</span>
@@ -100,32 +169,45 @@ export default function ProjectsPage() {
             </div>
 
             {/* Agents */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-4">
               <span className="text-sm text-slate-500">Agents:</span>
-              <div className="flex -space-x-2">
-                {project.agents.map((agent, idx) => (
-                  <div 
-                    key={agent.name}
-                    className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm"
-                    title={agent.name}
-                    style={{ zIndex: project.agents.length - idx }}
-                  >
-                    {agent.emoji}
+              {project.agents.length > 0 ? (
+                <>
+                  <div className="flex -space-x-2">
+                    {project.agents.map((agent, idx) => (
+                      <div 
+                        key={agent.name}
+                        className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm"
+                        title={agent.name}
+                        style={{ zIndex: project.agents.length - idx }}
+                      >
+                        {agent.emoji}
+                      </div>
+                    ))}
                   </div>
+                  <span className="text-xs text-slate-500 ml-2">
+                    {project.agents.map(a => a.name).join(', ')}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs text-slate-500 italic">Future allocation</span>
+              )}
+            </div>
+
+            {/* Recent Activity */}
+            <div className="border-t border-slate-800/50 pt-4">
+              <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Recent Activity</h3>
+              <ul className="space-y-1.5">
+                {project.recentActivity.map((activity, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <span className="text-slate-600 mt-0.5">•</span>
+                    <span className="text-slate-400">{activity}</span>
+                  </li>
                 ))}
-              </div>
-              <span className="text-xs text-slate-500 ml-2">
-                {project.agents.map(a => a.name).join(', ')}
-              </span>
+              </ul>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Empty State / Add Project Hint */}
-      <div className="bg-[#111118]/50 rounded-xl border border-dashed border-slate-800/50 p-8 text-center">
-        <span className="text-3xl mb-3 block">➕</span>
-        <p className="text-slate-400">More projects can be added here</p>
       </div>
     </div>
   );
