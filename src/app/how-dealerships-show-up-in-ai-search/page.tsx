@@ -122,7 +122,7 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               AI tools look for signals that help them decide which dealerships are credible, relevant, and useful to mention.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For the commercial deliverable, see the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>.
+              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For the commercial deliverable, see the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>.
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               Dealerships improve AI visibility when they make their information easier to interpret, easier to trust, and easier to connect to local buyer intent.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If affordability and used inventory are a major issue, see <Link href="/cheap-used-car-near-me-ai-visibility-for-dealerships" className="text-[var(--neon-cyan)] hover:text-white">cheap used car near me: AI visibility for dealerships</Link> for that specific visibility problem.
+              If affordability and used inventory are a major issue, see <Link href="/cheap-used-car-near-me-ai-visibility-for-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">cheap used car near me: AI visibility for dealerships</Link> for that specific visibility problem.
             </p>
             <div className="mt-6 space-y-5">
               {improvementActions.map((item) => (
@@ -226,7 +226,7 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               See how your dealership appears in AI-driven search, where competitors are being surfaced instead, and what to fix first.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

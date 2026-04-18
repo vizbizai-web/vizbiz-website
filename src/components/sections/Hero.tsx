@@ -125,7 +125,7 @@ export default function Hero() {
                 </motion.div>
                 <span className="text-white/20">•</span>
                 <motion.div whileHover={{ y: -1 }}>
-                  <Link href="/book-call" className="font-semibold text-white/72 transition-colors hover:text-white">
+                  <Link href="/book-call/" className="font-semibold text-white/72 transition-colors hover:text-white">
                     Book a 15-minute call
                   </Link>
                 </motion.div>

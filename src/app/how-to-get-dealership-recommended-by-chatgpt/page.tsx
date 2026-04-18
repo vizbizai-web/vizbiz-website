@@ -138,7 +138,7 @@ export default function HowToGetDealershipRecommendedByChatGPTPage() {
               ChatGPT responds with specific dealership names, and buyers act on those recommendations. <strong className="text-white">VizBiz's analysis of 84 buyer-intent prompts</strong> across major US markets found that ChatGPT typically names only 5 to 6 dealerships per query. This guide covers the signals ChatGPT uses and the five steps you can take to earn that recommendation more often.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the technical breakdown of how ChatGPT selects dealerships, see our guide to <Link href="/chatgpt-car-dealership-recommendations" className="text-[var(--neon-cyan)] hover:text-white">ChatGPT car dealership recommendations</Link>. For the broader AI visibility landscape, see <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>.
+              For the technical breakdown of how ChatGPT selects dealerships, see our guide to <Link href="/chatgpt-car-dealership-recommendations/" className="text-[var(--neon-cyan)] hover:text-white">ChatGPT car dealership recommendations</Link>. For the broader AI visibility landscape, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>.
             </p>
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Takeaways</h2>
@@ -205,7 +205,7 @@ export default function HowToGetDealershipRecommendedByChatGPTPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Delivers a prioritized action plan so your team knows exactly what to fix first</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Start with a free <Link href="/intake" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> to see where your dealership stands today. For a deep-dive analysis, explore the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">full AI Visibility Audit</Link>.
+              Start with a free <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> to see where your dealership stands today. For a deep-dive analysis, explore the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">full AI Visibility Audit</Link>.
             </p>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function HowToGetDealershipRecommendedByChatGPTPage() {
               Get a clear report showing which AI platforms mention your dealership, how you're described, and where competitors are being surfaced instead.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

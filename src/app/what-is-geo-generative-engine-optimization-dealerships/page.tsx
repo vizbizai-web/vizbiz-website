@@ -153,7 +153,7 @@ export default function WhatIsGEODealershipsPage() {
               If SEO is about ranking in Google's blue links, GEO is about being named when AI generates an answer. Car buyers are shifting from typing keywords into Google to asking conversational questions in AI chatbots — and <strong className="text-white">AI-driven automotive search traffic grew 527% year-over-year</strong> (Metricus, April 2026). GEO is how you make sure your dealership is part of those conversations.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For a practical guide to improving your ChatGPT presence specifically, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT for car dealerships</Link>. For the broader picture, visit our <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility overview</Link>.
+              For a practical guide to improving your ChatGPT presence specifically, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT for car dealerships</Link>. For the broader picture, visit our <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility overview</Link>.
             </p>
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Takeaways</h2>
@@ -267,7 +267,7 @@ export default function WhatIsGEODealershipsPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Ongoing tracking so you can measure progress and prove ROI</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Start with a free <Link href="/intake" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
+              Start with a free <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
             </p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function WhatIsGEODealershipsPage() {
               Get a free AI Visibility Snapshot showing how your dealership performs across ChatGPT, Google AI Overviews, and Perplexity — with a clear action plan for improvement.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

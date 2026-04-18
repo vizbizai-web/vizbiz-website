@@ -95,10 +95,10 @@ export default function AiVisibilityAuditForCarDealershipsPage() {
               The goal is simple: show where the dealership stands now, where it can improve, and what matters most to address first.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If you want to see how this fits into the bigger category, read <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. If you want a proof example, review the <Link href="/sample-ai-visibility-report-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">sample AI visibility report for automotive retailers</Link>.
+              If you want to see how this fits into the bigger category, read <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. If you want a proof example, review the <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">sample AI visibility report for automotive retailers</Link>.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>
@@ -170,7 +170,7 @@ export default function AiVisibilityAuditForCarDealershipsPage() {
               This helps dealerships understand not just whether they are visible, but where nearby competitors are currently outperforming them and where the next gains can come from.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For direct answers to common buyer questions, visit the <Link href="/faq-ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">FAQ page</Link>.
+              For direct answers to common buyer questions, visit the <Link href="/faq-ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">FAQ page</Link>.
             </p>
           </div>
 
@@ -201,7 +201,7 @@ export default function AiVisibilityAuditForCarDealershipsPage() {
               See how your dealership appears across inventory, reviews, service, finance, FAQ, and competitor visibility signals.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

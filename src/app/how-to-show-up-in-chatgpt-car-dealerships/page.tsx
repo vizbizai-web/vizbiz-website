@@ -183,7 +183,7 @@ export default function HowToShowUpInChatgptCarDealershipsPage() {
               </ul>
             </div>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the broader view of AI visibility, see <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For how ChatGPT specifically decides what to recommend, see <Link href="/chatgpt-car-dealership-recommendations" className="text-[var(--neon-cyan)] hover:text-white">ChatGPT car dealership recommendations explained</Link>.
+              For the broader view of AI visibility, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For how ChatGPT specifically decides what to recommend, see <Link href="/chatgpt-car-dealership-recommendations/" className="text-[var(--neon-cyan)] hover:text-white">ChatGPT car dealership recommendations explained</Link>.
             </p>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function HowToShowUpInChatgptCarDealershipsPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Delivers prioritized recommendations so you know exactly what to fix first</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Start with a free AI Visibility Snapshot to see where your dealership stands today. For the full breakdown, explore the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>.
+              Start with a free AI Visibility Snapshot to see where your dealership stands today. For the full breakdown, explore the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>.
             </p>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function HowToShowUpInChatgptCarDealershipsPage() {
               Get a clear readout of where your dealership appears in ChatGPT and other AI-driven answers — and where competitors are being surfaced instead.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

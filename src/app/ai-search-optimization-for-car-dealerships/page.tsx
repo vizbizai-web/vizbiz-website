@@ -161,7 +161,7 @@ export default function AiSearchOptimizationForCarDealershipsPage() {
               AI search optimization — sometimes called GEO (Generative Engine Optimization) or AEO (Answer Engine Optimization) — is about making sure your dealership is one of those answers.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the full category overview, see <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For ChatGPT-specific strategies, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT recommendations</Link>.
+              For the full category overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For ChatGPT-specific strategies, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT recommendations</Link>.
             </p>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function AiSearchOptimizationForCarDealershipsPage() {
               ))}
             </div>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              VizBiz automates all of this. Each audit covers dozens of buyer-intent queries across multiple AI platforms, giving you a clear scorecard and prioritized action plan. See a <Link href="/sample-ai-visibility-report-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">sample report</Link> to understand the output.
+              VizBiz automates all of this. Each audit covers dozens of buyer-intent queries across multiple AI platforms, giving you a clear scorecard and prioritized action plan. See a <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">sample report</Link> to understand the output.
             </p>
           </div>
 
@@ -252,7 +252,7 @@ export default function AiSearchOptimizationForCarDealershipsPage() {
               The dealerships that invest in AI visibility today are building an advantage that compounds over time. Every review you earn, every piece of content you publish, every consistency fix you make strengthens the signals AI systems rely on. Early movers are showing up in AI recommendations while competitors are still invisible.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For more on the broader opportunity, read <Link href="/how-dealerships-show-up-in-ai-search" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>. For answers to common questions, visit the <Link href="/faq-ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">FAQ hub</Link>.
+              For more on the broader opportunity, read <Link href="/how-dealerships-show-up-in-ai-search/" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>. For answers to common questions, visit the <Link href="/faq-ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">FAQ hub</Link>.
             </p>
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function AiSearchOptimizationForCarDealershipsPage() {
               See how your dealership performs across AI platforms, where competitors are being recommended instead, and what to optimize first.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

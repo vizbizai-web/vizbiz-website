@@ -31,7 +31,7 @@ export default function StickyMobileCTA() {
           <div className="rounded-[1.35rem] border border-white/10 bg-[#090909eb] p-2 shadow-[0_24px_60px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
             <motion.div whileHover={{ scale: 1.02, y: -1 }}>
               <Link
-                href="/intake"
+                href="/intake/"
                 className="premium-button flex h-12 items-center justify-center rounded-2xl px-4 text-sm font-bold uppercase tracking-[0.04em]"
               >
                 Get My AI Visibility Snapshot

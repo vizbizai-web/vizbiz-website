@@ -136,7 +136,7 @@ export default function ChatgptCarDealershipRecommendationsPage() {
               This is a growth opportunity, not a threat. The dealerships that understand and act on AI visibility now are the ones that will be recommended consistently as buyer behavior continues to shift toward AI-driven research.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For step-by-step actions, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT recommendations</Link>. For the broader AI optimization framework, see <Link href="/ai-search-optimization-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI search optimization for car dealerships</Link>.
+              For step-by-step actions, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT recommendations</Link>. For the broader AI optimization framework, see <Link href="/ai-search-optimization-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI search optimization for car dealerships</Link>.
             </p>
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function ChatgptCarDealershipRecommendationsPage() {
               ))}
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              To see where you stand today, start with a VizBiz AI Visibility Snapshot. For the complete diagnostic, explore the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. For broader context on how dealerships appear in AI search, visit <Link href="/how-dealerships-show-up-in-ai-search" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>.
+              To see where you stand today, start with a VizBiz AI Visibility Snapshot. For the complete diagnostic, explore the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. For broader context on how dealerships appear in AI search, visit <Link href="/how-dealerships-show-up-in-ai-search/" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>.
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function ChatgptCarDealershipRecommendationsPage() {
               Find out how your dealership appears in ChatGPT and other AI platforms — and get a clear plan to improve your visibility.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

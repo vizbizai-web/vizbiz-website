@@ -65,7 +65,7 @@ export default function Pricing() {
 
         <AnimateIn className="mx-auto mt-6 max-w-4xl rounded-[1.6rem] border border-[#ffb161]/18 bg-[linear-gradient(180deg,rgba(255,122,0,0.12)_0%,rgba(255,255,255,0.03)_100%)] p-4 text-sm text-[#ffe7c4]/90 shadow-[0_18px_48px_rgba(2,8,23,0.22)] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-5 sm:text-base">
           <p>One-time purchase. No subscription. No long-term contract.</p>
-          <Link href="/book-call" className="mt-3 inline-flex font-semibold text-white transition-colors hover:text-[#ffd8a8] sm:mt-0">
+          <Link href="/book-call/" className="mt-3 inline-flex font-semibold text-white transition-colors hover:text-[#ffd8a8] sm:mt-0">
             Need custom scope? Book a quick call.
           </Link>
         </AnimateIn>

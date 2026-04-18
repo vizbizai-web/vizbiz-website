@@ -263,7 +263,7 @@ export default function HowToCheckDealershipAiVisibilityPage() {
               identifies competitor gaps, and delivers prioritized recommendations.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

@@ -236,7 +236,7 @@ export default function VizBizVsBrightLocalPage() {
               Get a free AI Visibility Snapshot showing where your dealership appears in ChatGPT, Google AI Overviews, and Perplexity — and where competitors are being recommended instead.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

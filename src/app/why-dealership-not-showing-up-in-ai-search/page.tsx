@@ -134,7 +134,7 @@ export default function WhyDealershipNotShowingUpInAISearchPage() {
               The good news: there are specific, diagnosable reasons why. And every one of them is fixable. Nearly <strong className="text-white">30% of car buyers now use AI during their purchase research</strong> (DealershipGuy, January 2026), and AI-sourced traffic converts at <strong className="text-white">4.4x the rate of organic traffic</strong> (Ekho, February 2026).
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              This guide walks through the most common causes and what to do about each one. For the broader framework, see <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for car dealerships</Link>. To understand how AI selects dealerships in the first place, see <Link href="/chatgpt-car-dealership-recommendations" className="text-[var(--neon-cyan)] hover:text-white">how ChatGPT recommends dealerships</Link>.
+              This guide walks through the most common causes and what to do about each one. For the broader framework, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for car dealerships</Link>. To understand how AI selects dealerships in the first place, see <Link href="/chatgpt-car-dealership-recommendations/" className="text-[var(--neon-cyan)] hover:text-white">how ChatGPT recommends dealerships</Link>.
             </p>
 
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
@@ -194,7 +194,7 @@ export default function WhyDealershipNotShowingUpInAISearchPage() {
               ))}
             </div>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If you want to skip the manual work, a <Link href="/intake" className="text-[var(--neon-cyan)] hover:text-white">free VizBiz AI Visibility Snapshot</Link> runs this diagnosis automatically across dozens of queries and platforms.
+              If you want to skip the manual work, a <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">free VizBiz AI Visibility Snapshot</Link> runs this diagnosis automatically across dozens of queries and platforms.
             </p>
           </div>
 
@@ -213,7 +213,7 @@ export default function WhyDealershipNotShowingUpInAISearchPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Delivers a ranked action plan so your team tackles the highest-impact fixes first</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Learn more about the <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">full AI Visibility Audit</Link> or see a <Link href="/sample-ai-visibility-report-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">sample report</Link>.
+              Learn more about the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">full AI Visibility Audit</Link> or see a <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">sample report</Link>.
             </p>
           </div>
         </div>
@@ -230,7 +230,7 @@ export default function WhyDealershipNotShowingUpInAISearchPage() {
               Get a free AI Visibility Snapshot that shows exactly where your dealership is missing — and the specific steps to fix it.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

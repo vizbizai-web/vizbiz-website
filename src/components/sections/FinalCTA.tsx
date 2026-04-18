@@ -34,7 +34,7 @@ export default function FinalCTA() {
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <motion.div whileHover={{ scale: 1.02, y: -1 }}>
               <Link
-                href="/intake"
+                href="/intake/"
                 className="premium-button inline-flex min-h-14 items-center justify-center rounded-2xl px-7 py-4 text-base font-bold"
               >
                 Get My Free Score
@@ -42,7 +42,7 @@ export default function FinalCTA() {
             </motion.div>
             <motion.div whileHover={{ scale: 1.02, y: -1, boxShadow: "0 20px 40px rgba(2, 8, 23, 0.24)" }}>
               <Link
-                href="/book-call"
+                href="/book-call/"
                 className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-white/12 bg-white/6 px-6 py-4 text-base font-medium text-white/84 backdrop-blur-xl transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
               >
                 Book a 15-minute call

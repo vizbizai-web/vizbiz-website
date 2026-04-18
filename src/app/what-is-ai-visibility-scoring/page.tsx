@@ -320,14 +320,14 @@ export default function AIVisibilityScoring() {
             don&apos;t.
           </p>
           <Link
-            href="/#audit"
+            href="/#audit/"
             className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
           >
             Get Your Free AI Visibility Audit
           </Link>
           <p className="text-sm text-gray-500">
             Or{" "}
-            <Link href="/sample-ai-visibility-report-for-car-dealerships" className="underline">
+            <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="underline">
               see a sample report
             </Link>{" "}
             to understand what you&apos;ll get.

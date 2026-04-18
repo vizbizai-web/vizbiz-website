@@ -35,7 +35,7 @@ export default function SiteHeader({ ctaLabel = "Get My Snapshot" }: SiteHeaderP
               </Link>
             ))}
           </nav>
-          <Link href="/intake" className="premium-button rounded-2xl px-5 py-3 text-sm font-semibold text-[#051018]">
+          <Link href="/intake/" className="premium-button rounded-2xl px-5 py-3 text-sm font-semibold text-[#051018]">
             {ctaLabel}
           </Link>
         </div>
@@ -65,7 +65,7 @@ export default function SiteHeader({ ctaLabel = "Get My Snapshot" }: SiteHeaderP
               </Link>
             ))}
             <Link
-              href="/intake"
+              href="/intake/"
               onClick={() => setOpen(false)}
               className="premium-button mt-2 min-h-12 rounded-2xl px-5 text-sm font-semibold text-[#051018]"
             >

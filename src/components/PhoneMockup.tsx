@@ -121,7 +121,7 @@ export function ScoreScreen() {
 
       <motion.div whileHover={{ scale: 1.03, y: -1, boxShadow: "0 14px 30px rgba(182,255,46,0.22)" }} className="mt-auto pt-4">
         <Link
-          href="/intake"
+          href="/intake/"
           className="flex min-h-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#111111_0%,#b6ff2e_100%)] px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(182,255,46,0.2)]"
         >
           Get My Audit

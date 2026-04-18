@@ -83,7 +83,7 @@ export default function BlogPost() {
           {/* Post header */}
           <header className="mb-12">
             <Link
-              href="/blog"
+              href="/blog/"
               className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-6 inline-block"
             >
               ← Back to Blog
@@ -159,7 +159,7 @@ export default function BlogPost() {
               VizBiz runs 84 buyer-intent prompts across ChatGPT, Google AI, and Perplexity to measure how visible your dealership actually is. Get your AVI score, competitor comparison, and priority fixes.
             </p>
             <Link
-              href="/intake"
+              href="/intake/"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
             >
               Get Your Free AVI Audit

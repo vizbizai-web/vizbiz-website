@@ -126,7 +126,7 @@ export default function CheapUsedCarNearMeAiVisibilityForDealershipsPage() {
               If a dealership does not appear for these searches, it can miss buyers who are already close to action and ready to compare options.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the broader category view, read <Link href="/ai-visibility-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For the signals behind these outcomes, see <Link href="/how-dealerships-show-up-in-ai-search" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>.
+              For the broader category view, read <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For the signals behind these outcomes, see <Link href="/how-dealerships-show-up-in-ai-search/" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>.
             </p>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function CheapUsedCarNearMeAiVisibilityForDealershipsPage() {
               Many dealerships show up less often because the signals supporting affordability and used-inventory discovery are not yet strong enough.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              The <Link href="/ai-visibility-audit-for-car-dealerships" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link> shows whether these affordability gaps are giving competitors an advantage in visibility.
+              The <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link> shows whether these affordability gaps are giving competitors an advantage in visibility.
             </p>
             <ul className="mt-5 space-y-3 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               {whyDealersMiss.map((item) => (
@@ -221,7 +221,7 @@ export default function CheapUsedCarNearMeAiVisibilityForDealershipsPage() {
               See whether your dealership is showing up for used inventory, affordability, financing, and competitor-sensitive buyer prompts.
             </p>
             <div className="mt-8">
-              <Link href="/intake" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

@@ -151,7 +151,7 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
               Priority Missions
             </h2>
             <a 
-              href="/mission-control/kanban" 
+              href="/mission-control/kanban/" 
               className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               View all →
@@ -178,17 +178,17 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
             <QuickActionButton 
               label="New Mission" 
               icon="➕" 
-              href="/mission-control/kanban?action=new" 
+              href="/mission-control/kanban?action=new/" 
             />
             <QuickActionButton 
               label="View Agent Logs" 
               icon="📊" 
-              href="/mission-control/agents" 
+              href="/mission-control/agents/" 
             />
             <QuickActionButton 
               label="Check Schedules" 
               icon="📅" 
-              href="/mission-control/schedule" 
+              href="/mission-control/schedule/" 
             />
             <QuickActionButton 
               label="VizBiz Website" 

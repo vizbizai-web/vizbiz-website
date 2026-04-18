@@ -103,7 +103,7 @@ const faqs = [
 
 function PrimaryCTA({ className = "" }: { className?: string }) {
   return (
-    <Link href="/intake" className={`premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold ${className}`}>
+    <Link href="/intake/" className={`premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold ${className}`}>
       Get My AVI Snapshot
     </Link>
   );
@@ -196,7 +196,7 @@ function ReportScene() {
             <p className="mt-4 text-sm leading-7 text-[rgba(39,77,20,0.72)]">
               The output is built to show where AI surfaces your dealership, where competitors outrank you in recommendation patterns, and which changes likely move the score fastest.
             </p>
-            <Link href="/sample-ai-visibility-report-for-car-dealerships" className="inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#274d14]">
+            <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[#274d14]">
               See Sample Report <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -336,7 +336,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PrimaryCTA className="min-h-12 w-full justify-center px-5 sm:min-h-13 sm:w-auto sm:px-6" />
-              <Link href="/sample-ai-visibility-report-for-car-dealerships" className="secondary-button flex min-h-12 w-full items-center justify-center rounded-2xl px-5 text-sm font-medium sm:min-h-13 sm:w-auto sm:px-6">
+              <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button flex min-h-12 w-full items-center justify-center rounded-2xl px-5 text-sm font-medium sm:min-h-13 sm:w-auto sm:px-6">
                 See Sample Report
               </Link>
             </div>
@@ -551,7 +551,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <PrimaryCTA className="min-h-13 px-6" />
-            <Link href="/sample-ai-visibility-report-for-car-dealerships" className="secondary-button min-h-13 rounded-2xl px-6 text-sm font-medium">
+            <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button min-h-13 rounded-2xl px-6 text-sm font-medium">
               See Sample Report
             </Link>
           </div>
