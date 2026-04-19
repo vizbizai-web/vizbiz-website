@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { CommandCenter } from './components/CommandCenter';
-import { getDashboardStats, getAlerts, getAgentLogs } from './lib/db';
+import { getDashboardStats, getAlerts, getAgentLogs } from './lib/file-data';
 
 export default async function MissionControlPage() {
   const [stats, alerts, logs] = await Promise.all([

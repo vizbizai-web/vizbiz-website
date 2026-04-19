@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, AgentLog } from '../lib/db';
+import { Alert, AgentLog } from '../lib/file-data';
 
 interface DashboardStats {
   missionCounts: Record<string, number>;

@@ -11,17 +11,18 @@ export const metadata: Metadata = {
 interface CalendarEvent {
   id: string;
   title: string;
-  date: string; // ISO date
+  date: string;
   time?: string;
-  type: 'x-post' | 'x-thread' | 'dogfood' | 'milestone' | 'recurring' | 'deadline';
+  type: 'x-post' | 'x-thread' | 'dogfood' | 'milestone' | 'recurring' | 'deadline' | 'fix' | 'sage';
   account?: string;
   description: string;
-  status: 'pending' | 'ready' | 'blocked';
+  status: 'pending' | 'ready' | 'done' | 'blocked';
 }
 
-// Today is April 14, 2026 (Tuesday)
 const events: CalendarEvent[] = [
-  // === WEEK 1: April 14-18 ===
+  // ==========================================
+  // WEEK 1: April 14-18 (Current Week)
+  // ==========================================
   {
     id: 'p1',
     title: '🚀 First post: Ontario 11/100 scorecard',
@@ -30,7 +31,7 @@ const events: CalendarEvent[] = [
     type: 'x-post',
     account: '@VizBizAI',
     description: 'Single tweet. Ontario dealerships average 11/100 AI visibility. 84 prompts, 252 data points.',
-    status: 'ready',
+    status: 'done',
   },
   {
     id: 'p2',
@@ -40,7 +41,7 @@ const events: CalendarEvent[] = [
     type: 'x-post',
     account: '@VizBizAI',
     description: 'Quick tip. Zero schema = invisible to AI. Add Organization + LocalBusiness + FAQPage.',
-    status: 'ready',
+    status: 'done',
   },
   {
     id: 'p3',
@@ -50,7 +51,7 @@ const events: CalendarEvent[] = [
     type: 'x-thread',
     account: '@VizBizAI',
     description: '6-tweet thread. Vulnerable opener, fixes deployed, honest +2 result, building in public.',
-    status: 'ready',
+    status: 'done',
   },
   {
     id: 'p4',
@@ -60,7 +61,7 @@ const events: CalendarEvent[] = [
     type: 'x-post',
     account: '@VizBizAI',
     description: 'ChatGPT recommended 5 dealerships in Brampton. None were the ones spending $15K/mo on ads.',
-    status: 'ready',
+    status: 'done',
   },
   {
     id: 'p5',
@@ -70,37 +71,52 @@ const events: CalendarEvent[] = [
     type: 'x-post',
     account: '@VizBizAI',
     description: 'Dealership websites answer zero buyer questions. No content = no AI citation.',
-    status: 'ready',
+    status: 'done',
   },
-  // === TODAY'S WORK (April 18) ===
+
+  // ==========================================
+  // Today's Work — April 18
+  // ==========================================
   {
     id: 'fix1',
-    title: '🔧 Fixed GSC redirect errors',
+    title: '🔧 Fixed GSC redirect errors (4 pages)',
     date: '2026-04-18',
     time: '4:50 PM',
-    type: 'milestone',
-    description: 'Fixed 4 redirect errors caused by missing trailing slashes on internal links. Validated all 4 issues in Google Search Console.',
-    status: 'ready',
+    type: 'fix',
+    description: 'Root cause: missing trailing slashes on 25 internal links. Vercel 308 redirects. All validated in GSC.',
+    status: 'done',
   },
   {
     id: 'fix2',
-    title: '✅ Added Gemini to homepage',
+    title: '✅ Added Gemini to homepage (0→11 mentions)',
     date: '2026-04-18',
     time: '4:35 PM',
-    type: 'milestone',
-    description: 'Gemini mentioned 0→11 times on homepage. All platform references now include ChatGPT, Gemini, Google AI, and Perplexity.',
-    status: 'ready',
+    type: 'fix',
+    description: 'All platform references now include ChatGPT, Gemini, Google AI, Perplexity.',
+    status: 'done',
   },
   {
     id: 'fix3',
-    title: '🔧 Firecrawl integration complete',
+    title: '🔥 Firecrawl integration complete',
     date: '2026-04-18',
     time: '4:30 PM',
     type: 'milestone',
-    description: 'Firecrawl API key saved, CLI installed, all 8 pages scraped for dogfood audit. Replaces broken GLM-5 prompts.',
-    status: 'ready',
+    description: 'API key saved, CLI + 12 skills installed, full dogfood scan of all 8 pages. Replaces broken GLM-5.',
+    status: 'done',
   },
-  // === WEEK 2: April 21-25 ===
+  {
+    id: 'fix4',
+    title: '📝 Book-call page SEO content added',
+    date: '2026-04-18',
+    time: '4:40 PM',
+    type: 'fix',
+    description: '63→150 words. Added "What happens on the call", "Who it\'s for", "No pressure" sections.',
+    status: 'done',
+  },
+
+  // ==========================================
+  // WEEK 2: April 21-25
+  // ==========================================
   {
     id: 'p6',
     title: '🧵 "AI SEO" grift teardown',
@@ -108,7 +124,7 @@ const events: CalendarEvent[] = [
     time: '8:30 AM',
     type: 'x-thread',
     account: '@VizBizAI',
-    description: '5-tweet thread. How to spot fake AI SEO. Real vs grift. Red flags.',
+    description: '5-tweet thread. How to spot fake AI SEO. Real vs grift. Red flags: no scoring, no before/after, "we write articles".',
     status: 'ready',
   },
   {
@@ -118,8 +134,8 @@ const events: CalendarEvent[] = [
     time: '8:30 AM',
     type: 'x-post',
     account: '@VizBizAI',
-    description: 'Score still 22/100. Schema fixes live. Content going up. The gap between shipping and AI seeing it.',
-    status: 'pending',
+    description: 'Score still 22/100. Schema fixes live. Content going up. Gap between shipping and AI seeing it.',
+    status: 'ready',
   },
   {
     id: 'p8',
@@ -128,7 +144,7 @@ const events: CalendarEvent[] = [
     time: '8:30 AM',
     type: 'x-post',
     account: '@VizBizAI',
-    description: 'ChatGPT reads your GBP directly. Fix generic descriptions. Add brands, city, services.',
+    description: 'ChatGPT reads your GBP directly. Fix generic descriptions. Add brands, city, services. Be specific.',
     status: 'ready',
   },
   {
@@ -138,7 +154,7 @@ const events: CalendarEvent[] = [
     time: '8:30 AM',
     type: 'x-thread',
     account: '@VizBizAI',
-    description: '4-tweet thread. ChatGPT recs in 5 Ontario cities. No correlation with reviews/inventory/tenure.',
+    description: '4-tweet thread. ChatGPT recs in 5 Ontario cities. No correlation with reviews/inventory/tenure. Different game, different rules.',
     status: 'ready',
   },
   {
@@ -151,61 +167,57 @@ const events: CalendarEvent[] = [
     description: '30% of car buyers start with AI. Your ads reach the other 70%. AI visibility budget: $0.',
     status: 'ready',
   },
-  // === Dogfood Milestones ===
+
+  // ==========================================
+  // WEEK 3: April 28+
+  // ==========================================
   {
     id: 'd1',
-    title: '🔍 Re-run VizBiz SaaS audit',
+    title: '🔍 Dogfood re-scan: 2-week mark',
     date: '2026-04-28',
     time: '10:00 AM',
     type: 'dogfood',
-    description: '2-week mark. Re-scan VizBiz with SaaS battery. Check if schema fixes moved the needle.',
-    status: 'pending',
-  },
-  {
-    id: 'd2',
-    title: '🔍 Check Google index status',
-    date: '2026-04-21',
-    time: '9:00 AM',
-    type: 'dogfood',
-    description: 'Verify Google has re-indexed pages with new schema. Check Search Console for structured data errors.',
+    description: 'Re-run VizBiz audit with Firecrawl. Check if schema fixes + Gemini additions moved the score.',
     status: 'pending',
   },
   {
     id: 'd3',
     title: '📊 Month-end VizBiz audit',
     date: '2026-05-01',
+    time: '10:00 AM',
     type: 'milestone',
-    description: 'Full 30-day re-audit. Compare 20→22→? Track index refresh impact. Update audit history.',
+    description: 'Full 30-day re-audit. Compare 20→22→? Track index refresh impact.',
     status: 'pending',
   },
-  // === Builder Account ===
+
+  // ==========================================
+  // Sage Crons (Recurring)
+  // ==========================================
   {
-    id: 'b1',
-    title: '🚀 Builder account first post',
-    date: '2026-04-15',
-    time: '12:00 PM',
-    type: 'x-post',
-    account: '@AlexBuildsAI',
-    description: '"My entire company runs on AI agents." Intro post.',
+    id: 'sage1',
+    title: '🔄 Sage Sunday Dump',
+    date: '2026-04-20',
+    time: '9:00 AM',
+    type: 'sage',
+    description: 'Every Sunday: 20 content ideas from X + Reddit. 8 subreddits monitored. Generates week\'s draft queue.',
     status: 'ready',
   },
   {
-    id: 'b2',
-    title: '🧵 $150/mo vs $15K/mo cost breakdown',
-    date: '2026-04-17',
-    time: '12:00 PM',
-    type: 'x-thread',
-    account: '@AlexBuildsAI',
-    description: 'Thread. Full cost breakdown of running 5 AI agents vs hiring. Likely viral.',
+    id: 'sage2',
+    title: '🔄 Sage Morning Replies',
+    date: '2026-04-21',
+    time: '7:30 AM',
+    type: 'sage',
+    description: 'Mon-Sat: 5 reply targets from X + Reddit. Trending conversations to engage with.',
     status: 'ready',
   },
-  // === Recurring ===
   {
-    id: 'r1',
-    title: '🔄 Sage daily batch',
-    date: '2026-04-14',
-    type: 'recurring',
-    description: 'Every weekday: Sage generates 3-5 draft posts for review. 20 min review cycle.',
+    id: 'sage3',
+    title: '🔄 Sage Friday Feedback',
+    date: '2026-04-25',
+    time: '5:00 PM',
+    type: 'sage',
+    description: 'Every Friday: top/bottom performing posts analysis. What worked, what didn\'t, what to adjust.',
     status: 'ready',
   },
   {
@@ -225,69 +237,72 @@ const events: CalendarEvent[] = [
     description: 'Every Tuesday: post VizBiz score update, what was fixed, what\'s next.',
     status: 'pending',
   },
-  // === Deadlines ===
+
+  // ==========================================
+  // Deadlines & Action Items
+  // ==========================================
   {
     id: 'dl1',
-    title: '⏰ Create @VizBizAI account',
-    date: '2026-04-14',
+    title: '📌 Pin first tweet on X',
+    date: '2026-04-19',
     type: 'deadline',
-    description: 'Create X account, set up profile, add pinned tweet. Subscribe to Premium for creator payouts.',
+    description: 'Alex must manually pin. OpenTweet API cannot pin tweets.',
     status: 'blocked',
   },
   {
     id: 'dl2',
-    title: '⏰ Create @AlexBuildsAI account',
-    date: '2026-04-15',
+    title: '🖼️ Upload banner to X profile',
+    date: '2026-04-19',
     type: 'deadline',
-    description: 'Create builder account, set up profile, add pinned tweet.',
+    description: 'Banner generated at vizbiz/banner.png. Alex must upload manually to X.',
     status: 'blocked',
   },
   {
     id: 'dl3',
-    title: '⏰ Submit VizBiz to AI directories',
-    date: '2026-04-18',
+    title: '👥 Follow 15-18 target accounts on X',
+    date: '2026-04-19',
     type: 'deadline',
-    description: 'Submit vizbiz.ai to AI tool directories for backlinks and citations. Helps AI visibility.',
+    description: 'Dealer marketing, AI SEO, local search accounts. Algorithm training.',
     status: 'pending',
   },
   {
     id: 'dl4',
-    title: '⏰ Set up Telegram channels',
+    title: '💬 Set up Telegram channels',
     date: '2026-04-19',
     type: 'deadline',
-    description: 'Forum-mode supergroup with topics for VizBiz, Trading Bot, General.',
+    description: 'Forum-mode supergroup with topics: VizBiz, Trading Bot, General.',
     status: 'pending',
   },
   {
     id: 'dl5',
-    title: '⏰ Design VizBiz logo',
+    title: '🎨 Design VizBiz logo',
     date: '2026-04-20',
     type: 'deadline',
-    description: 'Proper logo design using HTML/CSS approach (like banner). AI image generators keep failing.',
+    description: 'Try HTML/CSS approach (like banner). AI image generators keep producing gibberish text.',
     status: 'pending',
   },
   {
     id: 'dl6',
-    title: '⏰ Upload banner to X profile',
-    date: '2026-04-19',
+    title: '⏰ OpenTweet trial ends',
+    date: '2026-04-25',
     type: 'deadline',
-    description: 'Alex needs to manually upload the generated banner.png to X profile header.',
+    description: 'Trial ends Apr 25. Decide: keep Pro ($11.99/mo) or upgrade Advanced ($24.99/mo) for analytics.',
     status: 'pending',
   },
   {
     id: 'dl7',
-    title: '⏰ Pin first tweet on X',
-    date: '2026-04-19',
+    title: '⏰ Submit VizBiz to AI directories',
+    date: '2026-04-21',
     type: 'deadline',
-    description: 'Alex needs to manually pin the first tweet. OpenTweet API cannot pin.',
+    description: 'Submit vizbiz.ai to AI tool directories for backlinks and citations.',
     status: 'pending',
   },
   {
     id: 'dl8',
-    title: '⏰ Follow 15-18 target accounts on X',
-    date: '2026-04-19',
+    title: '🔍 Check GSC validation results',
+    date: '2026-04-25',
     type: 'deadline',
-    description: 'Follow target accounts for algorithm training. Dealer marketing, AI SEO, local search.',
+    description: '4 issues validated on 4/18. Check if Google has confirmed fixes.',
     status: 'pending',
   },
 ];
@@ -299,200 +314,121 @@ const typeColors: Record<string, { bg: string; text: string; border: string }> =
   'milestone': { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
   'recurring': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
   'deadline': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+  'fix': { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
+  'sage': { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
 };
 
 const statusIcons: Record<string, string> = {
   pending: '⏳',
   ready: '✅',
+  done: '✅',
   blocked: '🚫',
 };
 
-function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
-}
+export default function CalendarPage() {
+  const today = new Date().toISOString().split('T')[0];
 
-function getFirstDayOfMonth(year: number, month: number): number {
-  return new Date(year, month, 1).getDay();
-}
+  // Group events by week
+  const upcoming = events
+    .filter((e) => e.date >= today || e.type === 'recurring' || e.type === 'sage')
+    .sort((a, b) => a.date.localeCompare(b.date));
 
-export default async function CalendarPage() {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentDate = now.getDate();
-  
-  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
-  const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  
-  // Build map of day -> events
-  const eventsByDay: Record<number, CalendarEvent[]> = {};
-  events.forEach(event => {
-    const d = new Date(event.date);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-      const day = d.getDate();
-      if (!eventsByDay[day]) eventsByDay[day] = [];
-      eventsByDay[day].push(event);
-    }
-  });
-
-  const calendarDays: (number | null)[] = [];
-  for (let i = 0; i < firstDay; i++) {
-    calendarDays.push(null);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    calendarDays.push(d);
-  }
-
-  // Separate upcoming events (today+) from recurring
-  const upcomingEvents = events
-    .filter(e => {
-      const d = new Date(e.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear && d.getDate() >= currentDate && e.type !== 'recurring';
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const recurringEvents = events.filter(e => e.type === 'recurring');
+  const past = events
+    .filter((e) => e.date < today && e.type !== 'recurring' && e.type !== 'sage')
+    .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Calendar</h1>
-        <div className="text-sm text-slate-400">{monthName}</div>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">Calendar</h1>
+        <p className="text-slate-400">X posts, Sage crons, dogfood scans, and deadlines</p>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-[#111118] rounded-xl border border-slate-800/50 p-6">
-        <div className="grid grid-cols-7 gap-2 mb-4">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {calendarDays.map((day, idx) => (
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        {[
+          { label: 'X Posts Done', value: events.filter((e) => (e.type === 'x-post' || e.type === 'x-thread') && e.status === 'done').length, color: 'text-sky-400' },
+          { label: 'Upcoming Posts', value: events.filter((e) => (e.type === 'x-post' || e.type === 'x-thread') && e.status !== 'done').length, color: 'text-blue-400' },
+          { label: 'Sage Crons', value: events.filter((e) => e.type === 'sage' || e.type === 'recurring').length, color: 'text-indigo-400' },
+          { label: 'Deadlines', value: events.filter((e) => e.type === 'deadline').length, color: 'text-red-400' },
+        ].map((s) => (
+          <div key={s.label} className="bg-[#111118] border border-slate-800 rounded-xl p-4 text-center">
+            <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+            <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Upcoming Events */}
+      <h2 className="text-xl font-semibold text-white mb-4">Upcoming & Active</h2>
+      <div className="space-y-3">
+        {upcoming.map((event) => {
+          const colors = typeColors[event.type] || typeColors['deadline'];
+          return (
             <div
-              key={idx}
-              className={`
-                aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative cursor-default
-                ${day === null 
-                  ? 'bg-transparent' 
-                  : day === currentDate 
-                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold'
-                    : 'bg-slate-800/30 text-slate-300 hover:bg-slate-800/50'
-                }
-              `}
+              key={event.id}
+              className={`rounded-xl border ${colors.border} ${colors.bg} p-4`}
             >
-              <span>{day}</span>
-              {day !== null && eventsByDay[day] && (
-                <div className="flex gap-0.5 mt-0.5">
-                  {[...new Set(eventsByDay[day].map(e => e.type))].map((type, i) => (
-                    <div
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        type === 'x-post' || type === 'x-thread' ? 'bg-sky-500' :
-                        type === 'dogfood' ? 'bg-amber-500' :
-                        type === 'milestone' ? 'bg-purple-500' :
-                        type === 'deadline' ? 'bg-red-500' :
-                        'bg-emerald-500'
-                      }`}
-                    />
-                  ))}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm text-slate-400">
+                      {new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                      {event.time && ` · ${event.time}`}
+                    </span>
+                    {event.account && (
+                      <span className="text-xs text-slate-500">{event.account}</span>
+                    )}
+                  </div>
+                  <h3 className={`font-medium ${colors.text}`}>{event.title}</h3>
+                  <p className="text-sm text-slate-400 mt-1">{event.description}</p>
                 </div>
-              )}
+                <div className="text-lg shrink-0">{statusIcons[event.status]}</div>
+              </div>
             </div>
-          ))}
-        </div>
-        {/* Legend */}
-        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-slate-800/50">
-          {[
-            { label: 'X Post', color: 'bg-sky-500' },
-            { label: 'Dogfood', color: 'bg-amber-500' },
-            { label: 'Milestone', color: 'bg-purple-500' },
-            { label: 'Deadline', color: 'bg-red-500' },
-            { label: 'Recurring', color: 'bg-emerald-500' },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-1.5 text-xs text-slate-400">
-              <div className={`w-2 h-2 rounded-full ${item.color}`} />
-              {item.label}
-            </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Today's Events */}
-      {eventsByDay[currentDate] && eventsByDay[currentDate].length > 0 && (
-        <div className="bg-[#111118] rounded-xl border border-blue-500/20 p-6">
-          <h2 className="text-lg font-semibold text-blue-400 mb-4">📍 Today</h2>
-          <div className="space-y-3">
-            {eventsByDay[currentDate].map(event => {
-              const colors = typeColors[event.type];
+      {/* Past Events */}
+      {past.length > 0 && (
+        <>
+          <h2 className="text-xl font-semibold text-white mb-4 mt-10">Completed</h2>
+          <div className="space-y-3 opacity-60">
+            {past.map((event) => {
+              const colors = typeColors[event.type] || typeColors['deadline'];
               return (
-                <div key={event.id} className={`flex items-start gap-4 p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
-                  <div className="text-lg mt-0.5">{statusIcons[event.status]}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`font-medium ${colors.text}`}>{event.title}</h3>
-                    <p className="text-sm text-slate-400 mt-1">{event.description}</p>
-                    {event.time && <span className="text-xs text-slate-500 mt-1 block">{event.time} ET</span>}
+                <div
+                  key={event.id}
+                  className={`rounded-xl border ${colors.border} ${colors.bg} p-4`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm text-slate-400">
+                          {new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                          {event.time && ` · ${event.time}`}
+                        </span>
+                      </div>
+                      <h3 className={`font-medium ${colors.text}`}>{event.title}</h3>
+                      <p className="text-sm text-slate-400 mt-1">{event.description}</p>
+                    </div>
+                    <div className="text-lg shrink-0">✅</div>
                   </div>
-                  {event.account && (
-                    <span className="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded shrink-0">{event.account}</span>
-                  )}
                 </div>
               );
             })}
           </div>
-        </div>
+        </>
       )}
-
-      {/* Upcoming Events */}
-      <div className="bg-[#111118] rounded-xl border border-slate-800/50 p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">📅 Upcoming</h2>
-        <div className="space-y-3">
-          {upcomingEvents.length === 0 ? (
-            <p className="text-slate-500 text-sm">No upcoming events this month</p>
-          ) : (
-            upcomingEvents.map(event => {
-              const colors = typeColors[event.type];
-              const d = new Date(event.date);
-              const dayStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-              return (
-                <div key={event.id} className={`flex items-start gap-4 p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
-                  <div className="text-lg mt-0.5">{statusIcons[event.status]}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`font-medium ${colors.text}`}>{event.title}</h3>
-                    <p className="text-sm text-slate-400 mt-1">{event.description}</p>
-                    <span className="text-xs text-slate-500 mt-1 block">{dayStr} {event.time ? `• ${event.time} ET` : ''}</span>
-                  </div>
-                  {event.account && (
-                    <span className="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded shrink-0">{event.account}</span>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Recurring Events */}
-      <div className="bg-[#111118] rounded-xl border border-slate-800/50 p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">🔄 Recurring</h2>
-        <div className="space-y-3">
-          {recurringEvents.map(event => {
-            const colors = typeColors[event.type];
-            return (
-              <div key={event.id} className={`flex items-start gap-4 p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
-                <div className="text-lg mt-0.5">🔄</div>
-                <div className="flex-1 min-w-0">
-                  <h3 className={`font-medium ${colors.text}`}>{event.title}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{event.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
