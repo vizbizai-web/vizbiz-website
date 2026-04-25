@@ -303,7 +303,7 @@ export default function AIVisibilityAuditGuide() {
             {
               dimension: 'What it misses',
               seo: 'AI recommendations entirely — you can rank #1 and get zero AI mentions',
-              avi: 'Technical SEO issues that don't affect AI recommendation',
+              avi: 'Technical SEO issues that don\u2019t affect AI recommendation',
             },
           ].map((row) => (
             <div key={row.dimension} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden' }}>
