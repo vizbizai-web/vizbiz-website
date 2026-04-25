@@ -9,6 +9,9 @@ const menuItems = [
   { label: "How It Works", href: "/how-dealerships-show-up-in-ai-search" },
   { label: "Audit", href: "/ai-visibility-audit-for-car-dealerships" },
   { label: "Sample Report", href: "/sample-ai-visibility-report-for-car-dealerships" },
+  { label: "Blog", href: "/blog" },
+  { label: "Insights", href: "/insights" },
+  { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq-ai-visibility-for-car-dealerships" },
 ];
 

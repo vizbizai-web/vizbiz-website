@@ -370,6 +370,9 @@ export default function HomePage() {
             <Link href="/ai-visibility-for-car-dealerships" className="transition-colors hover:text-white">AI Visibility</Link>
             <Link href="/how-dealerships-show-up-in-ai-search" className="transition-colors hover:text-white">How It Works</Link>
             <Link href="/sample-ai-visibility-report-for-car-dealerships" className="transition-colors hover:text-white">Sample Report</Link>
+            <Link href="/blog" className="transition-colors hover:text-white">Blog</Link>
+            <Link href="/insights" className="transition-colors hover:text-white">Insights</Link>
+            <Link href="/about" className="transition-colors hover:text-white">About</Link>
             <Link href="/faq-ai-visibility-for-car-dealerships" className="transition-colors hover:text-white">FAQ</Link>
             <Link href="/intake/" className="font-semibold text-[var(--accent-blue)] transition-colors hover:text-white">Get My Snapshot</Link>
           </nav>

@@ -19,11 +19,15 @@ export const metadata: Metadata = {
     "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
   keywords:
     "AI visibility for car dealerships, dealership AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, dealership marketing, automotive retail AI",
+  alternates: {
+    canonical: "https://vizbiz.ai",
+  },
   openGraph: {
     title: "VizBiz — AI Visibility Intelligence for Car Dealerships",
     description:
       "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
     type: "website",
+    url: "https://vizbiz.ai",
   },
 };
 
