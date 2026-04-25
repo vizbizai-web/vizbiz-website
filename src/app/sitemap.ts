@@ -91,9 +91,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    {
+      url: `${BASE_URL}/blog/what-is-ai-visibility-car-dealerships/`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/blog/ai-visibility-audit-what-it-measures-dealership/`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/blog/not-showing-up-in-chatgpt/`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     // Tool landing pages
     {
       url: `${BASE_URL}/ai-visibility-tool-car-dealerships/`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/ai-visibility-tools-compared/`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
