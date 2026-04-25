@@ -11,6 +11,20 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "ai-visibility-audit-what-it-measures-dealership",
+    title: "AI Visibility Audit: What It Measures and Why Your Dealership Needs One",
+    description:
+      "A real AI visibility audit tells you exactly why AI recommends your competitors instead of you. Here's what the methodology actually measures.",
+    date: "2026-04-24",
+  },
+  {
+    slug: "what-is-ai-visibility-car-dealerships",
+    title: "What Is AI Visibility for Car Dealerships? (The Complete Guide)",
+    description:
+      "AI visibility is the new SEO — but most dealership owners have never heard of it. This guide explains what it is, why it matters, and how to check your score for free.",
+    date: "2026-04-24",
+  },
+  {
     slug: "ai-visibility-score-ontario-car-dealerships",
     title: "We Scored 50 Ontario Dealerships on AI Visibility — The Results Were Brutal",
     description:
