@@ -52,7 +52,7 @@ export default function Page() {
               If you spend thousands of dollars a month on SEO, you likely have a dashboard that tells you exactly which keywords you rank for. You know that for "Used Ford F-150 Toronto," you are in the top three positions. In the old world, that was the win.
             </p>
             <<pp className="mb-4 leading-relaxed">
-              But in 2026, a growing percentage of your buyers aren't clicking those blue links. They are asking an AI: <em>"I'm looking for a reliable used F-150 in Toronto. Which dealership has the best reputation for honest pricing and a great service department?"</em>
+              But in 2026, a growing percentage of your buyers aren't clicking those blue links. They are asking an AI: <<emem className="italic">"I'm looking for a reliable used F-150 in Toronto. Which dealership has the best reputation for honest pricing and a great service department?"</em>
             </p>
             <<pp className="mb-4 leading-relaxed">
               When the AI answers, it isn't just looking for keywords. It is synthesizing your reviews, your entity data, and your authority signals. If the AI doesn't mention you, you are effectively invisible—regardless of where you rank on the traditional search results page.
@@ -69,22 +69,22 @@ export default function Page() {
               <<hh3 className="text-xl font-bold mb-4 text-blue-300">The DIY Audit Process</h3>
               <<olol className="space-y-4 text-slate-300 list-decimal pl-5">
                 <li>
-                  <<strongstrong className="text-white">The "Direct" Test:</strong> Ask ChatGPT or Perplexity: <em>"Who are the best car dealerships in [Your City]?"</em> Note if you appear and in what position.
+                  <<strongstrong className="text-white">The "Direct" Test:</strong> Ask ChatGPT or Perplexity: <<emem className="italic">"Who are the best car dealerships in [Your City]?"</em> Note if you appear and in what position.
                 </li>
                 <li>
-                  <<strongstrong className="text-white">The "Make-Specific" Test:</strong> Ask: <em>"Where is the most trusted [Your Primary Brand] dealer in [Your City]?"</em> Check if the AI recommends you or a competitor.
+                  <<strongstrong className="text-white">The "Make-Specific" Test:</strong> Ask: <<emem className="italic">"Where is the most trusted [Your Primary Brand] dealer in [Your City]?"</em> Check if the AI recommends you or a competitor.
                 </li>
                 <li>
-                  <<strongstrong className="text-white">The "Service" Test:</strong> Ask: <em>"I need my [Make] serviced in [Your City]. Who has the best service department?"</em> This is often where dealerships have the biggest visibility gap.
+                  <<strongstrong className="text-white">The "Service" Test:</strong> Ask: <<emem className="italic">"I need my [Make] serviced in [Your City]. Who has the best service department?"</em> This is often where dealerships have the biggest visibility gap.
                 </li>
                 <li>
-                  <<strongstrong className="text-white">The "Competitor" Test:</strong> Ask the AI: <em>"Why would I choose [Competitor Name] over [Your Dealership Name]?"</em> The AI's answer will tell you exactly what signals the competitor has that you are missing.
+                  <<strongstrong className="text-white">The "Competitor" Test:</strong> Ask the AI: <<emem className="italic">"Why would I choose [Competitor Name] over [Your Dealership Name]?"</em> The AI's answer will tell you exactly what signals the competitor has that you are missing.
                 </li>
               </ol>
             </div>
             
             <<pp className="mb-4 leading-relaxed">
-              As you run these, you'll notice a pattern. If you only show up when you ask <em>"Tell me about [Your Dealership Name],"</em> your visibility is low. True AI visibility happens when the AI recommends you <strong>without</strong> the user naming you first.
+              As you run these, you'll notice a pattern. If you only show up when you ask <<emem className="italic">"Tell me about [Your Dealership Name],"</em> your visibility is low. True AI visibility happens when the AI recommends you <<strongstrong className="font-bold">without</strong> the user naming you first.
             </p>
           </section>
 
