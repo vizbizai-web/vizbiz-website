@@ -11,6 +11,9 @@ export const metadata: Metadata = {
       "84% of dealership websites are basically invisible to AI search. Our data confirms it.",
     url: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
+  },
 };
 
 export default function OntarioReportPage() {

@@ -7,6 +7,9 @@ export const metadata = {
     title: 'The AI Visibility Tool Built for Car Dealerships',
     description: 'Measure, track, and improve how your dealership appears in ChatGPT, Google AI Overviews, and AI-powered search results.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/ai-visibility-tool-car-dealerships",
+  },
 };
 
 export default function AIVisibilityTool() {

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Your AI Visibility Snapshot Is Being Prepared | VizBiz",
   description:
     "We're checking how your dealership appears in AI-driven search and where nearby competitors may be winning attention first.",
+  alternates: {
+    canonical: "https://vizbiz.ai/thank-you",
+  },
 };
 
 const expectations = [

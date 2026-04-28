@@ -7,6 +7,9 @@ export const metadata = {
     title: '35+ AI Visibility Statistics Every Car Dealership Needs to Know in 2026',
     description: 'Data-driven insights on how AI search is reshaping automotive retail and what it means for your dealership.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/ai-visibility-statistics-car-dealerships",
+  },
 };
 
 const stats = [

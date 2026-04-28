@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Cheap Used Car Near Me: AI Visibility for Dealerships | VizBiz",
   description:
     "Learn why affordability prompts matter for dealerships and how inventory, pricing, financing, and local relevance shape AI visibility.",
+  alternates: {
+    canonical: "https://vizbiz.ai/cheap-used-car-near-me-ai-visibility-for-dealerships",
+  },
 };
 
 const buyerIntentPrompts = [

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Get My AI Visibility Snapshot | VizBiz",
   description:
     "Submit your dealership details to generate your AI visibility snapshot, then move straight into booking a 15-minute review call.",
+  alternates: {
+    canonical: "https://vizbiz.ai/intake",
+  },
 };
 
 export default async function IntakePage({

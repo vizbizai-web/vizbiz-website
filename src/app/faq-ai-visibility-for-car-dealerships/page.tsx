@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "AI Visibility for Car Dealerships FAQ | VizBiz",
   description:
     "Answers to common dealership questions about AI visibility, inventory, reviews, service pages, competitor comparisons, and audits.",
+  alternates: {
+    canonical: "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships",
+  },
 };
 
 const faqItems = [

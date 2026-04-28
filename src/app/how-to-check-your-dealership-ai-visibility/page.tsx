@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     url: "https://vizbiz.ai/how-to-check-your-dealership-ai-visibility",
     type: "article",
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/how-to-check-your-dealership-ai-visibility",
+  },
 };
 
 const testPrompts = [

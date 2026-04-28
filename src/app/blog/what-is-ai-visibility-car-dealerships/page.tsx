@@ -7,6 +7,9 @@ export const metadata = {
     title: 'What Is AI Visibility for Car Dealerships? (The Complete Guide)',
     description: 'AI visibility is the new SEO — but most dealership owners have never heard of it. Learn what it is, why it matters, and how to check your score for free.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/what-is-ai-visibility-car-dealerships",
+  },
 };
 
 export default function WhatIsAIVisibilityDealerships() {

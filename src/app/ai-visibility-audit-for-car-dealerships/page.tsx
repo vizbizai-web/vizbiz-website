@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "AI Visibility Audit for Car Dealerships | VizBiz",
   description:
     "See what a VizBiz AI Visibility Audit covers for dealerships, including competitive visibility, category scoring, and practical next-step recommendations.",
+  alternates: {
+    canonical: "https://vizbiz.ai/ai-visibility-audit-for-car-dealerships",
+  },
 };
 
 const auditDeliverables = [

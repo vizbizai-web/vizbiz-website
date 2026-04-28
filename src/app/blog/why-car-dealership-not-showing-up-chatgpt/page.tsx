@@ -7,6 +7,9 @@ export const metadata = {
     title: 'Why Your Car Dealership Isn\'t Showing Up in ChatGPT (And How to Fix It)',
     description: 'Learn the 5 most common reasons your dealership isn\'t appearing in ChatGPT and get a step-by-step fix.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/why-car-dealership-not-showing-up-chatgpt",
+  },
 };
 
 export default function ChatGPTVisibilityGuide() {

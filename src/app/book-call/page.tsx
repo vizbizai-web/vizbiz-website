@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Book a 15-Minute Review Call | VizBiz",
   description:
     "Book a 15-minute review call with VizBiz to review your dealership’s AI visibility snapshot and next steps.",
+  alternates: {
+    canonical: "https://vizbiz.ai/book-call",
+  },
 };
 
 const callReasons = [

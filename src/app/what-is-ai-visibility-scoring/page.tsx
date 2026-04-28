@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     url: "https://vizbiz.ai/what-is-ai-visibility-scoring",
     type: "article",
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/what-is-ai-visibility-scoring",
+  },
 };
 
 export default function AIVisibilityScoring() {

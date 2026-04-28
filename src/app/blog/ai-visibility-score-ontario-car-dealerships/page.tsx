@@ -7,6 +7,9 @@ export const metadata = {
     title: 'We Scored 50 Ontario Dealerships on AI Visibility — The Results Were Brutal',
     description: 'We ran 84 buyer-intent prompts across ChatGPT, Gemini, and Perplexity for 50 Ontario dealerships. The average score was 11 out of 100.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/ai-visibility-score-ontario-car-dealerships",
+  },
 };
 
 export default function OntarioDealershipScores() {

@@ -7,6 +7,9 @@ export const metadata = {
     title: 'Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide',
     description: 'The complete guide to GEO for car dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships",
+  },
 };
 
 export default function GEOGuide() {

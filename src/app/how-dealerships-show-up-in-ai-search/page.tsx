@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "How Dealerships Show Up in AI Search | VizBiz",
   description:
     "Learn how AI systems choose which dealerships to mention, which signals shape visibility, and what automotive retailers can improve first.",
+  alternates: {
+    canonical: "https://vizbiz.ai/how-dealerships-show-up-in-ai-search",
+  },
 };
 
 const introSignals = [

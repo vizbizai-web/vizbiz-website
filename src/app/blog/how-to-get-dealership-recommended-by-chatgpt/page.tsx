@@ -7,6 +7,9 @@ export const metadata = {
     title: 'How to Get Your Car Dealership Recommended by ChatGPT in 2026',
     description: 'Step-by-step guide to making your car dealership appear in ChatGPT recommendations, Gemini results, and Google AI Overviews.',
   },
+  alternates: {
+    canonical: "https://vizbiz.ai/blog/how-to-get-dealership-recommended-by-chatgpt",
+  },
 };
 
 export default function GetRecommendedByChatGPT() {
