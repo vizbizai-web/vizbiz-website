@@ -291,6 +291,99 @@ export async function updateLeadStatus(
 }
 
 /**
+ * Update comprehensive lead fields including research results
+ */
+export async function updateLeadResearchResults(
+  leadId: string,
+  updates: {
+    status?: LeadStatus;
+    researchStatus?: ResearchStatus;
+    snapshotAppeared?: string;
+    visibilityBand?: string;
+    serviceVisibility?: string;
+    notes?: string;
+  },
+): Promise<void> {
+  // First, find the row with this leadId
+  const data = await sheetsFetch<{
+    values: string[][];
+  }>(`/values/${getSheetRange()}`);
+
+  if (!data.values) {
+    throw new Error("No data found in CRM sheet");
+  }
+
+  // leadId is in column Q (index 16)
+  const rowIndex = data.values.findIndex((row) => row[16] === leadId);
+  if (rowIndex === -1) {
+    throw new Error(`Lead ${leadId} not found in sheet`);
+  }
+
+  // Sheet rows are 1-indexed, plus header row
+  const sheetRow = rowIndex + 2; // +1 for 1-indexed, +1 for header
+
+  // Update individual cells
+  const updatePromises: Promise<unknown>[] = [];
+
+  if (updates.status) {
+    updatePromises.push(
+      sheetsFetch(`/values/L${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.status]] }),
+      }),
+    );
+  }
+
+  if (updates.researchStatus) {
+    updatePromises.push(
+      sheetsFetch(`/values/M${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.researchStatus]] }),
+      }),
+    );
+  }
+
+  if (updates.snapshotAppeared) {
+    updatePromises.push(
+      sheetsFetch(`/values/I${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.snapshotAppeared]] }),
+      }),
+    );
+  }
+
+  if (updates.visibilityBand) {
+    updatePromises.push(
+      sheetsFetch(`/values/J${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.visibilityBand]] }),
+      }),
+    );
+  }
+
+  if (updates.serviceVisibility) {
+    updatePromises.push(
+      sheetsFetch(`/values/K${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.serviceVisibility]] }),
+      }),
+    );
+  }
+
+  if (updates.notes) {
+    updatePromises.push(
+      sheetsFetch(`/values/O${sheetRow}?valueInputOption=USER_ENTERED`, {
+        method: "PUT",
+        body: JSON.stringify({ values: [[updates.notes]] }),
+      }),
+    );
+  }
+
+  await Promise.all(updatePromises);
+  console.info("[sheets] lead research updated", { leadId, updates: Object.keys(updates) });
+}
+
+/**
  * Get all leads from the sheet
  */
 export async function getAllLeads(): Promise<LeadRow[]> {

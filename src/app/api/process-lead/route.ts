@@ -1,0 +1,138 @@
+/**
+ * Lead Processing API Route
+ * 
+ * This endpoint processes new leads automatically:
+ * 1. Finds leads with status "new"
+ * 2. Updates status to "processing"
+ * 3. Auto-detects business niche
+ * 4. Auto-discovers competitors if none provided
+ * 5. Runs AI visibility research
+ * 6. Updates Google Sheet with real scores
+ * 7. Marks research as "complete"
+ * 
+ * Can be called via cron or webhook to process pending leads.
+ */
+
+import { NextResponse } from "next/server";
+import { getLeadsByStatus, updateLeadResearchResults } from "@/lib/google-sheets";
+import { detectNiche } from "@/lib/niche-detector";
+import { discoverCompetitors } from "@/lib/competitor-discovery";
+import { runResearch } from "@/lib/research-runner";
+
+export async function POST(request: Request) {
+  try {
+    console.info("[process-lead] Starting lead processing");
+    
+    // Get all leads with status "new"
+    const newLeads = await getLeadsByStatus("new");
+    
+    if (newLeads.length === 0) {
+      console.info("[process-lead] No new leads to process");
+      return NextResponse.json({
+        success: true,
+        processed: 0,
+        message: "No new leads found"
+      });
+    }
+    
+    console.info(`[process-lead] Found ${newLeads.length} new leads to process`);
+    
+    let processedCount = 0;
+    let errorCount = 0;
+    
+    // Process each lead
+    for (const lead of newLeads) {
+      try {
+        console.info(`[process-lead] Processing lead ${lead.leadId}: ${lead.dealershipName}`);
+        
+        // Update status to "processing"
+        await updateLeadResearchResults(lead.leadId, {
+          status: "researching",
+          researchStatus: "running"
+        });
+        
+        // Auto-detect niche
+        console.info(`[process-lead] Detecting niche for ${lead.dealershipName}`);
+        const nicheConfig = detectNiche(lead.dealershipName, lead.website);
+        console.info(`[process-lead] Detected niche: ${nicheConfig.niche}`);
+        
+        // Auto-discover competitors if none provided
+        let competitors: string[] = [];
+        if (lead.competitor && lead.competitor.trim() !== "") {
+          competitors = [lead.competitor.trim()];
+        } else {
+          console.info(`[process-lead] Discovering competitors for ${lead.dealershipName}`);
+          competitors = await discoverCompetitors(
+            lead.dealershipName,
+            lead.website,
+            lead.city,
+            lead.competitor
+          );
+          console.info(`[process-lead] Found competitors: ${competitors.join(", ")}`);
+        }
+        
+        // Run research
+        console.info(`[process-lead] Running research for ${lead.dealershipName}`);
+        const researchResult = await runResearch(
+          lead.dealershipName,
+          lead.website,
+          lead.city,
+          competitors
+        );
+        
+        console.info(`[process-lead] Research completed for ${lead.dealershipName}:`,
+          `${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
+        
+        // Update Google Sheet with results
+        await updateLeadResearchResults(lead.leadId, {
+          status: "researching",
+          researchStatus: "complete",
+          snapshotAppeared: `${researchResult.appearedCount} of ${researchResult.totalPrompts} prompts`,
+          visibilityBand: researchResult.statusBand,
+          serviceVisibility: researchResult.serviceVisibility
+        });
+        
+        console.info(`[process-lead] Lead ${lead.leadId} processed successfully`);
+        processedCount++;
+        
+      } catch (error) {
+        console.error(`[process-lead] Error processing lead ${lead.leadId}:`, error);
+        
+        // Update status to reflect failure
+        try {
+          await updateLeadResearchResults(lead.leadId, {
+            researchStatus: "failed",
+            notes: `Auto-processing failed: ${error instanceof Error ? error.message : "Unknown error"}`
+          });
+        } catch (updateError) {
+          console.error(`[process-lead] Failed to update failed status for lead ${lead.leadId}:`, updateError);
+        }
+        
+        errorCount++;
+      }
+    }
+    
+    console.info(`[process-lead] Processing complete: ${processedCount} success, ${errorCount} failed`);
+    
+    return NextResponse.json({
+      success: true,
+      processed: processedCount,
+      errors: errorCount,
+      totalLeads: newLeads.length,
+      message: `Processed ${processedCount} leads successfully, ${errorCount} failed`
+    });
+    
+  } catch (error) {
+    console.error("[process-lead] Fatal error in lead processing:", error);
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Lead processing failed"
+    }, { status: 500 });
+  }
+}
+
+// Also support GET for testing/cron purposes
+export async function GET() {
+  return POST(new Request("http://localhost/api/process-lead", { method: "POST" }));
+}
