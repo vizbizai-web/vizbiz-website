@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { ContainerScroll } from '@/components/ui/container-scroll-animation';
 import { CheckCircle2, Search, BarChart3, Zap, ChevronDown } from 'lucide-react';
 import SiteHeader from '@/components/SiteHeader';
 import StickyMobileCTA from '@/components/StickyMobileCTA';
@@ -112,72 +113,103 @@ function FAQItem({ item, i }: { item: typeof faqs[0]; i: number }) {
 
 /* ─── main component ─── */
 export default function HomeContent() {
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
   return (
     <>
       <SiteHeader />
       <main>
         {/* ─── HERO ─── */}
-        <motion.section
-          ref={heroRef}
-          className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8"
-        >
-          <motion.div style={{ y: heroY, opacity: heroOpacity }} className="hero-video-bg" aria-hidden="true">
-            <div className="hero-image-overlay" />
-          </motion.div>
-          <div className="hero-grid-overlay" aria-hidden="true" />
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="relative z-10 mx-auto max-w-5xl text-center"
+        <section className="hero-scroll-section">
+          <ContainerScroll
+            titleComponent={
+              <div className="max-w-5xl mx-auto text-center px-4">
+                <div className="section-kicker mb-6">
+                  AI Visibility Intelligence
+                </div>
+                <h1 className="super-display text-[2.8rem] leading-[0.92] tracking-[-0.05em] text-white sm:text-[4rem] lg:text-[5rem] mb-6">
+                  AI isn't recommending your dealership.
+                </h1>
+                <p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--text-secondary)] sm:text-xl mb-8">
+                  84% of dealerships score below 60 on AI visibility. Find out where you stand — and what to fix.
+                </p>
+                <div className="flex flex-col items-center justify-center gap-3 sm:flex-row mb-12">
+                  <Link href="/intake/" className="hero-cta-orange rounded-xl px-7 py-4 text-sm font-semibold min-h-14 px-8 text-base">
+                    Get My AVI Snapshot
+                  </Link>
+                  <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button min-h-14 rounded-xl px-7 text-sm font-medium">
+                    See Sample Report
+                  </Link>
+                </div>
+              </div>
+            }
           >
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="section-kicker"
-            >
-              AI Visibility Intelligence
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.7 }}
-              className="super-display mt-6 text-[2.6rem] leading-[0.92] tracking-[-0.05em] text-white sm:text-[3.8rem] lg:text-[4.8rem]"
-            >
-              Is AI recommending<br />your dealership?
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[var(--text-secondary)] sm:text-xl"
-            >
-              VizBiz measures how often your dealership appears in ChatGPT, Gemini, Google AI, and Perplexity — and tells you exactly what to fix.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.5 }}
-              className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
-            >
-              <Link href="/intake/" className="premium-button rounded-xl px-7 py-4 text-sm font-semibold min-h-14 px-8 text-base">
-                Get My AVI Snapshot
-              </Link>
-              <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button min-h-14 rounded-xl px-7 text-sm font-medium">
-                See Sample Report
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          <div className="hero-bottom-fade" aria-hidden="true" />
-        </motion.section>
+            <div className="h-full w-full bg-[#111111] rounded-2xl p-6 md:p-8">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                <div>
+                  <p className="scene-eyebrow">Sample Dealership</p>
+                  <h3 className="mt-2 text-xl font-semibold text-white">AI Visibility Dashboard</h3>
+                </div>
+                <div className="scene-score-pill">
+                  <span>AVI</span>
+                  <strong>42</strong>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Dealer Discovery</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/50">30% weight</span>
+                    <span className="text-xl font-bold text-yellow-400">42</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Trust & Reviews</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/50">25% weight</span>
+                    <span className="text-xl font-bold text-yellow-400">37</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Service Visibility</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/50">20% weight</span>
+                    <span className="text-xl font-bold text-red-400">34</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Used Inventory</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/50">15% weight</span>
+                    <span className="text-xl font-bold text-green-400">52</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <span className="text-sm text-white/70">Finance & Trade-In</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/50">10% weight</span>
+                    <span className="text-xl font-bold text-red-400">28</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 pt-4 border-t border-white/10">
+                <h4 className="text-sm font-semibold text-white/80 mb-4">COMPETITOR COMPARISON</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Oakville Toyota</span>
+                    <span className="text-sm font-bold text-green-400">78</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Mississauga Honda</span>
+                    <span className="text-sm font-bold text-green-400">65</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Burlington Ford</span>
+                    <span className="text-sm font-bold text-yellow-400">58</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ContainerScroll>
+        </section>
 
         {/* ─── STATS BAR ─── */}
         <section className="chapter-dark border-t border-white/6 px-4 py-10 sm:px-6 lg:px-8">

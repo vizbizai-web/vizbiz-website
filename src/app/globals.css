@@ -8,6 +8,8 @@
   --accent-blue-bright: #3b82f6;
   --accent-blue-glow: rgba(59, 130, 246, 0.15);
   --accent-green: #34d399;
+  --accent-orange: #EA580C;
+  --accent-orange-glow: rgba(234, 88, 12, 0.15);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
   --border-subtle: rgba(255, 255, 255, 0.06);
@@ -126,6 +128,12 @@ body {
   right: 0;
   height: 120px;
   background: linear-gradient(to top, var(--bg-primary), transparent);
+}
+
+.hero-scroll-section {
+  position: relative;
+  background: var(--bg-primary);
+  overflow: hidden;
 }
 
 /* ─── GLASS CARDS ─── */
@@ -318,6 +326,22 @@ body {
   transform: translateY(-1px);
   border-color: rgba(109, 159, 255, 0.25);
   background: rgba(109, 159, 255, 0.06);
+}
+
+.hero-cta-orange {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #EA580C, #DC2626);
+  color: white;
+  font-weight: 600;
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+  box-shadow: 0 0 20px var(--accent-orange-glow);
+}
+
+.hero-cta-orange:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px var(--accent-orange-glow), 0 8px 24px var(--accent-orange-glow);
 }
 
 /* ─── ANIMATIONS ─── */
