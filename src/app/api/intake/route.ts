@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     originalPage: payload.originalPage?.trim() || undefined,
   };
 
-  // Generate mini snapshot
+  // Generate mini snapshot (now returns honest messaging instead of fake scores)
   const snapshot = buildMiniSnapshot({
     dealershipName: cleanPayload.dealershipName,
     websiteUrl: cleanPayload.websiteUrl,
@@ -69,9 +69,9 @@ export async function POST(request: Request) {
   });
 
   const snapshotSummary = {
-    appeared: `${snapshot.appearedCount} of 7 prompts`,
-    band: snapshot.statusBand,
-    service: snapshot.serviceVisibility,
+    appeared: "0 of 7 prompts", // Honest: we haven't run the real analysis yet
+    band: "Pending",
+    service: "Pending",
   };
 
   // Store in Google Sheets CRM

@@ -1,6 +1,7 @@
 "use client";
 
 import type { FocusEvent, FormEvent } from "react";
+import { useState } from "react";
 
 const inputClassName = "input-shell mt-2";
 const labelClassName = "block text-sm font-medium text-[var(--text-primary)]";
@@ -35,6 +36,7 @@ export default function SnapshotIntakeForm({
   originalPage,
   hasError,
 }: SnapshotIntakeFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   function handleWebsiteBlur(event: FocusEvent<HTMLInputElement>) {
     const normalized = normalizeWebsiteUrl(event.currentTarget.value);
     if (!normalized) {
@@ -50,7 +52,7 @@ export default function SnapshotIntakeForm({
     event.currentTarget.setCustomValidity("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const form = event.currentTarget;
     const websiteInput = form.elements.namedItem("websiteUrl");
 
@@ -69,6 +71,28 @@ export default function SnapshotIntakeForm({
     }
 
     websiteInput.setCustomValidity("");
+
+    // Prevent default form submission, handle it manually
+    event.preventDefault();
+    
+    // Set submitting state
+    setIsSubmitting(true);
+
+    try {
+      // Submit form data via fetch
+      const formData = new FormData(form);
+      const response = await fetch("/api/intake", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
+    } catch (error) {
+      console.error("Submission failed:", error);
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -152,9 +176,10 @@ export default function SnapshotIntakeForm({
 
       <button
         type="submit"
+        disabled={isSubmitting}
         className="premium-button min-h-13 w-full rounded-2xl px-6 py-3.5 text-sm font-semibold"
       >
-        Generate My Snapshot
+        {isSubmitting ? "Preparing your snapshot..." : "Generate My Snapshot"}
       </button>
     </form>
   );

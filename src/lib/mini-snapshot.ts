@@ -132,48 +132,15 @@ function getCompetitorCategories({
 }
 
 export function buildMiniSnapshot(input: MiniSnapshotInput) {
-  const make = inferMake(input);
-  const independentUsed = isIndependentUsedDealer(input);
-  const competitorMention = getCompetitorMention(input);
-
-  const prompts = [
-    primaryPrompt(input),
-    `best place to buy a used ${make || "car"} in ${input.cityMarket}`,
-    `most trusted car dealership in ${input.cityMarket}`,
-    `where can I finance a ${make || "vehicle"} near ${input.cityMarket}`,
-    `best dealership for trade-in in ${input.cityMarket}`,
-    `which dealership has the best reviews in ${input.cityMarket}`,
-    pickServicePrompt(input),
-  ];
-
-  let appearedCount = 3;
-  if (make) appearedCount += 1;
-  if (independentUsed) appearedCount -= 1;
-  if (input.competitor?.trim()) appearedCount = Math.max(2, appearedCount - 1);
-  appearedCount = Math.max(2, Math.min(5, appearedCount));
-
-  const statusBand = appearedCount >= 5 ? "Strong" : appearedCount >= 3 ? "Moderate" : "Weak";
-
-  const serviceVisibility = make ? (appearedCount >= 4 ? "Strong" : "Weak") : "Not surfaced";
-
-  const competitorLine = input.competitor?.trim()
-    ? `${competitorMention} appears more often in at least one local prompt.`
-    : `Nearby competitors appear more often in the local prompt set.`;
-  const competitorCategories = getCompetitorCategories({
-    make,
-    appearedCount,
-    serviceVisibility,
-    independentUsed,
-  });
-
+  // Return honest messaging instead of fake scores
   return {
-    prompts,
-    appearedCount,
-    statusBand,
-    serviceVisibility,
-    competitorMention,
-    competitorLine,
-    competitorCategories,
+    prompts: [],
+    appearedCount: 0,
+    statusBand: "Pending",
+    serviceVisibility: "Pending",
+    competitorMention: "N/A",
+    competitorLine: "We're analyzing your visibility compared to nearby competitors.",
+    competitorCategories: [],
     whyThisMatters:
       "AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.",
     recommendedNextStep:
