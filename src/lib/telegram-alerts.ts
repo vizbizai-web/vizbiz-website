@@ -3,7 +3,8 @@
  */
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const ALEX_CHAT_ID = "6960754854";
+const VLAD_HQ_GROUP = "-1003708779177";
+const LEADS_TOPIC_ID = 355;
 
 type LeadAlert = {
   leadId: string;
@@ -50,7 +51,8 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: ALEX_CHAT_ID,
+        chat_id: VLAD_HQ_GROUP,
+        message_thread_id: LEADS_TOPIC_ID,
         text: message,
         parse_mode: "Markdown",
       }),
