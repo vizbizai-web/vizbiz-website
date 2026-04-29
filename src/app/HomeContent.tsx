@@ -117,98 +117,145 @@ export default function HomeContent() {
     <>
       <SiteHeader />
       <main>
-        {/* ─── HERO ─── */}
-        <section className="hero-scroll-section">
-          <ContainerScroll
-            titleComponent={
-              <div className="max-w-5xl mx-auto text-center px-4">
-                <div className="section-kicker mb-6">
-                  AI Visibility Intelligence
-                </div>
-                <h1 className="super-display text-[2.8rem] leading-[0.92] tracking-[-0.05em] text-white sm:text-[4rem] lg:text-[5rem] mb-6">
-                  AI isn't recommending your dealership.
-                </h1>
-                <p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--text-secondary)] sm:text-xl mb-8">
-                  84% of dealerships score below 60 on AI visibility. Find out where you stand — and what to fix.
-                </p>
-                <div className="flex flex-col items-center justify-center gap-3 sm:flex-row mb-12">
-                  <Link href="/intake/" className="hero-cta-orange rounded-xl px-7 py-4 text-sm font-semibold min-h-14 px-8 text-base">
-                    Get My AVI Snapshot
-                  </Link>
-                  <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button min-h-14 rounded-xl px-7 text-sm font-medium">
-                    See Sample Report
-                  </Link>
-                </div>
-              </div>
-            }
-          >
-            <div className="h-full w-full bg-[#111111] rounded-2xl p-6 md:p-8">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-                <div>
-                  <p className="scene-eyebrow">Sample Dealership</p>
-                  <h3 className="mt-2 text-xl font-semibold text-white">AI Visibility Dashboard</h3>
-                </div>
-                <div className="scene-score-pill">
-                  <span>AVI</span>
-                  <strong>42</strong>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-white/70">Dealer Discovery</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-white/50">30% weight</span>
-                    <span className="text-xl font-bold text-yellow-400">42</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-white/70">Trust & Reviews</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-white/50">25% weight</span>
-                    <span className="text-xl font-bold text-yellow-400">37</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-white/70">Service Visibility</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-white/50">20% weight</span>
-                    <span className="text-xl font-bold text-red-400">34</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-white/10">
-                  <span className="text-sm text-white/70">Used Inventory</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-white/50">15% weight</span>
-                    <span className="text-xl font-bold text-green-400">52</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-sm text-white/70">Finance & Trade-In</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-white/50">10% weight</span>
-                    <span className="text-xl font-bold text-red-400">28</span>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-8 pt-4 border-t border-white/10">
-                <h4 className="text-sm font-semibold text-white/80 mb-4">COMPETITOR COMPARISON</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Oakville Toyota</span>
-                    <span className="text-sm font-bold text-green-400">78</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Mississauga Honda</span>
-                    <span className="text-sm font-bold text-green-400">65</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Burlington Ford</span>
-                    <span className="text-sm font-bold text-yellow-400">58</span>
-                  </div>
-                </div>
-              </div>
+        {/* ─── HERO — Bombon-style ─── */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#07090f] via-[#0a0d16] to-[#07090f]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(234,88,12,0.08),transparent)]" aria-hidden="true" />
+
+          <div className="relative z-10 w-full max-w-6xl mx-auto">
+            {/* Top area: centered text + buttons (like Bombon) */}
+            <div className="flex flex-col items-center text-center pt-32 pb-16 md:pt-40 md:pb-24">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-xs font-medium tracking-wider text-white/60 uppercase"
+              >
+                AI Visibility Intelligence
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.7 }}
+                className="text-[3rem] sm:text-[4.5rem] md:text-[6rem] lg:text-[7rem] font-bold leading-[0.9] tracking-[-0.04em] text-white"
+              >
+                AI isn't
+                <br />
+                recommending
+                <br />
+                <span className="bg-gradient-to-r from-[#EA580C] to-[#F97316] bg-clip-text text-transparent">
+                  your dealership.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="mt-8 max-w-xl text-base sm:text-lg leading-8 text-[var(--text-secondary)]"
+              >
+                84% of dealerships score below 60 on AI visibility. Find out where you stand — and exactly what to fix.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+              >
+                <Link
+                  href="/intake/"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#EA580C] to-[#F97316] px-8 py-4 text-sm font-semibold text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all hover:shadow-[0_0_40px_rgba(234,88,12,0.5)] hover:scale-[1.02] min-h-14 text-base"
+                >
+                  Get My AVI Snapshot
+                </Link>
+                <Link
+                  href="/sample-ai-visibility-report-for-car-dealerships/"
+                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-8 py-4 text-sm font-medium text-white/80 transition-all hover:bg-white/[0.06] hover:text-white min-h-14"
+                >
+                  See Sample Report
+                </Link>
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                className="mt-6 text-xs text-white/30"
+              >
+                Free audit · No credit card · Delivered in 24-48 hours
+              </motion.p>
             </div>
-          </ContainerScroll>
+
+            {/* Bottom area: scroll-reveal dashboard card (like Bombon's hero image) */}
+            <div className="flex flex-col overflow-hidden pb-20">
+              <ContainerScroll
+                titleComponent={<></>}
+              >
+                <div className="h-full w-full bg-[#0f1117] rounded-2xl p-5 md:p-8 relative overflow-hidden">
+                  {/* Dashboard header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
+                        <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
+                        <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
+                      </div>
+                      <span className="text-xs text-white/40 ml-2">vizbiz.ai/dashboard</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-[#EA580C]/10 border border-[#EA580C]/20 rounded-lg px-3 py-1.5">
+                      <span className="text-xs text-[#F97316] font-medium">AVI Score</span>
+                      <span className="text-2xl font-bold text-[#EA580C]">42</span>
+                      <span className="text-xs text-[#EA580C]/60">/100</span>
+                    </div>
+                  </div>
+
+                  {/* Score bars */}
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Dealer Discovery', score: 42, weight: 30, color: '#F97316' },
+                      { name: 'Trust & Reviews', score: 37, weight: 25, color: '#EF4444' },
+                      { name: 'Service Visibility', score: 34, weight: 20, color: '#EF4444' },
+                      { name: 'Used Inventory', score: 52, weight: 15, color: '#FBBF24' },
+                      { name: 'Finance & Trade-In', score: 28, weight: 10, color: '#EF4444' },
+                    ].map((cat) => (
+                      <div key={cat.name} className="flex items-center gap-4">
+                        <span className="text-xs text-white/50 w-36 text-right shrink-0">{cat.name}</span>
+                        <div className="flex-1 h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-1000"
+                            style={{ width: `${cat.score}%`, backgroundColor: cat.color }}
+                          />
+                        </div>
+                        <span className="text-sm font-bold w-8" style={{ color: cat.color }}>{cat.score}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Competitor comparison */}
+                  <div className="mt-6 pt-5 border-t border-white/[0.06]">
+                    <p className="text-xs text-white/30 mb-3 uppercase tracking-wider">Competitor Gap</p>
+                    <div className="flex gap-6 items-end">
+                      {[{ name: 'Your Store', score: 42, color: '#EA580C' }, { name: 'Competitor A', score: 78, color: '#22C55E' }, { name: 'Competitor B', score: 65, color: '#22C55E' }].map((c) => (
+                        <div key={c.name} className="flex flex-col items-center gap-2 flex-1">
+                          <div className="w-full bg-white/[0.03] rounded-lg overflow-hidden h-20 flex items-end">
+                            <div
+                              className="w-full rounded-lg transition-all duration-1000"
+                              style={{ height: `${c.score}%`, backgroundColor: c.color, opacity: 0.8 }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-white/40">{c.name}</span>
+                          <span className="text-sm font-bold" style={{ color: c.color }}>{c.score}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </ContainerScroll>
+            </div>
+          </div>
         </section>
 
         {/* ─── STATS BAR ─── */}
