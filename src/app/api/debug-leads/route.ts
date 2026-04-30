@@ -48,7 +48,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       before: { status: artwow.status, researchStatus: artwow.researchStatus },
       after: { status: artwowAfter?.status, researchStatus: artwowAfter?.researchStatus },
-      sheetName: process.env.GOOGLE_SHEETS_NAME
+      sheetNameRaw: process.env.GOOGLE_SHEETS_NAME,
+      sheetNameCodes: Array.from(process.env.GOOGLE_SHEETS_NAME || "").map(c => c.charCodeAt(0))
     });
   } catch (error) {
     return NextResponse.json({ error: String(error), stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
