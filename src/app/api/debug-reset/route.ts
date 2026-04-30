@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { getAllLeads } from "@/lib/google-sheets";
+import { updateLeadResearchResults, getAllLeads } from "@/lib/google-sheets";
 
-// Reset ARTWOW lead to "new" using raw Sheets API (bypassing module)
 export async function GET() {
   try {
+    // First, reset to "new" using raw write
     const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
     const saKeyRaw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-    if (!saKeyRaw) return NextResponse.json({ error: "No SA key" }, { status: 500 });
-    
     let sa;
-    try { sa = JSON.parse(saKeyRaw); } catch(e: any) { return NextResponse.json({ error: "Bad SA key" }); }
+    try { sa = JSON.parse(saKeyRaw || ""); } catch { return NextResponse.json({ error: "Bad SA key" }); }
     
     const header = Buffer.from(JSON.stringify({alg:"RS256",typ:"JWT"})).toString("base64url");
     const now = Math.floor(Date.now()/1000);
@@ -35,41 +33,45 @@ export async function GET() {
     const sheetId = (process.env.GOOGLE_SHEETS_ID || "").trim();
     const sheetName = (process.env.GOOGLE_SHEETS_NAME || "Leads").trim();
     
-    // Write "new" to L4 (status column, row 4 = ARTWOW)
-    const writeRes = await fetch(
+    // Reset to "new"
+    await fetch(
       `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(sheetName + "!L4")}?valueInputOption=USER_ENTERED`,
-      {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ values: [["new"]] })
-      }
+      { method: "PUT", headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ values: [["new"]] }) }
     );
-    
-    const writeStatus = writeRes.status;
-    
-    // Also reset research status to "pending" (M4)
     await fetch(
       `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(sheetName + "!M4")}?valueInputOption=USER_ENTERED`,
-      {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ values: [["pending"]] })
-      }
+      { method: "PUT", headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ values: [["pending"]] }) }
     );
     
-    // Wait for consistency
     await new Promise(r => setTimeout(r, 2000));
     
-    // Read back via module
-    const leads = await getAllLeads();
-    const artwow = leads.find(l => l.leadId === "VZB-MOLHDGJK");
+    // Verify reset
+    const leadsBefore = await getAllLeads();
+    const artwowBefore = leadsBefore.find(l => l.leadId === "VZB-MOLHDGJK");
+    
+    // Now try the MODULE's updateLeadResearchResults
+    let moduleError = null;
+    try {
+      await updateLeadResearchResults("VZB-MOLHDGJK", {
+        status: "researching",
+        researchStatus: "running"
+      });
+    } catch (e: any) {
+      moduleError = String(e);
+    }
+    
+    await new Promise(r => setTimeout(r, 2000));
+    
+    // Read back
+    const leadsAfter = await getAllLeads();
+    const artwowAfter = leadsAfter.find(l => l.leadId === "VZB-MOLHDGJK");
     
     return NextResponse.json({
-      writeStatus,
-      artwowStatus: artwow?.status,
-      artwowResearch: artwow?.researchStatus
+      beforeModule: { status: artwowBefore?.status, research: artwowBefore?.researchStatus },
+      afterModule: { status: artwowAfter?.status, research: artwowAfter?.researchStatus },
+      moduleError
     });
   } catch (error: any) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: String(error), stack: error?.stack?.split('\n').slice(0, 5) }, { status: 500 });
   }
 }
