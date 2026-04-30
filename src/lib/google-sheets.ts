@@ -335,15 +335,13 @@ export async function updateLeadResearchResults(
   if (cells.length === 0) return;
 
   // Use batchUpdate endpoint which is more reliable than individual cell PUTs
-  console.info("[sheets] batchUpdate cells:", JSON.stringify(cells));
-  const batchResult = await sheetsFetch<{ totalUpdatedCells?: number }>(`/values:batchUpdate`, {
+  await sheetsFetch<{ totalUpdatedCells?: number }>(`/values:batchUpdate`, {
     method: "POST",
     body: JSON.stringify({
       data: cells,
       valueInputOption: "USER_ENTERED",
     }),
   });
-  console.info("[sheets] batchUpdate result:", JSON.stringify(batchResult));
 
   console.info("[sheets] lead updated (batch)", { leadId, updates: Object.keys(updates), row: sheetRow });
 }
