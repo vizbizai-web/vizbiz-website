@@ -460,7 +460,7 @@ export async function initializeSheet(): Promise<void> {
 }
 
 function getSheetName(): string {
-  return process.env.GOOGLE_SHEETS_NAME || "Leads";
+  return (process.env.GOOGLE_SHEETS_NAME || "Leads").replace(/\\n$/g, "").trim();
 }
 
 function getSheetRange(): string {
