@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import './styles.css';
+
 
 export const metadata: Metadata = {
   title: 'Full AVI Audit Report - The Venue Experts | VizBiz.ai',
