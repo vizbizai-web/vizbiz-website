@@ -233,7 +233,7 @@ export default function EADanceReport() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Top Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center">
@@ -252,7 +252,7 @@ export default function EADanceReport() {
         {/* Hero Score Card */}
         <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-xl p-8 mb-8 text-white">
           <div className="flex flex-col lg:flex-row items-center justify-between">
-            <div className="lg:w-1/2 mb-6 lg:mb-0">
+            <div className="lg:w-1/2 mb-6 lg:mb-0 flex justify-center items-center">
               <div className="flex items-center mb-4">
                 <span className="text-6xl font-bold mr-4">{auditResults.overallScore}</span>
                 <span className="text-2xl text-blue-200">/100</span>
@@ -289,7 +289,7 @@ export default function EADanceReport() {
         {/* Category Breakdown */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Category Breakdown</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-hidden">
             {Object.entries(auditResults.categories).map(([key, category]) => (
               <div key={key} className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
@@ -322,7 +322,7 @@ export default function EADanceReport() {
         {/* Competitor Comparison */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Competitor Comparison</h2>
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="bg-white rounded-xl p-6 shadow-sm overflow-hidden">
             <div className="space-y-4">
               {competitors.map((competitor, index) => (
                 <div key={index} className="flex items-center">
@@ -388,7 +388,7 @@ export default function EADanceReport() {
         {/* Progress Plan */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">⭐ 30/60/90/6-Month Progress Plan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
             {Object.entries(progressPlan).map(([key, phase]) => (
               <div key={key} className={`bg-white rounded-xl p-6 shadow-sm border-t-4 ${phase.color === 'amber' ? 'border-amber-400' : phase.color === 'blue' ? 'border-blue-400' : phase.color === 'purple' ? 'border-purple-400' : 'border-green-400'}`}>
                 <div className="mb-4">

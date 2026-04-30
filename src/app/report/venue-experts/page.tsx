@@ -280,7 +280,7 @@ export default function VenueExpertsReport() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -343,7 +343,7 @@ export default function VenueExpertsReport() {
         {/* Category Breakdown */}
         <div className="mb-12">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Category Breakdown</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-hidden">
             {categories.map((category, index) => {
               const colorClass = category.color === "green" ? "text-green-600" : 
                                 category.color === "amber" ? "text-amber-600" : "text-red-600";
@@ -399,7 +399,7 @@ export default function VenueExpertsReport() {
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Overall Visibility</h3>
           <div className="bg-white rounded-xl p-8 shadow-sm">
             <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="lg:w-1/2 flex justify-center">
+              <div className="lg:w-1/2 flex justify-center items-center">
                 <div className="relative w-48 h-48">
                   <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 36 36">
                     <path
@@ -457,7 +457,7 @@ export default function VenueExpertsReport() {
         {/* Competitor Comparison */}
         <div className="mb-12">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Competitor Comparison</h3>
-          <div className="bg-white rounded-xl p-8 shadow-sm">
+          <div className="bg-white rounded-xl p-8 shadow-sm overflow-hidden">
             <div className="space-y-6">
               {competitors.map((competitor, index) => {
                 const width = `${competitor.percentage}%`;
@@ -469,7 +469,7 @@ export default function VenueExpertsReport() {
                       </span>
                       <span className="font-bold text-gray-900">{competitor.percentage}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                       <div
                         className={`h-3 rounded-full ${competitor.highlight ? 'bg-blue-600' : 'bg-gray-400'}`}
                         style={{ width }}
@@ -508,7 +508,7 @@ export default function VenueExpertsReport() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 overflow-hidden">
                     {category.prompts.map((prompt, promptIndex) => (
                       <div key={promptIndex} className="flex items-center gap-2">
                         <span className={`text-xl ${prompt.visible ? 'text-green-500' : 'text-red-500'}`}>
@@ -535,7 +535,7 @@ export default function VenueExpertsReport() {
           <h3 className="text-2xl font-bold text-gray-900 mb-6">30/60/90/6-Month Progress Plan</h3>
           <p className="text-gray-600 mb-8">Your roadmap to AI visibility leadership in the wedding venue consultancy market.</p>
 
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-hidden">
             {phases.map((phase, index) => {
               const colorClasses: Record<string, { bg: string; border: string; text: string }> = {
                 amber: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800" },
