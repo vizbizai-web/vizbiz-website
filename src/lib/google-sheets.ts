@@ -244,8 +244,8 @@ export async function updateLeadStatus(
     throw new Error(`Lead ${leadId} not found in sheet`);
   }
 
-  // Sheet rows are 1-indexed, plus header row
-  const sheetRow = rowIndex + 2;
+  // Sheet rows are 1-indexed (data.values index 0 = sheet row 1)
+  const sheetRow = rowIndex + 1;
 
   // Use batch update for reliability
   const sheetName = getSheetName();
@@ -306,8 +306,8 @@ export async function updateLeadResearchResults(
     throw new Error(`Lead ${leadId} not found in sheet`);
   }
 
-  // Sheet rows are 1-indexed, plus header row
-  const sheetRow = rowIndex + 2; // +1 for 1-indexed, +1 for header
+  // Sheet rows are 1-indexed (data.values index 0 = sheet row 1)
+  const sheetRow = rowIndex + 1;
 
   // Use batch update for reliability
   const sheetName = getSheetName();
