@@ -28,6 +28,10 @@ export async function POST(request: Request) {
     // Import internal functions to test sheet writes
     const { updateLeadResearchResults, getAllLeads: getAll } = await import("@/lib/google-sheets");
     
+    // Get the actual sheet name being used (by reading the env directly)
+    const rawSheetName = process.env.GOOGLE_SHEETS_NAME || "Leads";
+    const cleanSheetName = rawSheetName.replace(/[\\\n\r\s]+$/g, "").trim();
+    
     const leads = await getAll();
     const artwow = leads.find(l => l.leadId === "VZB-MOLHDGJK");
     
@@ -49,7 +53,8 @@ export async function POST(request: Request) {
       before: { status: artwow.status, researchStatus: artwow.researchStatus },
       after: { status: artwowAfter?.status, researchStatus: artwowAfter?.researchStatus },
       sheetNameRaw: process.env.GOOGLE_SHEETS_NAME,
-      sheetNameCodes: Array.from(process.env.GOOGLE_SHEETS_NAME || "").map(c => c.charCodeAt(0))
+      sheetNameCodes: Array.from(process.env.GOOGLE_SHEETS_NAME || "").map(c => c.charCodeAt(0)),
+      cleanSheetName
     });
   } catch (error) {
     return NextResponse.json({ error: String(error), stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
