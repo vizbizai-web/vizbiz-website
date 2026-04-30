@@ -250,9 +250,11 @@ export async function updateLeadStatus(
   // Update individual cells
   const updatePromises: Promise<unknown>[] = [];
 
+  const sheetPrefix = `${getSheetName()}!`;
+
   if (updates.status) {
     updatePromises.push(
-      sheetsFetch(`/values/L${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}L${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.status]] }),
       }),
@@ -261,7 +263,7 @@ export async function updateLeadStatus(
 
   if (updates.researchStatus) {
     updatePromises.push(
-      sheetsFetch(`/values/M${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}M${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.researchStatus]] }),
       }),
@@ -270,7 +272,7 @@ export async function updateLeadStatus(
 
   if (updates.emailSentAt) {
     updatePromises.push(
-      sheetsFetch(`/values/N${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}N${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.emailSentAt]] }),
       }),
@@ -279,7 +281,7 @@ export async function updateLeadStatus(
 
   if (updates.notes) {
     updatePromises.push(
-      sheetsFetch(`/values/O${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}O${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.notes]] }),
       }),
@@ -325,9 +327,11 @@ export async function updateLeadResearchResults(
   // Update individual cells
   const updatePromises: Promise<unknown>[] = [];
 
+  const sheetPrefix = `${getSheetName()}!`;
+
   if (updates.status) {
     updatePromises.push(
-      sheetsFetch(`/values/L${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}L${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.status]] }),
       }),
@@ -336,7 +340,7 @@ export async function updateLeadResearchResults(
 
   if (updates.researchStatus) {
     updatePromises.push(
-      sheetsFetch(`/values/M${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}M${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.researchStatus]] }),
       }),
@@ -345,7 +349,7 @@ export async function updateLeadResearchResults(
 
   if (updates.snapshotAppeared) {
     updatePromises.push(
-      sheetsFetch(`/values/I${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}I${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.snapshotAppeared]] }),
       }),
@@ -354,7 +358,7 @@ export async function updateLeadResearchResults(
 
   if (updates.visibilityBand) {
     updatePromises.push(
-      sheetsFetch(`/values/J${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}J${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.visibilityBand]] }),
       }),
@@ -363,7 +367,7 @@ export async function updateLeadResearchResults(
 
   if (updates.serviceVisibility) {
     updatePromises.push(
-      sheetsFetch(`/values/K${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}K${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.serviceVisibility]] }),
       }),
@@ -372,7 +376,7 @@ export async function updateLeadResearchResults(
 
   if (updates.notes) {
     updatePromises.push(
-      sheetsFetch(`/values/O${sheetRow}?valueInputOption=USER_ENTERED`, {
+      sheetsFetch(`/values/${sheetPrefix}O${sheetRow}?valueInputOption=USER_ENTERED`, {
         method: "PUT",
         body: JSON.stringify({ values: [[updates.notes]] }),
       }),
@@ -447,7 +451,7 @@ export async function initializeSheet(): Promise<void> {
     "Lead ID",
   ]];
 
-  await sheetsFetch(`/values/A1:Q1?valueInputOption=USER_ENTERED`, {
+  await sheetsFetch(`/values/${getSheetName()}!A1:Q1?valueInputOption=USER_ENTERED`, {
     method: "PUT",
     body: JSON.stringify({ values: headers }),
   });
@@ -455,9 +459,12 @@ export async function initializeSheet(): Promise<void> {
   console.info("[sheets] headers initialized");
 }
 
+function getSheetName(): string {
+  return process.env.GOOGLE_SHEETS_NAME || "Leads";
+}
+
 function getSheetRange(): string {
-  const sheetName = process.env.GOOGLE_SHEETS_NAME || "Leads";
-  return `'${sheetName}'!A:Q`;
+  return `'${getSheetName()}'!A:Q`;
 }
 
 /**
