@@ -3,12 +3,16 @@
  * 
  * This endpoint processes new leads automatically:
  * 1. Finds leads with status "new"
- * 2. Updates status to "processing"
+ * 2. Updates status to "researching"
  * 3. Auto-detects business niche
  * 4. Auto-discovers competitors if none provided
- * 5. Runs AI visibility research
+ * 5. Runs AI visibility research (20-prompt Snapshot)
  * 6. Updates Google Sheet with real scores
- * 7. Marks research as "complete"
+ * 7. Marks status as "email_drafted" and research as "complete"
+ * 8. On failure: resets to "new" + "failed" so cron retries next cycle
+ *
+ * Status flow: new → researching → email_drafted
+ * On error: new → researching → new (retry) + researchStatus: failed
  * 
  * Can be called via cron or webhook to process pending leads.
  */
@@ -85,22 +89,23 @@ export async function POST(request: Request) {
         
         // Update Google Sheet with results
         await updateLeadResearchResults(lead.leadId, {
-          status: "researching",
+          status: "email_drafted",
           researchStatus: "complete",
           snapshotAppeared: `${researchResult.appearedCount} of ${researchResult.totalPrompts} prompts`,
           visibilityBand: researchResult.statusBand,
           serviceVisibility: researchResult.serviceVisibility
         });
         
-        console.info(`[process-lead] Lead ${lead.leadId} processed successfully`);
+        console.info(`[process-lead] Lead ${lead.leadId} processed successfully — status: email_drafted`);
         processedCount++;
         
       } catch (error) {
         console.error(`[process-lead] Error processing lead ${lead.leadId}:`, error);
         
-        // Update status to reflect failure
+        // Update status to reflect failure — set back to "new" so cron retries next cycle
         try {
           await updateLeadResearchResults(lead.leadId, {
+            status: "new",
             researchStatus: "failed",
             notes: `Auto-processing failed: ${error instanceof Error ? error.message : "Unknown error"}`
           });
