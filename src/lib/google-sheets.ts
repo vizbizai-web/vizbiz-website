@@ -66,7 +66,7 @@ export type LeadRow = {
 };
 
 function getSheetId(): string {
-  const id = process.env.GOOGLE_SHEETS_ID;
+  const id = (process.env.GOOGLE_SHEETS_ID || "").trim();
   if (!id) throw new Error("GOOGLE_SHEETS_ID not configured");
   return id;
 }
