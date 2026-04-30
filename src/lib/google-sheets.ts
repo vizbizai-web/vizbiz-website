@@ -245,51 +245,36 @@ export async function updateLeadStatus(
   }
 
   // Sheet rows are 1-indexed, plus header row
-  const sheetRow = rowIndex + 2; // +1 for 1-indexed, +1 for header
+  const sheetRow = rowIndex + 2;
 
-  // Update individual cells
-  const updatePromises: Promise<unknown>[] = [];
-
-  const sheetPrefix = `${getSheetName()}!`;
+  // Use batch update for reliability
+  const sheetName = getSheetName();
+  const cells: { range: string; values: string[][] }[] = [];
 
   if (updates.status) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}L${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.status]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!L${sheetRow}`, values: [[updates.status]] });
   }
-
   if (updates.researchStatus) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}M${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.researchStatus]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!M${sheetRow}`, values: [[updates.researchStatus]] });
   }
-
   if (updates.emailSentAt) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}N${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.emailSentAt]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!N${sheetRow}`, values: [[updates.emailSentAt]] });
   }
-
   if (updates.notes) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}O${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.notes]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!O${sheetRow}`, values: [[updates.notes]] });
   }
 
-  await Promise.all(updatePromises);
-  console.info("[sheets] lead updated", { leadId, updates: Object.keys(updates) });
+  if (cells.length === 0) return;
+
+  await sheetsFetch(`/values:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      data: cells,
+      valueInputOption: "USER_ENTERED",
+    }),
+  });
+
+  console.info("[sheets] lead status updated (batch)", { leadId, updates: Object.keys(updates), row: sheetRow });
 }
 
 /**
@@ -324,67 +309,41 @@ export async function updateLeadResearchResults(
   // Sheet rows are 1-indexed, plus header row
   const sheetRow = rowIndex + 2; // +1 for 1-indexed, +1 for header
 
-  // Update individual cells
-  const updatePromises: Promise<unknown>[] = [];
-
-  const sheetPrefix = `${getSheetName()}!`;
+  // Use batch update for reliability
+  const sheetName = getSheetName();
+  const cells: { range: string; values: string[][] }[] = [];
 
   if (updates.status) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}L${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.status]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!L${sheetRow}`, values: [[updates.status]] });
   }
-
   if (updates.researchStatus) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}M${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.researchStatus]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!M${sheetRow}`, values: [[updates.researchStatus]] });
   }
-
   if (updates.snapshotAppeared) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}I${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.snapshotAppeared]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!I${sheetRow}`, values: [[updates.snapshotAppeared]] });
   }
-
   if (updates.visibilityBand) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}J${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.visibilityBand]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!J${sheetRow}`, values: [[updates.visibilityBand]] });
   }
-
   if (updates.serviceVisibility) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}K${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.serviceVisibility]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!K${sheetRow}`, values: [[updates.serviceVisibility]] });
   }
-
   if (updates.notes) {
-    updatePromises.push(
-      sheetsFetch(`/values/${sheetPrefix}O${sheetRow}?valueInputOption=USER_ENTERED`, {
-        method: "PUT",
-        body: JSON.stringify({ values: [[updates.notes]] }),
-      }),
-    );
+    cells.push({ range: `${sheetName}!O${sheetRow}`, values: [[updates.notes]] });
   }
 
-  await Promise.all(updatePromises);
-  console.info("[sheets] lead research updated", { leadId, updates: Object.keys(updates) });
+  if (cells.length === 0) return;
+
+  // Use batchUpdate endpoint which is more reliable than individual cell PUTs
+  await sheetsFetch(`/values:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      data: cells,
+      valueInputOption: "USER_ENTERED",
+    }),
+  });
+
+  console.info("[sheets] lead updated (batch)", { leadId, updates: Object.keys(updates), row: sheetRow });
 }
 
 /**
