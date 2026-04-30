@@ -70,7 +70,7 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
         <StatCard
           title="Active Schedules"
           value={stats.activeSchedules}
-          subtitle="Cron jobs running"
+          subtitle={`${stats.activeSchedules} crons active`}
           icon="⏰"
           color="emerald"
         />
@@ -98,10 +98,10 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
             VizBiz AVI Score
           </h2>
           <div className="flex items-end gap-2">
-            <span className="text-4xl font-bold text-amber-400">22</span>
+            <span className="text-4xl font-bold text-amber-400">9</span>
             <span className="text-slate-500 text-lg mb-1">/100</span>
           </div>
-          <p className="text-slate-500 text-sm mt-2">Latest audit — room to grow</p>
+          <p className="text-slate-500 text-sm mt-2">Latest audit Apr 9 — Re-audit May 1</p>
           <div className="mt-3 h-2 bg-slate-800/50 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style={{ width: '22%' }} />
           </div>
@@ -126,17 +126,38 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
 
         <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <span className="text-xl">🧙</span>
-            Sage Status
+            <span className="text-xl">📝</span>
+            Content Engine
           </h2>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-slate-300">Installed</span>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">Blog Posts Deployed</span>
+              <span className="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400 rounded-full">2 posts</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-slate-300">2 configs active</span>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">Active Crons</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">4 crons</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <span className="text-xl">👥</span>
+            Client Pipeline
+          </h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">ArtWow</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">Lead</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">EA Dance</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">Lead</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">Venue Experts</span>
+              <span className="px-2 py-0.5 text-xs bg-emerald-500/10 text-emerald-400 rounded-full">Lead</span>
             </div>
           </div>
         </div>
@@ -158,13 +179,9 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
             </a>
           </div>
           <div className="space-y-3">
-            {inProgressMissions === 0 ? (
-              <EmptyState message="No missions currently in progress" />
-            ) : (
-              <MissionPreview title="Client Portal v1.0" assignee="architect" progress={80} dueIn="3 days" />
-            )}
-            <MissionPreview title="AI Visibility Audit Service" assignee="vlad" progress={65} dueIn="18 days" />
-            <MissionPreview title="Content Engine Automation" assignee="copywriter" progress={90} dueIn="Complete" />
+            <MissionPreview title="VizBiz Fix Engine Deployment" assignee="vlad" progress={75} dueIn="2 days" />
+            <MissionPreview title="Content Engine Crons" assignee="forge" progress={100} dueIn="Complete" />
+            <MissionPreview title="Client Pipeline Automation" assignee="pulse" progress={50} dueIn="7 days" />
           </div>
         </div>
 

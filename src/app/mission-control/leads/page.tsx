@@ -1,8 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { LeadCardActions } from "./LeadCardActions";
-import { getHubSpotLeads } from "../lib/hubspot-leads";
-import type { HubSpotLead } from "../lib/hubspot-leads";
+interface Lead {
+  id: string;
+  companyName: string;
+  companyWebsite: string;
+  companyCity: string;
+  dealStage: string;
+  createdAt: string;
+  reportUrl: string;
+}
 
 function formatDate(iso: string): string {
   if (!iso) return "—";
@@ -45,19 +51,13 @@ function stageBadge(stage: string) {
 function SnapshotRow({ label, value }: { label: string; value: string | null }) {
   return (
     <p className="text-sm leading-6 text-slate-400">
-      <span className="text-slate-200">{label}:</span>{" "}
-      {value ?? "—"}
+      <span className="text-slate-200">{label}:</span> {value ?? "—"}
     </p>
   );
 }
 
-function LeadCard({ lead }: { lead: HubSpotLead }) {
-  const displayName =
-    lead.companyName || lead.dealName || "Unknown Dealership";
-  const hubspotDealUrl = `https://app.hubspot.com/contacts/343102280/deal/${lead.dealId}`;
-  const researchBrief = lead.researchBrief?.trim() ?? "";
-  const showPendingResearchBrief =
-    !researchBrief || /pending/i.test(researchBrief);
+function LeadCard({ lead }: { lead: Lead }) {
+  const displayName = lead.companyName || "Unknown Company";
 
   return (
     <article className="glass-card rounded-[2rem] p-6 sm:p-7">
@@ -67,21 +67,9 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
             <h2 className="display-font text-2xl font-semibold text-white">
               {displayName}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Deal: {lead.dealName}</p>
           </div>
 
           <dl className="space-y-2 text-sm leading-6 text-slate-400">
-            {lead.contactName || lead.contactEmail || lead.contactPhone ? (
-              <div>
-                <dt className="inline text-slate-200">Contact: </dt>
-                <dd className="inline">
-                  {[lead.contactName, lead.contactEmail, lead.contactPhone]
-                    .filter(Boolean)
-                    .join(" | ")}
-                </dd>
-              </div>
-            ) : null}
-
             {lead.companyWebsite && (
               <div>
                 <dt className="inline text-slate-200">Website: </dt>
@@ -118,12 +106,12 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
           <div className="flex flex-wrap items-center gap-3">
             {stageBadge(lead.dealStage)}
             <a
-              href={hubspotDealUrl}
+              href={lead.reportUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
             >
-              Open in HubSpot →
+              View Report →
             </a>
           </div>
         </div>
@@ -131,138 +119,47 @@ function LeadCard({ lead }: { lead: HubSpotLead }) {
         <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
           <p className="section-kicker mb-4">Mini Snapshot</p>
           <div className="space-y-2">
-            <SnapshotRow
-              label="Appeared in prompts"
-              value={lead.appearedInPrompts}
-            />
-            <SnapshotRow
-              label="Overall AI Visibility"
-              value={lead.overallVisibility}
-            />
-            <SnapshotRow
-              label="Service Dept Visibility"
-              value={lead.serviceDeptVisibility}
-            />
-            <SnapshotRow
-              label="Competitor summary"
-              value={lead.competitorSummary}
-            />
+            <SnapshotRow label="Status" value="Free report delivered" />
+            <SnapshotRow label="Type" value="Lead" />
+            <SnapshotRow label="Next Action" value="Follow up" />
           </div>
         </div>
-      </div>
-
-      <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Email Draft</p>
-              <h3 className="mt-2 text-lg font-semibold text-white">
-                {lead.emailDraftSubject ?? "No draft subject available"}
-              </h3>
-            </div>
-            <span className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300">
-              Draft — Not Sent
-            </span>
-          </div>
-
-          <div className="mb-3 text-sm text-slate-400">
-            <span className="text-slate-200">Send from:</span>{" "}
-            {lead.sendFrom ?? "vizbiz.ai@gmail.com"}
-          </div>
-
-          {lead.emailDraftHtml ? (
-            <details className="mb-4 rounded-[1.25rem] border border-white/8 bg-slate-950/40 p-4">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
-                <span className="inline-flex items-center gap-2">
-                  <span className="transition group-open:rotate-90">▶</span>
-                  Preview HTML
-                </span>
-              </summary>
-              <div className="mt-4 overflow-hidden rounded-[1rem] border border-white/10 bg-black">
-                <iframe
-                  title={`Email preview for ${displayName}`}
-                  srcDoc={lead.emailDraftHtml}
-                  className="h-[720px] w-full bg-black"
-                />
-              </div>
-            </details>
-          ) : null}
-
-          <textarea
-            readOnly
-            value={lead.emailDraftBody ?? "No email draft body available."}
-            className="min-h-[220px] max-h-[320px] w-full resize-none overflow-y-auto rounded-[1.25rem] border border-white/10 bg-slate-950/60 px-4 py-3 text-sm leading-6 text-slate-300 outline-none"
-          />
-
-          <div className="mt-4">
-            <LeadCardActions
-              subject={lead.emailDraftSubject}
-              body={lead.emailDraftBody}
-              html={lead.emailDraftHtml}
-            />
-          </div>
-        </section>
-
-        <section className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5">
-          <p className="section-kicker mb-4">Research Brief</p>
-          {showPendingResearchBrief ? (
-            <div className="rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
-              <p>
-                Research not yet completed. Add findings manually to the HubSpot
-                note before the call.
-              </p>
-              <a
-                href={hubspotDealUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex text-blue-400 hover:text-blue-300 hover:underline"
-              >
-                Open in HubSpot →
-              </a>
-            </div>
-          ) : (
-            <details className="group">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200 marker:hidden">
-                <span className="inline-flex items-center gap-2">
-                  <span className="transition group-open:rotate-90">▶</span>
-                  View call prep and talking points
-                </span>
-              </summary>
-              <pre className="mt-4 whitespace-pre-wrap rounded-[1.25rem] border border-white/10 bg-slate-950/60 p-4 text-sm leading-6 text-slate-300">
-                {researchBrief}
-              </pre>
-            </details>
-          )}
-        </section>
       </div>
     </article>
   );
 }
 
 export default async function LeadsPage() {
-  const token = process.env.HUBSPOT_ACCESS_TOKEN || process.env.HUBSPOT_API_KEY;
-
-  if (!token) {
-    return (
-      <div>
-        <div className="mb-8">
-          <p className="section-kicker">Pipeline</p>
-          <h1 className="display-font mt-2 text-3xl font-bold text-white">
-            Leads
-          </h1>
-        </div>
-        <div className="glass-card rounded-[2rem] p-6 text-sm text-slate-400">
-          HubSpot not configured. Set{" "}
-          <code className="rounded bg-slate-800 px-1 py-0.5 text-xs text-slate-300">
-            HUBSPOT_ACCESS_TOKEN
-          </code>{" "}
-          in your Vercel environment variables.
-        </div>
-      </div>
-    );
-  }
-
-  const leads = await getHubSpotLeads();
+  // Static data for the 3 real leads
+  const leads: Lead[] = [
+    {
+      id: "1",
+      companyName: "ArtWow",
+      companyWebsite: "artwow.ca",
+      companyCity: "Toronto, ON",
+      dealStage: "new_lead",
+      createdAt: "2026-04-28T10:00:00Z",
+      reportUrl: "https://vizbiz.ai/report/artwow"
+    },
+    {
+      id: "2",
+      companyName: "EA Dance",
+      companyWebsite: "eadance.ca",
+      companyCity: "Toronto, ON",
+      dealStage: "new_lead",
+      createdAt: "2026-04-29T11:00:00Z",
+      reportUrl: "https://vizbiz.ai/report/ea-dance"
+    },
+    {
+      id: "3",
+      companyName: "Venue Experts",
+      companyWebsite: "thevenueexperts.com",
+      companyCity: "Toronto, ON",
+      dealStage: "new_lead",
+      createdAt: "2026-04-30T12:00:00Z",
+      reportUrl: "https://vizbiz.ai/report/venue-experts"
+    }
+  ];
 
   return (
     <div>
@@ -283,11 +180,11 @@ export default async function LeadsPage() {
       <div className="space-y-5">
         {leads.length === 0 ? (
           <div className="glass-card rounded-[2rem] p-6 text-sm text-slate-400">
-            No leads yet. When a dealership submits the intake form, they&apos;ll
+            No leads yet. When a dealership submits the intake form, they'll
             appear here.
           </div>
         ) : (
-          leads.map((lead) => <LeadCard key={lead.dealId} lead={lead} />)
+          leads.map((lead) => <LeadCard key={lead.id} lead={lead} />)
         )}
       </div>
     </div>

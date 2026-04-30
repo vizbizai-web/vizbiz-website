@@ -73,6 +73,49 @@ export default function ScoresPage() {
           notes: s.notes.length > 120 ? s.notes.slice(0, 120) + '…' : s.notes,
         }))}
       />
+      {/* Dogfood Timeline */}
+      <div className="bg-[#111118] border border-slate-800 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-white mb-4">VizBiz Dogfood Timeline</h2>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+            <div>
+              <div className="text-sm text-slate-400">Apr 9, 2026</div>
+              <div className="font-medium text-white">Baseline AVI: 9/100</div>
+              <div className="text-sm text-slate-500">Initial audit - appeared in 1/11 prompts</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+            <div>
+              <div className="text-sm text-slate-400">Apr 13, 2026</div>
+              <div className="font-medium text-white">Second audit: still 9/100</div>
+              <div className="text-sm text-slate-500">Re-audit after initial fixes - no improvement</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+            <div>
+              <div className="text-sm text-slate-400">Apr 30, 2026</div>
+              <div className="font-medium text-white">Authority content deployed</div>
+              <div className="text-sm text-slate-500">2 blog posts deployed, fix engine built</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+            <div>
+              <div className="text-sm text-slate-400">May 1, 2026 (Scheduled)</div>
+              <div className="font-medium text-white">Next re-audit</div>
+              <div className="text-sm text-slate-500">Monthly re-audit to measure progress</div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 p-4 bg-slate-800/30 rounded-lg">
+          <div className="text-3xl font-bold text-amber-400">9</div>
+          <div className="text-sm text-slate-500">Current AVI Score</div>
+          <div className="text-xs text-slate-600 mt-1">Next measurement: May 1, 2026</div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ interface CalendarEvent {
   title: string;
   date: string;
   time?: string;
-  type: 'x-post' | 'x-thread' | 'dogfood' | 'milestone' | 'recurring' | 'deadline' | 'fix' | 'sage';
+  type: 'dogfood' | 'content' | 'client' | 'milestone' | 'recurring' | 'deadline';
   account?: string;
   description: string;
   status: 'pending' | 'ready' | 'done' | 'blocked';
@@ -21,301 +21,203 @@ interface CalendarEvent {
 
 const events: CalendarEvent[] = [
   // ==========================================
-  // WEEK 1: April 14-18 (Current Week)
+  // DOGFOOD HISTORY
   // ==========================================
   {
-    id: 'p1',
-    title: '🚀 First post: Ontario 11/100 scorecard',
-    date: '2026-04-14',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'Single tweet. Ontario dealerships average 11/100 AI visibility. 84 prompts, 252 data points.',
-    status: 'done',
-  },
-  {
-    id: 'p2',
-    title: '📝 JSON-LD schema tip',
-    date: '2026-04-15',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'Quick tip. Zero schema = invisible to AI. Add Organization + LocalBusiness + FAQPage.',
-    status: 'done',
-  },
-  {
-    id: 'p3',
-    title: '🧵 Dogfood thread: We scored ourselves 20/100',
-    date: '2026-04-16',
-    time: '8:30 AM',
-    type: 'x-thread',
-    account: '@VizBizAI',
-    description: '6-tweet thread. Vulnerable opener, fixes deployed, honest +2 result, building in public.',
-    status: 'done',
-  },
-  {
-    id: 'p4',
-    title: '💬 ChatGPT Brampton challenge',
-    date: '2026-04-17',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'ChatGPT recommended 5 dealerships in Brampton. None were the ones spending $15K/mo on ads.',
-    status: 'done',
-  },
-  {
-    id: 'p5',
-    title: '📝 Buyer questions tip',
-    date: '2026-04-18',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'Dealership websites answer zero buyer questions. No content = no AI citation.',
-    status: 'done',
-  },
-
-  // ==========================================
-  // Today's Work — April 18
-  // ==========================================
-  {
-    id: 'fix1',
-    title: '🔧 Fixed GSC redirect errors (4 pages)',
-    date: '2026-04-18',
-    time: '4:50 PM',
-    type: 'fix',
-    description: 'Root cause: missing trailing slashes on 25 internal links. Vercel 308 redirects. All validated in GSC.',
-    status: 'done',
-  },
-  {
-    id: 'fix2',
-    title: '✅ Added Gemini to homepage (0→11 mentions)',
-    date: '2026-04-18',
-    time: '4:35 PM',
-    type: 'fix',
-    description: 'All platform references now include ChatGPT, Gemini, Google AI, Perplexity.',
-    status: 'done',
-  },
-  {
-    id: 'fix3',
-    title: '🔥 Firecrawl integration complete',
-    date: '2026-04-18',
-    time: '4:30 PM',
-    type: 'milestone',
-    description: 'API key saved, CLI + 12 skills installed, full dogfood scan of all 8 pages. Replaces broken GLM-5.',
-    status: 'done',
-  },
-  {
-    id: 'fix4',
-    title: '📝 Book-call page SEO content added',
-    date: '2026-04-18',
-    time: '4:40 PM',
-    type: 'fix',
-    description: '63→150 words. Added "What happens on the call", "Who it\'s for", "No pressure" sections.',
-    status: 'done',
-  },
-
-  // ==========================================
-  // WEEK 2: April 21-25
-  // ==========================================
-  {
-    id: 'p6',
-    title: '🧵 "AI SEO" grift teardown',
-    date: '2026-04-21',
-    time: '8:30 AM',
-    type: 'x-thread',
-    account: '@VizBizAI',
-    description: '5-tweet thread. How to spot fake AI SEO. Real vs grift. Red flags: no scoring, no before/after, "we write articles".',
-    status: 'ready',
-  },
-  {
-    id: 'p7',
-    title: '📈 Building in public: Week 2 update',
-    date: '2026-04-22',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'Score still 22/100. Schema fixes live. Content going up. Gap between shipping and AI seeing it.',
-    status: 'ready',
-  },
-  {
-    id: 'p8',
-    title: '📝 Google Business Profile tip',
-    date: '2026-04-23',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: 'ChatGPT reads your GBP directly. Fix generic descriptions. Add brands, city, services. Be specific.',
-    status: 'ready',
-  },
-  {
-    id: 'p9',
-    title: '🧵 ChatGPT 5-city challenge',
-    date: '2026-04-24',
-    time: '8:30 AM',
-    type: 'x-thread',
-    account: '@VizBizAI',
-    description: '4-tweet thread. ChatGPT recs in 5 Ontario cities. No correlation with reviews/inventory/tenure. Different game, different rules.',
-    status: 'ready',
-  },
-  {
-    id: 'p10',
-    title: '📊 30% stat with implication',
-    date: '2026-04-25',
-    time: '8:30 AM',
-    type: 'x-post',
-    account: '@VizBizAI',
-    description: '30% of car buyers start with AI. Your ads reach the other 70%. AI visibility budget: $0.',
-    status: 'ready',
-  },
-
-  // ==========================================
-  // WEEK 3: April 28+
-  // ==========================================
-  {
-    id: 'd1',
-    title: '🔍 Dogfood re-scan: 2-week mark',
-    date: '2026-04-28',
+    id: 'dog1',
+    title: '🟠 Baseline AVI: 9/100 (1/11 prompts)',
+    date: '2026-04-09',
     time: '10:00 AM',
     type: 'dogfood',
-    description: 'Re-run VizBiz audit with Firecrawl. Check if schema fixes + Gemini additions moved the score.',
-    status: 'pending',
+    description: 'Initial VizBiz audit. Only appeared in 1 out of 11 prompts.',
+    status: 'done',
   },
   {
-    id: 'd3',
-    title: '📊 Month-end VizBiz audit',
-    date: '2026-05-01',
+    id: 'dog2',
+    title: '🟠 Second audit: still 9/100',
+    date: '2026-04-13',
     time: '10:00 AM',
-    type: 'milestone',
-    description: 'Full 30-day re-audit. Compare 20→22→? Track index refresh impact.',
-    status: 'pending',
+    type: 'dogfood',
+    description: 'Re-audit after initial fixes. No improvement yet.',
+    status: 'done',
+  },
+  {
+    id: 'dog3',
+    title: '🟠 Authority content deployed (2 blog posts)',
+    date: '2026-04-30',
+    time: '4:00 PM',
+    type: 'dogfood',
+    description: 'Fix engine built and authority content deployed to vizbiz.ai',
+    status: 'done',
   },
 
   // ==========================================
-  // Sage Crons (Recurring)
+  // UPCOMING EVENTS
   // ==========================================
   {
-    id: 'sage1',
-    title: '🔄 Sage Sunday Dump',
-    date: '2026-04-20',
+    id: 'may1-reaudit',
+    title: '🟠 Monthly Re-audit: VizBiz self-audit',
+    date: '2026-05-01',
     time: '9:00 AM',
-    type: 'sage',
-    description: 'Every Sunday: 20 content ideas from X + Reddit. 8 subreddits monitored. Generates week\'s draft queue.',
-    status: 'ready',
+    type: 'dogfood',
+    description: 'Full re-audit of VizBiz (Reko, DeepSeek V4 Flash)',
+    status: 'pending',
   },
   {
-    id: 'sage2',
-    title: '🔄 Sage Morning Replies',
-    date: '2026-04-21',
-    time: '7:30 AM',
-    type: 'sage',
-    description: 'Mon-Sat: 5 reply targets from X + Reddit. Trending conversations to engage with.',
-    status: 'ready',
+    id: 'may1-content',
+    title: '🔵 Content Calendar: Generate May content plan',
+    date: '2026-05-01',
+    time: '11:00 AM',
+    type: 'content',
+    description: 'Generate May content calendar (Pulse, Gemini 3 Flash)',
+    status: 'pending',
   },
   {
-    id: 'sage3',
-    title: '🔄 Sage Friday Feedback',
-    date: '2026-04-25',
-    time: '5:00 PM',
-    type: 'sage',
-    description: 'Every Friday: top/bottom performing posts analysis. What worked, what didn\'t, what to adjust.',
-    status: 'ready',
+    id: 'may5-post',
+    title: '🔵 Authority Content: Weekly blog post',
+    date: '2026-05-05',
+    time: '10:00 AM',
+    type: 'content',
+    description: 'Weekly authority blog post (Forge, Devstral 2 123B)',
+    status: 'pending',
   },
   {
-    id: 'r2',
-    title: '🔄 Heartbeat check (every 4h)',
-    date: '2026-04-14',
-    type: 'recurring',
-    description: 'Site uptime, intake health, mission control health. Auto via OpenClaw cron.',
-    status: 'ready',
+    id: 'may12-post',
+    title: '🔵 Authority Content: Weekly blog post',
+    date: '2026-05-12',
+    time: '10:00 AM',
+    type: 'content',
+    description: 'Weekly authority blog post',
+    status: 'pending',
   },
   {
-    id: 'r3',
-    title: '🔄 Weekly building-in-public update',
-    date: '2026-04-22',
-    type: 'recurring',
-    account: '@VizBizAI',
-    description: 'Every Tuesday: post VizBiz score update, what was fixed, what\'s next.',
+    id: 'may15-fix',
+    title: '🟠 Fix Engine Dogfood: Run pipeline on VizBiz',
+    date: '2026-05-15',
+    time: '9:00 AM',
+    type: 'dogfood',
+    description: 'Run fix engine pipeline on VizBiz (Vlad, GLM-5.1)',
+    status: 'pending',
+  },
+  {
+    id: 'may19-post',
+    title: '🔵 Authority Content: Weekly blog post',
+    date: '2026-05-19',
+    time: '10:00 AM',
+    type: 'content',
+    description: 'Weekly authority blog post',
+    status: 'pending',
+  },
+  {
+    id: 'may26-post',
+    title: '🔵 Authority Content: Weekly blog post',
+    date: '2026-05-26',
+    time: '10:00 AM',
+    type: 'content',
+    description: 'Weekly authority blog post',
+    status: 'pending',
+  },
+  {
+    id: 'jun1-reaudit',
+    title: '🟠 Monthly Re-audit (June)',
+    date: '2026-06-01',
+    time: '9:00 AM',
+    type: 'dogfood',
+    description: 'Monthly re-audit for June',
     status: 'pending',
   },
 
   // ==========================================
-  // Deadlines & Action Items
+  // CLIENT PIPELINE
   // ==========================================
   {
-    id: 'dl1',
-    title: '📌 Pin first tweet on X',
-    date: '2026-04-19',
-    type: 'deadline',
-    description: 'Alex must manually pin. OpenTweet API cannot pin tweets.',
-    status: 'blocked',
-  },
-  {
-    id: 'dl2',
-    title: '🖼️ Upload banner to X profile',
-    date: '2026-04-19',
-    type: 'deadline',
-    description: 'Banner generated at vizbiz/banner.png. Alex must upload manually to X.',
-    status: 'blocked',
-  },
-  {
-    id: 'dl3',
-    title: '👥 Follow 15-18 target accounts on X',
-    date: '2026-04-19',
-    type: 'deadline',
-    description: 'Dealer marketing, AI SEO, local search accounts. Algorithm training.',
+    id: 'lead-artwow',
+    title: '🟢 ArtWow (artwow.ca) — Free report delivered',
+    date: '2026-04-28',
+    type: 'client',
+    description: 'Free report delivered at /report/artwow, status: lead',
     status: 'pending',
   },
   {
-    id: 'dl4',
-    title: '💬 Set up Telegram channels',
-    date: '2026-04-19',
-    type: 'deadline',
-    description: 'Forum-mode supergroup with topics: VizBiz, Trading Bot, General.',
+    id: 'lead-eadance',
+    title: '🟢 EA Dance (eadance.ca) — Free report delivered',
+    date: '2026-04-29',
+    type: 'client',
+    description: 'Free report delivered at /report/ea-dance, status: lead',
     status: 'pending',
   },
   {
-    id: 'dl5',
-    title: '🎨 Design VizBiz logo',
-    date: '2026-04-20',
-    type: 'deadline',
-    description: 'Try HTML/CSS approach (like banner). AI image generators keep producing gibberish text.',
+    id: 'lead-venue',
+    title: '🟢 Venue Experts — Free report delivered',
+    date: '2026-04-30',
+    type: 'client',
+    description: 'Free report delivered at /report/venue-experts, status: lead',
     status: 'pending',
   },
+
+  // ==========================================
+  // RECURRING CRONS (Always Active)
+  // ==========================================
   {
-    id: 'dl6',
-    title: '⏰ OpenTweet trial ends',
-    date: '2026-04-25',
-    type: 'deadline',
-    description: 'Trial ends Apr 25. Decide: keep Pro ($11.99/mo) or upgrade Advanced ($24.99/mo) for analytics.',
-    status: 'pending',
+    id: 'cron-heartbeat',
+    title: '⚪ Heartbeat check (every 4h)',
+    date: '2026-04-30',
+    type: 'recurring',
+    description: 'Site uptime, intake health, mission control health',
+    status: 'ready',
   },
   {
-    id: 'dl7',
-    title: '⏰ Submit VizBiz to AI directories',
-    date: '2026-04-21',
-    type: 'deadline',
-    description: 'Submit vizbiz.ai to AI tool directories for backlinks and citations.',
-    status: 'pending',
+    id: 'cron-leadproc',
+    title: '⚪ Lead processor (every 2h)',
+    date: '2026-04-30',
+    type: 'recurring',
+    description: 'Checks CRM for new leads',
+    status: 'ready',
   },
   {
-    id: 'dl8',
-    title: '🔍 Check GSC validation results',
-    date: '2026-04-25',
-    type: 'deadline',
-    description: '4 issues validated on 4/18. Check if Google has confirmed fixes.',
-    status: 'pending',
+    id: 'cron-sage-daily',
+    title: '⚪ Sage daily intel',
+    date: '2026-04-30',
+    time: '6:00 AM',
+    type: 'recurring',
+    description: 'Daily Sage intel processing',
+    status: 'ready',
+  },
+  {
+    id: 'cron-sage-morning',
+    title: '⚪ Sage morning replies',
+    date: '2026-04-30',
+    time: '7:30 AM',
+    type: 'recurring',
+    description: 'Mon-Sat: Sage morning reply targets',
+    status: 'ready',
+  },
+  {
+    id: 'cron-sage-midday',
+    title: '⚪ Sage midday tweet draft',
+    date: '2026-04-30',
+    time: '12:14 PM',
+    type: 'recurring',
+    description: 'Mon-Sat: Sage midday tweet drafts',
+    status: 'ready',
+  },
+  {
+    id: 'cron-xmonitor',
+    title: '⚪ X monitor (8AM/12PM/4PM/8PM)',
+    date: '2026-04-30',
+    type: 'recurring',
+    description: 'X monitoring at key times',
+    status: 'ready',
   },
 ];
 
 const typeColors: Record<string, { bg: string; text: string; border: string }> = {
-  'x-post': { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/20' },
-  'x-thread': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
   'dogfood': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+  'content': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+  'client': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
   'milestone': { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  'recurring': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  'recurring': { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20' },
   'deadline': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-  'fix': { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
-  'sage': { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
 };
 
 const statusIcons: Record<string, string> = {
@@ -330,11 +232,11 @@ export default function CalendarPage() {
 
   // Group events by week
   const upcoming = events
-    .filter((e) => e.date >= today || e.type === 'recurring' || e.type === 'sage')
+    .filter((e) => e.date >= today || e.type === 'recurring')
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const past = events
-    .filter((e) => e.date < today && e.type !== 'recurring' && e.type !== 'sage')
+    .filter((e) => e.date < today && e.type !== 'recurring')
     .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
@@ -347,10 +249,10 @@ export default function CalendarPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'X Posts Done', value: events.filter((e) => (e.type === 'x-post' || e.type === 'x-thread') && e.status === 'done').length, color: 'text-sky-400' },
-          { label: 'Upcoming Posts', value: events.filter((e) => (e.type === 'x-post' || e.type === 'x-thread') && e.status !== 'done').length, color: 'text-blue-400' },
-          { label: 'Sage Crons', value: events.filter((e) => e.type === 'sage' || e.type === 'recurring').length, color: 'text-indigo-400' },
-          { label: 'Deadlines', value: events.filter((e) => e.type === 'deadline').length, color: 'text-red-400' },
+          { label: 'Dogfood Events', value: events.filter((e) => e.type === 'dogfood').length, color: 'text-amber-400' },
+          { label: 'Content Events', value: events.filter((e) => e.type === 'content').length, color: 'text-blue-400' },
+          { label: 'Client Pipeline', value: events.filter((e) => e.type === 'client').length, color: 'text-emerald-400' },
+          { label: 'Recurring Crons', value: events.filter((e) => e.type === 'recurring').length, color: 'text-slate-400' },
         ].map((s) => (
           <div key={s.label} className="bg-[#111118] border border-slate-800 rounded-xl p-4 text-center">
             <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
