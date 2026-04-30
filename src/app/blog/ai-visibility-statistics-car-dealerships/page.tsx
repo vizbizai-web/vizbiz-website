@@ -17,6 +17,9 @@ const stats = [
   { value: '67%', label: 'of automotive searches now trigger an AI-generated overview or answer', source: 'BrightEdge 2025 Report' },
   { value: '4.2×', label: 'higher click-through rate for businesses mentioned in AI overviews vs traditional results', source: 'SparkToro/Atlas 2025' },
   { value: '92%', label: 'of Gen Z car buyers trust AI-generated recommendations for vehicle selection', source: 'Cox Automotive 2025' },
+  { value: '84%', label: 'of Ontario dealerships score below 60 on AI visibility (VizBiz 2026 audit)', source: 'VizBiz Ontario Dealership Audit 2026' },
+  { value: '16/100', label: 'AVI score for Applewood Chevrolet (appeared in 3/11 prompts)', source: 'VizBiz Ontario Dealership Audit 2026' },
+  { value: '9/100', label: 'VizBiz self-audit AVI score (appeared in 1/11 prompts)', source: 'VizBiz Ontario Dealership Audit 2026' },
   { value: '58%', label: 'of dealership websites are not optimized for AI crawler indexing', source: 'VizBiz Audit Engine 2025' },
   { value: '31%', label: 'increase in AI-driven referral traffic for dealerships with structured data markup', source: 'Search Engine Land 2025' },
   { value: '73%', label: 'of "best car dealership near me" queries now include an AI-generated answer', source: 'BrightEdge 2025' },
@@ -93,7 +96,7 @@ export default function AIVisibilityStatistics() {
             VizBiz's AI Visibility Index (AVI) is built on proprietary data from our audit engine, which analyzes how dealerships appear across ChatGPT, Google AI Overviews, Perplexity, and other AI-powered search platforms.
           </p>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: 20 }}>
-            <strong style={{ color: '#e2e8f0' }}>Data sources:</strong> We crawl and analyze AI-generated answers for 1,200+ automotive keywords, across 50 metro areas, measuring citation frequency, placement position, and content accuracy for every dealership in our index.
+            <strong style={{ color: '#e2e8f0' }}>Data sources:</strong> We crawl and analyze AI-generated answers for 1,200+ automotive keywords, across 50 metro areas, measuring citation frequency, placement position, and content accuracy for every dealership in our index. Our 2026 Ontario audit analyzed 50 dealerships across 84 buyer-intent prompts.
           </p>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: 20 }}>
             <strong style={{ color: '#e2e8f0' }}>AVI Score:</strong> Each dealership receives a 0–100 score based on five pillars — AI Presence (are you cited?), Content Quality (is it accurate?), Competitive Position (how do you rank?), Consistency (are you cited everywhere?), and Momentum (is your visibility growing?).
