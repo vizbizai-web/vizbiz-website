@@ -73,6 +73,7 @@ export interface ResearchResult {
   competitorCategories: string[];
   whyThisMatters: string;
   recommendedNextStep: string;
+  niche: string;
 }
 
 export async function runResearch(
@@ -91,7 +92,7 @@ export async function runResearch(
   const results = await runPromptSearches(prompts, businessName, website, competitors);
   
   // Calculate scores and bands
-  const finalResult = calculateScores(results, businessName, competitors);
+  const finalResult = calculateScores(results, businessName, competitors, nicheConfig.niche);
   
   return finalResult;
 }
@@ -247,7 +248,8 @@ function checkCompetitorAppearance(
 function calculateScores(
   results: PromptResult[],
   businessName: string,
-  competitors: string[]
+  competitors: string[],
+  niche: string
 ): ResearchResult {
   // Count appearances
   const appearedCount = results.filter(r => r.businessAppeared).length;
@@ -267,7 +269,7 @@ function calculateScores(
     statusBand = "Moderate";
   }
   
-  // Determine service visibility (simplified for v1)
+  // Niche-adaptive: dealerships get "Service Visibility", others get "Booking & Inquiry Visibility"
   let serviceVisibility = "Not surfaced";
   if (appearanceRate >= 0.5) {
     serviceVisibility = "Strong";
@@ -287,8 +289,9 @@ function calculateScores(
     competitorLine = "You and your competitors appear equally in AI-driven searches.";
   }
   
-  // Competitor categories (simplified for v1)
-  const competitorCategories = ["stronger local review presence", "clearer service pages"];
+  // Niche-specific competitor categories and messaging
+  const competitorCategories = getCompetitorCategories(niche);
+  const whyThisMatters = getWhyThisMatters(niche);
   
   return {
     prompts: results.map(r => r.prompt),
@@ -301,7 +304,38 @@ function calculateScores(
     competitorMention,
     competitorLine,
     competitorCategories,
-    whyThisMatters: "AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.",
-    recommendedNextStep: "Use the full audit to see the hidden prompt-by-prompt breakdown and what to fix first."
+    whyThisMatters,
+    recommendedNextStep: "Use the full audit to see the hidden prompt-by-prompt breakdown and what to fix first.",
+    niche
   };
+}
+
+function getCompetitorCategories(niche: string): string[] {
+  switch (niche) {
+    case "car_dealership":
+      return ["stronger local review presence", "clearer service and fixed ops pages"];
+    case "venue_wedding":
+      return ["stronger content targeting venue search queries", "clearer pricing and availability signals"];
+    case "dance_studio":
+      return ["stronger presence on class-style queries", "clearer schedule and booking information"];
+    case "real_estate":
+      return ["stronger local market content", "clearer neighborhood expertise signals"];
+    default:
+      return ["stronger local online presence", "clearer service information"];
+  }
+}
+
+function getWhyThisMatters(niche: string): string {
+  switch (niche) {
+    case "car_dealership":
+      return "AI can shape the shortlist before a buyer visits your lot, compares inventory, or books service.";
+    case "venue_wedding":
+      return "AI can shape the shortlist before a couple visits your venue, checks availability, or requests a quote.";
+    case "dance_studio":
+      return "AI can shape the shortlist before someone tries a class, compares studios, or signs up for lessons.";
+    case "real_estate":
+      return "AI can shape the shortlist before a buyer picks an agent, schedules viewings, or lists their home.";
+    default:
+      return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
+  }
 }
