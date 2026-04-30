@@ -460,9 +460,7 @@ export async function initializeSheet(): Promise<void> {
 }
 
 function getSheetName(): string {
-  const raw = process.env.GOOGLE_SHEETS_NAME || "Leads";
-  // Strip all trailing whitespace, newlines, carriage returns, and literal \n
-  return raw.replace(/[\\\n\r\s]+$/g, "").trim();
+  return (process.env.GOOGLE_SHEETS_NAME || "Leads").trim();
 }
 
 function getSheetRange(): string {

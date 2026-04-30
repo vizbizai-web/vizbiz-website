@@ -1,62 +1,47 @@
 import { NextResponse } from "next/server";
-import { getAllLeads } from "@/lib/google-sheets";
 
 export async function GET() {
   try {
-    const allLeads = await getAllLeads();
-    return NextResponse.json({
-      total: allLeads.length,
-      leads: allLeads.map(l => ({
-        dealershipName: l.dealershipName,
-        status: l.status,
-        researchStatus: l.researchStatus,
-        leadId: l.leadId,
-        email: l.email,
-        city: l.city,
-        website: l.website,
-        timestamp: l.timestamp,
-      }))
-    });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const { test } = await request.json().catch(() => ({}));
-    // Import internal functions to test sheet writes
-    const { updateLeadResearchResults, getAllLeads: getAll } = await import("@/lib/google-sheets");
+    // Import everything we need
+    const sheetsModule = await import("@/lib/google-sheets");
     
-    // Get the actual sheet name being used (by reading the env directly)
-    const rawSheetName = process.env.GOOGLE_SHEETS_NAME || "Leads";
-    const cleanSheetName = rawSheetName.replace(/[\\\n\r\s]+$/g, "").trim();
-    
-    const leads = await getAll();
-    const artwow = leads.find(l => l.leadId === "VZB-MOLHDGJK");
+    // Read all leads
+    const leads = await sheetsModule.getAllLeads();
+    const artwow = leads.find((l: any) => l.leadId === "VZB-MOLHDGJK");
     
     if (!artwow) {
-      return NextResponse.json({ error: "ARTWOW lead not found" }, { status: 404 });
+      return NextResponse.json({ error: "ARTWOW not found" });
     }
     
-    // Try updating
-    await updateLeadResearchResults("VZB-MOLHDGJK", {
+    const artwowIdx = leads.findIndex((l: any) => l.leadId === "VZB-MOLHDGJK");
+    const sheetRow = artwowIdx + 2;
+    
+    // Try the update
+    await sheetsModule.updateLeadResearchResults("VZB-MOLHDGJK", {
       status: "researching",
-      researchStatus: "running"
+      researchStatus: "running",
     });
     
+    // Wait a moment
+    await new Promise(r => setTimeout(r, 2000));
+    
     // Read back
-    const leadsAfter = await getAll();
-    const artwowAfter = leadsAfter.find(l => l.leadId === "VZB-MOLHDGJK");
+    const leadsAfter = await sheetsModule.getAllLeads();
+    const artwowAfter = leadsAfter.find((l: any) => l.leadId === "VZB-MOLHDGJK");
     
     return NextResponse.json({
       before: { status: artwow.status, researchStatus: artwow.researchStatus },
       after: { status: artwowAfter?.status, researchStatus: artwowAfter?.researchStatus },
-      sheetNameRaw: process.env.GOOGLE_SHEETS_NAME,
-      sheetNameCodes: Array.from(process.env.GOOGLE_SHEETS_NAME || "").map(c => c.charCodeAt(0)),
-      cleanSheetName
+      sheetRow,
+      leadIndex: artwowIdx,
+      envSheetName: JSON.stringify(process.env.GOOGLE_SHEETS_NAME),
     });
-  } catch (error) {
-    return NextResponse.json({ error: String(error), stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ 
+      error: String(error),
+      stack: error?.stack?.split('\n').slice(0, 5)
+    }, { status: 500 });
   }
 }
+
+export async function POST() { return GET(); }
