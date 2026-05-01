@@ -26,7 +26,7 @@ export default function AboutPage() {
     "@type": "Organization",
     name: "VizBiz",
     url: "https://vizbiz.ai",
-    logo: "https://vizbiz.ai/logo.png",
+    logo: "https://vizbiz.ai/logo.jpg",
     description:
       "VizBiz helps car dealerships measure and improve how they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini.",
     email: "hello@vizbiz.ai",
@@ -72,16 +72,16 @@ export default function AboutPage() {
                 Car buyers aren't just Googling anymore. They're asking ChatGPT for dealership recommendations, using Google AI Overviews for research, and querying Perplexity for comparisons. These AI systems decide which dealerships to mention — and most dealerships are invisible to them.
               </p>
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-[1.5rem] border border-[#3b82f6]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
-                  <div className="text-3xl font-bold text-[#3b82f6]">11/100</div>
+                <div className="rounded-[1.5rem] border border-[#25D1F2]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
+                  <div className="text-3xl font-bold text-[#25D1F2]">11/100</div>
                   <div className="mt-2 text-sm text-[var(--text-secondary)]">Average AI visibility score for Ontario dealerships</div>
                 </div>
-                <div className="rounded-[1.5rem] border border-[#3b82f6]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
-                  <div className="text-3xl font-bold text-[#3b82f6]">30%</div>
+                <div className="rounded-[1.5rem] border border-[#25D1F2]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
+                  <div className="text-3xl font-bold text-[#25D1F2]">30%</div>
                   <div className="mt-2 text-sm text-[var(--text-secondary)]">Of car buyers start research with an AI chatbot</div>
                 </div>
-                <div className="rounded-[1.5rem] border border-[#3b82f6]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
-                  <div className="text-3xl font-bold text-[#3b82f6]">47%</div>
+                <div className="rounded-[1.5rem] border border-[#25D1F2]/20 bg-white/[0.03] p-5 text-center backdrop-blur-sm">
+                  <div className="text-3xl font-bold text-[#25D1F2]">47%</div>
                   <div className="mt-2 text-sm text-[var(--text-secondary)]">Of auto search queries show Google AI Overviews</div>
                 </div>
               </div>
@@ -116,7 +116,7 @@ export default function AboutPage() {
               ].map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-[1.5rem] border border-[#3b82f6]/20 bg-white/[0.03] p-6 backdrop-blur-sm sm:p-8"
+                  className="rounded-[1.5rem] border border-[#25D1F2]/20 bg-white/[0.03] p-6 backdrop-blur-sm sm:p-8"
                 >
                   <h3 className="text-lg font-semibold text-[#6d9fff]">{item.title}</h3>
                   <p className="mt-3 text-base leading-8 text-[var(--text-secondary)]">

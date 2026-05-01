@@ -36,7 +36,7 @@ export default function WhatIsAIVisibilityDealerships() {
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
           Think of it like this: when Google Maps recommends a coffee shop, that coffee shop gets foot traffic. When ChatGPT recommends a dealership to someone looking to buy a car, that dealership gets a lead — without that buyer ever clicking a website.
         </p>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 28, marginTop: 24 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 28, marginTop: 24 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, margin: 0 }}>
             <strong style={{ color: '#fff' }}>In plain English:</strong> AI visibility is whether AI systems know your dealership exists, trust that you exist, and recommend you to the right buyers. That's it. That's the whole game.
           </p>
@@ -95,7 +95,7 @@ export default function WhatIsAIVisibilityDealerships() {
             { signal: 'Citations from authoritative sources', detail: 'Local news mentions, industry directories, Wikipedia-style references' },
           ].map((item) => (
             <div key={item.signal} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ minWidth: 8, height: 8, borderRadius: '50%', background: '#3b82f6', marginTop: 8, flexShrink: 0 }} />
+              <div style={{ minWidth: 8, height: 8, borderRadius: '50%', background: '#25D1F2', marginTop: 8, flexShrink: 0 }} />
               <div>
                 <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{item.signal}</strong>
                 <span style={{ color: '#64748b', fontSize: '0.9rem' }}> — {item.detail}</span>
@@ -135,7 +135,7 @@ export default function WhatIsAIVisibilityDealerships() {
             },
           ].map((item) => (
             <div key={item.context} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 28 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{item.context}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#25D1F2', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{item.context}</div>
               <p style={{ color: '#cbd5e1', lineHeight: 1.7, fontSize: '0.93rem', marginBottom: 16, fontStyle: 'italic' }}>"{item.scenario}"</p>
               <div style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 12, padding: 16, marginBottom: 12 }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Strong AI Visibility</div>
@@ -203,8 +203,8 @@ export default function WhatIsAIVisibilityDealerships() {
             { stat: '83.3%', label: 'Of AI answers come from just the top 10 sources (BrightEdge)' },
             { stat: '11/100', label: 'Average AI Visibility Score of 50 Ontario dealerships audited' },
           ].map((item) => (
-            <div key={item.stat} style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', borderRadius: 16, padding: 24, textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#3b82f6', marginBottom: 8 }}>{item.stat}</div>
+            <div key={item.stat} style={{ background: 'rgba(37,209,242,0.05)', border: '1px solid rgba(37,209,242,0.12)', borderRadius: 16, padding: 24, textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#25D1F2', marginBottom: 8 }}>{item.stat}</div>
               <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>{item.label}</p>
             </div>
           ))}
@@ -232,7 +232,7 @@ export default function WhatIsAIVisibilityDealerships() {
           ].map((item) => (
             <div key={item.name} style={{ display: 'flex', gap: 20, alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 18 }}>
               <div style={{ minWidth: 48, textAlign: 'center' }}>
-                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#3b82f6' }}>{item.pct}</span>
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#25D1F2' }}>{item.pct}</span>
               </div>
               <div>
                 <div style={{ fontWeight: 600, color: '#fff', marginBottom: 2 }}>{item.name}</div>
@@ -251,7 +251,7 @@ export default function WhatIsAIVisibilityDealerships() {
         <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: 32 }}>
           Run a free AVI check for your dealership. You'll see exactly where you appear — and where you don't — across ChatGPT, Gemini, and Perplexity. No credit card. Takes 2 minutes.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Run Your Free AVI Check →
         </a>
         <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 16 }}>

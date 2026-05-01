@@ -197,7 +197,7 @@ export default function AIVisibilityScoring() {
               {
                 range: "15–39",
                 label: "Weak",
-                color: "text-orange-600",
+                color: "text-cyan-500",
                 description:
                   "Rare appearances. Most buyers asking AI about your category won't hear about you.",
               },

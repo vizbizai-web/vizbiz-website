@@ -105,7 +105,7 @@ export default function InsightsPage() {
             {tweets.map((tweet) => (
               <article
                 key={tweet.id}
-                className="rounded-[1.5rem] border border-[#3b82f6]/20 bg-white/[0.03] p-6 backdrop-blur-sm transition hover:border-[#3b82f6]/40 hover:bg-white/[0.05] sm:p-8"
+                className="rounded-[1.5rem] border border-[#25D1F2]/20 bg-white/[0.03] p-6 backdrop-blur-sm transition hover:border-[#25D1F2]/40 hover:bg-white/[0.05] sm:p-8"
               >
                 <p className="text-base leading-8 text-slate-200 sm:text-lg">
                   {tweet.text}
@@ -125,7 +125,7 @@ export default function InsightsPage() {
                     href="https://x.com/VizBizAI"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto rounded-xl border border-[#3b82f6]/30 px-4 py-1.5 text-xs font-semibold text-[#6d9fff] transition hover:border-[#3b82f6]/60 hover:bg-[#3b82f6]/10"
+                    className="ml-auto rounded-xl border border-[#25D1F2]/30 px-4 py-1.5 text-xs font-semibold text-[#6d9fff] transition hover:border-[#25D1F2]/60 hover:bg-[#25D1F2]/10"
                   >
                     View on X →
                   </a>

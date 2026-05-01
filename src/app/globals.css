@@ -4,12 +4,12 @@
   --bg-primary: #07090f;
   --bg-secondary: #0a0d16;
   --bg-card: rgba(255, 255, 255, 0.03);
-  --accent-blue: #6d9fff;
-  --accent-blue-bright: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.15);
+  --accent-blue: #25D1F2;
+  --accent-blue-bright: #25D1F2;
+  --accent-blue-glow: rgba(37, 209, 242, 0.15);
   --accent-green: #34d399;
-  --accent-orange: #EA580C;
-  --accent-orange-glow: rgba(234, 88, 12, 0.15);
+  --accent-orange: #25D1F2;
+  --accent-orange-glow: rgba(37, 209, 242, 0.15);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
   --border-subtle: rgba(255, 255, 255, 0.06);
@@ -86,7 +86,7 @@ body {
 }
 
 .logo-ai {
-  color: var(--accent-blue);
+  color: #25D1F2;
 }
 
 /* ─── HERO ─── */
@@ -223,7 +223,7 @@ body {
 }
 
 .scene-bar-blue {
-  background: linear-gradient(90deg, #3b82f6, #6d9fff);
+  background: linear-gradient(90deg, #25D1F2, #6d9fff);
 }
 
 .scene-bar-green {
@@ -231,7 +231,7 @@ body {
 }
 
 .scene-bar-yellow {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: linear-gradient(90deg, #25D1F2, #22D3EE);
 }
 
 .scene-bar-red {
@@ -300,16 +300,16 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #06B6D4, #25D1F2);
   color: white;
   font-weight: 600;
   transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 20px rgba(37, 209, 242, 0.2);
 }
 
 .premium-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.35), 0 8px 24px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 30px rgba(37, 209, 242, 0.35), 0 8px 24px rgba(37, 209, 242, 0.2);
 }
 
 .secondary-button {
@@ -332,7 +332,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #EA580C, #DC2626);
+  background: linear-gradient(135deg, #06B6D4, #25D1F2);
   color: white;
   font-weight: 600;
   transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;

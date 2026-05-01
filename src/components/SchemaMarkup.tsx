@@ -7,7 +7,7 @@ export default function SchemaMarkup() {
     "name": "VizBiz.ai",
     "alternateName": "VizBiz AI Visibility Solutions",
     "url": "https://vizbiz.ai",
-    "logo": "https://vizbiz.ai/logo.png",
+    "logo": "https://vizbiz.ai/logo.jpg",
     "description": "VizBiz is an AI visibility intelligence company for car dealerships. We help dealers understand, improve, and track how they appear in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search experiences.",
     "foundingDate": "2025",
     "founders": [

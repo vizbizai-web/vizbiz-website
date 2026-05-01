@@ -40,8 +40,8 @@ export default function OntarioDealershipScores() {
 
       {/* Key Takeaways */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 18, padding: 28 }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#3b82f6', marginBottom: 16 }}>Key Takeaways</h2>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 18, padding: 28 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#25D1F2', marginBottom: 16 }}>Key Takeaways</h2>
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>The average Ontario dealership scored 11/100 on AI visibility — meaning they're nearly invisible in AI-generated answers.</li>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>The top 3 scorers all shared specific traits: structured data, 150+ reviews on 4+ platforms, and detailed website content.</li>
@@ -56,7 +56,7 @@ export default function OntarioDealershipScores() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           How We Scored Them
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 32 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 32 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
             We selected 50 Ontario dealerships across the GTA, Ottawa, Hamilton, London, and Kitchener-Waterloo — a mix of new-car franchises and independent used-car dealers.
           </p>
@@ -79,7 +79,7 @@ export default function OntarioDealershipScores() {
       {/* The Score */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px', textAlign: 'center' }}>
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 48 }}>
-          <div style={{ fontSize: '4rem', fontWeight: 800, color: '#3b82f6', lineHeight: 1, marginBottom: 12 }}>11 / 100</div>
+          <div style={{ fontSize: '4rem', fontWeight: 800, color: '#25D1F2', lineHeight: 1, marginBottom: 12 }}>11 / 100</div>
           <div style={{ fontSize: '1.1rem', color: '#94a3b8', maxWidth: 500, margin: '0 auto' }}>
             Average AI Visibility Index score across 50 Ontario dealerships. That means the typical dealership is cited in roughly 1 out of every 9 relevant AI-generated answers.
           </div>
@@ -102,10 +102,10 @@ export default function OntarioDealershipScores() {
             <div key={item.cat} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>{item.cat}</h3>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#3b82f6' }}>{item.score}</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#25D1F2' }}>{item.score}</div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 6, height: 8, marginBottom: 12 }}>
-                <div style={{ background: '#3b82f6', borderRadius: 6, height: 8, width: `${item.pct}%` }} />
+                <div style={{ background: '#25D1F2', borderRadius: 6, height: 8, width: `${item.pct}%` }} />
               </div>
               <p style={{ color: '#94a3b8', lineHeight: 1.65, margin: 0 }}>{item.desc}</p>
             </div>
@@ -124,9 +124,9 @@ export default function OntarioDealershipScores() {
             { rank: '2', score: '41/100', traits: ['180+ reviews across 5 platforms', 'Comprehensive FAQ page (25+ questions)', 'Dedicated financing page with specific programs listed', 'Consistent NAP across 12+ citation sources', 'Active GBP with weekly posts and photo updates'] },
             { rank: '3', score: '36/100', traits: ['150+ Google reviews, strong DealerRater presence', 'Service pages with pricing and process descriptions', 'Structured data on every page (not just homepage)', 'Local community sponsorships generating online citations', 'Video content on YouTube that AI models reference'] },
           ].map((item) => (
-            <div key={item.rank} style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 18, padding: 28 }}>
+            <div key={item.rank} style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 18, padding: 28 }}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 14 }}>
-                <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1.2rem' }}>#{item.rank}</div>
+                <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1.2rem' }}>#{item.rank}</div>
                 <div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff' }}>Score: {item.score}</div>
                 </div>
@@ -158,7 +158,7 @@ export default function OntarioDealershipScores() {
             { step: '5', title: 'Build a financing page', body: 'The weakest category across all 50 dealerships. A single detailed page covering your financing options, partners, and programs can move your Finance score from 5 to 30+ in weeks.' },
           ].map((item) => (
             <div key={item.step} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
-              <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem' }}>{item.step}</div>
+              <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 700, fontSize: '1.1rem' }}>{item.step}</div>
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: 6 }}>{item.title}</h3>
                 <p style={{ color: '#94a3b8', lineHeight: 1.65, margin: 0 }}>{item.body}</p>
@@ -170,14 +170,14 @@ export default function OntarioDealershipScores() {
 
       {/* CTA */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 20, padding: 48 }}>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 20, padding: 48 }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginBottom: 12 }}>
             Get Your Dealership Scored — Free
           </h2>
           <p style={{ color: '#94a3b8', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
             We'll run the same 84-prompt audit for your dealership and show you exactly where you stand — and what to fix first.
           </p>
-          <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+          <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
             Get Your Free AI Visibility Score →
           </a>
         </div>

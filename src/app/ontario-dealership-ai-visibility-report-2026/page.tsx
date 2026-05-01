@@ -32,7 +32,7 @@ export default function OntarioReportPage() {
     "publisher": {
       "@type": "Organization",
       "name": "VizBiz",
-      "logo": { "@type": "ImageObject", "url": "https://vizbiz.ai/logo.png" }
+      "logo": { "@type": "ImageObject", "url": "https://vizbiz.ai/logo.jpg" }
     },
     "mainEntityOfPage": "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
     "wordCount": 1200,

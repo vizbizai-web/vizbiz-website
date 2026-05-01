@@ -65,7 +65,7 @@ export default function AIVisibilityStatistics() {
         <p style={{ fontSize: '1.15rem', color: '#94a3b8', maxWidth: 680, margin: '0 auto 32px' }}>
           Data-driven insights on how AI-powered search is reshaping automotive retail — and what your dealership can do about it.
         </p>
-        <div style={{ display: 'inline-block', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 100, padding: '8px 20px', color: '#3b82f6', fontSize: '0.85rem' }}>
+        <div style={{ display: 'inline-block', background: 'rgba(37,209,242,0.15)', border: '1px solid rgba(37,209,242,0.3)', borderRadius: 100, padding: '8px 20px', color: '#25D1F2', fontSize: '0.85rem' }}>
           Updated April 2026 · 35 Statistics · 12 Sources
         </div>
       </section>
@@ -78,7 +78,7 @@ export default function AIVisibilityStatistics() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
           {stats.map((s, i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#3b82f6', marginBottom: 8 }}>{s.value}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#25D1F2', marginBottom: 8 }}>{s.value}</div>
               <div style={{ fontSize: '0.95rem', color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5 }}>{s.label}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Source: {s.source}</div>
             </div>
@@ -91,7 +91,7 @@ export default function AIVisibilityStatistics() {
         <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           Our Methodology: How We Collect This Data
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 36 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 36 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: 20 }}>
             VizBiz's AI Visibility Index (AVI) is built on proprietary data from our audit engine, which analyzes how dealerships appear across ChatGPT, Google AI Overviews, Perplexity, and other AI-powered search platforms.
           </p>
@@ -142,7 +142,7 @@ export default function AIVisibilityStatistics() {
             { step: '5', title: 'Monitor and Iterate', body: 'AI visibility changes weekly. Track your AVI score, watch competitors, and adjust. The dealerships that win will be the ones that treat AI visibility as an ongoing practice — not a one-time project.' },
           ].map((item) => (
             <div key={item.step} style={{ display: 'flex', gap: 20, alignItems: 'flex-start', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
-              <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem' }}>{item.step}</div>
+              <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 700, fontSize: '1.1rem' }}>{item.step}</div>
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: 6 }}>{item.title}</h3>
                 <p style={{ color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>{item.body}</p>
@@ -151,7 +151,7 @@ export default function AIVisibilityStatistics() {
           ))}
         </div>
         <div style={{ marginTop: 40, textAlign: 'center' }}>
-          <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+          <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
             Run Your Free AI Visibility Audit →
           </a>
         </div>

@@ -40,8 +40,8 @@ export default function GEOGuide() {
 
       {/* Key Takeaways */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 18, padding: 28 }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#3b82f6', marginBottom: 16 }}>Key Takeaways</h2>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 18, padding: 28 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#25D1F2', marginBottom: 16 }}>Key Takeaways</h2>
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>GEO (Generative Engine Optimization) focuses on getting your dealership cited by AI models — not just ranking on search pages.</li>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Four AI engines matter most for dealerships: ChatGPT, Google Gemini, Google AI Overviews, and Perplexity.</li>
@@ -82,7 +82,7 @@ export default function GEOGuide() {
             { name: 'Perplexity', desc: 'Fastest-growing AI search engine. Cites sources explicitly — your dealership name appears as a clickable reference. High-intent users who are actively researching.', signal: 'Citations, structured data, web presence' },
           ].map((engine) => (
             <div key={engine.name} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#3b82f6', marginBottom: 10 }}>{engine.name}</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#25D1F2', marginBottom: 10 }}>{engine.name}</h3>
               <p style={{ color: '#94a3b8', lineHeight: 1.65, marginBottom: 12, margin: '0 0 12px' }}>{engine.desc}</p>
               <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Key signals: {engine.signal}</div>
             </div>
@@ -108,8 +108,8 @@ export default function GEOGuide() {
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981', marginBottom: 4, textTransform: 'uppercase' }}>Still Matters</div>
                 <p style={{ color: '#cbd5e1', margin: 0, fontSize: '0.93rem' }}>{item.same}</p>
               </div>
-              <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 12, padding: 16 }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#3b82f6', marginBottom: 4, textTransform: 'uppercase' }}>New in GEO</div>
+              <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 12, padding: 16 }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#25D1F2', marginBottom: 4, textTransform: 'uppercase' }}>New in GEO</div>
                 <p style={{ color: '#cbd5e1', margin: 0, fontSize: '0.93rem' }}>{item.change}</p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function GEOGuide() {
           ].map((item) => (
             <div key={item.num} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ minWidth: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1rem' }}>{item.num}</div>
+                <div style={{ minWidth: 36, height: 36, borderRadius: 10, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1rem' }}>{item.num}</div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', margin: 0 }}>{item.title}</h3>
               </div>
               <p style={{ color: '#94a3b8', lineHeight: 1.65, margin: 0, paddingLeft: 50 }}>{item.body}</p>
@@ -151,7 +151,7 @@ export default function GEOGuide() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           How to Measure Your AI Visibility
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 32 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 32 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
             VizBiz's AI Visibility Index (AVI) measures your dealership's presence across AI engines using a 0–100 score based on five pillars:
           </p>
@@ -170,14 +170,14 @@ export default function GEOGuide() {
 
       {/* CTA */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 20, padding: 48 }}>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 20, padding: 48 }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginBottom: 12 }}>
             Start With Your AI Visibility Audit
           </h2>
           <p style={{ color: '#94a3b8', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
             Find out where your dealership stands across ChatGPT, Gemini, Google AI Overviews, and Perplexity — and get a prioritized fix list.
           </p>
-          <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+          <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
             Get Your AI Visibility Audit →
           </a>
         </div>

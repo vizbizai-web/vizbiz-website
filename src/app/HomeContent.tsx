@@ -411,7 +411,7 @@ export default function HomeContent() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{ delay: i * 0.15, duration: 0.5 }}
-                  whileHover={{ y: -4, borderColor: 'rgba(59,130,246,0.3)' }}
+                  whileHover={{ y: -4, borderColor: 'rgba(37,209,242,0.3)' }}
                   className="glass-card rounded-2xl p-6 border border-transparent transition-colors"
                 >
                   <div className="flex items-center gap-3">

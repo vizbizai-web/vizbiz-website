@@ -105,14 +105,14 @@ export function ScoreTracker({ currentScore, band, change, scans, categories, hi
           </text>
           {/* Area */}
           {scans.length > 1 && (
-            <polygon points={areaPoints} fill="rgba(59,130,246,0.1)" />
+            <polygon points={areaPoints} fill="rgba(37,209,242,0.1)" />
           )}
           {/* Line */}
-          <polyline points={linePoints} fill="none" stroke="#3b82f6" strokeWidth="2.5" />
+          <polyline points={linePoints} fill="none" stroke="#25D1F2" strokeWidth="2.5" />
           {/* Points */}
           {scans.map((s, i) => (
             <g key={i}>
-              <circle cx={xScale(i)} cy={yScale(s.score)} r="5" fill="#3b82f6" stroke="#111118" strokeWidth="2" />
+              <circle cx={xScale(i)} cy={yScale(s.score)} r="5" fill="#25D1F2" stroke="#111118" strokeWidth="2" />
               <text x={xScale(i)} y={chartH - 5} textAnchor="middle" className="fill-slate-500 text-xs">
                 {new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </text>

@@ -44,7 +44,7 @@ export default function OntarioDealershipAudit() {
         <p style={{ fontSize: '1.15rem', color: '#94a3b8', maxWidth: 680, margin: '0 auto 32px' }}>
           Original research from VizBiz's AI audit engine: 84% of Ontario dealerships score below 60 on AI visibility. Real data, real insights.
         </p>
-        <div style={{ display: 'inline-block', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 100, padding: '8px 20px', color: '#3b82f6', fontSize: '0.85rem' }}>
+        <div style={{ display: 'inline-block', background: 'rgba(37,209,242,0.15)', border: '1px solid rgba(37,209,242,0.3)', borderRadius: 100, padding: '8px 20px', color: '#25D1F2', fontSize: '0.85rem' }}>
           April 2026 · 50 Dealerships · 84 Buyer-Intent Prompts
         </div>
       </section>
@@ -144,7 +144,7 @@ export default function OntarioDealershipAudit() {
         <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           How We Conducted This Audit
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 36 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 36 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: 20 }}>
             We analyzed 50 Ontario dealerships across 84 buyer-intent prompts using VizBiz's proprietary AI audit engine. Our methodology:
           </p>
@@ -192,7 +192,7 @@ export default function OntarioDealershipAudit() {
         <p style={{ color: '#94a3b8', marginBottom: 32, lineHeight: 1.6, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
           This data is from real Ontario dealerships. Want to see how your dealership compares? Run a free AI visibility audit.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Get Your Free AVI Score →
         </a>
       </section>

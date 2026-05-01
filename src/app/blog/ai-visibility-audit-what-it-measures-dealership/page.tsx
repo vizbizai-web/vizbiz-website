@@ -55,7 +55,7 @@ export default function AIVisibilityAuditGuide() {
             </div>
           ))}
         </div>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 28, marginTop: 24 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 28, marginTop: 24 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, margin: 0 }}>
             <strong style={{ color: '#fff' }}>The goal isn't just a number.</strong> It's understanding exactly which signals AI is picking up on, where your competitors have an edge, and which fixes will move the needle most.
           </p>
@@ -136,7 +136,7 @@ export default function AIVisibilityAuditGuide() {
             <div key={item.name} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 28 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ minWidth: 48, textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3b82f6' }}>{item.pct}</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#25D1F2' }}>{item.pct}</span>
                 </div>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#fff', margin: 0 }}>{item.name}</h3>
               </div>
@@ -146,12 +146,12 @@ export default function AIVisibilityAuditGuide() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
                 {item.examples.map((ex) => (
                   <div key={ex} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ minWidth: 6, height: 6, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />
+                    <div style={{ minWidth: 6, height: 6, borderRadius: '50%', background: '#25D1F2', flexShrink: 0 }} />
                     <span style={{ color: '#94a3b8', fontSize: '0.88rem', fontStyle: 'italic' }}>{ex}</span>
                   </div>
                 ))}
               </div>
-              <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', borderRadius: 10, padding: 12 }}>
+              <div style={{ background: 'rgba(37,209,242,0.05)', border: '1px solid rgba(37,209,242,0.12)', borderRadius: 10, padding: 12 }}>
                 <p style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}><strong style={{ color: '#fff' }}>Why it matters:</strong> {item.weightNote}</p>
               </div>
             </div>
@@ -191,7 +191,7 @@ export default function AIVisibilityAuditGuide() {
             },
           ].map((item) => (
             <div key={item.step} style={{ display: 'flex', gap: 20 }}>
-              <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>{item.step}</div>
+              <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1rem', flexShrink: 0 }}>{item.step}</div>
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: 8 }}>{item.title}</h3>
                 <p style={{ color: '#94a3b8', lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
@@ -199,7 +199,7 @@ export default function AIVisibilityAuditGuide() {
             </div>
           ))}
         </div>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 16, padding: 24, marginTop: 24 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 16, padding: 24, marginTop: 24 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, margin: 0 }}>
             <strong style={{ color: '#fff' }}>Why 84 prompts?</strong> Research on AI recommendation behavior shows that recommendation patterns vary significantly by query type. One or two prompts can't capture the full picture — you need enough queries to see patterns in where dealers appear and where they don't. 84 is the minimum threshold we found that produces consistent, reproducible scores.
           </p>
@@ -236,14 +236,14 @@ export default function AIVisibilityAuditGuide() {
                 { name: 'Dealer E (Toronto)', d: 5, t: 7, s: 3, i: 2, f: 1, total: 18, badge: 'Invisible' },
                 { name: '📊 Average (50 dealers)', d: 9, t: 8, s: 5, i: 4, f: 2, total: 11, badge: '' },
               ].map((row, i) => (
-                <tr key={row.name} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i === 5 ? 'rgba(59,130,246,0.04)' : 'transparent' }}>
-                  <td style={{ padding: '12px 16px', color: i === 5 ? '#3b82f6' : '#cbd5e1', fontWeight: i === 5 ? 600 : 400 }}>{row.name}</td>
+                <tr key={row.name} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i === 5 ? 'rgba(37,209,242,0.04)' : 'transparent' }}>
+                  <td style={{ padding: '12px 16px', color: i === 5 ? '#25D1F2' : '#cbd5e1', fontWeight: i === 5 ? 600 : 400 }}>{row.name}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.d}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.t}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.s}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.i}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.f}</td>
-                  <td style={{ textAlign: 'center', padding: '12px 16px', fontWeight: 700, color: i === 5 ? '#3b82f6' : row.total >= 50 ? '#10b981' : row.total >= 30 ? '#25D1F2' : '#ef4444' }}>{row.total}</td>
+                  <td style={{ textAlign: 'center', padding: '12px 16px', fontWeight: 700, color: i === 5 ? '#25D1F2' : row.total >= 50 ? '#10b981' : row.total >= 30 ? '#25D1F2' : '#ef4444' }}>{row.total}</td>
                 </tr>
               ))}
             </tbody>
@@ -310,8 +310,8 @@ export default function AIVisibilityAuditGuide() {
             },
           ].map((row) => (
             <div key={row.dimension} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-              <div style={{ padding: '14px 16px', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'rgba(59,130,246,0.04)' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>SEO Audit</div>
+              <div style={{ padding: '14px 16px', borderRight: '1px solid rgba(255,255,255,0.06)', background: 'rgba(37,209,242,0.04)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#25D1F2', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>SEO Audit</div>
                 <div style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.5 }}>{row.seo}</div>
               </div>
               <div style={{ padding: '14px 16px', background: 'rgba(16,185,129,0.04)' }}>
@@ -368,7 +368,7 @@ export default function AIVisibilityAuditGuide() {
         <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: 32 }}>
           Find out exactly where your dealership stands across ChatGPT, Gemini, and Perplexity. Get your score, your category breakdown, and your top 3 gaps — free.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Run Your Free AVI Audit →
         </a>
         <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 16 }}>

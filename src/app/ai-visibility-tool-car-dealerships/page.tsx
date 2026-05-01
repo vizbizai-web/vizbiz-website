@@ -23,7 +23,7 @@ export default function AIVisibilityTool() {
         <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: 640, margin: '0 auto 40px', lineHeight: 1.6 }}>
           Measure, track, and improve how your dealership appears in ChatGPT, Google AI Overviews, Perplexity, and every AI-powered search result your buyers use.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '16px 40px', borderRadius: 14, fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '16px 40px', borderRadius: 14, fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none' }}>
           Start Your Free Audit →
         </a>
       </section>
@@ -63,8 +63,8 @@ export default function AIVisibilityTool() {
             { step: '3', title: 'Get your AVI score', desc: 'Your AI Visibility Index score (0–100) shows exactly how visible you are across AI search results.' },
             { step: '4', title: 'Follow the action plan', desc: 'Prioritized, dealership-specific recommendations tell you exactly what to fix for maximum impact.' },
           ].map((item) => (
-            <div key={item.step} style={{ display: 'flex', gap: 20, alignItems: 'flex-start', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', borderRadius: 16, padding: 28 }}>
-              <div style={{ minWidth: 48, height: 48, borderRadius: 14, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1.2rem' }}>{item.step}</div>
+            <div key={item.step} style={{ display: 'flex', gap: 20, alignItems: 'flex-start', background: 'rgba(37,209,242,0.05)', border: '1px solid rgba(37,209,242,0.12)', borderRadius: 16, padding: 28 }}>
+              <div style={{ minWidth: 48, height: 48, borderRadius: 14, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1.2rem' }}>{item.step}</div>
               <div>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: 6 }}>{item.title}</h3>
                 <p style={{ color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>{item.desc}</p>
@@ -81,7 +81,7 @@ export default function AIVisibilityTool() {
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
           {[
-            { pillar: 'AI Presence', weight: '25%', desc: 'Are you mentioned in AI-generated answers for buyer-intent keywords in your market?', color: '#3b82f6' },
+            { pillar: 'AI Presence', weight: '25%', desc: 'Are you mentioned in AI-generated answers for buyer-intent keywords in your market?', color: '#25D1F2' },
             { pillar: 'Content Quality', weight: '20%', desc: 'When AI does mention you, is the information accurate, complete, and favorable?', color: '#8b5cf6' },
             { pillar: 'Competitive Position', weight: '20%', desc: 'How do you rank vs other dealerships in your area for the same AI queries?', color: '#06b6d4' },
             { pillar: 'Consistency', weight: '20%', desc: 'Are you cited across multiple AI platforms — or only one?', color: '#10b981' },
@@ -108,7 +108,7 @@ export default function AIVisibilityTool() {
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 <th style={{ textAlign: 'left', padding: '12px 16px', color: '#64748b', fontWeight: 600 }}>Feature</th>
-                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#3b82f6', fontWeight: 600 }}>VizBiz</th>
+                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#25D1F2', fontWeight: 600 }}>VizBiz</th>
                 <th style={{ textAlign: 'center', padding: '12px 16px', color: '#64748b', fontWeight: 600 }}>Manual</th>
               </tr>
             </thead>
@@ -125,7 +125,7 @@ export default function AIVisibilityTool() {
               ].map(([feature, vizbiz, manual], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '14px 16px', color: '#cbd5e1' }}>{feature}</td>
-                  <td style={{ textAlign: 'center', padding: '14px 16px', color: '#3b82f6', fontWeight: 600 }}>{vizbiz}</td>
+                  <td style={{ textAlign: 'center', padding: '14px 16px', color: '#25D1F2', fontWeight: 600 }}>{vizbiz}</td>
                   <td style={{ textAlign: 'center', padding: '14px 16px', color: '#64748b' }}>{manual}</td>
                 </tr>
               ))}
@@ -142,7 +142,7 @@ export default function AIVisibilityTool() {
         <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginBottom: 36, lineHeight: 1.6 }}>
           The question is whether AI is recommending you — or your competitor. Find out in 5 minutes.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '16px 44px', borderRadius: 14, fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '16px 44px', borderRadius: 14, fontWeight: 600, fontSize: '1.1rem', textDecoration: 'none' }}>
           Run Your Free AI Visibility Audit →
         </a>
       </section>

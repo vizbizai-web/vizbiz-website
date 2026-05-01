@@ -40,8 +40,8 @@ export default function GetRecommendedByChatGPT() {
 
       {/* Key Takeaways */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 18, padding: 28 }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#3b82f6', marginBottom: 16 }}>Key Takeaways</h2>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 18, padding: 28 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#25D1F2', marginBottom: 16 }}>Key Takeaways</h2>
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>ChatGPT bases dealership recommendations on structured data, reviews, entity signals, and third-party citations — not backlinks.</li>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>38% of car buyers have asked an AI assistant for dealership recommendations. That number is growing fast.</li>
@@ -128,7 +128,7 @@ export default function GetRecommendedByChatGPT() {
           ].map((item) => (
             <div key={item.step} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 28 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1.1rem' }}>{item.step}</div>
+                <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1.1rem' }}>{item.step}</div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', margin: 0 }}>{item.title}</h3>
               </div>
               <p style={{ color: '#94a3b8', lineHeight: 1.7, margin: 0 }}>{item.body}</p>
@@ -142,7 +142,7 @@ export default function GetRecommendedByChatGPT() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           Timeline: What to Expect and When
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 32 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 32 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {[
               { period: 'Weeks 1–2', desc: 'You complete structured data fixes, GBP optimization, and NAP consistency. These changes are immediate from a technical standpoint but take time for AI crawlers to process.' },
@@ -151,7 +151,7 @@ export default function GetRecommendedByChatGPT() {
               { period: 'Months 3–6', desc: 'Compounding effects kick in. Your content library grows, review velocity increases, and citations accumulate. This is where dealerships that started early pull ahead of competitors.' },
             ].map((item, i) => (
               <div key={i}>
-                <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 4 }}>{item.period}</div>
+                <div style={{ fontWeight: 700, color: '#25D1F2', marginBottom: 4 }}>{item.period}</div>
                 <p style={{ color: '#94a3b8', lineHeight: 1.65, margin: 0 }}>{item.desc}</p>
               </div>
             ))}
@@ -161,14 +161,14 @@ export default function GetRecommendedByChatGPT() {
 
       {/* CTA */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 20, padding: 48 }}>
+        <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 20, padding: 48 }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginBottom: 12 }}>
             Find Out If ChatGPT Is Recommending You
           </h2>
           <p style={{ color: '#94a3b8', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
             Get your free AI visibility score and see exactly where your dealership appears — and doesn't — across ChatGPT, Gemini, and Google AI Overviews.
           </p>
-          <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+          <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
             Get Your Free AI Visibility Score →
           </a>
         </div>

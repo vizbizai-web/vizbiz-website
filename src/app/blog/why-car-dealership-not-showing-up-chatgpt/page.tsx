@@ -30,7 +30,7 @@ export default function ChatGPTVisibilityGuide() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           Why This Matters Right Now
         </h2>
-        <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 20, padding: 32 }}>
+        <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 32 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
             ChatGPT has over 200 million weekly users. When someone types "best car dealership near me" or "where should I buy a used Honda Civic in [city]," ChatGPT gives them an answer — and that answer names specific dealerships.
           </p>
@@ -83,7 +83,7 @@ export default function ChatGPTVisibilityGuide() {
           ].map((item) => (
             <div key={item.num} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 32 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 14 }}>
-                <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', fontWeight: 800, fontSize: '1.1rem' }}>{item.num}</div>
+                <div style={{ minWidth: 40, height: 40, borderRadius: 12, background: 'rgba(37,209,242,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D1F2', fontWeight: 800, fontSize: '1.1rem' }}>{item.num}</div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', margin: 0 }}>{item.title}</h3>
               </div>
               <p style={{ color: '#94a3b8', lineHeight: 1.7, marginBottom: 16 }}>{item.body}</p>
@@ -108,8 +108,8 @@ export default function ChatGPTVisibilityGuide() {
             { week: 'Week 3', tasks: ['Build dedicated make/model pages on your website', 'Create a comprehensive FAQ page', 'Start a blog — publish your first buyer-guide post'] },
             { week: 'Week 4', tasks: ['Run an AI visibility audit to measure your baseline', 'Compare against your top 3 local competitors', 'Set up weekly monitoring to track improvements'] },
           ].map((item) => (
-            <div key={item.week} style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', borderRadius: 14, padding: 24 }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#3b82f6', marginBottom: 12 }}>{item.week}</h3>
+            <div key={item.week} style={{ background: 'rgba(37,209,242,0.05)', border: '1px solid rgba(37,209,242,0.12)', borderRadius: 14, padding: 24 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#25D1F2', marginBottom: 12 }}>{item.week}</h3>
               <ul style={{ margin: 0, paddingLeft: 20 }}>
                 {item.tasks.map((t, i) => (
                   <li key={i} style={{ color: '#cbd5e1', lineHeight: 1.8, fontSize: '0.93rem' }}>{t}</li>
@@ -148,7 +148,7 @@ export default function ChatGPTVisibilityGuide() {
         <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: 32 }}>
           Run a free AI visibility audit and see exactly where your dealership appears — and where it doesn't.
         </p>
-        <a href="/" style={{ display: 'inline-block', background: '#3b82f6', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
+        <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Run Your Free AI Visibility Audit →
         </a>
       </section>
