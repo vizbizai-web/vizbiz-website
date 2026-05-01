@@ -84,7 +84,7 @@ export default function OntarioDealershipAudit() {
               {dealershipData.map((d, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: 16, color: '#e2e8f0', fontWeight: 500 }}>{d.name}</td>
-                  <td style={{ padding: 16, color: d.avi >= 40 ? '#10b981' : d.avi >= 20 ? '#f59e0b' : '#ef4444', fontWeight: 700 }}>{d.avi}/100</td>
+                  <td style={{ padding: 16, color: d.avi >= 40 ? '#10b981' : d.avi >= 20 ? '#25D1F2' : '#ef4444', fontWeight: 700 }}>{d.avi}/100</td>
                   <td style={{ padding: 16, color: '#94a3b8' }}>{d.prompts}</td>
                   <td style={{ padding: 16, color: '#94a3b8' }}>{d.topCompetitor}</td>
                 </tr>
@@ -108,7 +108,7 @@ export default function OntarioDealershipAudit() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 }}>
           {categoryStats.map((c, i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: c.avgScore >= 40 ? '#10b981' : c.avgScore >= 30 ? '#f59e0b' : '#ef4444', marginBottom: 8 }}>{c.avgScore}/100</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: c.avgScore >= 40 ? '#10b981' : c.avgScore >= 30 ? '#25D1F2' : '#ef4444', marginBottom: 8 }}>{c.avgScore}/100</div>
               <div style={{ fontSize: '1rem', fontWeight: 600, color: '#fff', marginBottom: 8 }}>{c.category}</div>
               <div style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5 }}>{c.description}</div>
             </div>

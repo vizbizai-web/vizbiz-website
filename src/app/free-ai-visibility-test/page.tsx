@@ -379,8 +379,8 @@ export default function FreeTestPage() {
 
         <footer className="border-t border-white/6 px-4 py-12 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:justify-between">
-            <Link href="/" className="logo-wordmark text-xl">
-              <span>VizBiz</span><span className="logo-ai">.ai</span>
+            <Link href="/">
+              <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '36px', width: 'auto' }} />
             </Link>
             <p className="text-xs text-white/30">
               © {new Date().getFullYear()} VizBiz.ai — All rights reserved.

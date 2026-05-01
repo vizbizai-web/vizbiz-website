@@ -98,9 +98,9 @@ export function ScoreTracker({ currentScore, band, change, scans, categories, hi
           {/* Benchmark line */}
           <line
             x1={padL} y1={benchmarkY} x2={chartW - padR} y2={benchmarkY}
-            stroke="#f59e0b" strokeWidth="1" strokeDasharray="6,4"
+            stroke="#25D1F2" strokeWidth="1" strokeDasharray="6,4"
           />
-          <text x={chartW - padR + 4} y={benchmarkY + 4} className="fill-yellow-500 text-xs">
+          <text x={chartW - padR + 4} y={benchmarkY + 4} className="fill-cyan-500 text-xs">
             ON avg 11
           </text>
           {/* Area */}

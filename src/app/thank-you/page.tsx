@@ -54,9 +54,8 @@ export default async function ThankYouPage({
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <header className="site-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="logo-wordmark text-xl sm:text-[1.35rem]">
-            <span>VizBiz</span>
-            <span className="logo-ai">.ai</span>
+          <Link href="/">
+            <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '36px', width: 'auto' }} />
           </Link>
         </div>
       </header>

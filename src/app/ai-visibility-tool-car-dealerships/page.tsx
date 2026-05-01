@@ -85,7 +85,7 @@ export default function AIVisibilityTool() {
             { pillar: 'Content Quality', weight: '20%', desc: 'When AI does mention you, is the information accurate, complete, and favorable?', color: '#8b5cf6' },
             { pillar: 'Competitive Position', weight: '20%', desc: 'How do you rank vs other dealerships in your area for the same AI queries?', color: '#06b6d4' },
             { pillar: 'Consistency', weight: '20%', desc: 'Are you cited across multiple AI platforms — or only one?', color: '#10b981' },
-            { pillar: 'Momentum', weight: '15%', desc: 'Is your AI visibility growing, stable, or declining over time?', color: '#f59e0b' },
+            { pillar: 'Momentum', weight: '15%', desc: 'Is your AI visibility growing, stable, or declining over time?', color: '#25D1F2' },
           ].map((item) => (
             <div key={item.pillar} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 28 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

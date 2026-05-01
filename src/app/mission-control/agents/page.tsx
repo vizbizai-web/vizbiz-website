@@ -46,7 +46,7 @@ const agents = [
     role: 'Intelligence Analyst',
     status: 'offline' as const,
     avatar: 'R',
-    color: 'from-orange-500 to-red-600',
+    color: 'from-cyan-500 to-cyan-600',
     description: 'Gathers competitive intelligence, market data, and industry insights.',
     currentTask: 'Offline',
     skills: ['Market Research', 'Competitive Analysis', 'Data Mining'],

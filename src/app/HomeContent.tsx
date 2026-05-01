@@ -121,7 +121,7 @@ export default function HomeContent() {
         <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
           {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#07090f] via-[#0a0d16] to-[#07090f]" aria-hidden="true" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(234,88,12,0.08),transparent)]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(6,182,212,0.08),transparent)]" aria-hidden="true" />
 
           <div className="relative z-10 w-full max-w-6xl mx-auto">
             {/* Top area: centered text + buttons (like Bombon) */}
@@ -145,7 +145,7 @@ export default function HomeContent() {
                 <br />
                 recommending
                 <br />
-                <span className="bg-gradient-to-r from-[#EA580C] to-[#F97316] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#06B6D4] to-[#25D1F2] bg-clip-text text-transparent">
                   your dealership.
                 </span>
               </motion.h1>
@@ -167,7 +167,7 @@ export default function HomeContent() {
               >
                 <Link
                   href="/intake/"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#EA580C] to-[#F97316] px-8 py-4 text-sm font-semibold text-white shadow-[0_0_30px_rgba(234,88,12,0.3)] transition-all hover:shadow-[0_0_40px_rgba(234,88,12,0.5)] hover:scale-[1.02] min-h-14 text-base"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#06B6D4] to-[#25D1F2] px-8 py-4 text-sm font-semibold text-white shadow-[0_0_30px_rgba(6,182,212,0.3)] transition-all hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] hover:scale-[1.02] min-h-14 text-base"
                 >
                   Get My AVI Snapshot
                 </Link>
@@ -205,17 +205,17 @@ export default function HomeContent() {
                       </div>
                       <span className="text-xs text-white/40 ml-2">vizbiz.ai/dashboard</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-[#EA580C]/10 border border-[#EA580C]/20 rounded-lg px-3 py-1.5">
-                      <span className="text-xs text-[#F97316] font-medium">AVI Score</span>
-                      <span className="text-2xl font-bold text-[#EA580C]">42</span>
-                      <span className="text-xs text-[#EA580C]/60">/100</span>
+                    <div className="flex items-center gap-2 bg-[#06B6D4]/10 border border-[#06B6D4]/20 rounded-lg px-3 py-1.5">
+                      <span className="text-xs text-[#25D1F2] font-medium">AVI Score</span>
+                      <span className="text-2xl font-bold text-[#06B6D4]">42</span>
+                      <span className="text-xs text-[#06B6D4]/60">/100</span>
                     </div>
                   </div>
 
                   {/* Score bars */}
                   <div className="space-y-3">
                     {[
-                      { name: 'Dealer Discovery', score: 42, weight: 30, color: '#F97316' },
+                      { name: 'Dealer Discovery', score: 42, weight: 30, color: '#25D1F2' },
                       { name: 'Trust & Reviews', score: 37, weight: 25, color: '#EF4444' },
                       { name: 'Service Visibility', score: 34, weight: 20, color: '#EF4444' },
                       { name: 'Used Inventory', score: 52, weight: 15, color: '#FBBF24' },
@@ -238,7 +238,7 @@ export default function HomeContent() {
                   <div className="mt-6 pt-5 border-t border-white/[0.06]">
                     <p className="text-xs text-white/30 mb-3 uppercase tracking-wider">Competitor Gap</p>
                     <div className="flex gap-6 items-end">
-                      {[{ name: 'Your Store', score: 42, color: '#EA580C' }, { name: 'Competitor A', score: 78, color: '#22C55E' }, { name: 'Competitor B', score: 65, color: '#22C55E' }].map((c) => (
+                      {[{ name: 'Your Store', score: 42, color: '#06B6D4' }, { name: 'Competitor A', score: 78, color: '#22C55E' }, { name: 'Competitor B', score: 65, color: '#22C55E' }].map((c) => (
                         <div key={c.name} className="flex flex-col items-center gap-2 flex-1">
                           <div className="w-full bg-white/[0.03] rounded-lg overflow-hidden h-20 flex items-end">
                             <div
@@ -556,9 +556,8 @@ export default function HomeContent() {
         <footer className="border-t border-white/6 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <Link href="/" className="logo-wordmark text-xl">
-                <span>VizBiz</span>
-                <span className="logo-ai">.ai</span>
+              <Link href="/">
+                <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '36px', width: 'auto' }} />
               </Link>
               <p className="mt-2 max-w-xs text-sm leading-6 text-[var(--text-secondary)]">
                 AI Visibility Intelligence for car dealerships.

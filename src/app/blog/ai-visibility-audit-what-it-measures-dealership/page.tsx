@@ -243,7 +243,7 @@ export default function AIVisibilityAuditGuide() {
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.s}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.i}</td>
                   <td style={{ textAlign: 'center', padding: '12px 16px', color: '#94a3b8' }}>{row.f}</td>
-                  <td style={{ textAlign: 'center', padding: '12px 16px', fontWeight: 700, color: i === 5 ? '#3b82f6' : row.total >= 50 ? '#10b981' : row.total >= 30 ? '#f59e0b' : '#ef4444' }}>{row.total}</td>
+                  <td style={{ textAlign: 'center', padding: '12px 16px', fontWeight: 700, color: i === 5 ? '#3b82f6' : row.total >= 50 ? '#10b981' : row.total >= 30 ? '#25D1F2' : '#ef4444' }}>{row.total}</td>
                 </tr>
               ))}
             </tbody>
@@ -255,7 +255,7 @@ export default function AIVisibilityAuditGuide() {
             <span style={{ color: '#64748b', fontSize: '0.83rem' }}>50+ Strong</span>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#25D1F2' }} />
             <span style={{ color: '#64748b', fontSize: '0.83rem' }}>30-49 Building</span>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

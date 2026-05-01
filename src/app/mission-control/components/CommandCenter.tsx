@@ -18,7 +18,7 @@ interface CommandCenterProps {
 
 const priorityColors: Record<string, string> = {
   critical: 'bg-red-500',
-  high: 'bg-orange-500',
+  high: 'bg-cyan-500',
   warning: 'bg-yellow-500',
   error: 'bg-red-500',
   info: 'bg-blue-500',
@@ -98,12 +98,12 @@ export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
             VizBiz AVI Score
           </h2>
           <div className="flex items-end gap-2">
-            <span className="text-4xl font-bold text-amber-400">9</span>
+            <span className="text-4xl font-bold text-cyan-400">9</span>
             <span className="text-slate-500 text-lg mb-1">/100</span>
           </div>
           <p className="text-slate-500 text-sm mt-2">Latest audit Apr 9 — Re-audit May 1</p>
           <div className="mt-3 h-2 bg-slate-800/50 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style={{ width: '22%' }} />
+            <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full" style={{ width: '22%' }} />
           </div>
         </div>
 

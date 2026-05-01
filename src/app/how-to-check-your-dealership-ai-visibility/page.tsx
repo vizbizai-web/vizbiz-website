@@ -60,7 +60,7 @@ const testPrompts = [
 const scoringScale = [
   { range: "80–100", label: "Strong", color: "text-green-400", desc: "Your dealership appears consistently and often as a top recommendation across AI platforms." },
   { range: "55–79", label: "Moderate", color: "text-yellow-400", desc: "You appear in some categories but competitors are often recommended ahead of you." },
-  { range: "30–54", label: "Weak", color: "text-orange-400", desc: "You occasionally appear but most AI answers favor other dealerships." },
+  { range: "30–54", label: "Weak", color: "text-cyan-400", desc: "You occasionally appear but most AI answers favor other dealerships." },
   { range: "0–29", label: "Not Visible", color: "text-red-400", desc: "AI systems rarely or never mention your dealership when buyers ask about dealers in your area." },
 ];
 
