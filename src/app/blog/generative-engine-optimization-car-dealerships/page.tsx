@@ -25,7 +25,7 @@ export default function GEOGuide() {
   };
 
   return (
-    <main style={{ backgroundColor: '#07090f', minHeight: '100vh', color: '#e2e8f0' }}>
+    <main style={{ backgroundColor: '#02091F', minHeight: '100vh', color: '#e2e8f0' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}

@@ -66,7 +66,7 @@ const posts = [
 
 export default function BlogIndex() {
   return (
-    <main style={{ backgroundColor: "#07090f", minHeight: "100vh", color: "#e2e8f0" }}>
+    <main style={{ backgroundColor: "#02091F", minHeight: "100vh", color: "#e2e8f0" }}>
       {/* Hero */}
       <section style={{ padding: "80px 24px 60px", textAlign: "center", maxWidth: 860, margin: "0 auto" }}>
         <h1 style={{ fontSize: "2.4rem", fontWeight: 800, lineHeight: 1.2, marginBottom: 16, color: "#fff" }}>

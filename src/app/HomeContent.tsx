@@ -120,7 +120,7 @@ export default function HomeContent() {
         {/* ─── HERO — Bombon-style ─── */}
         <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
           {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#07090f] via-[#0a0d16] to-[#07090f]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#02091F] via-[#0A0F1E] to-[#02091F]" aria-hidden="true" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(6,182,212,0.08),transparent)]" aria-hidden="true" />
 
           <div className="relative z-10 w-full max-w-6xl mx-auto">

@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function AIVisibilityTool() {
   return (
-    <main style={{ backgroundColor: '#07090f', minHeight: '100vh', color: '#e2e8f0' }}>
+    <main style={{ backgroundColor: '#02091F', minHeight: '100vh', color: '#e2e8f0' }}>
       {/* Hero */}
       <section style={{ padding: '100px 24px 80px', textAlign: 'center', maxWidth: 900, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2.8rem', fontWeight: 800, lineHeight: 1.15, marginBottom: 24, color: '#fff' }}>
