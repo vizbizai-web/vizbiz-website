@@ -26,7 +26,7 @@ export default function SiteHeader({ ctaLabel = "Get My Snapshot" }: SiteHeaderP
     <header className="site-header relative z-50 text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center">
-          <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '44px', width: 'auto' }} />
+          <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '72px', width: 'auto' }} />
         </Link>
 
         <div className="hidden items-center gap-8 lg:flex">
