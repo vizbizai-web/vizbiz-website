@@ -7,106 +7,294 @@ export const metadata: Metadata = {
 };
 
 export default function ReportPage({ params }: { params: { leadId: string } }) {
-  // Sample data for E&A Dance Studio - will be replaced with dynamic data from leadId
-  const businessName = "E&A Dance Studio";
-  const location = "Auckland, NZ";
+  // Lead data lookup
+  const LEADS: Record<string, any> = {
+    'test': {
+      businessName: 'Test Business',
+      contactName: 'Test Contact',
+      location: 'Test Location',
+      website: 'test.com',
+      aviScore: 50,
+      totalPrompts: 10,
+      promptsAppeared: 5,
+      currencySymbol: '$',
+      currencyCode: 'USD',
+      profitAtRisk: { low: 100, high: 500 },
+      categories: [
+        { name: 'Test Category', score: 50, description: 'Test description', icon: '🔍' },
+      ],
+      visibleQueries: ['test query'],
+      invisibleQueries: ['invisible test'],
+      competitors: [
+        { name: 'Test Business (You)', score: 5, color: 'bg-amber-500' },
+      ],
+    'VZB-MOJSCVQM': {
+      businessName: 'The Venue Experts',
+      contactName: 'Stacey',
+      location: 'Melton Mowbray, UK',
+      website: 'thevenueexperts.co.uk',
+      aviScore: 42,
+      totalPrompts: 20,
+      promptsAppeared: 8,
+      currencySymbol: '£',
+      currencyCode: 'GBP',
+      profitAtRisk: { low: 300, high: 900 },
+      categories: [
+        { name: 'Brand Discovery', score: 65, description: 'How often you appear when venue owners search for consultancy services' },
+        { name: 'Trust & Reviews', score: 50, description: 'What AI platforms say about your reputation' },
+        { name: 'Consultancy Visibility', score: 35, description: 'Whether you appear for venue consultancy queries' },
+        { name: 'Competitive Position', score: 40, description: 'How you compare to Kelly Chandler and Kelly Mortimer' },
+        { name: 'Content & Authority', score: 30, description: 'Whether AI tools see you as an authority in venue consulting' },
+      ],
+      visibleQueries: ['venue consultant UK', 'wedding venue consultant', 'venue consultancy services'],
+      invisibleQueries: ['wedding venue sales training', 'how to increase wedding bookings', 'venue profitability consulting', 'venue marketing strategies', 'hotel wedding sales consultant', 'rural venue diversification', 'venue customer experience training', 'wedding venue business coach', 'luxury venue consultant UK', 'venue sales director'],
+      competitors: [
+        { name: 'The Venue Experts (You)', score: 8, isYou: true },
+        { name: 'Kelly Chandler Consulting', score: 13 },
+    'VZB-MOKMWAAI': {
+      businessName: 'E&A Dance Studio',
+      contactName: 'Enrique & Amy',
+      location: 'Auckland, NZ',
+      website: 'eadancestudiosnz.com',
+      aviScore: 28,
+      totalPrompts: 20,
+      promptsAppeared: 4,
+      currencySymbol: 'NZ$',
+      currencyCode: 'NZD',
+      profitAtRisk: { low: 400, high: 1200 },
+      categories: [
+        { name: 'Brand Discovery', score: 35, description: 'How often you appear in dance studio searches' },
+        { name: 'Trust & Reviews', score: 40, description: 'What AI platforms say about your reputation' },
+        { name: 'Class & Booking Visibility', score: 15, description: 'Whether you appear for class-related queries' },
+        { name: 'Competitive Position', score: 20, description: 'How you compare to Neverland Studios and Ceroc' },
+      ],
+      visibleQueries: ['dance studio Auckland', 'ballroom dancing classes', 'Auckland dance lessons', 'best dance school'],
+      invisibleQueries: ['wedding dance lessons Auckland', 'salsa dancing Auckland', 'kids dance classes', 'adult dance classes', 'hip hop dance studio', 'contemporary dance Auckland', 'dance studio near me', 'private dance lessons', 'dance classes for beginners', 'latin dance Auckland'],
+      competitors: [
+        { name: 'E&A Dance Studio (You)', score: 4, isYou: true },
+        { name: 'Neverland Studios', score: 12 },
+        { name: 'Ceroc French Jive', score: 11 },
+    'VZB-MOLHDGJK': {
+      businessName: 'ARTWOW',
+      contactName: 'Liz',
+      location: 'London/Essex, UK',
+      website: 'artwow.co',
+      aviScore: 89,
+      totalPrompts: 19,
+      promptsAppeared: 17,
+      currencySymbol: '£',
+      currencyCode: 'GBP',
+      profitAtRisk: { low: 400, high: 1250 },
+      categories: [
+        { name: 'Portfolio & Inquiry Visibility', score: 92, description: 'How often your products appear in art print searches' },
+        { name: 'Brand Discovery', score: 88, description: 'Whether AI tools recognize your brand' },
+        { name: 'Trust & Reviews', score: 85, description: 'What AI platforms say about your quality' },
+        { name: 'Content & Authority', score: 82, description: 'Whether AI tools see you as an authority' },
+        { name: 'Competitive Position', score: 95, description: 'How you compare to Redbubble and Eleanor Bowmer' },
+      ],
+      visibleQueries: ['art prints UK', 'unique wall art', 'independent artist prints', 'art gifts UK', 'homeware art prints', 'buy art prints online UK', 'modern art prints', 'affordable art UK'],
+      invisibleQueries: ['unique wedding gifts UK', 'personalized housewarming presents', 'art prints for living room', 'best art print marketplace UK'],
+      competitors: [
+        { name: 'Redbubble', score: 18, isYou: false },
+        { name: 'ARTWOW (You)', score: 17, isYou: true },
+        { name: 'Eleanor Bowmer', score: 10 },
+      ],
+      recommendations: [
+        { id: 1, title: 'Maintain strong portfolio visibility', description: 'Continue showcasing your unique art prints and maintain the strong portfolio presence that's working well.', impact: 'Low' },
+        { id: 2, title: 'Expand into gift markets', description: 'Create content targeting gift-related searches like wedding gifts and housewarming presents to capture additional market share.', impact: 'Medium' },
+        { id: 3, title: 'Leverage competitive advantage', description: 'Highlight what makes ARTWOW unique compared to larger marketplaces like Redbubble to maintain your strong competitive position.', impact: 'Medium' },
+      ]
+    },
+    'VZB-MOJSCVQM': {
+      businessName: 'The Venue Experts',
+      contactName: 'Stacey',
+      location: 'Melton Mowbray, UK',
+      website: 'thevenueexperts.co.uk',
+      aviScore: 42,
+      totalPrompts: 20,
+      promptsAppeared: 8,
+      currencySymbol: '£',
+      currencyCode: 'GBP',
+      profitAtRisk: { low: 300, high: 900 },
+      categories: [
+        { name: 'Brand Discovery', score: 65, description: 'How often you appear when venue owners search for consultancy services', icon: '🔍' },
+        { name: 'Trust & Reviews', score: 50, description: 'What AI platforms say about your reputation', icon: '⭐' },
+        { name: 'Consultancy Visibility', score: 35, description: 'Whether you appear for venue consultancy queries', icon: '📅' },
+        { name: 'Competitive Position', score: 40, description: 'How you compare to Kelly Chandler and Kelly Mortimer', icon: '🏆' },
+        { name: 'Content & Authority', score: 30, description: 'Whether AI tools see you as an authority in venue consulting', icon: '📚' },
+      ],
+      visibleQueries: ['venue consultant UK', 'wedding venue consultant', 'venue consultancy services'],
+      invisibleQueries: ['wedding venue sales training', 'how to increase wedding bookings', 'venue profitability consulting', 'venue marketing strategies', 'hotel wedding sales consultant', 'rural venue diversification', 'venue customer experience training', 'wedding venue business coach', 'luxury venue consultant UK', 'venue sales director'],
+      competitors: [
+        { name: 'The Venue Experts (You)', score: 8, color: 'bg-red-500' },
+        { name: 'Kelly Chandler Consulting', score: 13, color: 'bg-green-500' },
+        { name: 'Kelly Mortimer', score: 15, color: 'bg-green-500' },
+      ],
+      recommendations: [
+        { id: 1, title: 'Claim venue consultancy searches', description: 'Optimize for venue consultancy and wedding venue consulting queries.', impact: 'High' },
+        { id: 2, title: 'Build authority content', description: 'Create in-depth guides and case studies to establish expertise.', impact: 'High' },
+        { id: 3, title: 'Improve local visibility', description: 'Strengthen local SEO for UK venue owners searching for consultants.', impact: 'Medium' },
+      ]
+    },
+    'VZB-MOKMWAAI': {
+      businessName: 'E&A Dance Studio',
+      contactName: 'Enrique & Amy',
+      location: 'Auckland, NZ',
+      website: 'eadancestudiosnz.com',
+      aviScore: 28,
+      totalPrompts: 20,
+      promptsAppeared: 4,
+      currencySymbol: 'NZ$',
+      currencyCode: 'NZD',
+      profitAtRisk: { low: 400, high: 1200 },
+      categories: [
+        { name: 'Brand Discovery', score: 35, description: 'How often you appear in dance studio searches', icon: '🔍' },
+        { name: 'Trust & Reviews', score: 40, description: 'What AI platforms say about your reputation', icon: '⭐' },
+        { name: 'Class & Booking Visibility', score: 15, description: 'Whether you appear for class-related queries', icon: '📅' },
+        { name: 'Competitive Position', score: 20, description: 'How you compare to Neverland Studios and Ceroc', icon: '🏆' },
+      ],
+      visibleQueries: ['dance studio Auckland', 'ballroom dancing classes', 'Auckland dance lessons', 'best dance school'],
+      invisibleQueries: ['wedding dance lessons Auckland', 'salsa dancing Auckland', 'kids dance classes', 'adult dance classes', 'hip hop dance studio', 'contemporary dance Auckland', 'dance studio near me', 'private dance lessons', 'dance classes for beginners', 'latin dance Auckland'],
+      competitors: [
+        { name: 'E&A Dance Studio (You)', score: 4, color: 'bg-red-500' },
+        { name: 'Neverland Studios', score: 12, color: 'bg-green-500' },
+        { name: 'Ceroc French Jive', score: 11, color: 'bg-green-500' },
+        { name: 'Viva Dance', score: 9, color: 'bg-amber-500' },
+      ],
+      recommendations: [
+        { id: 1, title: "Claim 'ballroom dancing Auckland'", description: 'Optimize your content and listings to appear for ballroom dancing searches in Auckland.', impact: 'High' },
+        { id: 2, title: "Own 'wedding dance lessons Auckland'", description: 'Create targeted content and get listed for wedding dance preparation searches.', impact: 'High' },
+        { id: 3, title: "Get visible on 'dance studio Auckland'", description: 'Improve your local SEO and AI visibility for general dance studio searches.', impact: 'Medium' },
+      ]
+    },
+    'VZB-MOLHDGJK': {
+      businessName: 'ARTWOW',
+      contactName: 'Liz',
+      location: 'London/Essex, UK',
+      website: 'artwow.co',
+      aviScore: 89,
+      totalPrompts: 19,
+      promptsAppeared: 17,
+      currencySymbol: '£',
+      currencyCode: 'GBP',
+      profitAtRisk: { low: 400, high: 1250 },
+      categories: [
+        { name: 'Portfolio & Inquiry Visibility', score: 92, description: 'How often your products appear in art print searches', icon: '🔍' },
+        { name: 'Brand Discovery', score: 88, description: 'Whether AI tools recognize your brand', icon: '⭐' },
+        { name: 'Trust & Reviews', score: 85, description: 'What AI platforms say about your quality', icon: '📅' },
+        { name: 'Content & Authority', score: 82, description: 'Whether AI tools see you as an authority', icon: '🏆' },
+        { name: 'Competitive Position', score: 95, description: 'How you compare to Redbubble and Eleanor Bowmer', icon: '📚' },
+      ],
+      visibleQueries: ['art prints UK', 'unique wall art', 'independent artist prints', 'art gifts UK', 'homeware art prints', 'buy art prints online UK', 'modern art prints', 'affordable art UK'],
+      invisibleQueries: ['unique wedding gifts UK', 'personalized housewarming presents', 'art prints for living room', 'best art print marketplace UK'],
+      competitors: [
+        { name: 'Redbubble', score: 18, color: 'bg-green-500' },
+        { name: 'ARTWOW (You)', score: 17, color: 'bg-green-500' },
+        { name: 'Eleanor Bowmer', score: 10, color: 'bg-amber-500' },
+      ],
+      recommendations: [
+        { id: 1, title: 'Expand into gift markets', description: 'Optimize for wedding and housewarming gift searches to capture more sales.', impact: 'High' },
+        { id: 2, title: 'Strengthen local SEO', description: 'Improve visibility for UK-specific art print searches.', impact: 'Medium' },
+        { id: 3, title: 'Build content authority', description: 'Create guides and blog content to establish expertise in art prints.', impact: 'Medium' },
+      ]
+    },
+    'VZB-MOO1ESDC': {
+      businessName: 'GoalCraft',
+      contactName: 'Akchhat',
+      location: 'Kapurthala, India',
+      website: 'goalcraft.in',
+      aviScore: 35,
+      totalPrompts: 18,
+      promptsAppeared: 6,
+      currencySymbol: '₹',
+      currencyCode: 'INR',
+      profitAtRisk: { low: 3000, high: 9000 },
+      categories: [
+        { name: 'Brand Discovery', score: 30, description: 'How often you appear in restaurant consulting searches', icon: '🔍' },
+        { name: 'Trust & Authority', score: 25, description: 'What AI platforms say about your expertise', icon: '⭐' },
+        { name: 'Service Offering Visibility', score: 40, description: 'Whether you appear for Zomato/Swiggy consulting queries', icon: '📅' },
+        { name: 'Competitive Position', score: 35, description: 'How you compare to Restrosol', icon: '🏆' },
+        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority', icon: '📚' },
+      ],
+      visibleQueries: ['restaurant consultant India', 'Zomato optimization', 'online food delivery consulting'],
+      invisibleQueries: ['how to increase Zomato orders', 'Swiggy listing optimization', 'restaurant menu engineering India', 'cloud kitchen consultant', 'restaurant growth consulting', 'food delivery app optimization', 'restaurant online order consultant'],
+      competitors: [
+        { name: 'GoalCraft (You)', score: 6, color: 'bg-red-500' },
+        { name: 'Restrosol', score: 9, color: 'bg-green-500' },
+      ],
+      recommendations: [
+        { id: 1, title: 'Optimize for Zomato/Swiggy', description: 'Create targeted content and guides for food delivery platform optimization.', impact: 'High' },
+        { id: 2, title: 'Build trust signals', description: 'Improve reviews, testimonials, and case studies to boost AI trust scores.', impact: 'High' },
+        { id: 3, title: 'Expand service visibility', description: 'Get visible for more specific restaurant consulting queries.', impact: 'Medium' },
+      ]
+    },
+    'VZB-MOO57ZGT': {
+      businessName: 'Old Touch Spices',
+      contactName: 'Chaitanya',
+      location: 'Delhi, India',
+      website: 'oldtouchspices.com',
+      aviScore: 32,
+      totalPrompts: 22,
+      promptsAppeared: 7,
+      currencySymbol: '₹',
+      currencyCode: 'INR',
+      profitAtRisk: { low: 1900, high: 6400 },
+      categories: [
+        { name: 'Brand Discovery', score: 28, description: 'How often you appear in spice brand searches', icon: '🔍' },
+        { name: 'Trust & Reviews', score: 35, description: 'What AI platforms say about your quality', icon: '⭐' },
+        { name: 'Product Visibility', score: 30, description: 'Whether your products appear in spice searches', icon: '📅' },
+        { name: 'Competitive Position', score: 25, description: 'How you compare to Zoff, Catch, and MDH', icon: '🏆' },
+        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority', icon: '📚' },
+      ],
+      visibleQueries: ['premium spices online India', 'quality masala brand', 'buy spices online Delhi'],
+      invisibleQueries: ['best masala brand India', 'premium garam masala', 'organic spices India', 'best spice for biryani', 'whole spices online', 'spice gift set India', 'authentic Indian spices online', 'certified spice brand India', 'BRCGS certified spices'],
+      competitors: [
+        { name: 'MDH Masala', score: 20, color: 'bg-green-500' },
+        { name: 'Catch', score: 17, color: 'bg-green-500' },
+        { name: 'Zoff', score: 14, color: 'bg-amber-500' },
+        { name: 'Old Touch Spices (You)', score: 7, color: 'bg-red-500' },
+      ],
+      recommendations: [
+        { id: 1, title: 'Build brand recognition', description: 'Improve visibility for premium spice brand searches.', impact: 'High' },
+        { id: 2, title: 'Target specific products', description: 'Optimize for high-value spice searches like garam masala and gift sets.', impact: 'High' },
+        { id: 3, title: 'Strengthen trust signals', description: 'Improve reviews, certifications, and quality signals for AI platforms.', impact: 'Medium' },
+      ]
+    }
+  };
+
+  // Get lead data or show not found
+  const leadData = LEADS[params.leadId];
+  
+  if (!leadData) {
+    return (
+      <div className="min-h-screen bg-[#02091F] text-white font-['Poppins'] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Report not found</h1>
+          <p className="text-gray-400 mb-8">The report you're looking for doesn't exist or has been moved.</p>
+          <a href="https://vizbiz.ai" className="bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg hover:bg-[#06B6D4] transition-colors font-medium">
+            Return to VizBiz.ai
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const { businessName, location, aviScore, totalPrompts, promptsAppeared, currencySymbol, profitAtRisk, categories, visibleQueries, invisibleQueries, competitors, recommendations } = leadData;
+  
   const dateGenerated = new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   });
   
-  const aviScore = 28;
-  const totalPrompts = 20;
-  const promptsAppeared = 4;
-  const competitorsBeating = 4;
-  const quickWins = 3;
+  const competitorsBeating = competitors.filter((c: any) => c.score > promptsAppeared).length;
+  const quickWins = recommendations.length;
   
-  // Revenue impact data (sample - will be calculated dynamically)
   const revenueImpact = {
-    monthlyLow: 2300,
-    monthlyHigh: 9900,
-    currencySymbol: '$'
+    monthlyLow: profitAtRisk.low,
+    monthlyHigh: profitAtRisk.high,
+    currencySymbol: currencySymbol
   };
-  
-  const categories = [
-    {
-      name: "Brand Discovery",
-      score: 35,
-      description: "How often you appear when people search for dance studios",
-      icon: "🔍"
-    },
-    {
-      name: "Trust & Reviews",
-      score: 40,
-      description: "What AI platforms say when asked about you",
-      icon: "⭐"
-    },
-    {
-      name: "Class & Booking Visibility",
-      score: 15,
-      description: "Whether you appear for class-related and booking queries",
-      icon: "📅"
-    },
-    {
-      name: "Competitive Position",
-      score: 20,
-      description: "How you stack up against nearby competitors",
-      icon: "🏆"
-    }
-  ];
-  
-  const visibleQueries = [
-    "dance studio Auckland",
-    "ballroom dancing classes",
-    "Auckland dance lessons",
-    "best dance school"
-  ];
-  
-  const invisibleQueries = [
-    "wedding dance lessons Auckland",
-    "salsa dancing Auckland",
-    "kids dance classes",
-    "adult dance classes",
-    "hip hop dance studio",
-    "contemporary dance Auckland",
-    "dance studio near me",
-    "private dance lessons",
-    "dance classes for beginners",
-    "latin dance Auckland",
-    "dance studio with parking",
-    "evening dance classes",
-    "weekend dance workshops"
-  ];
-  
-  const competitors = [
-    { name: "E&A Dance Studio", score: 4, color: "bg-red-500" },
-    { name: "Neverland Studios", score: 12, color: "bg-amber-500" },
-    { name: "Viva Dance", score: 10, color: "bg-amber-500" },
-    { name: "Ceroc Dance Studio", score: 8, color: "bg-green-500" },
-    { name: "KD Dance", score: 3, color: "bg-red-500" }
-  ];
-  
-  const recommendations = [
-    {
-      id: 1,
-      title: "Claim 'ballroom dancing Auckland'",
-      description: "Optimize your content and listings to appear for ballroom dancing searches in Auckland.",
-      impact: "High"
-    },
-    {
-      id: 2,
-      title: "Own 'wedding dance lessons Auckland'",
-      description: "Create targeted content and get listed for wedding dance preparation searches.",
-      impact: "High"
-    },
-    {
-      id: 3,
-      title: "Get visible on 'dance studio Auckland'",
-      description: "Improve your local SEO and AI visibility for general dance studio searches.",
-      impact: "Medium"
-    }
-  ];
   
   const getScoreColor = (score: number) => {
     if (score >= 60) return 'bg-green-500';
@@ -208,7 +396,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       {/* Category Breakdown */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
+          {categories.map((category: any, index: number) => (
             <div key={index} className="bg-[#111118] border border-cyan-500/15 p-6 rounded-xl">
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-2xl">{category.icon}</div>
@@ -240,7 +428,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
               Where you appear
             </h3>
             <ul className="space-y-3">
-              {visibleQueries.map((query, index) => (
+              {visibleQueries.map((query: string, index: number) => (
                 <li key={index} className="flex items-center gap-3">
                   <span className="text-green-400">✓</span>
                   <span className="text-gray-300">"{query}"</span>
@@ -256,7 +444,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
               Where you're invisible
             </h3>
             <ul className="space-y-3">
-              {invisibleQueries.map((query, index) => (
+              {invisibleQueries.map((query: string, index: number) => (
                 <li key={index} className="flex items-center gap-3">
                   <span className="text-red-400">✗</span>
                   <span className="text-gray-300">"{query}"</span>
@@ -272,7 +460,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
         <div className="bg-[#111118] border border-cyan-500/15 p-6 rounded-xl">
           <h3 className="text-lg font-semibold mb-6">Competitor Comparison</h3>
           <div className="space-y-4">
-            {competitors.map((competitor, index) => (
+            {competitors.map((competitor: any, index: number) => (
               <div key={index} className="flex items-center gap-4">
                 <div className="w-32 text-sm font-medium text-gray-300">{competitor.name}</div>
                 <div className="flex-1">
@@ -346,7 +534,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h3 className="text-xl font-semibold mb-6">Top 3 Recommendations</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {recommendations.map((rec, index) => (
+          {recommendations.map((rec: any, index: number) => (
             <div key={index} className="bg-[#111118] border border-cyan-500/15 p-6 rounded-xl">
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-8 h-8 rounded-full ${rec.impact === 'High' ? 'bg-red-500' : rec.impact === 'Medium' ? 'bg-amber-500' : 'bg-green-500'} flex items-center justify-center`}>
@@ -363,14 +551,89 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
         </div>
       </div>
       
-      {/* CTA Footer */}
-      <div className="bg-[#0A0F1E] py-12">
+      {/* Pricing Section */}
+      <div className="bg-[#0A0F1E] py-16 border-t border-cyan-500/15">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-bold mb-3">We found 3 specific gaps costing you visibility.</h3>
+            <p className="text-gray-400">Here's how we fix them.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Fix Tier */}
+            <div className="bg-[#111118] border border-cyan-500/20 rounded-2xl p-8 hover:border-cyan-500/40 transition-colors">
+              <div className="text-sm text-cyan-400 font-medium mb-2 uppercase tracking-wider">Fix</div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold">$299</span>
+                <span className="text-gray-400">/mo</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Full AI visibility audit (80+ queries)
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  We implement every fix for you
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Monthly re-audit included
+                </li>
+              </ul>
+              <a href="mailto:alex@vizbiz.ai" className="block w-full text-center bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium hover:bg-[#06B6D4] transition-colors">
+                Get Started →
+              </a>
+            </div>
+            
+            {/* Fix + Monitor Tier */}
+            <div className="bg-[#111118] border-2 border-cyan-500/40 rounded-2xl p-8 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#25D1F2] text-[#02091F] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                Most Popular
+              </div>
+              <div className="text-sm text-cyan-400 font-medium mb-2 uppercase tracking-wider">Fix + Monitor</div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold">$499</span>
+                <span className="text-gray-400">/mo</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Everything in Fix
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Competitor tracking
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Ongoing optimization as AI tools change
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-cyan-400 mt-1">✓</span>
+                  Priority support
+                </li>
+              </ul>
+              <a href="mailto:alex@vizbiz.ai" className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                Get Started →
+              </a>
+            </div>
+          </div>
+          
+          <p className="text-center text-gray-500 text-sm mt-8">
+            Both plans include the full audit report. Cancel anytime. No setup fee.
+          </p>
+        </div>
+      </div>
+      
+      {/* Final CTA */}
+      <div className="bg-[#02091F] py-12 border-t border-cyan-500/15">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Ready to improve your AI visibility?</h3>
-          <p className="text-gray-400 mb-6">Get the full prompt-by-prompt breakdown and action plan</p>
-          <button className="bg-[#25D1F2] text-[#02091F] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#06B6D4] transition-colors">
-            Book your free 15-minute review call
-          </button>
+          <h3 className="text-xl font-bold mb-3">Prefer to talk first?</h3>
+          <p className="text-gray-400 mb-6">Book a free 15-minute audit review call. No pressure, no obligation.</p>
+          <a href="mailto:alex@vizbiz.ai" className="inline-block bg-transparent border-2 border-[#25D1F2] text-[#25D1F2] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#25D1F2] hover:text-[#02091F] transition-all">
+            Book a Free Call →
+          </a>
         </div>
       </div>
       
