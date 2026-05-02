@@ -28,6 +28,10 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       competitors: [
         { name: 'Test Business (You)', score: 5, color: 'bg-amber-500' },
       ],
+      recommendations: [
+        { id: 1, title: 'Test recommendation', description: 'Test description', impact: 'Medium' },
+      ]
+    },
     'VZB-MOJSCVQM': {
       businessName: 'The Venue Experts',
       contactName: 'Stacey',
@@ -51,6 +55,14 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       competitors: [
         { name: 'The Venue Experts (You)', score: 8, isYou: true },
         { name: 'Kelly Chandler Consulting', score: 13 },
+        { name: 'Kelly Mortimer', score: 15 },
+      ],
+      recommendations: [
+        { id: 1, title: 'Strengthen venue consultancy content', description: 'Create detailed guides and case studies about venue consultancy services to improve visibility for consultancy-related queries.', impact: 'High' },
+        { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' },
+        { id: 3, title: 'Expand competitive positioning', description: 'Highlight what makes The Venue Experts unique compared to Kelly Chandler and Kelly Mortimer.', impact: 'Medium' }
+      ]
+    },
     'VZB-MOKMWAAI': {
       businessName: 'E&A Dance Studio',
       contactName: 'Enrique & Amy',
@@ -74,6 +86,14 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
         { name: 'E&A Dance Studio (You)', score: 4, isYou: true },
         { name: 'Neverland Studios', score: 12 },
         { name: 'Ceroc French Jive', score: 11 },
+        { name: 'Viva Dance', score: 9 },
+      ],
+      recommendations: [
+        { id: 1, title: 'Improve class booking visibility', description: 'Create specific content about dance classes, booking options, and schedules to appear for class-related queries.', impact: 'High' },
+        { id: 2, title: 'Expand style-specific content', description: 'Add detailed information about different dance styles offered (ballroom, latin, contemporary) to capture more specific searches.', impact: 'High' },
+        { id: 3, title: 'Build local reputation signals', description: 'Encourage more reviews and testimonials from Auckland-based students to improve local trust scores.', impact: 'Medium' }
+      ]
+    },
     'VZB-MOLHDGJK': {
       businessName: 'ARTWOW',
       contactName: 'Liz',
@@ -100,102 +120,9 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
         { name: 'Eleanor Bowmer', score: 10 },
       ],
       recommendations: [
-        { id: 1, title: 'Maintain strong portfolio visibility', description: 'Continue showcasing your unique art prints and maintain the strong portfolio presence that's working well.', impact: 'Low' },
+        { id: 1, title: 'Maintain strong portfolio visibility', description: 'Continue showcasing your unique art prints and maintain the strong portfolio presence that is working well.', impact: 'Low' },
         { id: 2, title: 'Expand into gift markets', description: 'Create content targeting gift-related searches like wedding gifts and housewarming presents to capture additional market share.', impact: 'Medium' },
-        { id: 3, title: 'Leverage competitive advantage', description: 'Highlight what makes ARTWOW unique compared to larger marketplaces like Redbubble to maintain your strong competitive position.', impact: 'Medium' },
-      ]
-    },
-    'VZB-MOJSCVQM': {
-      businessName: 'The Venue Experts',
-      contactName: 'Stacey',
-      location: 'Melton Mowbray, UK',
-      website: 'thevenueexperts.co.uk',
-      aviScore: 42,
-      totalPrompts: 20,
-      promptsAppeared: 8,
-      currencySymbol: '£',
-      currencyCode: 'GBP',
-      profitAtRisk: { low: 300, high: 900 },
-      categories: [
-        { name: 'Brand Discovery', score: 65, description: 'How often you appear when venue owners search for consultancy services', icon: '🔍' },
-        { name: 'Trust & Reviews', score: 50, description: 'What AI platforms say about your reputation', icon: '⭐' },
-        { name: 'Consultancy Visibility', score: 35, description: 'Whether you appear for venue consultancy queries', icon: '📅' },
-        { name: 'Competitive Position', score: 40, description: 'How you compare to Kelly Chandler and Kelly Mortimer', icon: '🏆' },
-        { name: 'Content & Authority', score: 30, description: 'Whether AI tools see you as an authority in venue consulting', icon: '📚' },
-      ],
-      visibleQueries: ['venue consultant UK', 'wedding venue consultant', 'venue consultancy services'],
-      invisibleQueries: ['wedding venue sales training', 'how to increase wedding bookings', 'venue profitability consulting', 'venue marketing strategies', 'hotel wedding sales consultant', 'rural venue diversification', 'venue customer experience training', 'wedding venue business coach', 'luxury venue consultant UK', 'venue sales director'],
-      competitors: [
-        { name: 'The Venue Experts (You)', score: 8, color: 'bg-red-500' },
-        { name: 'Kelly Chandler Consulting', score: 13, color: 'bg-green-500' },
-        { name: 'Kelly Mortimer', score: 15, color: 'bg-green-500' },
-      ],
-      recommendations: [
-        { id: 1, title: 'Claim venue consultancy searches', description: 'Optimize for venue consultancy and wedding venue consulting queries.', impact: 'High' },
-        { id: 2, title: 'Build authority content', description: 'Create in-depth guides and case studies to establish expertise.', impact: 'High' },
-        { id: 3, title: 'Improve local visibility', description: 'Strengthen local SEO for UK venue owners searching for consultants.', impact: 'Medium' },
-      ]
-    },
-    'VZB-MOKMWAAI': {
-      businessName: 'E&A Dance Studio',
-      contactName: 'Enrique & Amy',
-      location: 'Auckland, NZ',
-      website: 'eadancestudiosnz.com',
-      aviScore: 28,
-      totalPrompts: 20,
-      promptsAppeared: 4,
-      currencySymbol: 'NZ$',
-      currencyCode: 'NZD',
-      profitAtRisk: { low: 400, high: 1200 },
-      categories: [
-        { name: 'Brand Discovery', score: 35, description: 'How often you appear in dance studio searches', icon: '🔍' },
-        { name: 'Trust & Reviews', score: 40, description: 'What AI platforms say about your reputation', icon: '⭐' },
-        { name: 'Class & Booking Visibility', score: 15, description: 'Whether you appear for class-related queries', icon: '📅' },
-        { name: 'Competitive Position', score: 20, description: 'How you compare to Neverland Studios and Ceroc', icon: '🏆' },
-      ],
-      visibleQueries: ['dance studio Auckland', 'ballroom dancing classes', 'Auckland dance lessons', 'best dance school'],
-      invisibleQueries: ['wedding dance lessons Auckland', 'salsa dancing Auckland', 'kids dance classes', 'adult dance classes', 'hip hop dance studio', 'contemporary dance Auckland', 'dance studio near me', 'private dance lessons', 'dance classes for beginners', 'latin dance Auckland'],
-      competitors: [
-        { name: 'E&A Dance Studio (You)', score: 4, color: 'bg-red-500' },
-        { name: 'Neverland Studios', score: 12, color: 'bg-green-500' },
-        { name: 'Ceroc French Jive', score: 11, color: 'bg-green-500' },
-        { name: 'Viva Dance', score: 9, color: 'bg-amber-500' },
-      ],
-      recommendations: [
-        { id: 1, title: "Claim 'ballroom dancing Auckland'", description: 'Optimize your content and listings to appear for ballroom dancing searches in Auckland.', impact: 'High' },
-        { id: 2, title: "Own 'wedding dance lessons Auckland'", description: 'Create targeted content and get listed for wedding dance preparation searches.', impact: 'High' },
-        { id: 3, title: "Get visible on 'dance studio Auckland'", description: 'Improve your local SEO and AI visibility for general dance studio searches.', impact: 'Medium' },
-      ]
-    },
-    'VZB-MOLHDGJK': {
-      businessName: 'ARTWOW',
-      contactName: 'Liz',
-      location: 'London/Essex, UK',
-      website: 'artwow.co',
-      aviScore: 89,
-      totalPrompts: 19,
-      promptsAppeared: 17,
-      currencySymbol: '£',
-      currencyCode: 'GBP',
-      profitAtRisk: { low: 400, high: 1250 },
-      categories: [
-        { name: 'Portfolio & Inquiry Visibility', score: 92, description: 'How often your products appear in art print searches', icon: '🔍' },
-        { name: 'Brand Discovery', score: 88, description: 'Whether AI tools recognize your brand', icon: '⭐' },
-        { name: 'Trust & Reviews', score: 85, description: 'What AI platforms say about your quality', icon: '📅' },
-        { name: 'Content & Authority', score: 82, description: 'Whether AI tools see you as an authority', icon: '🏆' },
-        { name: 'Competitive Position', score: 95, description: 'How you compare to Redbubble and Eleanor Bowmer', icon: '📚' },
-      ],
-      visibleQueries: ['art prints UK', 'unique wall art', 'independent artist prints', 'art gifts UK', 'homeware art prints', 'buy art prints online UK', 'modern art prints', 'affordable art UK'],
-      invisibleQueries: ['unique wedding gifts UK', 'personalized housewarming presents', 'art prints for living room', 'best art print marketplace UK'],
-      competitors: [
-        { name: 'Redbubble', score: 18, color: 'bg-green-500' },
-        { name: 'ARTWOW (You)', score: 17, color: 'bg-green-500' },
-        { name: 'Eleanor Bowmer', score: 10, color: 'bg-amber-500' },
-      ],
-      recommendations: [
-        { id: 1, title: 'Expand into gift markets', description: 'Optimize for wedding and housewarming gift searches to capture more sales.', impact: 'High' },
-        { id: 2, title: 'Strengthen local SEO', description: 'Improve visibility for UK-specific art print searches.', impact: 'Medium' },
-        { id: 3, title: 'Build content authority', description: 'Create guides and blog content to establish expertise in art prints.', impact: 'Medium' },
+        { id: 3, title: 'Leverage competitive advantage', description: 'Highlight what makes ARTWOW unique compared to larger marketplaces like Redbubble to maintain your strong competitive position.', impact: 'Medium' }
       ]
     },
     'VZB-MOO1ESDC': {
@@ -210,22 +137,22 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       currencyCode: 'INR',
       profitAtRisk: { low: 3000, high: 9000 },
       categories: [
-        { name: 'Brand Discovery', score: 30, description: 'How often you appear in restaurant consulting searches', icon: '🔍' },
-        { name: 'Trust & Authority', score: 25, description: 'What AI platforms say about your expertise', icon: '⭐' },
-        { name: 'Service Offering Visibility', score: 40, description: 'Whether you appear for Zomato/Swiggy consulting queries', icon: '📅' },
-        { name: 'Competitive Position', score: 35, description: 'How you compare to Restrosol', icon: '🏆' },
-        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority', icon: '📚' },
+        { name: 'Brand Discovery', score: 30, description: 'How often you appear in restaurant consulting searches' },
+        { name: 'Trust & Authority', score: 25, description: 'What AI platforms say about your expertise' },
+        { name: 'Service Offering Visibility', score: 40, description: 'Whether you appear for Zomato/Swiggy consulting queries' },
+        { name: 'Competitive Position', score: 35, description: 'How you compare to Restrosol' },
+        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority' },
       ],
       visibleQueries: ['restaurant consultant India', 'Zomato optimization', 'online food delivery consulting'],
       invisibleQueries: ['how to increase Zomato orders', 'Swiggy listing optimization', 'restaurant menu engineering India', 'cloud kitchen consultant', 'restaurant growth consulting', 'food delivery app optimization', 'restaurant online order consultant'],
       competitors: [
-        { name: 'GoalCraft (You)', score: 6, color: 'bg-red-500' },
-        { name: 'Restrosol', score: 9, color: 'bg-green-500' },
+        { name: 'GoalCraft (You)', score: 6, isYou: true },
+        { name: 'Restrosol', score: 9 },
       ],
       recommendations: [
-        { id: 1, title: 'Optimize for Zomato/Swiggy', description: 'Create targeted content and guides for food delivery platform optimization.', impact: 'High' },
-        { id: 2, title: 'Build trust signals', description: 'Improve reviews, testimonials, and case studies to boost AI trust scores.', impact: 'High' },
-        { id: 3, title: 'Expand service visibility', description: 'Get visible for more specific restaurant consulting queries.', impact: 'Medium' },
+        { id: 1, title: 'Improve brand discovery', description: 'Create more content about your restaurant consulting services and expertise to appear in more searches.', impact: 'High' },
+        { id: 2, title: 'Build trust and authority signals', description: 'Showcase client testimonials, case studies, and credentials to improve trust scores.', impact: 'High' },
+        { id: 3, title: 'Expand service offering visibility', description: 'Create specific content about Zomato and Swiggy optimization services to capture platform-specific searches.', impact: 'High' }
       ]
     },
     'VZB-MOO57ZGT': {
@@ -240,30 +167,27 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       currencyCode: 'INR',
       profitAtRisk: { low: 1900, high: 6400 },
       categories: [
-        { name: 'Brand Discovery', score: 28, description: 'How often you appear in spice brand searches', icon: '🔍' },
-        { name: 'Trust & Reviews', score: 35, description: 'What AI platforms say about your quality', icon: '⭐' },
-        { name: 'Product Visibility', score: 30, description: 'Whether your products appear in spice searches', icon: '📅' },
-        { name: 'Competitive Position', score: 25, description: 'How you compare to Zoff, Catch, and MDH', icon: '🏆' },
-        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority', icon: '📚' },
+        { name: 'Brand Discovery', score: 28, description: 'How often you appear in spice brand searches' },
+        { name: 'Trust & Reviews', score: 35, description: 'What AI platforms say about your quality' },
+        { name: 'Product Visibility', score: 30, description: 'Whether your products appear in spice searches' },
+        { name: 'Competitive Position', score: 25, description: 'How you compare to Zoff, Catch, and MDH' },
+        { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority' },
       ],
       visibleQueries: ['premium spices online India', 'quality masala brand', 'buy spices online Delhi'],
       invisibleQueries: ['best masala brand India', 'premium garam masala', 'organic spices India', 'best spice for biryani', 'whole spices online', 'spice gift set India', 'authentic Indian spices online', 'certified spice brand India', 'BRCGS certified spices'],
       competitors: [
-        { name: 'MDH Masala', score: 20, color: 'bg-green-500' },
-        { name: 'Catch', score: 17, color: 'bg-green-500' },
-        { name: 'Zoff', score: 14, color: 'bg-amber-500' },
-        { name: 'Old Touch Spices (You)', score: 7, color: 'bg-red-500' },
+        { name: 'MDH Masala', score: 20, isYou: false },
+        { name: 'Catch', score: 17, isYou: false },
+        { name: 'Zoff', score: 14, isYou: false },
+        { name: 'Old Touch Spices (You)', score: 7, isYou: true },
       ],
       recommendations: [
-        { id: 1, title: 'Build brand recognition', description: 'Improve visibility for premium spice brand searches.', impact: 'High' },
-        { id: 2, title: 'Target specific products', description: 'Optimize for high-value spice searches like garam masala and gift sets.', impact: 'High' },
-        { id: 3, title: 'Strengthen trust signals', description: 'Improve reviews, certifications, and quality signals for AI platforms.', impact: 'Medium' },
+        { id: 1, title: 'Improve brand recognition', description: 'Create more content about your spice brand, quality standards, and unique offerings to appear in more brand searches.', impact: 'High' },
+        { id: 2, title: 'Expand product visibility', description: 'Add detailed product information, usage guides, and recipes to capture more specific spice-related searches.', impact: 'High' },
+        { id: 3, title: 'Build competitive differentiation', description: 'Highlight what makes Old Touch Spices unique compared to established brands like MDH, Catch, and Zoff.', impact: 'Medium' }
       ]
     }
-  };
-
-  // Get lead data or show not found
-  const leadData = LEADS[params.leadId];
+  };  const leadData = LEADS[params.leadId];
   
   if (!leadData) {
     return (
