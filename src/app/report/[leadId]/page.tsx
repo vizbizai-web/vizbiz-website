@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   description: 'Comprehensive AI Visibility Intelligence Report',
 };
 
-export default function ReportPage({ params }: { params: { leadId: string } }) {
+export default async function ReportPage({ params }: { params: Promise<{ leadId: string }> }) {
+  const { leadId } = await params;
   // Lead data lookup
   const LEADS: Record<string, any> = {
     'test': {
@@ -187,7 +188,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
         { id: 3, title: 'Build competitive differentiation', description: 'Highlight what makes Old Touch Spices unique compared to established brands like MDH, Catch, and Zoff.', impact: 'Medium' }
       ]
     }
-  };  const leadData = LEADS[params.leadId];
+  };  const leadData = LEADS[leadId];
   
   if (!leadData) {
     return (
