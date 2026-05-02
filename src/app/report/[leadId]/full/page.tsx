@@ -2,31 +2,78 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'AI Visibility Report | VizBiz.ai',
-  description: 'Comprehensive AI Visibility Intelligence Report',
+  title: 'Full AI Visibility Report | VizBiz.ai',
+  description: 'Complete AI Visibility Intelligence Report with Revenue Impact Analysis',
 };
 
-export default function ReportPage({ params }: { params: { leadId: string } }) {
-  // Sample data for E&A Dance Studio - will be replaced with dynamic data from leadId
+export default function FullReportPage({ params }: { params: { leadId: string } }) {
+  // Sample data - will be replaced with dynamic data from leadId
   const businessName = "E&A Dance Studio";
   const location = "Auckland, NZ";
-  const dateGenerated = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-  
   const aviScore = 28;
   const totalPrompts = 20;
   const promptsAppeared = 4;
-  const competitorsBeating = 4;
-  const quickWins = 3;
   
   // Revenue impact data (sample - will be calculated dynamically)
   const revenueImpact = {
     monthlyLow: 2300,
     monthlyHigh: 9900,
-    currencySymbol: '$'
+    annualLow: 27600,
+    annualHigh: 118800,
+    currencySymbol: '$',
+    categories: [
+      { name: "Brand Discovery", low: 900, high: 3860 },
+      { name: "Trust & Reviews", low: 670, high: 2870 },
+      { name: "Class & Booking Visibility", low: 550, high: 2370 },
+      { name: "Competitive Position", low: 180, high: 800 }
+    ],
+    priorityMatrix: [
+      { 
+        fix: "Add LocalBusiness schema to homepage", 
+        category: "Brand Discovery",
+        priority: "Quick Win",
+        recoveryLow: 200, 
+        recoveryHigh: 500,
+        effort: "Low"
+      },
+      { 
+        fix: "Optimize Google Business Profile with AI-friendly keywords",
+        category: "Brand Discovery",
+        priority: "Strategic",
+        recoveryLow: 300, 
+        recoveryHigh: 800,
+        effort: "High"
+      },
+      { 
+        fix: "Create location-specific landing pages",
+        category: "Brand Discovery",
+        priority: "Maintenance",
+        recoveryLow: 150, 
+        recoveryHigh: 350,
+        effort: "Low"
+      },
+      { 
+        fix: "Implement Review schema markup",
+        category: "Trust & Reviews",
+        priority: "Quick Win",
+        recoveryLow: 180, 
+        recoveryHigh: 420,
+        effort: "Low"
+      }
+    ],
+    assumptions: {
+      monthlyInquiries: { low: 80, high: 150 },
+      aiReferralShare: { low: 8, high: 15 },
+      grossProfitPerCustomer: { low: 1800, high: 4200 },
+      closeRate: { low: 12, high: 22 }
+    }
+  };
+  
+  // Client input state (would be managed with React state in real implementation)
+  const clientInputs = {
+    monthlyInquiries: 120,
+    grossProfitPerCustomer: 2500,
+    closeRate: 18
   };
   
   const categories = [
@@ -135,7 +182,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
               <div className="text-xl font-bold">VizBiz<span className="text-[#25D1F2]">.ai</span></div>
             </div>
             <div className="text-center">
-              <h1 className="text-lg font-semibold">AI Visibility Report</h1>
+              <h1 className="text-lg font-semibold">Full AI Visibility Report</h1>
               <p className="text-sm text-gray-400">{businessName} • {location}</p>
             </div>
             <div>
@@ -168,11 +215,11 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
                 <div className="text-xs opacity-60">/ {totalPrompts}</div>
               </div>
               <div className="bg-white/10 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold">{competitorsBeating}</div>
+                <div className="text-2xl font-bold">{competitors.filter(c => c.score > promptsAppeared).length}</div>
                 <div className="text-xs opacity-80 mt-1">Competitors beating you</div>
               </div>
               <div className="bg-white/10 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold">{quickWins}</div>
+                <div className="text-2xl font-bold">{recommendations.length}</div>
                 <div className="text-xs opacity-80 mt-1">Quick wins available</div>
               </div>
             </div>
@@ -182,25 +229,173 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       
       {/* Profit at Risk Section */}
       <div className="bg-[#0A0F1E] py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">Profit at Risk</h2>
-          <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-            Based on your current AI visibility, you're losing an estimated
-            amount of profit each month to competitors who appear in AI recommendations.
-          </p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">Profit at Risk Analysis</h2>
+            <p className="text-gray-300 max-w-3xl mx-auto">
+              Based on your current AI visibility score and industry benchmarks, here's the estimated profit you're losing each month to competitors who appear in AI recommendations.
+            </p>
+          </div>
+          
           <div className="bg-gradient-to-r from-[#22D3EE]/20 to-[#06B6D4]/20 border border-cyan-500/20 rounded-2xl p-8 mb-8">
-            <div className="text-4xl font-bold text-[#25D1F2] mb-2">
-              {formatCurrency(revenueImpact.monthlyLow)}–{formatCurrency(revenueImpact.monthlyHigh)}/month
+            <div className="text-center">
+              <div className="text-4xl font-bold text-[#25D1F2] mb-2">
+                {formatCurrency(revenueImpact.monthlyLow)}–{formatCurrency(revenueImpact.monthlyHigh)}/month
+              </div>
+              <div className="text-xl text-gray-300 mb-4">
+                {formatCurrency(revenueImpact.annualLow)}–{formatCurrency(revenueImpact.annualHigh)}/year
+              </div>
+              <p className="text-gray-400">Estimated profit at risk from low AI visibility</p>
             </div>
-            <p className="text-gray-400">Estimated profit at risk from low AI visibility</p>
+          </div>
+          
+          {/* Category Breakdown */}
+          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Category-Level Profit Breakdown</h3>
+            <p className="text-gray-400 mb-4">This profit is distributed across your visibility categories:</p>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-cyan-500/15">
+                    <th className="text-left py-3 px-4 font-medium">Category</th>
+                    <th className="text-left py-3 px-4 font-medium">Profit at Risk</th>
+                    <th className="text-left py-3 px-4 font-medium">Share of Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {revenueImpact.categories.map((category, index) => (
+                    <tr key={index} className="border-b border-cyan-500/10">
+                      <td className="py-3 px-4">{category.name}</td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-[#25D1F2]">
+                          {formatCurrency(category.low)}–{formatCurrency(category.high)}/month
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {Math.round((category.low + category.high) / (revenueImpact.monthlyLow + revenueImpact.monthlyHigh) * 100)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* Priority Matrix */}
+          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Priority Fixes Matrix</h3>
+            <p className="text-gray-400 mb-4">Ranked by estimated profit recovery potential:</p>
+            <div className="space-y-4">
+              {revenueImpact.priorityMatrix.map((fix, index) => (
+                <div key={index} className="bg-[#0A0F1E] border border-cyan-500/15 rounded-lg p-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${fix.priority === 'Quick Win' ? 'bg-green-500/20 text-green-400' : fix.priority === 'Strategic' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                          {fix.priority}
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${fix.effort === 'Low' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                          {fix.effort} Effort
+                        </span>
+                      </div>
+                      <h4 className="font-medium">{fix.fix}</h4>
+                      <p className="text-sm text-gray-400">{fix.category}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-[#25D1F2]">
+                        {formatCurrency(fix.recoveryLow)}–{formatCurrency(fix.recoveryHigh)}/month
+                      </div>
+                      <p className="text-xs text-gray-400">Estimated recovery</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Assumptions Table */}
+          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Assumptions & Transparency</h3>
+            <p className="text-gray-400 mb-4">These estimates are based on industry benchmarks:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2">Monthly Inquiries</h4>
+                <p className="text-gray-300">{revenueImpact.assumptions.monthlyInquiries.low}–{revenueImpact.assumptions.monthlyInquiries.high}</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">AI Referral Share</h4>
+                <p className="text-gray-300">{revenueImpact.assumptions.aiReferralShare.low}–{revenueImpact.assumptions.aiReferralShare.high}%</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Gross Profit Per Customer</h4>
+                <p className="text-gray-300">{formatCurrency(revenueImpact.assumptions.grossProfitPerCustomer.low)}–{formatCurrency(revenueImpact.assumptions.grossProfitPerCustomer.high)}</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Close Rate</h4>
+                <p className="text-gray-300">{revenueImpact.assumptions.closeRate.low}–{revenueImpact.assumptions.closeRate.high}%</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Client Input Refinement */}
+          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Refine Your Estimate</h3>
+            <p className="text-gray-400 mb-6">
+              These estimates use industry averages. For a more accurate figure, provide your actual numbers:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Monthly Inquiries</label>
+                <input 
+                  type="number"
+                  defaultValue={clientInputs.monthlyInquiries}
+                  className="w-full bg-[#0A0F1E] border border-cyan-500/20 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Gross Profit Per Customer</label>
+                <input 
+                  type="number"
+                  defaultValue={clientInputs.grossProfitPerCustomer}
+                  className="w-full bg-[#0A0F1E] border border-cyan-500/20 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Close Rate (%)</label>
+                <input 
+                  type="number"
+                  defaultValue={clientInputs.closeRate}
+                  className="w-full bg-[#0A0F1E] border border-cyan-500/20 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+            </div>
+            <button className="bg-[#25D1F2] text-[#02091F] px-6 py-2 rounded-lg hover:bg-[#06B6D4] transition-colors font-medium">
+              Recalculate with My Numbers
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Methodology & Disclaimer */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6">
+            <h3 className="text-xl font-semibold mb-4">Methodology</h3>
+            <p className="text-gray-400 mb-4">
+              Revenue at risk = Lost AI-driven inquiries × Gross profit per customer × Close rate
+            </p>
+            <p className="text-gray-400 mb-4">
+              Full methodology and sources available at:
+            </p>
+            <a href="https://vizbiz.ai/methodology" className="text-[#25D1F2] hover:text-[#06B6D4] inline-flex items-center gap-2">
+              https://vizbiz.ai/methodology →
+            </a>
           </div>
           <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6">
-            <p className="text-gray-300 mb-4">
-              Your full report shows exactly where this money is leaking.
+            <h3 className="text-xl font-semibold mb-4">Disclaimer</h3>
+            <p className="text-gray-400 text-sm">
+              This is an estimate based on industry benchmarks and may not reflect your actual financial performance. Actual results depend on your specific market conditions, pricing, and sales process. This estimate is intended to illustrate the business impact of AI visibility gaps, not as a financial projection or guarantee.
             </p>
-            <button className="bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg hover:bg-[#06B6D4] transition-colors font-medium">
-              Get the complete breakdown →
-            </button>
           </div>
         </div>
       </div>
@@ -366,10 +561,10 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       {/* CTA Footer */}
       <div className="bg-[#0A0F1E] py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Ready to improve your AI visibility?</h3>
-          <p className="text-gray-400 mb-6">Get the full prompt-by-prompt breakdown and action plan</p>
+          <h3 className="text-2xl font-bold mb-4">Ready to recover this revenue?</h3>
+          <p className="text-gray-400 mb-6">Book your strategy call to start implementing these fixes</p>
           <button className="bg-[#25D1F2] text-[#02091F] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#06B6D4] transition-colors">
-            Book your free 15-minute review call
+            Book your strategy call →
           </button>
         </div>
       </div>
