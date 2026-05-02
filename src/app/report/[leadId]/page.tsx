@@ -135,7 +135,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       promptsAppeared: 6,
       currencySymbol: '₹',
       currencyCode: 'INR',
-      profitAtRisk: { low: 3000, high: 9000 },
+      profitAtRisk: { low: 5600, high: 45000 },
       categories: [
         { name: 'Brand Discovery', score: 30, description: 'How often you appear in restaurant consulting searches' },
         { name: 'Trust & Authority', score: 25, description: 'What AI platforms say about your expertise' },
@@ -165,7 +165,7 @@ export default function ReportPage({ params }: { params: { leadId: string } }) {
       promptsAppeared: 7,
       currencySymbol: '₹',
       currencyCode: 'INR',
-      profitAtRisk: { low: 1900, high: 6400 },
+      profitAtRisk: { low: 1400, high: 8600 },
       categories: [
         { name: 'Brand Discovery', score: 28, description: 'How often you appear in spice brand searches' },
         { name: 'Trust & Reviews', score: 35, description: 'What AI platforms say about your quality' },
