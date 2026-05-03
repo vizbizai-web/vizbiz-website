@@ -1,4 +1,4 @@
-import { ReportContent } from './report-content';
+import ReportContent from './report-content';
 
 export default async function ReportPage({
   params,

@@ -3,22 +3,8 @@
 import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/lib/use-mobile';
 import {
   BarChart,
   Bar,
@@ -94,18 +80,120 @@ interface LeadData {
   competitorSocial: CompetitorSocial[];
 }
 
-/* ── Inline Badge (shadcn-style) ─────────────── */
-function Badge({ children, variant = 'default', className = '', style }: { children: React.ReactNode; variant?: 'default' | 'outline'; className?: string; style?: React.CSSProperties }) {
-  const base = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
-  const variants = {
-    default: 'bg-primary/10 text-primary hover:bg-primary/20',
-    outline: 'border border-current bg-transparent',
+type Theme = 'dark' | 'light';
+
+/* ── Theme Provider (self-contained) ─────────── */
+function useTheme() {
+  const [theme, setTheme] = useState<Theme>('dark');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('vizbiz-theme');
+    if (saved === 'light' || saved === 'dark') setTheme(saved);
+  }, []);
+
+  const toggle = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('vizbiz-theme', next);
+      return next;
+    });
   };
-  return (
-    <span className={cn(base, variants[variant], className)} style={style}>
-      {children}
-    </span>
-  );
+
+  return { theme, toggle };
+}
+
+/* ── Theme Styles ────────────────────────────── */
+function getThemeStyles(theme: Theme) {
+  if (theme === 'light') {
+    return {
+      bgPage: '#FFFFFF',
+      bgBase: '#F8FAFC',
+      bgCard: '#F8FAFC',
+      bgFooter: '#F1F5F9',
+      textPrimary: '#02091F',
+      textSecondary: '#475569',
+      textMuted: '#94A3B8',
+      borderSubtle: '#E2E8F0',
+      borderAccent: 'rgba(37, 209, 242, 0.25)',
+      glassBg: '#F8FAFC',
+      glassBorder: '#E2E8F0',
+      glassHover: 'rgba(37, 209, 242, 0.06)',
+      gridStroke: 'rgba(0,0,0,0.06)',
+      axisText: '#475569',
+      ringBg: '#E2E8F0',
+      shadow: '0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03)',
+      barBg: '#E2E8F0',
+      barTrack: '#E2E8F0',
+      queryBorderVisible: 'rgba(34, 197, 94, 0.3)',
+      queryBorderInvisible: 'rgba(239, 68, 68, 0.3)',
+      queryDotVisible: '#22C55E',
+      queryDotInvisible: '#EF4444',
+      queryBgVisible: 'rgba(34, 197, 94, 0.04)',
+      queryBgInvisible: 'rgba(239, 68, 68, 0.04)',
+      headerBg: 'rgba(255, 255, 255, 0.9)',
+      headerBorder: '#E2E8F0',
+      statCardTintCyan: 'rgba(37, 209, 242, 0.04)',
+      statCardTintGreen: 'rgba(34, 197, 94, 0.04)',
+      statCardTintAmber: 'rgba(245, 158, 11, 0.04)',
+      statCardTintRed: 'rgba(239, 68, 68, 0.04)',
+      radarFill: 'rgba(37, 209, 242, 0.12)',
+      radarStroke: '#25D1F2',
+      competitorBarYou: ['#22D3EE', '#06B6D4'],
+      ctaOutlineBorder: 'rgba(37, 209, 242, 0.4)',
+      ctaOutlineText: '#06B6D4',
+      ctaOutlineHover: 'rgba(37, 209, 242, 0.06)',
+      pricingBadgeBg: 'linear-gradient(to right, #22D3EE, #06B6D4)',
+      pricingBadgeText: '#02091F',
+      pricingHighlightBorder: 'rgba(37, 209, 242, 0.4)',
+      footerText: 'rgba(2, 9, 31, 0.4)',
+      footerLink: 'rgba(6, 182, 212, 0.7)',
+      profitRiskText: '#02091F',
+    };
+  }
+  return {
+    bgPage: '#02091F',
+    bgBase: '#0A0F1E',
+    bgCard: '#111827',
+    bgFooter: '#020617',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#94A3B8',
+    textMuted: '#64748B',
+    borderSubtle: 'rgba(255, 255, 255, 0.06)',
+    borderAccent: 'rgba(37, 209, 242, 0.25)',
+    glassBg: 'rgba(255, 255, 255, 0.03)',
+    glassBorder: 'rgba(37, 209, 242, 0.12)',
+    glassHover: 'rgba(37, 209, 242, 0.08)',
+    gridStroke: 'rgba(255, 255, 255, 0.04)',
+    axisText: '#94A3B8',
+    ringBg: 'rgba(255, 255, 255, 0.05)',
+    shadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
+    barBg: 'rgba(255, 255, 255, 0.05)',
+    barTrack: 'rgba(255, 255, 255, 0.05)',
+    queryBorderVisible: 'rgba(34, 197, 94, 0.2)',
+    queryBorderInvisible: 'rgba(239, 68, 68, 0.2)',
+    queryDotVisible: '#22C55E',
+    queryDotInvisible: '#EF4444',
+    queryBgVisible: 'rgba(34, 197, 94, 0.03)',
+    queryBgInvisible: 'rgba(239, 68, 68, 0.03)',
+    headerBg: 'rgba(2, 9, 31, 0.85)',
+    headerBorder: 'rgba(255, 255, 255, 0.06)',
+    statCardTintCyan: 'rgba(37, 209, 242, 0.04)',
+    statCardTintGreen: 'rgba(34, 197, 94, 0.04)',
+    statCardTintAmber: 'rgba(245, 158, 11, 0.04)',
+    statCardTintRed: 'rgba(239, 68, 68, 0.04)',
+    radarFill: 'rgba(37, 209, 242, 0.15)',
+    radarStroke: '#25D1F2',
+    competitorBarYou: ['#22D3EE', '#06B6D4'],
+    ctaOutlineBorder: 'rgba(34, 211, 238, 0.4)',
+    ctaOutlineText: '#22D3EE',
+    ctaOutlineHover: 'rgba(34, 211, 238, 0.06)',
+    pricingBadgeBg: 'linear-gradient(to right, #22D3EE, #06B6D4)',
+    pricingBadgeText: '#02091F',
+    pricingHighlightBorder: 'rgba(37, 209, 242, 0.4)',
+    footerText: 'rgba(255, 255, 255, 0.2)',
+    footerLink: 'rgba(34, 211, 238, 0.5)',
+    profitRiskText: '#FFFFFF',
+  };
 }
 
 /* ── Helpers ──────────────────────────────────── */
@@ -122,13 +210,22 @@ const getScoreAccent = (score: number): string => {
 };
 
 const getScoreColorClass = (score: number): string => {
-  if (score >= 60) return 'text-emerald-400';
-  if (score >= 35) return 'text-amber-400';
-  return 'text-red-400';
+  if (score >= 60) return 'text-emerald-500';
+  if (score >= 35) return 'text-amber-500';
+  return 'text-red-500';
 };
 
 const formatCurrency = (val: number, sym: string): string =>
   sym + Math.round(val).toLocaleString();
+
+const getImpactColor = (impact: string): string => {
+  switch (impact) {
+    case 'High': return '#EF4444';
+    case 'Medium': return '#F59E0B';
+    case 'Low': return '#22C55E';
+    default: return '#94A3B8';
+  }
+};
 
 /* ── FadeIn Wrapper ──────────────────────────── */
 function FadeIn({
@@ -190,10 +287,114 @@ function CountUp({
   );
 }
 
+/* ── Theme Toggle Icon ───────────────────────── */
+function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }) {
+  const isDark = theme === 'dark';
+  return (
+    <button
+      onClick={onToggle}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300"
+      style={{
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0'}`,
+        background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+      }}
+    >
+      <motion.div
+        animate={{ rotate: isDark ? 0 : 180, opacity: isDark ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        className="absolute"
+      >
+        {/* Moon */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </motion.div>
+      <motion.div
+        animate={{ rotate: isDark ? -180 : 0, opacity: isDark ? 0 : 1 }}
+        transition={{ duration: 0.3 }}
+        className="absolute"
+      >
+        {/* Sun */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </motion.div>
+    </button>
+  );
+}
+
+/* ── DarkTooltip for Recharts ────────────────── */
+function DarkTooltip({ active, payload, label, theme }: any) {
+  if (!active || !payload?.length) return null;
+  const t = getThemeStyles(theme);
+  return (
+    <div
+      className="rounded-xl px-4 py-3 text-sm shadow-xl"
+      style={{
+        background: theme === 'dark' ? '#111827' : '#FFFFFF',
+        border: `1px solid ${theme === 'dark' ? 'rgba(37,209,242,0.2)' : '#E2E8F0'}`,
+        color: t.textPrimary,
+      }}
+    >
+      {label && <p className="font-medium mb-1" style={{ color: t.textSecondary }}>{label}</p>}
+      {payload.map((entry: any, i: number) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: entry.color || entry.fill }} />
+          <span style={{ color: t.textSecondary }}>{entry.name || entry.dataKey}:</span>
+          <span className="font-semibold" style={{ color: t.textPrimary }}>{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Glass Card ──────────────────────────────── */
+function GlassCard({
+  children,
+  className = '',
+  style,
+  theme,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  theme: Theme;
+}) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+  return (
+    <div
+      className={cn('rounded-3xl', className)}
+      style={{
+        background: t.glassBg,
+        border: `1px solid ${t.glassBorder}`,
+        borderRadius: '1.5rem',
+        backdropFilter: isMobile || theme === 'light' ? 'none' : 'blur(12px)',
+        WebkitBackdropFilter: isMobile || theme === 'light' ? 'none' : 'blur(12px)',
+        boxShadow: theme === 'light' ? '0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03)' : '0 4px 30px rgba(0, 0, 0, 0.3)',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /* ── Score Ring ───────────────────────────────── */
-function ScoreRing({ score }: { score: number }) {
-  const radius = 110;
-  const stroke = 10;
+function ScoreRing({ score, theme }: { score: number; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+  const radius = isMobile ? 80 : 120;
+  const stroke = isMobile ? 8 : 10;
   const normalized = Math.min(100, Math.max(0, score));
   const circumference = 2 * Math.PI * radius;
   const accent = getScoreAccent(score);
@@ -201,29 +402,44 @@ function ScoreRing({ score }: { score: number }) {
   const [animatedOffset, setAnimatedOffset] = useState(circumference);
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const tmr = setTimeout(() => {
       setAnimatedOffset(circumference - (normalized / 100) * circumference);
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(tmr);
   }, [normalized, circumference]);
 
+  const size = isMobile ? 180 : 280;
+
   return (
-    <div className="relative w-[180px] h-[180px] sm:w-[240px] sm:h-[240px]">
-      <svg width="100%" height="100%" viewBox="0 0 260 260" className="-rotate-90">
+    <div className="relative mx-auto" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${radius * 2 + stroke * 2} ${radius * 2 + stroke * 2}`} className="-rotate-90">
+        <defs>
+          <linearGradient id={`scoreGrad-${score}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#22D3EE" />
+            <stop offset="100%" stopColor="#06B6D4" />
+          </linearGradient>
+          <filter id={`scoreGlow-${score}`}>
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         <circle
-          cx="130"
-          cy="130"
+          cx={radius + stroke}
+          cy={radius + stroke}
           r={radius}
           fill="none"
-          stroke="#D1D5DB"
+          stroke={t.ringBg}
           strokeWidth={stroke}
         />
         <motion.circle
-          cx="130"
-          cy="130"
+          cx={radius + stroke}
+          cy={radius + stroke}
           r={radius}
           fill="none"
-          stroke={accent}
+          stroke={`url(#scoreGrad-${score})`}
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={animatedOffset}
@@ -231,16 +447,779 @@ function ScoreRing({ score }: { score: number }) {
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: animatedOffset }}
           transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
+          filter={isMobile ? undefined : `url(#scoreGlow-${score})`}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-start justify-start">
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <CountUp
           value={score}
-          className={cn('text-5xl sm:text-7xl font-extrabold tracking-tight', getScoreColorClass(score))}
+          className={cn('font-extrabold tracking-tight tabular-nums', isMobile ? 'text-5xl' : 'text-7xl sm:text-8xl', getScoreColorClass(score))}
         />
-        <span className="text-sm text-white/40 mt-1 font-medium">/ 100</span>
+        <span className="text-sm mt-1 font-medium" style={{ color: t.textSecondary }}>/ 100</span>
       </div>
     </div>
+  );
+}
+
+/* ── Animated Bar (Category Scores) ──────────── */
+function AnimatedBar({ score, label, description, theme, delay = 0 }: {
+  score: number;
+  label: string;
+  description: string;
+  theme: Theme;
+  delay?: number;
+}) {
+  const t = getThemeStyles(theme);
+  const accent = getScoreAccent(score);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const tmr = setTimeout(() => setWidth(score), 300 + delay);
+    return () => clearTimeout(tmr);
+  }, [score, delay]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{label}</span>
+        <span className="text-sm font-semibold tabular-nums" style={{ color: accent }}>{score}</span>
+      </div>
+      <div className="h-2 rounded-full overflow-hidden" style={{ background: t.barTrack }}>
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${width}%` }}
+          transition={{ duration: 1.2, ease: 'easeOut', delay: delay / 1000 }}
+          style={{
+            background: `linear-gradient(to right, ${accent}, ${accent}88)`,
+            boxShadow: theme === 'dark' ? `0 0 8px ${accent}40` : 'none',
+          }}
+        />
+      </div>
+      <p className="text-xs" style={{ color: t.textMuted }}>{description}</p>
+    </div>
+  );
+}
+
+/* ── Sticky Header ───────────────────────────── */
+function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme; onToggle: () => void }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  return (
+    <header
+      className="fixed top-0 inset-x-0 z-50 h-14 sm:h-16 lg:h-[72px]"
+      style={{
+        background: t.headerBg,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${t.headerBorder}`,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 32 : 44} height={isMobile ? 32 : 44} className="rounded-lg" />
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-lg font-semibold" style={{ color: t.textPrimary }}>
+              VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
+            </span>
+            <span className="text-xs" style={{ color: t.textMuted }}>AI Visibility Report</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <ThemeToggle theme={theme} onToggle={onToggle} />
+          <div className="text-right">
+            <div className="text-xs sm:text-sm font-medium truncate max-w-[140px] sm:max-w-none" style={{ color: t.textPrimary }}>
+              {data.businessName}
+            </div>
+            <div className="text-[10px] hidden sm:block" style={{ color: t.textMuted }}>
+              {data.location} · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ── Stats Row ───────────────────────────────── */
+function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+  const stats = [
+    {
+      label: 'AVI Score',
+      value: data.aviScore,
+      subtext: `${getScoreLabel(data.aviScore)} visibility`,
+      tint: t.statCardTintCyan,
+    },
+    {
+      label: 'Prompts Appeared',
+      value: data.promptsAppeared,
+      subtext: `of ${data.totalPrompts} tested`,
+      tint: t.statCardTintGreen,
+    },
+    {
+      label: 'Competitors Ahead',
+      value: data.competitors.filter(c => !c.isYou && c.score > (data.competitors.find(x => x.isYou)?.score || 0)).length,
+      subtext: 'in your market',
+      tint: t.statCardTintAmber,
+    },
+    {
+      label: 'Profit at Risk',
+      value: data.profitAtRisk.high,
+      prefix: data.currencySymbol,
+      subtext: 'monthly revenue',
+      tint: t.statCardTintRed,
+    },
+  ];
+
+  return (
+    <FadeIn>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.08 }}
+            className="rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5"
+            style={{
+              background: `${t.glassBg}`,
+              border: `1px solid ${t.glassBorder}`,
+              boxShadow: isMobile ? 'none' : t.shadow,
+            }}
+          >
+            <p className="text-[10px] sm:text-xs uppercase tracking-widest" style={{ color: t.textMuted }}>{stat.label}</p>
+            <p className="text-2xl sm:text-3xl lg:text-4xl font-semibold mt-1 tabular-nums" style={{ color: t.textPrimary }}>
+              <CountUp value={stat.value} prefix={stat.prefix || ''} />
+            </p>
+            <p className="text-[10px] sm:text-xs mt-1 hidden sm:block" style={{ color: t.textMuted }}>{stat.subtext}</p>
+          </motion.div>
+        ))}
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Hero Score Section ──────────────────────── */
+function HeroScore({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+  const label = getScoreLabel(data.aviScore);
+  const accent = getScoreAccent(data.aviScore);
+
+  return (
+    <FadeIn>
+      <section className="py-12 sm:py-20 lg:py-24 relative">
+        <div
+          className="absolute inset-0 pointer-events-none hidden sm:block"
+          style={{
+            background: theme === 'dark'
+              ? 'radial-gradient(ellipse at center, rgba(37, 209, 242, 0.06) 0%, transparent 60%)'
+              : 'radial-gradient(ellipse at center, rgba(37, 209, 242, 0.04) 0%, transparent 60%)',
+          }}
+        />
+        <div className="relative max-w-2xl mx-auto text-center">
+          <p className="text-[10px] sm:text-xs uppercase tracking-widest mb-6 sm:mb-8" style={{ color: t.textMuted }}>
+            Your AI Visibility Score
+          </p>
+          <ScoreRing score={data.aviScore} theme={theme} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-6 sm:mt-8 inline-flex items-center gap-2 rounded-full px-4 py-2"
+            style={{
+              background: `${accent}15`,
+              border: `1px solid ${accent}30`,
+            }}
+          >
+            <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
+            <span className="text-sm font-semibold" style={{ color: accent }}>{label}</span>
+          </motion.div>
+          <p className="text-xs sm:text-sm mt-4 max-w-md mx-auto" style={{ color: t.textSecondary }}>
+            {data.aviScore >= 60
+              ? `Great visibility. ${data.businessName} is well-positioned in AI-driven searches.`
+              : data.aviScore >= 35
+                ? `Moderate visibility. ${data.businessName} appears in some AI responses, but there's room to grow.`
+                : `Low visibility. ${data.businessName} is rarely mentioned by AI platforms — a significant opportunity gap.`}
+          </p>
+        </div>
+      </section>
+    </FadeIn>
+  );
+}
+
+/* ── Category Scores ─────────────────────────── */
+function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  return (
+    <FadeIn>
+      <GlassCard className="max-w-4xl mx-auto p-5 sm:p-6 lg:p-8" theme={theme}>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Score Breakdown</h3>
+        <p className="text-xs sm:text-sm mb-6 sm:mb-8" style={{ color: t.textMuted }}>
+          How you perform across key visibility categories
+        </p>
+        <div className="space-y-5 sm:space-y-6">
+          {data.categories.map((cat, i) => (
+            <AnimatedBar
+              key={cat.name}
+              score={cat.score}
+              label={cat.name}
+              description={cat.description}
+              theme={theme}
+              delay={i * 100}
+            />
+          ))}
+        </div>
+      </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Visibility Radar ────────────────────────── */
+function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const radarData = data.categories.map(c => ({
+    category: c.name,
+    score: c.score,
+    fullMark: 100,
+  }));
+
+  return (
+    <FadeIn>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Visibility Radar</h3>
+        <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
+          Your strengths and gaps across visibility dimensions
+        </p>
+        <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
+          <div className="w-full lg:w-1/2" style={{ minHeight: isMobile ? 280 : 380 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} outerRadius={isMobile ? 80 : 120}>
+                <PolarGrid
+                  stroke={t.gridStroke}
+                  gridType="polygon"
+                />
+                <PolarAngleAxis
+                  dataKey="category"
+                  tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
+                />
+                <PolarRadiusAxis tick={false} axisLine={false} />
+                <Radar
+                  dataKey="score"
+                  fill={t.radarFill}
+                  stroke={t.radarStroke}
+                  strokeWidth={2}
+                  fillOpacity={1}
+                />
+                <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="w-full lg:w-1/2 space-y-3">
+            {data.categories.map((cat) => (
+              <div key={cat.name} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ background: getScoreAccent(cat.score) }} />
+                  <span className="text-sm" style={{ color: t.textSecondary }}>{cat.name}</span>
+                </div>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: getScoreAccent(cat.score) }}>
+                  {cat.score}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Competitor Comparison ───────────────────── */
+function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const compData = data.competitors.map(c => ({
+    name: c.isYou ? 'You' : c.name,
+    score: c.score,
+    isYou: c.isYou,
+  }));
+
+  const compColors = ['#8B5CF6', '#F97316', '#EC4899'];
+
+  return (
+    <FadeIn>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>How You Compare</h3>
+        <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
+          AI visibility scores in {data.location}
+        </p>
+        <div style={{ minHeight: isMobile ? 200 : 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 60 : 100, right: 40, top: 10, bottom: 10 }}>
+              <CartesianGrid stroke={t.gridStroke} horizontal={false} />
+              <XAxis type="number" hide />
+              <YAxis
+                dataKey="name"
+                type="category"
+                tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
+                width={isMobile ? 80 : 140}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
+              <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={isMobile ? 24 : 32}>
+                {compData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.isYou
+                      ? 'url(#clientGrad)'
+                      : compColors[(index - 1) % compColors.length]
+                    }
+                  />
+                ))}
+              </Bar>
+              <defs>
+                <linearGradient id="clientGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#22D3EE" />
+                  <stop offset="100%" stopColor="#06B6D4" />
+                </linearGradient>
+              </defs>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Profit at Risk ──────────────────────────── */
+function ProfitAtRisk({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  return (
+    <FadeIn>
+      <div className="max-w-2xl mx-auto text-center py-10 sm:py-14">
+        <p className="text-[10px] sm:text-xs uppercase tracking-widest mb-3" style={{ color: t.textMuted }}>
+          Estimated Profit at Risk
+        </p>
+        <p className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight" style={{ color: t.profitRiskText }}>
+          {formatCurrency(data.profitAtRisk.low, data.currencySymbol)} – {formatCurrency(data.profitAtRisk.high, data.currencySymbol)}
+        </p>
+        <p className="text-sm mt-3 max-w-md mx-auto" style={{ color: t.textSecondary }}>
+          Monthly revenue currently going to competitors who rank higher in AI-driven searches
+        </p>
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Visible vs Invisible Queries ───────────── */
+function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+  const [showAllVisible, setShowAllVisible] = useState(false);
+  const [showAllInvisible, setShowAllInvisible] = useState(false);
+
+  const visibleToShow = isMobile && !showAllVisible ? 5 : data.visibleQueries.length;
+  const invisibleToShow = isMobile && !showAllInvisible ? 5 : data.invisibleQueries.length;
+
+  const QueryItem = ({ query, visible }: { query: string; visible: boolean }) => (
+    <div
+      className="flex items-start gap-2.5 py-2.5 border-b"
+      style={{
+        borderColor: t.borderSubtle,
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+        style={{ background: visible ? t.queryDotVisible : t.queryDotInvisible }}
+      />
+      <span className="text-sm" style={{ color: t.textSecondary }}>{query}</span>
+    </div>
+  );
+
+  return (
+    <FadeIn>
+      <div className={isMobile ? 'space-y-6' : 'grid grid-cols-2 gap-6 lg:gap-8'}>
+        {/* Visible */}
+        <div>
+          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>
+            Where You Appear
+          </h3>
+          <p className="text-xs sm:text-sm mb-3" style={{ color: t.textMuted }}>
+            {data.visibleQueries.length} queries where AI mentions you
+          </p>
+          <GlassCard
+            className="p-4 sm:p-5"
+            style={{ borderLeft: `3px solid ${t.queryDotVisible}` }}
+            theme={theme}
+          >
+            <div className="space-y-0">
+              {data.visibleQueries.slice(0, visibleToShow).map((q, i) => (
+                <QueryItem key={i} query={q} visible />
+              ))}
+            </div>
+            {isMobile && data.visibleQueries.length > 5 && (
+              <button
+                onClick={() => setShowAllVisible(!showAllVisible)}
+                className="mt-3 text-xs font-medium"
+                style={{ color: '#25D1F2' }}
+              >
+                {showAllVisible ? 'Show less' : `+ ${data.visibleQueries.length - 5} more`}
+              </button>
+            )}
+          </GlassCard>
+        </div>
+
+        {/* Invisible */}
+        <div>
+          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>
+            Where You're Invisible
+          </h3>
+          <p className="text-xs sm:text-sm mb-3" style={{ color: t.textMuted }}>
+            {data.invisibleQueries.length} queries where competitors appear instead
+          </p>
+          <GlassCard
+            className="p-4 sm:p-5"
+            style={{ borderLeft: `3px solid ${t.queryDotInvisible}` }}
+            theme={theme}
+          >
+            <div className="space-y-0">
+              {data.invisibleQueries.slice(0, invisibleToShow).map((q, i) => (
+                <QueryItem key={i} query={q} visible={false} />
+              ))}
+            </div>
+            {isMobile && data.invisibleQueries.length > 5 && (
+              <button
+                onClick={() => setShowAllInvisible(!showAllInvisible)}
+                className="mt-3 text-xs font-medium"
+                style={{ color: '#25D1F2' }}
+              >
+                {showAllInvisible ? 'Show less' : `+ ${data.invisibleQueries.length - 5} more`}
+              </button>
+            )}
+          </GlassCard>
+        </div>
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Recommendations ─────────────────────────── */
+function Recommendations({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  return (
+    <FadeIn>
+      <div>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Recommendations</h3>
+        <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
+          Priority actions to improve your AI visibility
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {data.recommendations.map((rec, i) => (
+            <GlassCard key={rec.id} className="p-4 sm:p-5" theme={theme}>
+              <div className="flex items-center gap-2 mb-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  style={{
+                    background: `${getImpactColor(rec.impact)}15`,
+                    color: getImpactColor(rec.impact),
+                    border: `1px solid ${getImpactColor(rec.impact)}30`,
+                  }}
+                >
+                  {rec.impact} Impact
+                </span>
+              </div>
+              <h4 className="text-sm font-semibold mb-2" style={{ color: t.textPrimary }}>{rec.title}</h4>
+              <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>{rec.description}</p>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Social Media ────────────────────────────── */
+function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const platforms = [
+    { label: 'Instagram', value: data.socialPresence.instagram, icon: '📸' },
+    { label: 'Facebook', value: data.socialPresence.facebook, icon: '👥' },
+    { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: '⭐' },
+  ];
+
+  const socialCompData = data.competitorSocial.map(c => ({
+    name: c.name,
+    instagram: c.instagram || 0,
+    facebook: c.facebook || 0,
+    googleReviews: c.googleReviews,
+  }));
+
+  const hasSocialData = data.socialPresence.instagram || data.socialPresence.facebook || data.socialPresence.googleReviews;
+
+  if (!hasSocialData) return null;
+
+  return (
+    <FadeIn>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media Presence</h3>
+        <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
+          How you compare on social platforms
+        </p>
+
+        {/* Client Stats */}
+        <div className="grid grid-cols-3 gap-3 mb-6 sm:mb-8">
+          {platforms.map((p) => (
+            <div key={p.label} className="text-center p-3 rounded-2xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+              <div className="text-xl mb-1">{p.icon}</div>
+              <p className="text-lg sm:text-xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>
+                {p.value ? p.value.toLocaleString() : '—'}
+              </p>
+              <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>{p.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Comparison */}
+        {!isMobile && (
+          <div className="space-y-4">
+            {['Instagram', 'Facebook', 'Google Reviews'].map((platform, pi) => (
+              <div key={platform}>
+                <p className="text-xs font-medium mb-2" style={{ color: t.textSecondary }}>{platform}</p>
+                <div style={{ minHeight: 120 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[
+                      { name: 'You', value: platform === 'Instagram' ? (data.socialPresence.instagram || 0) : platform === 'Facebook' ? (data.socialPresence.facebook || 0) : data.socialPresence.googleReviews },
+                      ...data.competitorSocial.map(c => ({
+                        name: c.name,
+                        value: platform === 'Instagram' ? (c.instagram || 0) : platform === 'Facebook' ? (c.facebook || 0) : c.googleReviews,
+                      })),
+                    ]}>
+                      <CartesianGrid stroke={t.gridStroke} vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: t.axisText, fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis hide />
+                      <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={isMobile ? 20 : 28}>
+                        {data.competitors.map((c, i) => (
+                          <Cell key={i} fill={i === 0 ? '#22D3EE' : ['#8B5CF6', '#F97316', '#EC4899'][(i - 1) % 3]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile: text comparison */}
+        {isMobile && data.competitorSocial.length > 0 && (
+          <div className="space-y-3">
+            {data.competitorSocial.slice(0, 2).map((comp) => {
+              const yourInsta = data.socialPresence.instagram || 0;
+              const theirInsta = comp.instagram || 0;
+              const ratio = theirInsta > 0 ? Math.round(theirInsta / Math.max(yourInsta, 1)) : 0;
+              return (
+                <div key={comp.name} className="text-sm" style={{ color: t.textSecondary }}>
+                  <span className="font-medium" style={{ color: t.textPrimary }}>{comp.name}</span> has
+                  {' '}{ratio}x your Instagram followers and{' '}
+                  {Math.round((comp.googleReviews / Math.max(data.socialPresence.googleReviews, 1)))}x your Google reviews
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Pricing Cards ───────────────────────────── */
+function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const plans = [
+    {
+      name: 'Fix',
+      price: 299,
+      description: 'One-time optimization',
+      features: ['Full AI visibility audit', 'Content optimization', 'Local listing cleanup', 'Competitor gap analysis', '30-day support'],
+      highlighted: false,
+    },
+    {
+      name: 'Fix + Monitor',
+      price: 499,
+      description: 'Ongoing visibility management',
+      features: ['Everything in Fix', 'Monthly monitoring', 'Quarterly re-audit', 'Priority support', 'Competitor tracking'],
+      highlighted: true,
+    },
+  ];
+
+  return (
+    <FadeIn>
+      <div className="max-w-4xl mx-auto py-8 sm:py-12">
+        <h3 className="text-lg sm:text-xl font-semibold text-center mb-1" style={{ color: t.textPrimary }}>Ready to Fix This?</h3>
+        <p className="text-xs sm:text-sm text-center mb-6 sm:mb-8" style={{ color: t.textMuted }}>
+          Choose the plan that fits your business
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className="relative rounded-3xl p-6 sm:p-8"
+              style={{
+                background: t.glassBg,
+                border: plan.highlighted
+                  ? `2px solid ${t.pricingHighlightBorder}`
+                  : `1px solid ${t.glassBorder}`,
+                boxShadow: plan.highlighted && theme === 'dark'
+                  ? '0 0 40px rgba(37, 209, 242, 0.1)'
+                  : t.shadow,
+              }}
+            >
+              {plan.highlighted && (
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  style={{
+                    background: t.pricingBadgeBg,
+                    color: t.pricingBadgeText,
+                  }}
+                >
+                  Most Popular
+                </div>
+              )}
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: t.textMuted }}>{plan.name}</p>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl sm:text-5xl font-light tabular-nums" style={{ color: t.textPrimary }}>
+                  ${plan.price}
+                </span>
+                <span className="text-sm" style={{ color: t.textMuted }}>/mo</span>
+              </div>
+              <p className="text-xs mb-5" style={{ color: t.textMuted }}>{plan.description}</p>
+              <ul className="space-y-3 mb-6">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm" style={{ color: t.textSecondary }}>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="#22D3EE" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="mailto:alex@vizbiz.ai"
+                className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
+                style={plan.highlighted
+                  ? {
+                      background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
+                      color: '#02091F',
+                      boxShadow: theme === 'dark' ? '0 0 30px rgba(37, 209, 242, 0.25)' : '0 4px 12px rgba(6, 182, 212, 0.2)',
+                    }
+                  : {
+                      border: `1px solid ${t.ctaOutlineBorder}`,
+                      color: t.ctaOutlineText,
+                      background: 'transparent',
+                    }
+                }
+                onMouseEnter={(e) => {
+                  if (!plan.highlighted) {
+                    (e.target as HTMLElement).style.background = t.ctaOutlineHover;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!plan.highlighted) {
+                    (e.target as HTMLElement).style.background = 'transparent';
+                  }
+                }}
+              >
+                Get Started
+              </a>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs sm:text-sm text-center mt-6" style={{ color: t.textMuted }}>
+          Both plans include the full audit report. Cancel anytime. No setup fee.
+        </p>
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Bottom CTA ──────────────────────────────── */
+function BottomCTA({ theme }: { theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  return (
+    <FadeIn>
+      <div className="max-w-2xl mx-auto py-8 sm:py-10 text-center">
+        <h3 className="text-xl sm:text-2xl font-light mb-3" style={{ color: t.textPrimary }}>Prefer to talk first?</h3>
+        <p className="text-sm sm:text-base mb-6 sm:mb-8" style={{ color: t.textSecondary }}>
+          Book a free 15-minute audit review call. No pressure, no obligation.
+        </p>
+        <a
+          href="mailto:alex@vizbiz.ai"
+          className="inline-block border px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-medium rounded-xl transition-all"
+          style={{
+            borderColor: t.ctaOutlineBorder,
+            color: t.ctaOutlineText,
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLElement).style.background = t.ctaOutlineHover;
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLElement).style.background = 'transparent';
+          }}
+        >
+          Book a Free Call
+        </a>
+      </div>
+    </FadeIn>
+  );
+}
+
+/* ── Footer ──────────────────────────────────── */
+function ReportFooter({ theme }: { theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  return (
+    <footer
+      className="border-t py-10 sm:py-12"
+      style={{
+        borderColor: t.borderSubtle,
+        background: t.bgFooter,
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <FadeIn>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <Image src="/logo.jpg" alt="VizBiz.ai" width={40} height={40} className="rounded-lg opacity-70" />
+            <span className="text-base font-semibold" style={{ color: t.textPrimary }}>
+              VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm mb-1" style={{ color: t.footerText }}>
+            Generated by VizBiz.ai — AI Visibility Intelligence
+          </p>
+          <a href="https://vizbiz.ai" className="text-xs sm:text-sm transition-colors" style={{ color: t.footerLink }}>
+            vizbiz.ai
+          </a>
+        </FadeIn>
+      </div>
+    </footer>
   );
 }
 
@@ -454,853 +1433,100 @@ const LEADS: Record<string, LeadData> = {
     recommendations: [
       { id: 1, title: 'Improve brand discovery', description: 'Create more content about your restaurant consulting services and expertise to appear in more searches.', impact: 'High' },
       { id: 2, title: 'Build trust and authority signals', description: 'Showcase client testimonials, case studies, and credentials to improve trust scores.', impact: 'High' },
-      { id: 3, title: 'Expand service offering visibility', description: 'Create specific content about Zomato and Swiggy optimization services to capture platform-specific searches.', impact: 'High' },
+      { id: 3, title: 'Expand service content', description: 'Create detailed content about Zomato and Swiggy optimization services to capture more service-specific queries.', impact: 'Medium' },
     ],
     socialPresence: {
-      instagram: 450,
-      facebook: 320,
+      instagram: 320,
+      facebook: 180,
       googleReviews: 5,
-      overallScore: 3.1,
-    },
-    competitorSocial: [
-      { name: 'Restrosol', instagram: 2800, facebook: 1900, googleReviews: 18 },
-    ],
-  },
-  'VZB-MOO57ZGT': {
-    businessName: 'Old Touch Spices',
-    contactName: 'Chaitanya',
-    location: 'Delhi, India',
-    website: 'oldtouchspices.com',
-    aviScore: 32,
-    totalPrompts: 22,
-    promptsAppeared: 7,
-    currencySymbol: '₹',
-    currencyCode: 'INR',
-    profitAtRisk: { low: 1400, high: 8600 },
-    categories: [
-      { name: 'Brand Discovery', score: 28, description: 'How often you appear in spice brand searches' },
-      { name: 'Trust & Reviews', score: 35, description: 'What AI platforms say about your quality' },
-      { name: 'Product Visibility', score: 30, description: 'Whether your products appear in spice searches' },
-      { name: 'Competitive Position', score: 25, description: 'How you compare to Zoff, Catch, and MDH' },
-      { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority' },
-    ],
-    visibleQueries: [
-      'premium spices online India',
-      'quality masala brand',
-      'buy spices online Delhi',
-    ],
-    invisibleQueries: [
-      'best masala brand India',
-      'premium garam masala',
-      'organic spices India',
-      'best spice for biryani',
-      'whole spices online',
-      'spice gift set India',
-      'authentic Indian spices online',
-      'certified spice brand India',
-      'BRCGS certified spices',
-    ],
-    competitors: [
-      { name: 'MDH Masala', score: 20 },
-      { name: 'Catch', score: 17 },
-      { name: 'Zoff', score: 14 },
-      { name: 'Old Touch Spices (You)', score: 7, isYou: true },
-    ],
-    recommendations: [
-      { id: 1, title: 'Improve brand recognition', description: 'Create more content about your spice brand, quality standards, and unique offerings to appear in more brand searches.', impact: 'High' },
-      { id: 2, title: 'Expand product visibility', description: 'Add detailed product information, usage guides, and recipes to capture more specific spice-related searches.', impact: 'High' },
-      { id: 3, title: 'Build competitive differentiation', description: 'Highlight what makes Old Touch Spices unique compared to established brands like MDH, Catch, and Zoff.', impact: 'Medium' },
-    ],
-    socialPresence: {
-      instagram: 1200,
-      facebook: 850,
-      googleReviews: 11,
       overallScore: 3.8,
     },
     competitorSocial: [
-      { name: 'MDH Masala', instagram: 45000, facebook: 28000, googleReviews: 450 },
-      { name: 'Catch', instagram: 32000, facebook: 19000, googleReviews: 280 },
-      { name: 'Zoff', instagram: 18500, facebook: 12000, googleReviews: 165 },
+      { name: 'Restrosol', instagram: 1200, facebook: 900, googleReviews: 18 },
+    ],
+  },
+  'VZB-MOOLDT0J': {
+    businessName: 'Old Touch Spices',
+    contactName: 'Madhavi',
+    location: 'Ahmedabad, India',
+    website: 'oldtouchspices.com',
+    aviScore: 72,
+    totalPrompts: 22,
+    promptsAppeared: 16,
+    currencySymbol: '₹',
+    currencyCode: 'INR',
+    profitAtRisk: { low: 8000, high: 25000 },
+    categories: [
+      { name: 'Product Discovery', score: 78, description: 'How often your spice products appear in searches' },
+      { name: 'Brand Recognition', score: 70, description: 'Whether AI tools recognize Old Touch Spices' },
+      { name: 'Trust & Reviews', score: 68, description: 'What AI platforms say about your product quality' },
+      { name: 'Competitive Position', score: 75, description: 'How you compare to other spice brands' },
+      { name: 'Content & Authority', score: 65, description: 'Whether AI tools see you as an authority in spices' },
+    ],
+    visibleQueries: [
+      'buy spices online India',
+      'authentic Indian spices',
+      'organic spices Ahmedabad',
+      'best spice brand India',
+      'premium quality spices',
+    ],
+    invisibleQueries: [
+      'wholesale spices supplier',
+      'export quality spices India',
+      'spice gift boxes',
+      'custom spice blends',
+      'ayurvedic spices',
+    ],
+    competitors: [
+      { name: 'Old Touch Spices (You)', score: 16, isYou: true },
+      { name: 'Masala Monk', score: 14 },
+      { name: 'The Spice Company', score: 12 },
+      { name: 'Spice Tribe', score: 10 },
+    ],
+    recommendations: [
+      { id: 1, title: 'Expand wholesale visibility', description: 'Create content targeting wholesale and export queries to capture B2B market opportunities.', impact: 'Medium' },
+      { id: 2, title: 'Leverage product authority', description: 'Highlight your expertise in authentic Indian spices and traditional processing methods.', impact: 'Medium' },
+      { id: 3, title: 'Build review momentum', description: 'Encourage more customer reviews to improve trust scores and competitive positioning.', impact: 'Low' },
+    ],
+    socialPresence: {
+      instagram: 4500,
+      facebook: 2800,
+      googleReviews: 32,
+      overallScore: 4.6,
+    },
+    competitorSocial: [
+      { name: 'Masala Monk', instagram: 8900, facebook: 5600, googleReviews: 45 },
+      { name: 'The Spice Company', instagram: 6200, facebook: 4100, googleReviews: 38 },
+      { name: 'Spice Tribe', instagram: 3400, facebook: 2100, googleReviews: 22 },
     ],
   },
 };
 
-/* ── Chart Configs ──────────────────────────── */
-const categoryChartConfig = {
-  score: {
-    label: 'Score',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig;
-
-const radarChartConfig = {
-  score: {
-    label: 'Score',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig;
-
-const competitorChartConfig = {
-  score: {
-    label: 'Score',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig;
-
-/* ── Client Component ─────────────────────────── */
-export function ReportContent({ leadId }: { leadId: string }) {
-  const leadData = LEADS[leadId];
-
-  if (!leadData) {
-    return (
-      <div className="min-h-screen flex items-start justify-start" style={{ background: '#02091F' }}>
-        <div className="px-4">
-          <div className="text-[80px] font-extralight mb-4" style={{ color: '#25D1F2' }}>404</div>
-          <h1 className="text-2xl font-bold mb-3 text-white">Report not found</h1>
-          <p className="mb-8 text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            The report you&apos;re looking for doesn&apos;t exist or has been moved.
-          </p>
-          <a
-            href="https://vizbiz.ai"
-            className="inline-block px-8 py-3 text-base font-semibold rounded-xl transition-colors"
-            style={{ background: '#25D1F2', color: '#02091F' }}
-          >
-            Return to VizBiz.ai
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  const {
-    businessName,
-    location,
-    aviScore,
-    totalPrompts,
-    promptsAppeared,
-    currencySymbol,
-    profitAtRisk,
-    categories,
-    visibleQueries,
-    invisibleQueries,
-    competitors,
-    recommendations,
-    socialPresence,
-    competitorSocial,
-  } = leadData;
-
-  const dateGenerated = useMemo(
-    () =>
-      new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-    []
-  );
-
-  const competitorsBeating = competitors.filter((c) => !c.isYou && c.score > promptsAppeared).length;
-  const gapsFound = invisibleQueries.length;
-  const scoreLabel = getScoreLabel(aviScore);
-  const scoreAccent = getScoreAccent(aviScore);
-  const promptsPercentage = Math.round((promptsAppeared / totalPrompts) * 100);
-
-  // Category chart data
-  const categoryChartData = categories.map((c) => ({
-    name: c.name,
-    score: c.score,
-    fill: c.score >= 60 ? '#22C55E' : c.score >= 35 ? '#F59E0B' : '#EF4444',
-  }));
-
-  // Radar chart data
-  const radarData = categories.map((c) => ({
-    category: c.name,
-    score: c.score,
-    fullMark: 100,
-  }));
-
-  // Competitor chart data
-  const competitorChartData = competitors.map((c) => ({
-    name: c.name.replace(' (You)', ''),
-    score: c.score,
-    isYou: c.isYou || false,
-    fill: c.isYou ? '#25D1F2' : '#8B5CF6',
-  }));
-
-  // Social chart data
-  const socialChartData = [
-    {
-      name: businessName,
-      instagram: socialPresence.instagram || 0,
-      facebook: socialPresence.facebook || 0,
-      googleReviews: socialPresence.googleReviews,
-      isYou: true,
-    },
-    ...competitorSocial.map((c) => ({
-      name: c.name,
-      instagram: c.instagram || 0,
-      facebook: c.facebook || 0,
-      googleReviews: c.googleReviews,
-      isYou: false,
-    })),
-  ];
+/* ── Main Component ────────────────────────────── */
+export default function ReportContent({ leadId }: { leadId: string }) {
+  const { theme, toggle } = useTheme();
+  const data = LEADS[leadId] || LEADS['VZB-MOJSCVQM'];
+  const t = getThemeStyles(theme);
 
   return (
-    <div
-      className="min-h-screen text-white antialiased overflow-x-hidden"
-      style={{ background: '#02091F' }}
-    >
-      {/* CSS Variables for shadcn components */}
-      <style jsx global>{`
-        :root {
-          --background: #02091F;
-          --foreground: #FFFFFF;
-          --card: #F8F7F4;
-          --card-foreground: #1A1A2E;
-          --popover: #F8F7F4;
-          --muted: #E8E6E1;
-          --muted-foreground: #6B7280;
-          --border: #D4D0C8;
-          --chart-1: #25D1F2;
-          --chart-2: #8B5CF6;
-          --chart-3: #22C55E;
-          --chart-4: #F59E0B;
-          --chart-5: #EF4444;
-          --primary: #25D1F2;
-          --primary-foreground: #02091F;
-        }
-      `}</style>
+    <div className="min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
+      <StickyHeader data={data} theme={theme} onToggle={toggle} />
 
-      {/* ── 1. Header ── */}
-      <header className="sticky top-0 z-50 border-b backdrop-blur-lg" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(2,9,31,0.8)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-[72px]">
-            <div className="flex items-center gap-3">
-              <Image src="/logo.jpg" alt="VizBiz.ai" width={44} height={44} className="rounded-lg" />
-              <div>
-                <span className="text-lg sm:text-xl font-bold tracking-tight">VizBiz.ai</span>
-                <span className="hidden sm:inline text-sm ml-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  AI Visibility Report
-                </span>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm sm:text-base font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                {businessName}
-              </div>
-              <div className="text-xs hidden sm:block" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                {location} · {dateGenerated}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* ── 2. Stats Row (Kiranism pattern) ── */}
-        <FadeIn>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader>
-                <CardDescription>AVI Score</CardDescription>
-                <CardTitle className={cn('text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl', getScoreColorClass(aviScore))}>
-                  <CountUp value={aviScore} />
-                </CardTitle>
-                <CardAction>
-                  <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
-                    {scoreLabel}
-                  </Badge>
-                </CardAction>
-              </CardHeader>
-              <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  {scoreLabel} visibility
-                </div>
-                <div style={{ color: 'var(--muted-foreground)' }}>Benchmark: 60+</div>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardDescription>Prompts Appeared</CardDescription>
-                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
-                  {promptsAppeared}
-                  <span className="text-lg ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/{totalPrompts}</span>
-                </CardTitle>
-                <CardAction>
-                  <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                    {promptsPercentage}%
-                  </Badge>
-                </CardAction>
-              </CardHeader>
-              <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  {promptsAppeared} out of {totalPrompts} prompts
-                </div>
-                <div style={{ color: 'var(--muted-foreground)' }}>AI-generated queries tested</div>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardDescription>Competitors Ahead</CardDescription>
-                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl text-red-400">
-                  <CountUp value={competitorsBeating} />
-                </CardTitle>
-                <CardAction>
-                  <Badge variant="outline" className="text-red-400 border-red-400/25">
-                    Action needed
-                  </Badge>
-                </CardAction>
-              </CardHeader>
-              <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Out of {competitors.filter(c => !c.isYou).length} tracked competitors
-                </div>
-                <div style={{ color: 'var(--muted-foreground)' }}>Rank higher in AI results</div>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardDescription>Profit at Risk</CardDescription>
-                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#EF4444' }}>
-                  {currencySymbol}
-                  <CountUp value={profitAtRisk.low} />
-                  <span className="text-lg mx-1" style={{ color: '#D1D5DB' }}>—</span>
-                  <CountUp value={profitAtRisk.high} />
-                </CardTitle>
-                <CardAction>
-                  <Badge variant="outline" style={{ color: '#F59E0B', borderColor: 'rgba(245,158,11,0.25)' }}>
-                    /mo
-                  </Badge>
-                </CardAction>
-              </CardHeader>
-              <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Estimated monthly loss
-                </div>
-                <div style={{ color: 'var(--muted-foreground)' }}>Flowing to competitors</div>
-              </CardFooter>
-            </Card>
-          </div>
-        </FadeIn>
-
-        {/* ── 3. AVI Score Ring (hero element) ── */}
-        <FadeIn>
-          <Card className="flex flex-col items-center py-10 sm:py-14">
-            <CardHeader className="items-center pb-2">
-              <CardDescription>Your AI Visibility Score</CardDescription>
-              <CardTitle className="text-3xl font-bold tracking-tight">
-                {businessName}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <ScoreRing score={aviScore} />
-              <div
-                className="text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full"
-                style={{
-                  color: scoreAccent,
-                  background: `${scoreAccent}15`,
-                  border: `1px solid ${scoreAccent}40`,
-                }}
-              >
-                {scoreLabel}
-              </div>
-              <p className="text-sm max-w-md text-center" style={{ color: 'var(--muted-foreground)' }}>
-                Based on {totalPrompts} AI-generated queries across 5 visibility categories.
-                {aviScore >= 60
-                  ? ' Your brand is well-positioned in AI recommendations.'
-                  : aviScore >= 35
-                  ? ' There is room for improvement in key categories.'
-                  : ' Significant visibility gaps detected across all categories.'}
-              </p>
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        {/* ── 4. Category Scores (BarChart like Kiranism) ── */}
-        <FadeIn>
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Category Scores
-                <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
-                  Avg: {Math.round(categories.reduce((a, c) => a + c.score, 0) / categories.length)}
-                </Badge>
-              </CardTitle>
-              <CardDescription>Performance across {categories.length} visibility dimensions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={categoryChartConfig} className="h-[300px] sm:h-[340px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: '#D1D5DB' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
-                    <Tooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          indicator="dot"
-                          formatter={(value: unknown) => `${String(value)} / 100`}
-                        />
-                      }
-                    />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32} isAnimationActive animationDuration={1200} animationBegin={200} label={{ position: 'right', fill: '#374151', fontSize: 13, fontWeight: 600 }}>
-                      {categoryChartData.map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        {/* ── 5. Visibility Radar (RadarChart) ── */}
-        <FadeIn>
-          <Card className="flex flex-col">
-            <CardHeader className="items-center pb-0">
-              <CardTitle>
-                Visibility Radar
-                <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
-                  {scoreLabel}
-                </Badge>
-              </CardTitle>
-              <CardDescription>Multi-dimensional visibility analysis</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-1 items-start justify-start pb-0 pt-6">
-              <ChartContainer
-                config={radarChartConfig}
-                className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[300px] min-h-[250px] w-full"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                    <PolarGrid stroke="#D1D5DB" />
-                    <PolarAngleAxis
-                      dataKey="category"
-                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11 }}
-                    />
-                    <PolarRadiusAxis
-                      angle={90}
-                      domain={[0, 100]}
-                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
-                      stroke="#D1D5DB"
-                    />
-                    <Radar
-                      name="Score"
-                      dataKey="score"
-                      stroke="#25D1F2"
-                      fill="#25D1F2"
-                      fillOpacity={0.35}
-                      strokeWidth={2.5}
-                      isAnimationActive
-                      animationDuration={1500}
-                    />
-                    <Tooltip
-                      content={
-                        <ChartTooltipContent
-                          hideLabel
-                          formatter={(value: unknown) => `${String(value)} / 100`}
-                        />
-                      }
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        {/* ── 6. Competitor Comparison (BarChart) ── */}
-        <FadeIn>
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Competitor Comparison
-                <Badge variant="outline" className="text-red-400 border-red-400/25">
-                  -{competitorsBeating}
-                </Badge>
-              </CardTitle>
-              <CardDescription>How you rank against competitors in AI visibility</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={competitorChartConfig} className="h-[240px] sm:h-[280px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={competitorChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
-                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: '#D1D5DB' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
-                    <Tooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          indicator="dot"
-                          formatter={(value: unknown) => `${String(value)} prompt appearances`}
-                        />
-                      }
-                    />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={36} isAnimationActive animationDuration={1200} animationBegin={200} label={{ position: 'right', fill: '#1F2937', fontSize: 14, fontWeight: 600 }}>
-                      {competitorChartData.map((entry, index) => (
-                        <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        {/* ── 7. Social Media Presence ── */}
-        <FadeIn>
-          <div className="space-y-4">
-            <div className="text-base text-muted-foreground">
-              Your social media profiles vs {competitors.filter(c => !c.isYou).map(c => c.name).join(', ')} — AI platforms use social signals to rank businesses.
-            </div>
-            {/* Your social stat cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardDescription>Your Instagram Followers</CardDescription>
-                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
-                    {socialPresence.instagram?.toLocaleString() || '—'}
-                  </CardTitle>
-                  <CardAction>
-                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Yours
-                    </Badge>
-                  </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                  <div style={{ color: 'var(--muted-foreground)' }}>
-                    {socialPresence.instagram && socialPresence.instagram > 0
-                      ? 'Active social presence'
-                      : 'No profile detected'}
-                  </div>
-                </CardFooter>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardDescription>Your Facebook Likes</CardDescription>
-                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
-                    {socialPresence.facebook?.toLocaleString() || '—'}
-                  </CardTitle>
-                  <CardAction>
-                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Yours
-                    </Badge>
-                  </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                  <div style={{ color: 'var(--muted-foreground)' }}>
-                    {socialPresence.facebook && socialPresence.facebook > 0
-                      ? 'Active social presence'
-                      : 'No profile detected'}
-                  </div>
-                </CardFooter>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardDescription>Your Google Reviews</CardDescription>
-                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
-                    {socialPresence.googleReviews}
-                  </CardTitle>
-                  <CardAction>
-                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Yours
-                    </Badge>
-                  </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                  <div style={{ color: 'var(--muted-foreground)' }}>
-                    Overall score: {socialPresence.overallScore}/10
-                  </div>
-                </CardFooter>
-              </Card>
-            </div>
-
-            {/* Instagram comparison chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Instagram Followers
-                  <Badge variant="outline" style={{ color: '#8B5CF6', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    You vs Competitors
-                  </Badge>
-                </CardTitle>
-                <CardDescription>AI platforms favor businesses with stronger social proof</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{ followers: { label: 'Followers', color: 'var(--chart-1)' } }}
-                  className="h-[220px] w-full"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
-                      <XAxis
-                        type="number"
-                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                        axisLine={{ stroke: '#D1D5DB' }}
-                        tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
-                      />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
-                      <Tooltip
-                        cursor={false}
-                        content={
-                          <ChartTooltipContent
-                            indicator="dot"
-                            formatter={(value: unknown) => (value as number).toLocaleString()}
-                          />
-                        }
-                      />
-                      <Bar dataKey="instagram" radius={[0, 6, 6, 0]} barSize={24}>
-                        {socialChartData.map((entry, index) => (
-                          <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Facebook comparison chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Facebook Likes
-                  <Badge variant="outline" style={{ color: '#8B5CF6', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    vs Competitors
-                  </Badge>
-                </CardTitle>
-                <CardDescription>Social media engagement comparison</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{ likes: { label: 'Likes', color: 'var(--chart-1)' } }}
-                  className="h-[220px] w-full"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
-                      <XAxis
-                        type="number"
-                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                        axisLine={{ stroke: '#D1D5DB' }}
-                        tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
-                      />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
-                      <Tooltip
-                        cursor={false}
-                        content={
-                          <ChartTooltipContent
-                            indicator="dot"
-                            formatter={(value: unknown) => (value as number).toLocaleString()}
-                          />
-                        }
-                      />
-                      <Bar dataKey="facebook" radius={[0, 6, 6, 0]} barSize={24}>
-                        {socialChartData.map((entry, index) => (
-                          <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </FadeIn>
-
-        {/* ── 8. Where You Appear / Where You're Invisible ── */}
-        <FadeIn>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Visible */}
-            <Card>
-              <CardHeader>
-                <CardDescription style={{ color: '#22C55E' }}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                    Where you appear
-                    <Badge variant="outline" className="ml-auto text-emerald-400 border-emerald-400/25">
-                      {visibleQueries.length}
-                    </Badge>
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {visibleQueries.map((q, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                      {q}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                  {visibleQueries.length} queries where your brand appears in AI results
-                </div>
-              </CardFooter>
-            </Card>
-
-            {/* Invisible */}
-            <Card>
-              <CardHeader>
-                <CardDescription style={{ color: '#EF4444' }}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                    Where you&apos;re invisible
-                    <Badge variant="outline" className="ml-auto text-red-400 border-red-400/25">
-                      {invisibleQueries.length}
-                    </Badge>
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {invisibleQueries.map((q, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-400/50 flex-shrink-0" />
-                      {q}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                  {invisibleQueries.length} queries where competitors appear but you don&apos;t
-                </div>
-              </CardFooter>
-            </Card>
-          </div>
-        </FadeIn>
-
-        {/* ── 9. Pricing ── */}
-        <FadeIn>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-w-3xl mx-auto">
-            {/* Fix */}
-            <Card>
-              <CardHeader>
-                <CardDescription style={{ color: '#25D1F2' }}>Fix</CardDescription>
-                <CardTitle className="text-3xl font-extralight">
-                  $299<span className="text-lg font-normal ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/mo</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  {[
-                    'Full AI visibility audit (80+ queries)',
-                    'We implement every fix for you',
-                    'Monthly re-audit included',
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#22D3EE' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href="mailto:alex@vizbiz.ai"
-                  className="block w-full border py-3.5 text-base font-semibold rounded-xl transition-all"
-                  style={{ borderColor: '#22D3EE', color: '#22D3EE' }}
-                >
-                  Get Started
-                </a>
-              </CardContent>
-            </Card>
-
-            {/* Fix + Monitor */}
-            <Card className="relative" style={{ border: '2px solid rgba(34,211,238,0.5)' }}>
-              <div
-                className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
-                style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#02091F' }}
-              >
-                Most Popular
-              </div>
-              <CardHeader className="pt-8">
-                <CardDescription style={{ color: '#25D1F2' }}>Fix + Monitor</CardDescription>
-                <CardTitle className="text-3xl font-extralight">
-                  $499<span className="text-lg font-normal ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/mo</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  {[
-                    'Everything in Fix',
-                    'Competitor tracking',
-                    'Ongoing optimization as AI tools change',
-                    'Priority support',
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#22D3EE' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href="mailto:alex@vizbiz.ai"
-                  className="block w-full py-3.5 text-base font-semibold rounded-xl transition-opacity"
-                  style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#1F2937' }}
-                >
-                  Get Started
-                </a>
-              </CardContent>
-            </Card>
-          </div>
-          <p className="text-sm mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            Both plans include the full audit report. Cancel anytime. No setup fee.
-          </p>
-        </FadeIn>
-
-        {/* ── 10. Bottom CTA ── */}
-        <FadeIn>
-          <div className="max-w-2xl mx-auto py-8">
-            <h3 className="text-2xl font-light mb-3">Prefer to talk first?</h3>
-            <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              Book a free 15-minute audit review call. No pressure, no obligation.
-            </p>
-            <a
-              href="mailto:alex@vizbiz.ai"
-              className="inline-block border px-8 py-3.5 text-base font-medium rounded-xl transition-all"
-              style={{ borderColor: 'rgba(34,211,238,0.4)', color: '#22D3EE' }}
-            >
-              Book a Free Call
-            </a>
-          </div>
-        </FadeIn>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-8 sm:space-y-10 lg:space-y-12">
+        <StatsRow data={data} theme={theme} />
+        <HeroScore data={data} theme={theme} />
+        <CategoryScores data={data} theme={theme} />
+        <VisibilityRadar data={data} theme={theme} />
+        <CompetitorComparison data={data} theme={theme} />
+        <ProfitAtRisk data={data} theme={theme} />
+        <QueryLists data={data} theme={theme} />
+        <Recommendations data={data} theme={theme} />
+        <SocialMedia data={data} theme={theme} />
+        <PricingCards data={data} theme={theme} />
+        <BottomCTA theme={theme} />
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="border-t py-12" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <FadeIn>
-            <div className="flex items-start justify-start gap-3 mb-3">
-              <Image src="/logo.jpg" alt="VizBiz.ai" width={56} height={56} className="rounded-lg opacity-70" />
-              <span className="text-base font-semibold">
-                VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
-              </span>
-            </div>
-            <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              Generated by VizBiz.ai — AI Visibility Intelligence
-            </p>
-            <a href="https://vizbiz.ai" className="text-sm transition-colors" style={{ color: 'rgba(34,211,238,0.5)' }}>
-              vizbiz.ai
-            </a>
-          </FadeIn>
-        </div>
-      </footer>
+      <ReportFooter theme={theme} />
     </div>
   );
 }
