@@ -1112,6 +1112,54 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   );
 }
 
+/* ── Social Proof Strip ─────────────────────── */
+function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const base = 127;
+    const today = new Date();
+    const start = new Date(2026, 3, 20);
+    const days = Math.floor((today.getTime() - start.getTime()) / 86400000);
+    const total = base + Math.floor(days * 2.3);
+    setCount(total);
+  }, []);
+
+  return (
+    <FadeIn>
+      <div
+        className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 py-5 px-4 rounded-2xl"
+        style={{
+          background: theme === 'dark' ? 'rgba(37,209,242,0.04)' : 'rgba(6,182,212,0.04)',
+          border: `1px solid ${theme === 'dark' ? 'rgba(37,209,242,0.12)' : 'rgba(6,182,212,0.15)'}`,
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {['#22D3EE', '#8B5CF6', '#F97316', '#22C55E'].map((c, i) => (
+              <div
+                key={i}
+                className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
+                style={{ borderColor: theme === 'dark' ? '#02091F' : '#FFFFFF', background: c, color: i === 0 ? '#02091F' : '#FFFFFF' }}
+              >
+                {['V', 'E', 'A', 'G'][i]}
+              </div>
+            ))}
+          </div>
+          <span className="text-sm font-medium" style={{ color: t.textPrimary }}>
+            {count > 0 ? `${count}+` : '—'} businesses checked their AI visibility
+          </span>
+        </div>
+        <div className="hidden sm:block w-px h-5" style={{ background: t.borderSubtle }} />
+        <span className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
+          {data.businessName.split(' ')[0]} is ahead of the curve — get the full report to stay there
+        </span>
+      </div>
+    </FadeIn>
+  );
+}
+
 /* ── Full Report Teaser ─────────────────────── */
 function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
@@ -1149,6 +1197,102 @@ function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
           ))}
         </div>
       </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Blurred Report Preview ─────────────────── */
+function BlurredReportPreview({ theme }: { theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const previewRows = [
+    { label: 'Query', width: '60%', visible: true },
+    { label: '', width: '45%', visible: false },
+    { label: '', width: '70%', visible: true },
+    { label: '', width: '55%', visible: false },
+    { label: '', width: '50%', visible: true },
+  ];
+
+  return (
+    <FadeIn>
+      <div className="relative rounded-3xl overflow-hidden" style={{ border: `1px solid ${t.glassBorder}` }}>
+        {/* Fake report structure */}
+        <div
+          className="p-5 sm:p-6 space-y-4"
+          style={{ background: t.glassBg }}
+        >
+          {/* Fake header bar */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg" style={{ background: 'linear-gradient(135deg, #22D3EE, #06B6D4)' }} />
+            <div className="space-y-1.5 flex-1">
+              <div className="h-2.5 rounded-full" style={{ background: t.textPrimary, opacity: 0.15, width: '35%' }} />
+              <div className="h-1.5 rounded-full" style={{ background: t.textPrimary, opacity: 0.08, width: '55%' }} />
+            </div>
+          </div>
+
+          {/* Fake score circle */}
+          <div className="flex items-center justify-center gap-6 py-3">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full" style={{ border: `3px solid ${theme === 'dark' ? 'rgba(37,209,242,0.3)' : 'rgba(6,182,212,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="text-2xl sm:text-3xl font-bold" style={{ color: '#F59E0B' }}>42</div>
+            </div>
+            <div className="space-y-2 flex-1 max-w-[200px]">
+              <div className="h-2 rounded-full" style={{ background: t.textPrimary, opacity: 0.12, width: '80%' }} />
+              <div className="h-2 rounded-full" style={{ background: t.textPrimary, opacity: 0.08, width: '60%' }} />
+              <div className="h-2 rounded-full" style={{ background: t.textPrimary, opacity: 0.1, width: '90%' }} />
+            </div>
+          </div>
+
+          {/* Fake query rows */}
+          <div className="space-y-2 pt-2">
+            {previewRows.map((row, i) => (
+              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                <div className={`w-2 h-2 rounded-full ${row.visible ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                <div className="h-2 rounded-full flex-1" style={{ background: t.textPrimary, opacity: 0.1, width: row.width }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Fake bar chart */}
+          <div className="space-y-2 pt-2">
+            {[0.7, 0.45, 0.55, 0.3].map((pct, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="h-2 rounded-full" style={{ background: t.textPrimary, opacity: 0.08, width: '20%' }} />
+                <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${pct * 100}%`, background: i === 0 ? 'linear-gradient(to right, #22D3EE, #06B6D4)' : ['#8B5CF6', '#F97316', '#EC4899'][i - 1] }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Blur overlay */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+          style={{
+            background: theme === 'dark'
+              ? 'linear-gradient(to bottom, rgba(2,9,31,0.3) 0%, rgba(2,9,31,0.85) 40%, rgba(2,9,31,0.95) 100%)'
+              : 'linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.95) 100%)',
+            backdropFilter: isMobile ? 'none' : 'blur(3px)',
+          }}
+        >
+          <div className="text-center">
+            <p className="text-sm sm:text-base font-semibold" style={{ color: t.textPrimary }}>Full Report Preview</p>
+            <p className="text-xs mt-1" style={{ color: t.textMuted }}>The complete audit includes 84 queries, competitor analysis, and a fix plan</p>
+          </div>
+          <a
+            href="mailto:alex@vizbiz.ai?subject=Full%20AI%20Visibility%20Report%20Request"
+            className="px-6 py-2.5 text-sm font-semibold rounded-xl transition-all"
+            style={{
+              background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
+              color: '#02091F',
+              boxShadow: theme === 'dark' ? '0 0 20px rgba(37,209,242,0.2)' : '0 4px 12px rgba(6,182,212,0.15)',
+            }}
+          >
+            Get the Full Report
+          </a>
+        </div>
+      </div>
     </FadeIn>
   );
 }
@@ -1628,7 +1772,9 @@ export default function ReportContent({ leadId }: { leadId: string }) {
         <QueryLists data={data} theme={theme} />
         <Recommendations data={data} theme={theme} />
         <SocialMedia data={data} theme={theme} />
+        <BlurredReportPreview theme={theme} />
         <FullReportTeaser data={data} theme={theme} />
+        <SocialProofStrip data={data} theme={theme} />
         <PricingCards data={data} theme={theme} />
         <BottomCTA theme={theme} />
       </main>
