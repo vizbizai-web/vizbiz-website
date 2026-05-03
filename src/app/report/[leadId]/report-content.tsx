@@ -518,7 +518,7 @@ function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme;
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 40 : 56} height={isMobile ? 40 : 56} className="rounded-lg" />
+          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 48 : 64} height={isMobile ? 48 : 64} className="rounded-lg" />
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-lg font-semibold" style={{ color: t.textPrimary }}>
               VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
@@ -685,12 +685,17 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
 function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const radarData = data.categories.map(c => ({
     category: c.name,
     score: c.score,
     fullMark: 100,
   }));
+
+  const chartH = isMobile ? 300 : 400;
+  const outerR = isMobile ? 90 : 130;
 
   return (
     <FadeIn>
@@ -700,28 +705,31 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
           Your strengths and gaps across visibility dimensions
         </p>
         <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
-          <div className="w-full lg:w-1/2" style={{ height: isMobile ? 280 : 380 }}>
-            <ResponsiveContainer width="100%" height={isMobile ? 280 : 380}>
-              <RadarChart data={radarData} outerRadius={isMobile ? 80 : 120}>
-                <PolarGrid
-                  stroke={t.gridStroke}
-                  gridType="polygon"
-                />
-                <PolarAngleAxis
-                  dataKey="category"
-                  tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
-                />
-                <PolarRadiusAxis tick={false} axisLine={false} />
-                <Radar
-                  dataKey="score"
-                  fill={t.radarFill}
-                  stroke={t.radarStroke}
-                  strokeWidth={2}
-                  fillOpacity={1}
-                />
-                <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
-              </RadarChart>
-            </ResponsiveContainer>
+          <div className="w-full lg:w-1/2 flex items-center justify-center" style={{ minHeight: chartH }}>
+            {mounted ? (
+              <ResponsiveContainer width="100%" height={chartH}>
+                <RadarChart data={radarData} outerRadius={outerR} cx="50%" cy="50%">
+                  <PolarGrid stroke={t.gridStroke} gridType="polygon" />
+                  <PolarAngleAxis
+                    dataKey="category"
+                    tick={{ fill: t.axisText, fontSize: 11, fontFamily: 'Poppins, sans-serif' }}
+                  />
+                  <PolarRadiusAxis tick={false} axisLine={false} />
+                  <Radar
+                    dataKey="score"
+                    fill={t.radarFill}
+                    stroke={t.radarStroke}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                  />
+                  <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ width: '100%', height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: t.textMuted, fontSize: 14 }}>Loading radar...</span>
+              </div>
+            )}
           </div>
           <div className="w-full lg:w-1/2 space-y-3">
             {data.categories.map((cat) => (
@@ -746,6 +754,8 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
 function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const compData = data.competitors.map(c => ({
     name: c.isYou ? 'You' : c.name,
@@ -754,6 +764,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   }));
 
   const compColors = ['#8B5CF6', '#F97316', '#EC4899'];
+  const chartH = isMobile ? 200 : 320;
 
   return (
     <FadeIn>
@@ -762,40 +773,40 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
           AI visibility scores in {data.location}
         </p>
-        <div style={{ height: isMobile ? 200 : 300 }}>
-          <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
-            <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 60 : 100, right: 40, top: 10, bottom: 10 }}>
-              <CartesianGrid stroke={t.gridStroke} horizontal={false} />
-              <XAxis type="number" hide />
-              <YAxis
-                dataKey="name"
-                type="category"
-                tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
-                width={isMobile ? 80 : 140}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
-              <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={isMobile ? 24 : 32}>
-                {compData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.isYou
-                      ? 'url(#clientGrad)'
-                      : compColors[(index - 1) % compColors.length]
-                    }
-                  />
-                ))}
-              </Bar>
-              <defs>
-                <linearGradient id="clientGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#22D3EE" />
-                  <stop offset="100%" stopColor="#06B6D4" />
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {mounted ? (
+          <div style={{ height: chartH }}>
+            <ResponsiveContainer width="100%" height={chartH}>
+              <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 80 : 120, right: 40, top: 10, bottom: 10 }}>
+                <CartesianGrid stroke={t.gridStroke} horizontal={false} />
+                <XAxis type="number" domain={[0, 'dataMax + 5']} tick={{ fill: t.axisText, fontSize: 11 }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
+                  width={isMobile ? 100 : 160}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
+                <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={isMobile ? 24 : 32}>
+                  {compData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.isYou
+                        ? '#22D3EE'
+                        : compColors[(index - 1) % compColors.length]
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div style={{ height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: t.textMuted, fontSize: 14 }}>Loading comparison...</span>
+          </div>
+        )}
       </GlassCard>
     </FadeIn>
   );
