@@ -1300,8 +1300,8 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
     {
       name: 'Fix + Monitor',
       price: 499,
-      description: 'Fix + ongoing visibility tracking',
-      features: ['Everything in Fix', 'Monthly monitoring', 'Quarterly re-audit', 'Priority support', 'Competitor tracking'],
+      description: 'Full fix + we keep you visible every month',
+      features: ['Everything in the Fix plan', 'Monthly re-audit across 84 queries', 'Score tracking dashboard — watch your AVI climb', 'Competitor movement alerts', 'Ongoing content & listing optimization', 'Dedicated support channel'],
       highlighted: true,
     },
   ];
