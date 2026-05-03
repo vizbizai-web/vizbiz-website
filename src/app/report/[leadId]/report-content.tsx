@@ -199,7 +199,7 @@ function ScoreRing({ score }: { score: number }) {
   }, [normalized, circumference]);
 
   return (
-    <div className="relative w-[200px] h-[200px] sm:w-[260px] sm:h-[260px]">
+    <div className="relative w-[180px] h-[180px] sm:w-[240px] sm:h-[240px]">
       <svg
         width="100%"
         height="100%"
@@ -642,7 +642,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
       {/* ── 1. Header ── */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#02091F]/80 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-[72px]">
             <div className="flex items-center gap-3">
               <Image
@@ -674,8 +674,8 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </header>
 
       {/* ── 2. Hero Score + Stats ── */}
-      <section className="relative z-10 py-10 lg:py-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-14 lg:py-24">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Left: score ring */}
@@ -702,15 +702,15 @@ export function ReportContent({ leadId }: { leadId: string }) {
               </div>
 
               {/* Right: stat cards */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
                 <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
-                    <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
+                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
                       AI Visibility Score
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className={cn('text-3xl sm:text-4xl', getScoreColorClass(aviScore))}>
+                    <CardTitle className={cn('text-2xl sm:text-4xl', getScoreColorClass(aviScore))}>
                       <CountUp value={aviScore} />
                     </CardTitle>
                   </CardContent>
@@ -718,12 +718,12 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
                 <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
-                    <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
+                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
                       Prompts Appeared
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className="text-3xl sm:text-4xl text-[#25D1F2]">
+                    <CardTitle className="text-2xl sm:text-4xl text-[#25D1F2]">
                       <CountUp value={promptsAppeared} />
                       <span className="text-xl text-white/30 ml-1">
                         /{totalPrompts}
@@ -734,12 +734,12 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
                 <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
-                    <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
+                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
                       Competitors Ahead
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className="text-3xl sm:text-4xl text-red-400">
+                    <CardTitle className="text-2xl sm:text-4xl text-red-400">
                       <CountUp value={competitorsBeating} />
                     </CardTitle>
                   </CardContent>
@@ -747,12 +747,12 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
                 <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
-                    <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
+                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
                       Gaps Found
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className="text-3xl sm:text-4xl text-amber-400">
+                    <CardTitle className="text-2xl sm:text-4xl text-amber-400">
                       <CountUp value={gapsFound} />
                     </CardTitle>
                   </CardContent>
@@ -764,17 +764,17 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 3. Profit at Risk ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 text-center py-12">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 text-center py-8 sm:py-12">
               <CardHeader>
                 <CardDescription className="text-white/40 uppercase tracking-widest text-sm">
                   Estimated Monthly Profit at Risk
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CardTitle className="text-3xl sm:text-4xl sm:text-5xl font-extralight tracking-tight mb-2">
+                <CardTitle className="text-2xl sm:text-4xl sm:text-5xl font-extralight tracking-tight mb-2">
                   <span className="text-[#25D1F2]">
                     {currencySymbol}
                     <CountUp value={profitAtRisk.low} />
@@ -799,10 +799,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 4. Category Scores (BarChart) ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
+            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
               Category Scores
             </div>
             <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
@@ -862,10 +862,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 5. Visibility Radar ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
+            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
               Visibility Radar
             </div>
             <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
@@ -917,10 +917,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 6. Competitor Comparison ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
+            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
               Competitor Comparison
             </div>
             <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
@@ -980,16 +980,16 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 7. Social Media Presence ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
+            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
               Social Media Presence
             </div>
             <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
               <CardContent className="pt-6">
                 {/* Social stats summary */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                   <div className="text-center p-4 rounded-xl bg-white/[0.12]">
                     <div className="text-3xl font-bold text-[#25D1F2]">
                       {socialPresence.instagram?.toLocaleString() || '—'}
@@ -1217,10 +1217,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 8. Where You Appear / Where You're Invisible ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
-            <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
+            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
               Visibility Map
             </div>
           </FadeIn>
@@ -1289,14 +1289,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 9. Pricing ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-12">
               <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-3">
                 Pricing
               </div>
-              <h2 className="text-3xl lg:text-3xl sm:text-4xl font-extralight leading-tight">
+              <h2 className="text-3xl lg:text-2xl sm:text-4xl font-extralight leading-tight">
                 We found {recommendations.length} specific gaps costing you
                 visibility
               </h2>
@@ -1311,7 +1311,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   <CardDescription className="text-[#25D1F2] uppercase tracking-widest text-sm font-medium">
                     Fix
                   </CardDescription>
-                  <CardTitle className="text-3xl sm:text-4xl font-extralight">
+                  <CardTitle className="text-2xl sm:text-4xl font-extralight">
                     $299
                     <span className="text-lg text-white/30 font-normal">
                       /mo
@@ -1366,7 +1366,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   <CardDescription className="text-[#25D1F2] uppercase tracking-widest text-sm font-medium">
                     Fix + Monitor
                   </CardDescription>
-                  <CardTitle className="text-3xl sm:text-4xl font-extralight">
+                  <CardTitle className="text-2xl sm:text-4xl font-extralight">
                     $499
                     <span className="text-lg text-white/30 font-normal">
                       /mo
@@ -1421,8 +1421,8 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 10. Bottom CTA + Footer ── */}
-      <section className="relative z-10 py-10 lg:py-16">
-        <div className="max-w-2xl mx-auto px-6 lg:px-8 text-center">
+      <section className="relative z-10 py-12 lg:py-20">
+        <div className="max-w-2xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h3 className="text-2xl font-light mb-3">
               Prefer to talk first?
@@ -1442,7 +1442,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       <footer className="relative z-10 border-t border-white/10 py-12">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <div className="flex items-center justify-center gap-3 mb-3">
               <Image
