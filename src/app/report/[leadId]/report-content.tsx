@@ -624,7 +624,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#02091F] text-white antialiased">
+    <div className="min-h-screen bg-[#02091F] text-white antialiased overflow-x-hidden">
       {/* Noise overlay */}
       <div
         className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
@@ -644,30 +644,28 @@ export function ReportContent({ leadId }: { leadId: string }) {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#02091F]/80 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-[72px]">
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3">
               <Image
                 src="/logo.jpg"
                 alt="VizBiz.ai"
-                width={40}
-                height={40}
-                className="sm:hidden rounded-lg"
+                width={44}
+                height={44}
+                className="rounded-lg"
               />
-              <Image
-                src="/logo.jpg"
-                alt="VizBiz.ai"
-                width={56}
-                height={56}
-                className="hidden sm:block rounded-lg"
-              />
-              <span className="text-base sm:text-xl font-bold tracking-tight">
-                AI Visibility Report
-              </span>
+              <div>
+                <span className="text-lg sm:text-xl font-bold tracking-tight">
+                  VizBiz.ai
+                </span>
+                <span className="hidden sm:inline text-sm text-white/40 ml-2">
+                  AI Visibility Report
+                </span>
+              </div>
             </div>
             <div className="text-right">
-              <div className="text-sm sm:text-base font-semibold text-white/90">
+              <div className="text-sm sm:text-base font-semibold text-white/80">
                 {businessName}
               </div>
-              <div className="text-xs sm:text-sm text-white/40">
+              <div className="text-xs text-white/30 hidden sm:block">
                 {location} · {dateGenerated}
               </div>
             </div>
@@ -705,7 +703,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
               {/* Right: stat cards */}
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       AI Visibility Score
@@ -718,7 +716,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Prompts Appeared
@@ -734,7 +732,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Competitors Ahead
@@ -747,7 +745,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Gaps Found
@@ -807,7 +805,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Category Scores
             </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
@@ -815,7 +813,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       label: 'Score',
                     },
                   }}
-                  className="h-[280px] sm:h-[320px]"
+                  className="h-[280px] sm:h-[320px] w-full"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -870,7 +868,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Visibility Radar
             </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
@@ -925,13 +923,13 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Competitor Comparison
             </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
                     score: { label: 'Score' },
                   }}
-                  className="h-[240px] sm:h-[280px]"
+                  className="h-[240px] sm:h-[280px] w-full"
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -988,7 +986,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Social Media Presence
             </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
               <CardContent className="pt-6">
                 {/* Social stats summary */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
