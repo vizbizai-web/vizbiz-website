@@ -1001,9 +1001,9 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   const isMobile = useIsMobile();
 
   const platforms = [
-    { label: 'Instagram', value: data.socialPresence.instagram, icon: '📸' },
-    { label: 'Facebook', value: data.socialPresence.facebook, icon: '👥' },
-    { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: '⭐' },
+    { label: 'Instagram', value: data.socialPresence.instagram, icon: 'instagram' },
+    { label: 'Facebook', value: data.socialPresence.facebook, icon: 'facebook' },
+    { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: 'google' },
   ];
 
   const socialCompData = data.competitorSocial.map(c => ({
@@ -1029,7 +1029,15 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
         <div className="grid grid-cols-3 gap-3 mb-6 sm:mb-8">
           {platforms.map((p) => (
             <div key={p.label} className="text-center p-3 rounded-2xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-              <div className="text-xl mb-1">{p.icon}</div>
+              <div className="text-xl mb-1 flex items-center justify-center">
+                {p.icon === 'instagram' ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#E1306C' }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><circle cx="12" cy="12" r="5.5" /><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" /></svg>
+                ) : p.icon === 'facebook' ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
+                )}
+              </div>
               <p className="text-lg sm:text-xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>
                 {p.value ? p.value.toLocaleString() : '—'}
               </p>
@@ -1112,49 +1120,28 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   );
 }
 
-/* ── Social Proof Strip ─────────────────────── */
+/* ── Competitor Urgency Strip ───────────────── */
 function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const base = 127;
-    const today = new Date();
-    const start = new Date(2026, 3, 20);
-    const days = Math.floor((today.getTime() - start.getTime()) / 86400000);
-    const total = base + Math.floor(days * 2.3);
-    setCount(total);
-  }, []);
+  const leader = data.competitors.find(c => !c.isYou && c.score > (data.competitors.find(c2 => c2.isYou)?.score || 0));
 
   return (
     <FadeIn>
       <div
-        className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 py-5 px-4 rounded-2xl"
+        className="py-5 px-5 sm:px-8 rounded-2xl text-center sm:text-left"
         style={{
-          background: theme === 'dark' ? 'rgba(37,209,242,0.04)' : 'rgba(6,182,212,0.04)',
-          border: `1px solid ${theme === 'dark' ? 'rgba(37,209,242,0.12)' : 'rgba(6,182,212,0.15)'}`,
+          background: theme === 'dark' ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.03)',
+          border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}`,
         }}
       >
-        <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            {['#22D3EE', '#8B5CF6', '#F97316', '#22C55E'].map((c, i) => (
-              <div
-                key={i}
-                className="w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
-                style={{ borderColor: theme === 'dark' ? '#02091F' : '#FFFFFF', background: c, color: i === 0 ? '#02091F' : '#FFFFFF' }}
-              >
-                {['V', 'E', 'A', 'G'][i]}
-              </div>
-            ))}
-          </div>
-          <span className="text-sm font-medium" style={{ color: t.textPrimary }}>
-            {count > 0 ? `${count}+` : '—'} businesses checked their AI visibility
-          </span>
-        </div>
-        <div className="hidden sm:block w-px h-5" style={{ background: t.borderSubtle }} />
-        <span className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
-          {data.businessName.split(' ')[0]} is ahead of the curve — get the full report to stay there
-        </span>
+        <p className="text-sm sm:text-base font-medium mb-1" style={{ color: t.textPrimary }}>
+          Every day you wait, more buyers find your competitors instead of you.
+        </p>
+        <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
+          {leader
+            ? `${leader.name} is already being recommended by ChatGPT, Gemini, and Perplexity when buyers ask for suggestions. Your full report includes a step-by-step fix plan to close that gap.`
+            : 'Your competitors are already being recommended by ChatGPT, Gemini, and Perplexity. The full report includes a prioritized fix plan to close the gap.'}
+        </p>
       </div>
     </FadeIn>
   );
@@ -1306,14 +1293,14 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
     {
       name: 'Fix',
       price: 299,
-      description: 'One-time optimization',
-      features: ['Full AI visibility audit', 'Content optimization', 'Local listing cleanup', 'Competitor gap analysis', '30-day support'],
+      description: 'Full audit + one-time fix',
+      features: ['Full AI visibility audit (84 queries)', 'Content optimization for AI platforms', 'Local listing cleanup & schema markup', 'Competitor gap analysis', '30-day email support'],
       highlighted: false,
     },
     {
       name: 'Fix + Monitor',
       price: 499,
-      description: 'Ongoing visibility management',
+      description: 'Fix + ongoing visibility tracking',
       features: ['Everything in Fix', 'Monthly monitoring', 'Quarterly re-audit', 'Priority support', 'Competitor tracking'],
       highlighted: true,
     },
@@ -1357,7 +1344,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                 <span className="text-4xl sm:text-5xl font-light tabular-nums" style={{ color: t.textPrimary }}>
                   ${plan.price}
                 </span>
-                <span className="text-sm" style={{ color: t.textMuted }}>/mo</span>
+                <span className="text-sm" style={{ color: t.textMuted }}>{plan.name === 'Fix' ? 'one-time' : '/mo'}</span>
               </div>
               <p className="text-xs mb-5" style={{ color: t.textMuted }}>{plan.description}</p>
               <ul className="space-y-3 mb-6">
