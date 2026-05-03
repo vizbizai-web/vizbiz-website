@@ -1,10 +1,7 @@
-import { Metadata } from 'next';
-import Image from 'next/image';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'AI Visibility Report | VizBiz.ai',
-  description: 'Comprehensive AI Visibility Intelligence Report',
-};
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 /* ── Types ────────────────────────────────────── */
 interface Category {
@@ -65,133 +62,147 @@ const getScoreAccent = (score: number): string => {
 const formatCurrency = (val: number, sym: string): string =>
   sym + Math.round(val).toLocaleString();
 
-/* ── SVG Score Ring Component ─────────────────── */
-const ScoreRing = ({ score }: { score: number }) => {
+/* ── Animated Score Ring ──────────────────────── */
+const AnimatedScoreRing = ({ score }: { score: number }) => {
   const radius = 70;
-  const stroke = 8;
+  const stroke = 9;
   const normalized = Math.min(100, Math.max(0, score));
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (normalized / 100) * circumference;
   const accent = getScoreAccent(score);
+  const [offset, setOffset] = useState(circumference);
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setOffset(circumference - (normalized / 100) * circumference), 200);
+    return () => clearTimeout(timer);
+  }, [normalized, circumference]);
+
+  useEffect(() => {
+    const target = score;
+    let current = 0;
+    const step = () => {
+      current += 1;
+      if (current >= target) {
+        setDisplayScore(target);
+        return;
+      }
+      setDisplayScore(current);
+      requestAnimationFrame(step);
+    };
+    const raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [score]);
 
   return (
-    <svg width="180" height="180" viewBox="0 0 180 180" className="-rotate-90">
-      {/* Background ring */}
+    <svg width="200" height="200" viewBox="0 0 200 200" className="-rotate-90">
+      <circle cx="100" cy="100" r={radius} fill="none" stroke="#ffffff10" strokeWidth={stroke} />
       <circle
-        cx="90"
-        cy="90"
-        r={radius}
-        fill="none"
-        stroke="#111827"
-        strokeWidth={stroke}
+        cx="100" cy="100" r={radius} fill="none" stroke={accent} strokeWidth={stroke}
+        strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+        className="transition-all duration-[1500ms] ease-out"
       />
-      {/* Animated progress ring */}
-      <circle
-        cx="90"
-        cy="90"
-        r={radius}
-        fill="none"
-        stroke={accent}
-        strokeWidth={stroke}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        className="transition-all duration-1000 ease-out"
-      />
-      {/* Score number */}
-      <text
-        x="90"
-        y="84"
-        textAnchor="middle"
-        fill="#ffffff"
-        fontSize="44"
-        fontWeight="800"
-        className="rotate-90"
-      >
-        {score}
+      <text x="100" y="92" textAnchor="middle" fill="#ffffff" fontSize="52" fontWeight="800" className="rotate-90">
+        {displayScore}
       </text>
-      <text
-        x="90"
-        y="106"
-        textAnchor="middle"
-        fill="#F5F5F7"
-        fontSize="12"
-        opacity="0.5"
-        className="rotate-90"
-      >
-        /100
+      <text x="100" y="118" textAnchor="middle" fill="#F5F5F7" fontSize="14" opacity="0.5" className="rotate-90">
+        / 100
       </text>
     </svg>
   );
 };
 
-/* ── Category Bar Component ───────────────────── */
-const CategoryBar = ({ category }: { category: Category }) => {
+/* ── Animated Category Card ───────────────────── */
+const CategoryCard = ({ category, index }: { category: Category; index: number }) => {
   const accent = getScoreAccent(category.score);
+  const [animatedWidth, setAnimatedWidth] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect(); } },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const t = setTimeout(() => setAnimatedWidth(category.score), 300 + index * 100);
+    return () => clearTimeout(t);
+  }, [isVisible, category.score, index]);
+
   return (
-    <div className="mb-6 last:mb-0">
-      <div className="flex justify-between items-baseline mb-2">
-        <span className="text-[14px] text-[#F5F5F7] font-medium">
-          {category.name}
-        </span>
-        <span
-          className="text-[18px] font-bold"
-          style={{ color: accent }}
-        >
-          {category.score}
-        </span>
+    <div
+      ref={cardRef}
+      className="bg-white/[0.06] backdrop-blur-md border border-white/10 rounded-2xl p-5 shadow-lg shadow-black/20 hover:bg-white/[0.08] transition-all duration-500"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: `opacity 0.6s ease ${index * 80}ms, transform 0.6s ease ${index * 80}ms`,
+      }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[12px] text-[#F5F5F7]/50 uppercase tracking-wider mb-1">{category.name}</div>
+          <div className="text-[32px] font-extralight tracking-tight" style={{ color: accent }}>{category.score}</div>
+        </div>
+        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[18px]">
+          {category.name.includes('Brand') ? '🏷️' : category.name.includes('Trust') ? '⭐' : category.name.includes('Consultancy') || category.name.includes('Service') ? '🔧' : category.name.includes('Competitive') ? '🏆' : category.name.includes('Content') || category.name.includes('Authority') ? '📚' : category.name.includes('Portfolio') || category.name.includes('Product') ? '🎨' : category.name.includes('Class') || category.name.includes('Booking') ? '📅' : '📊'}
+        </div>
       </div>
-      <div className="relative w-full h-[6px] bg-[#0D1B2A] rounded-full overflow-hidden">
+      <div className="relative w-full h-2 bg-white/5 rounded-full overflow-hidden mb-3">
         <div
           className="absolute top-0 left-0 h-full rounded-full"
           style={{
-            width: `${category.score}%`,
-            background: `linear-gradient(90deg, ${accent}, ${accent}aa)`,
+            width: `${animatedWidth}%`,
+            background: 'linear-gradient(90deg, #22D3EE, #06B6D4)',
             transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
         />
       </div>
-      <p className="text-[12px] text-[#F5F5F7]/50 mt-1.5 leading-relaxed">
-        {category.description}
-      </p>
+      <p className="text-[12px] text-[#F5F5F7]/40 leading-relaxed">{category.description}</p>
     </div>
   );
 };
 
-/* ── Competitor Bar Chart ────────────────────── */
-const CompetitorBar = ({
-  competitors,
-  totalPrompts,
-}: {
-  competitors: Competitor[];
-  totalPrompts: number;
-}) => {
+/* ── Competitor Bars (inside glass card) ────────── */
+const CompetitorBar = ({ competitors }: { competitors: Competitor[] }) => {
   const maxScore = Math.max(...competitors.map((c) => c.score), 1);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {competitors.map((comp, i) => {
         const width = (comp.score / maxScore) * 100;
         const isYou = comp.isYou;
         return (
-          <div key={i} className="flex items-center gap-4">
-            <div className="w-[160px] text-[13px] text-[#F5F5F7] font-medium truncate">
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-[150px] text-[13px] text-[#F5F5F7] font-medium truncate flex items-center gap-2">
               {comp.name}
+              {isYou && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-[#02091F] font-bold uppercase tracking-wider">
+                  You
+                </span>
+              )}
             </div>
-            <div className="flex-1 h-[8px] bg-[#0D1B2A] rounded-full overflow-hidden">
+            <div className="flex-1 h-9 bg-white/5 rounded-full overflow-hidden relative">
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full flex items-center justify-end px-3"
                 style={{
                   width: `${width}%`,
                   background: isYou
                     ? 'linear-gradient(90deg, #25D1F2, #06B6D4)'
-                    : '#374151',
-                  transition: 'width 1s cubic-bezier(0.22, 1, 0.36, 1)',
+                    : 'linear-gradient(90deg, #374151, #4B5563)',
+                  transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
                 }}
-              />
-            </div>
-            <div className="w-[40px] text-right text-[13px] font-semibold text-[#F5F5F7]">
-              {comp.score}
+              >
+                <span className={`text-[12px] font-bold ${isYou ? 'text-[#02091F]' : 'text-[#F5F5F7]'}`}>
+                  {comp.score}
+                </span>
+              </div>
             </div>
           </div>
         );
@@ -200,13 +211,93 @@ const CompetitorBar = ({
   );
 };
 
+/* ── FadeIn Section Wrapper ──────────────────── */
+const FadeIn = ({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* ── Animated Profit Number ──────────────────── */
+const AnimatedProfit = ({ low, high, symbol }: { low: number; high: number; symbol: string }) => {
+  const [displayLow, setDisplayLow] = useState(0);
+  const [displayHigh, setDisplayHigh] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    let l = 0, h = 0;
+    const step = () => {
+      l = Math.min(l + Math.max(1, Math.floor(low / 60)), low);
+      h = Math.min(h + Math.max(1, Math.floor(high / 60)), high);
+      setDisplayLow(l);
+      setDisplayHigh(h);
+      if (l < low || h < high) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [visible, low, high]);
+
+  return (
+    <div ref={ref} className="text-5xl sm:text-6xl font-extralight tracking-tight mb-2 leading-none">
+      <span className="text-[#25D1F2]">{symbol}{displayLow.toLocaleString()}</span>
+      <span className="text-[#F5F5F7]/20 mx-2">—</span>
+      <span className="text-[#25D1F2]">{symbol}{displayHigh.toLocaleString()}</span>
+      <span className="text-[#F5F5F7]/30 text-lg font-normal ml-2">/month</span>
+    </div>
+  );
+};
+
 /* ── Page ─────────────────────────────────────── */
-export default async function ReportPage({
-  params,
-}: {
-  params: Promise<{ leadId: string }>;
-}) {
-  const { leadId } = await params;
+export default function ReportPage({ params }: { params: Promise<{ leadId: string }> }) {
+  const [leadId, setLeadId] = useState<string>('');
+
+  useEffect(() => {
+    params.then(p => setLeadId(p.leadId));
+  }, [params]);
+
+  if (!leadId) {
+    return (
+      <div className="min-h-screen bg-[#02091F] flex items-center justify-center">
+        <div className="text-[#25D1F2] text-lg animate-pulse">Loading report…</div>
+      </div>
+    );
+  }
 
   const LEADS: Record<string, LeadData> = {
     'VZB-MOJSCVQM': {
@@ -692,33 +783,37 @@ export default async function ReportPage({
         }}
       />
 
+      {/* Subtle background glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#22D3EE]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#06B6D4]/5 rounded-full blur-[100px]" />
+      </div>
+
       {/* ── 1. Header ── */}
-      <header className="relative z-10 border-b border-[#25D1F2]/8">
+      <header className="relative z-10 border-b border-white/10 bg-[#02091F]/80 backdrop-blur-lg">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[64px]">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between h-[72px]">
+            <div className="flex items-center gap-3">
               <Image
                 src="/logo.jpg"
                 alt="VizBiz.ai"
-                width={28}
-                height={28}
-                className="rounded-sm"
+                width={48}
+                height={48}
+                className="rounded-lg"
               />
-              <span className="text-[14px] font-semibold tracking-tight">
+              <span className="text-[15px] font-bold tracking-tight">
                 VizBiz<span className="text-[#25D1F2]">.ai</span>
               </span>
-            </div>
-            <div className="hidden md:block text-center">
-              <div className="text-[11px] uppercase tracking-[0.15em] text-[#F5F5F7]/40 font-medium">
+              <span className="hidden sm:inline text-[11px] text-[#F5F5F7]/30 font-medium ml-2 border-l border-white/10 pl-3">
                 AI Visibility Report
-              </div>
+              </span>
             </div>
             <div className="text-right">
-              <div className="text-[13px] font-medium text-[#F5F5F7]">
+              <div className="text-[14px] font-semibold text-[#F5F5F7]">
                 {businessName}
               </div>
-              <div className="text-[11px] text-[#F5F5F7]/40">
-                {dateGenerated}
+              <div className="text-[12px] text-[#F5F5F7]/40">
+                {location} · {dateGenerated}
               </div>
             </div>
           </div>
@@ -727,306 +822,315 @@ export default async function ReportPage({
 
       {/* ── 2. Hero Score Card ── */}
       <section className="relative z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#22D3EE]/10 via-transparent to-[#06B6D4]/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#22D3EE]/8 via-transparent to-[#06B6D4]/3" />
         <div className="relative max-w-[1200px] mx-auto px-6 lg:px-8 py-16 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-            {/* Left: score + label */}
-            <div className="lg:col-span-2 flex flex-col items-start">
-              <div className="text-[11px] uppercase tracking-[0.2em] text-[#F5F5F7]/40 font-medium mb-4">
-                Your AI Visibility Score
-              </div>
-              <div className="flex items-center gap-6 mb-6">
-                <ScoreRing score={aviScore} />
-                <div>
-                  <div
-                    className="text-[13px] font-semibold uppercase tracking-wider"
-                    style={{ color: getScoreAccent(aviScore) }}
-                  >
-                    {getScoreLabel(aviScore)}
-                  </div>
-                  <div className="text-[11px] text-[#F5F5F7]/30 mt-1">
-                    Benchmark: 60+
+          <FadeIn>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left: score ring */}
+              <div className="flex flex-col items-center lg:items-start">
+                <div className="text-[12px] uppercase tracking-[0.2em] text-[#F5F5F7]/40 font-medium mb-6">
+                  Your AI Visibility Score
+                </div>
+                <div className="flex items-center gap-8">
+                  <AnimatedScoreRing score={aviScore} />
+                  <div className="flex flex-col gap-2">
+                    <div
+                      className="text-[14px] font-bold uppercase tracking-wider px-4 py-2 rounded-full"
+                      style={{
+                        color: getScoreAccent(aviScore),
+                        background: `${getScoreAccent(aviScore)}15`,
+                        border: `1px solid ${getScoreAccent(aviScore)}30`,
+                      }}
+                    >
+                      {getScoreLabel(aviScore)}
+                    </div>
+                    <div className="text-[12px] text-[#F5F5F7]/30">
+                      Benchmark: 60+
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right: stat pills */}
-            <div className="lg:col-span-3">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#25D1F2]/8 rounded-xl px-5 py-5 text-center">
-                  <div className="text-[28px] font-bold text-[#25D1F2]">
+              {/* Right: stat pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-6 text-center shadow-lg shadow-black/20">
+                  <div className="text-[32px] font-bold text-[#25D1F2]">
                     {promptsAppeared}
-                    <span className="text-[14px] text-[#F5F5F7]/30">
+                    <span className="text-[16px] text-[#F5F5F7]/30">
                       /{totalPrompts}
                     </span>
                   </div>
-                  <div className="text-[11px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
-                    Prompts appeared
+                  <div className="text-[12px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
+                    Appeared in prompts
                   </div>
                 </div>
-                <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#25D1F2]/8 rounded-xl px-5 py-5 text-center">
-                  <div className="text-[28px] font-bold text-[#EF4444]">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-6 text-center shadow-lg shadow-black/20">
+                  <div className="text-[32px] font-bold text-[#EF4444]">
                     {competitorsBeating}
                   </div>
-                  <div className="text-[11px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
+                  <div className="text-[12px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
                     Competitors ahead
                   </div>
                 </div>
-                <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#25D1F2]/8 rounded-xl px-5 py-5 text-center">
-                  <div className="text-[28px] font-bold text-[#F59E0B]">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-6 text-center shadow-lg shadow-black/20">
+                  <div className="text-[32px] font-bold text-[#F59E0B]">
                     {gapsFound}
                   </div>
-                  <div className="text-[11px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
+                  <div className="text-[12px] text-[#F5F5F7]/40 mt-1 uppercase tracking-wider">
                     Gaps found
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 3. Profit at Risk ── */}
-      <section className="relative z-10 py-16 lg:py-24 bg-[#0A0F1E]">
-        <div className="max-w-[720px] mx-auto px-6 lg:px-8 text-center">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-[#EF4444]/60 font-medium mb-4">
-            Estimated Impact
-          </div>
-          <div className="text-[48px] lg:text-[64px] font-extralight tracking-tight mb-3 leading-none">
-            <span className="text-[#25D1F2]">
-              {formatCurrency(profitAtRisk.low, currencySymbol)}
-            </span>
-            <span className="text-[#F5F5F7]/20 mx-2">—</span>
-            <span className="text-[#25D1F2]">
-              {formatCurrency(profitAtRisk.high, currencySymbol)}
-            </span>
-            <span className="text-[#F5F5F7]/30 text-[18px] font-normal ml-2">
-              /mo
-            </span>
-          </div>
-          <p className="text-[14px] text-[#F5F5F7]/40 max-w-[480px] mx-auto leading-relaxed">
-            This is the estimated profit going to competitors who appear in AI
-            recommendations when your business does not. It is based on your
-            industry, location, and competitive landscape.
-          </p>
+      <section className="relative z-10 py-16 lg:py-24">
+        <div className="max-w-[800px] mx-auto px-6 lg:px-8">
+          <FadeIn>
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 lg:p-12 text-center shadow-lg shadow-black/20">
+              <div className="text-[12px] uppercase tracking-[0.2em] text-[#EF4444]/60 font-medium mb-4">
+                Estimated Impact
+              </div>
+              <AnimatedProfit low={profitAtRisk.low} high={profitAtRisk.high} symbol={currencySymbol} />
+              <p className="text-[14px] text-[#F5F5F7]/40 max-w-[480px] mx-auto leading-relaxed mt-4">
+                Estimated profit flowing to competitors who appear in AI recommendations when your business does not.
+              </p>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 4. Category Breakdown ── */}
       <section className="relative z-10 py-16 lg:py-24">
-        <div className="max-w-[720px] mx-auto px-6 lg:px-8">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
-            Category Breakdown
+        <div className="max-w-[1000px] mx-auto px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-[12px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
+              Category Breakdown
+            </div>
+          </FadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {categories.map((cat, i) => (
+              <CategoryCard key={i} category={cat} index={i} />
+            ))}
           </div>
-          {categories.map((cat, i) => (
-            <CategoryBar key={i} category={cat} />
-          ))}
         </div>
       </section>
 
       {/* ── 5. Visibility Map ── */}
-      <section className="relative z-10 py-16 lg:py-24 bg-[#0A0F1E]">
+      <section className="relative z-10 py-16 lg:py-24">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
-            Visibility Map
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Visible */}
-            <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#22C55E]/10 rounded-xl p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-                <h3 className="text-[13px] font-semibold text-[#22C55E] uppercase tracking-wider">
-                  Where you appear
-                </h3>
-                <span className="text-[11px] text-[#F5F5F7]/20 ml-auto">
-                  {visibleQueries.length}
-                </span>
-              </div>
-              <ul className="space-y-2.5">
-                {visibleQueries.map((q, i) => (
-                  <li
-                    key={i}
-                    className="text-[13px] text-[#F5F5F7]/70 pl-4 border-l border-[#22C55E]/20"
-                  >
-                    {q}
-                  </li>
-                ))}
-              </ul>
+          <FadeIn>
+            <div className="text-[12px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
+              Visibility Map
             </div>
+          </FadeIn>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Visible */}
+            <FadeIn delay={100}>
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 border-l-4 border-l-emerald-400">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  <h3 className="text-[14px] font-semibold text-emerald-400 uppercase tracking-wider">
+                    Where you appear
+                  </h3>
+                  <span className="text-[12px] text-[#F5F5F7]/20 ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                    {visibleQueries.length}
+                  </span>
+                </div>
+                <ul className="space-y-3">
+                  {visibleQueries.map((q, i) => (
+                    <li key={i} className="text-[14px] text-[#F5F5F7]/70 flex items-center gap-3">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                      {q}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </FadeIn>
 
             {/* Invisible */}
-            <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#EF4444]/10 rounded-xl p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-2 h-2 rounded-full bg-[#EF4444]" />
-                <h3 className="text-[13px] font-semibold text-[#EF4444] uppercase tracking-wider">
-                  Where you&apos;re invisible
-                </h3>
-                <span className="text-[11px] text-[#F5F5F7]/20 ml-auto">
-                  {invisibleQueries.length}
-                </span>
+            <FadeIn delay={200}>
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 border-l-4 border-l-red-400">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]" />
+                  <h3 className="text-[14px] font-semibold text-red-400 uppercase tracking-wider">
+                    Where you&apos;re invisible
+                  </h3>
+                  <span className="text-[12px] text-[#F5F5F7]/20 ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                    {invisibleQueries.length}
+                  </span>
+                </div>
+                <ul className="space-y-3">
+                  {invisibleQueries.map((q, i) => (
+                    <li key={i} className="text-[14px] text-[#F5F5F7]/40 flex items-center gap-3">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400/50 flex-shrink-0" />
+                      {q}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-2.5">
-                {invisibleQueries.map((q, i) => (
-                  <li
-                    key={i}
-                    className="text-[13px] text-[#F5F5F7]/40 pl-4 border-l border-[#EF4444]/10"
-                  >
-                    {q}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </FadeIn>
           </div>
         </div>
       </section>
 
       {/* ── 6. Competitor Comparison ── */}
       <section className="relative z-10 py-16 lg:py-24">
-        <div className="max-w-[720px] mx-auto px-6 lg:px-8">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
-            Competitor Comparison
-          </div>
-          <CompetitorBar
-            competitors={competitors}
-            totalPrompts={totalPrompts}
-          />
+        <div className="max-w-[900px] mx-auto px-6 lg:px-8">
+          <FadeIn>
+            <div className="text-[12px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-10">
+              Competitor Comparison
+            </div>
+          </FadeIn>
+          <FadeIn delay={150}>
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-lg shadow-black/20">
+              <CompetitorBar competitors={competitors} />
+            </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 7. Pricing ── */}
-      <section className="relative z-10 py-16 lg:py-24 bg-[#0A0F1E]">
+      <section className="relative z-10 py-16 lg:py-24">
         <div className="max-w-[920px] mx-auto px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-3">
-              Pricing
+          <FadeIn>
+            <div className="text-center mb-14">
+              <div className="text-[12px] uppercase tracking-[0.2em] text-[#F5F5F7]/30 font-medium mb-3">
+                Pricing
+              </div>
+              <h2 className="text-[28px] lg:text-[40px] font-extralight leading-tight">
+                We found {recommendations.length} specific gaps costing you visibility
+              </h2>
             </div>
-            <h2 className="text-[28px] lg:text-[36px] font-extralight leading-tight">
-              We found {recommendations.length} specific gaps costing you
-              visibility
-            </h2>
-          </div>
+          </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
             {/* Fix */}
-            <div className="bg-[#111118]/60 backdrop-blur-sm border border-[#25D1F2]/10 rounded-xl p-8 hover:border-[#25D1F2]/25 transition-colors">
-              <div className="text-[11px] uppercase tracking-[0.2em] text-[#25D1F2] font-medium mb-4">
-                Fix
+            <FadeIn delay={100}>
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-lg shadow-black/20 hover:border-white/20 transition-all duration-300">
+                <div className="text-[12px] uppercase tracking-[0.2em] text-[#25D1F2] font-medium mb-4">
+                  Fix
+                </div>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-[40px] font-extralight">$299</span>
+                  <span className="text-[14px] text-[#F5F5F7]/30">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Full AI visibility audit (80+ queries)',
+                    'We implement every fix for you',
+                    'Monthly re-audit included',
+                  ].map((item, i) => (
+                    <li key={i} className="text-[14px] text-[#F5F5F7]/60 flex items-start gap-3">
+                      <svg className="w-4 h-4 text-[#22D3EE] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="mailto:alex@vizbiz.ai"
+                  className="block w-full text-center border border-[#22D3EE] text-[#22D3EE] py-3.5 text-[14px] font-semibold hover:bg-[#22D3EE]/10 transition-all rounded-xl"
+                >
+                  Get Started
+                </a>
               </div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[36px] font-light">$299</span>
-                <span className="text-[13px] text-[#F5F5F7]/30">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Full AI visibility audit (80+ queries)',
-                  'We implement every fix for you',
-                  'Monthly re-audit included',
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="text-[13px] text-[#F5F5F7]/60 flex items-start gap-3"
-                  >
-                    <span className="text-[#25D1F2] mt-0.5">—</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="mailto:alex@vizbiz.ai"
-                className="block w-full text-center bg-[#25D1F2] text-[#02091F] py-3 text-[13px] font-semibold hover:bg-[#06B6D4] transition-colors rounded-lg"
-              >
-                Get Started
-              </a>
-            </div>
+            </FadeIn>
 
             {/* Fix + Monitor */}
-            <div className="relative bg-[#111118]/80 backdrop-blur-sm border border-[#25D1F2]/30 rounded-xl p-8">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-[#02091F] px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                Most Popular
+            <FadeIn delay={200}>
+              <div className="relative bg-white/[0.07] backdrop-blur-md border-2 border-[#22D3EE]/50 rounded-2xl p-8 shadow-lg shadow-black/20 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-[#02091F] px-5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                  Most Popular
+                </div>
+                <div className="text-[12px] uppercase tracking-[0.2em] text-[#25D1F2] font-medium mb-4">
+                  Fix + Monitor
+                </div>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-[40px] font-extralight">$499</span>
+                  <span className="text-[14px] text-[#F5F5F7]/30">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Everything in Fix',
+                    'Competitor tracking',
+                    'Ongoing optimization as AI tools change',
+                    'Priority support',
+                  ].map((item, i) => (
+                    <li key={i} className="text-[14px] text-[#F5F5F7]/80 flex items-start gap-3">
+                      <svg className="w-4 h-4 text-[#22D3EE] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="mailto:alex@vizbiz.ai"
+                  className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white py-3.5 text-[14px] font-semibold hover:opacity-90 transition-opacity rounded-xl shadow-lg shadow-[#22D3EE]/20"
+                >
+                  Get Started
+                </a>
               </div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-[#25D1F2] font-medium mb-4">
-                Fix + Monitor
-              </div>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[36px] font-light">$499</span>
-                <span className="text-[13px] text-[#F5F5F7]/30">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Everything in Fix',
-                  'Competitor tracking',
-                  'Ongoing optimization as AI tools change',
-                  'Priority support',
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="text-[13px] text-[#F5F5F7]/80 flex items-start gap-3"
-                  >
-                    <span className="text-[#25D1F2] mt-0.5">—</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="mailto:alex@vizbiz.ai"
-                className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white py-3 text-[13px] font-semibold hover:opacity-90 transition-opacity rounded-lg"
-              >
-                Get Started
-              </a>
-            </div>
+            </FadeIn>
           </div>
 
-          <p className="text-center text-[11px] text-[#F5F5F7]/20 mt-8">
-            Both plans include the full audit report. Cancel anytime. No setup
-            fee.
+          <p className="text-center text-[12px] text-[#F5F5F7]/20 mt-8">
+            Both plans include the full audit report. Cancel anytime. No setup fee.
           </p>
         </div>
       </section>
 
       {/* ── 8. Bottom CTA ── */}
-      <section className="relative z-10 py-16 text-center">
-        <div className="max-w-[600px] mx-auto px-6 lg:px-8">
-          <h3 className="text-[22px] font-light mb-3">
-            Prefer to talk first?
-          </h3>
-          <p className="text-[13px] text-[#F5F5F7]/40 mb-8">
-            Book a free 15-minute audit review call. No pressure, no
-            obligation.
-          </p>
-          <a
-            href="mailto:alex@vizbiz.ai"
-            className="inline-block border border-[#25D1F2]/30 text-[#25D1F2] px-8 py-3 text-[13px] font-medium hover:bg-[#25D1F2]/10 transition-colors rounded-lg"
-          >
-            Book a Free Call
-          </a>
+      <section className="relative z-10 py-16">
+        <div className="max-w-[600px] mx-auto px-6 lg:px-8 text-center">
+          <FadeIn>
+            <h3 className="text-[24px] font-light mb-3">
+              Prefer to talk first?
+            </h3>
+            <p className="text-[14px] text-[#F5F5F7]/40 mb-8">
+              Book a free 15-minute audit review call. No pressure, no obligation.
+            </p>
+            <a
+              href="mailto:alex@vizbiz.ai"
+              className="inline-block border border-[#22D3EE]/40 text-[#22D3EE] px-8 py-3.5 text-[14px] font-medium hover:bg-[#22D3EE]/10 transition-all rounded-xl"
+            >
+              Book a Free Call
+            </a>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── 9. Footer ── */}
-      <footer className="relative z-10 border-t border-[#25D1F2]/8 py-10">
+      <footer className="relative z-10 border-t border-white/10 py-12">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Image
-              src="/logo.jpg"
-              alt="VizBiz.ai"
-              width={22}
-              height={22}
-              className="rounded-sm"
-            />
-            <span className="text-[14px] font-semibold">
-              VizBiz<span className="text-[#25D1F2]">.ai</span>
-            </span>
-          </div>
-          <p className="text-[11px] text-[#F5F5F7]/20">
-            Generated by VizBiz.ai — AI Visibility Intelligence
-          </p>
-          <a
-            href="https://vizbiz.ai"
-            className="text-[11px] text-[#25D1F2]/50 hover:text-[#25D1F2] transition-colors"
-          >
-            vizbiz.ai
-          </a>
+          <FadeIn>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Image
+                src="/logo.jpg"
+                alt="VizBiz.ai"
+                width={28}
+                height={28}
+                className="rounded-lg opacity-70"
+              />
+              <span className="text-[14px] font-semibold">
+                VizBiz<span className="text-[#25D1F2]">.ai</span>
+              </span>
+            </div>
+            <p className="text-[12px] text-[#F5F5F7]/20 mb-1">
+              Generated by VizBiz.ai — AI Visibility Intelligence
+            </p>
+            <a
+              href="https://vizbiz.ai"
+              className="text-[12px] text-[#22D3EE]/50 hover:text-[#22D3EE] transition-colors"
+            >
+              vizbiz.ai
+            </a>
+          </FadeIn>
         </div>
       </footer>
     </div>
