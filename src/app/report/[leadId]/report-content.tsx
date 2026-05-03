@@ -757,33 +757,61 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  const totalQ = data.totalPrompts || 20;
   const compData = data.competitors.map(c => ({
-    name: c.isYou ? 'You' : c.name,
+    name: c.isYou ? `${data.businessName.split(' ')[0]} (You)` : c.name,
     score: c.score,
+    pct: Math.round((c.score / totalQ) * 100),
     isYou: c.isYou,
   }));
 
+  const maxScore = Math.max(...compData.map(c => c.score));
+  const yourScore = compData.find(c => c.isYou)?.score || 0;
+  const yourRank = [...compData].sort((a, b) => b.score - a.score).findIndex(c => c.isYou) + 1;
+
   const compColors = ['#8B5CF6', '#F97316', '#EC4899'];
-  const chartH = isMobile ? 200 : 320;
+  const chartH = isMobile ? 220 : 320;
 
   return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
         <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>How You Compare</h3>
-        <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
-          AI visibility scores in {data.location}
+        <p className="text-xs sm:text-sm mb-2" style={{ color: t.textMuted }}>
+          How often {data.businessName} appears in AI answers vs competitors in {data.location}
         </p>
+        <p className="text-xs mb-4 sm:mb-6" style={{ color: t.textSecondary }}>
+          We tested {totalQ} real buyer-intent queries across ChatGPT, Gemini, and Perplexity. Each bar shows how many times the business was recommended.
+        </p>
+
+        {/* Summary stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="text-center p-3 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+            <p className="text-xl sm:text-2xl font-semibold tabular-nums" style={{ color: yourRank === 1 ? '#22C55E' : '#EF4444' }}>#{yourRank}</p>
+            <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Your Rank</p>
+          </div>
+          <div className="text-center p-3 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+            <p className="text-xl sm:text-2xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>{yourScore}/{totalQ}</p>
+            <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Times Recommended</p>
+          </div>
+          <div className="text-center p-3 rounded-xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+            <p className="text-xl sm:text-2xl font-semibold tabular-nums" style={{ color: yourScore < maxScore ? '#EF4444' : '#22C55E' }}>
+              {maxScore - yourScore > 0 ? `−${maxScore - yourScore}` : '—'}
+            </p>
+            <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Behind Leader</p>
+          </div>
+        </div>
+
         {mounted ? (
           <div style={{ height: chartH }}>
             <ResponsiveContainer width="100%" height={chartH}>
-              <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 80 : 120, right: 40, top: 10, bottom: 10 }}>
+              <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 80 : 140, right: 40, top: 10, bottom: 10 }}>
                 <CartesianGrid stroke={t.gridStroke} horizontal={false} />
-                <XAxis type="number" domain={[0, 'dataMax + 5']} tick={{ fill: t.axisText, fontSize: 11 }} />
+                <XAxis type="number" domain={[0, totalQ]} tick={{ fill: t.axisText, fontSize: 11 }} label={{ value: `out of ${totalQ} queries`, position: 'insideBottomRight', fill: t.textMuted, fontSize: 10, offset: -5 }} />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
-                  width={isMobile ? 100 : 160}
+                  tick={{ fill: t.axisText, fontSize: 11, fontFamily: 'Poppins, sans-serif' }}
+                  width={isMobile ? 100 : 180}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -806,6 +834,12 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
           <div style={{ height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ color: t.textMuted, fontSize: 14 }}>Loading comparison...</span>
           </div>
+        )}
+
+        {yourScore < maxScore && (
+          <p className="text-xs mt-4 p-3 rounded-xl" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
+            Your top competitor appeared {maxScore - yourScore} more times than you in AI recommendations. When a buyer asks ChatGPT for a recommendation, they're getting your competitor's name instead of yours.
+          </p>
         )}
       </GlassCard>
     </FadeIn>
@@ -1073,6 +1107,47 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
             )}
           </div>
         )}
+      </GlassCard>
+    </FadeIn>
+  );
+}
+
+/* ── Full Report Teaser ─────────────────────── */
+function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+
+  const teaserItems = [
+    { icon: '🔍', title: '84 Query Breakdown', desc: 'See every prompt we tested, which AI recommended you, and exactly what it said.' },
+    { icon: '📊', title: 'Competitor Deep Dive', desc: `Full analysis of how ${data.competitors.filter(c => !c.isYou).length} competitors outperform you and where they're weak.` },
+    { icon: '📝', title: 'Step-by-Step Fix Plan', desc: 'Prioritized actions to improve your AI visibility within 30 days.' },
+    { icon: '📈', title: 'Monthly Tracking', desc: 'Watch your visibility score climb as improvements take effect.' },
+  ];
+
+  return (
+    <FadeIn>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <div className="text-center mb-6">
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#22D3EE' }}>Free Preview</p>
+          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>This is a summary. Your full report goes deeper.</h3>
+          <p className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
+            The complete audit includes everything below — plus ongoing monitoring so you never lose visibility again.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {teaserItems.map((item) => (
+            <div
+              key={item.title}
+              className="flex items-start gap-3 p-4 rounded-2xl"
+              style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: `1px solid ${t.borderSubtle}` }}
+            >
+              <span className="text-xl flex-shrink-0 mt-0.5">{item.icon}</span>
+              <div>
+                <p className="text-sm font-medium mb-0.5" style={{ color: t.textPrimary }}>{item.title}</p>
+                <p className="text-xs" style={{ color: t.textSecondary }}>{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </GlassCard>
     </FadeIn>
   );
@@ -1553,6 +1628,7 @@ export default function ReportContent({ leadId }: { leadId: string }) {
         <QueryLists data={data} theme={theme} />
         <Recommendations data={data} theme={theme} />
         <SocialMedia data={data} theme={theme} />
+        <FullReportTeaser data={data} theme={theme} />
         <PricingCards data={data} theme={theme} />
         <BottomCTA theme={theme} />
       </main>
