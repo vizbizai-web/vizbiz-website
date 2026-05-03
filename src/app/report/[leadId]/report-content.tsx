@@ -518,7 +518,7 @@ function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme;
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 32 : 44} height={isMobile ? 32 : 44} className="rounded-lg" />
+          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 40 : 56} height={isMobile ? 40 : 56} className="rounded-lg" />
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-lg font-semibold" style={{ color: t.textPrimary }}>
               VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
@@ -700,8 +700,8 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
           Your strengths and gaps across visibility dimensions
         </p>
         <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
-          <div className="w-full lg:w-1/2" style={{ minHeight: isMobile ? 280 : 380 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full lg:w-1/2" style={{ height: isMobile ? 280 : 380 }}>
+            <ResponsiveContainer width="100%" height={isMobile ? 280 : 380}>
               <RadarChart data={radarData} outerRadius={isMobile ? 80 : 120}>
                 <PolarGrid
                   stroke={t.gridStroke}
@@ -762,8 +762,8 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
           AI visibility scores in {data.location}
         </p>
-        <div style={{ minHeight: isMobile ? 200 : 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ height: isMobile ? 200 : 300 }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
             <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 60 : 100, right: 40, top: 10, bottom: 10 }}>
               <CartesianGrid stroke={t.gridStroke} horizontal={false} />
               <XAxis type="number" hide />
@@ -993,53 +993,73 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
           ))}
         </div>
 
-        {/* Comparison */}
-        {!isMobile && (
-          <div className="space-y-4">
-            {['Instagram', 'Facebook', 'Google Reviews'].map((platform, pi) => (
-              <div key={platform}>
-                <p className="text-xs font-medium mb-2" style={{ color: t.textSecondary }}>{platform}</p>
-                <div style={{ minHeight: 120 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { name: 'You', value: platform === 'Instagram' ? (data.socialPresence.instagram || 0) : platform === 'Facebook' ? (data.socialPresence.facebook || 0) : data.socialPresence.googleReviews },
-                      ...data.competitorSocial.map(c => ({
-                        name: c.name,
-                        value: platform === 'Instagram' ? (c.instagram || 0) : platform === 'Facebook' ? (c.facebook || 0) : c.googleReviews,
-                      })),
-                    ]}>
-                      <CartesianGrid stroke={t.gridStroke} vertical={false} />
-                      <XAxis dataKey="name" tick={{ fill: t.axisText, fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis hide />
-                      <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={isMobile ? 20 : 28}>
-                        {data.competitors.map((c, i) => (
-                          <Cell key={i} fill={i === 0 ? '#22D3EE' : ['#8B5CF6', '#F97316', '#EC4899'][(i - 1) % 3]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Mobile: text comparison */}
-        {isMobile && data.competitorSocial.length > 0 && (
-          <div className="space-y-3">
-            {data.competitorSocial.slice(0, 2).map((comp) => {
-              const yourInsta = data.socialPresence.instagram || 0;
-              const theirInsta = comp.instagram || 0;
-              const ratio = theirInsta > 0 ? Math.round(theirInsta / Math.max(yourInsta, 1)) : 0;
-              return (
-                <div key={comp.name} className="text-sm" style={{ color: t.textSecondary }}>
-                  <span className="font-medium" style={{ color: t.textPrimary }}>{comp.name}</span> has
-                  {' '}{ratio}x your Instagram followers and{' '}
-                  {Math.round((comp.googleReviews / Math.max(data.socialPresence.googleReviews, 1)))}x your Google reviews
-                </div>
-              );
-            })}
+        {/* Comparison Table */}
+        {data.competitorSocial.length > 0 && (
+          <div className="mt-6 sm:mt-8">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: '0 4px' }}>
+                <thead>
+                  <tr>
+                    <th className="text-left pb-2 text-xs font-medium" style={{ color: t.textMuted }}>Platform</th>
+                    <th className="text-right pb-2 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]} (You)</th>
+                    {data.competitorSocial.map((c, i) => (
+                      <th key={c.name} className="text-right pb-2 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
+                        {c.name.length > 15 ? c.name.slice(0, 15) + '\u2026' : c.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Instagram</td>
+                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
+                    {data.competitorSocial.map((c) => {
+                      const yours = data.socialPresence.instagram || 0;
+                      const theirs = c.instagram || 0;
+                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
+                      return (
+                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                          {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Facebook</td>
+                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
+                    {data.competitorSocial.map((c) => {
+                      const yours = data.socialPresence.facebook || 0;
+                      const theirs = c.facebook || 0;
+                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
+                      return (
+                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                          {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Google Reviews</td>
+                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
+                    {data.competitorSocial.map((c) => {
+                      const yours = data.socialPresence.googleReviews;
+                      const theirs = c.googleReviews;
+                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
+                      return (
+                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                          {theirs}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {data.socialPresence.instagram != null && data.socialPresence.instagram < (data.competitorSocial[0]?.instagram || 0) && (
+              <p className="text-xs mt-4 p-3 rounded-xl" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                {data.competitorSocial[0].name} has {Math.round((data.competitorSocial[0].instagram || 0) / Math.max(data.socialPresence.instagram || 1, 1))}x your Instagram followers. AI platforms use social following as a trust signal.
+              </p>
+            )}
           </div>
         )}
       </GlassCard>
