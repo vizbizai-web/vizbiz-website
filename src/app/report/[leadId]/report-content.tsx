@@ -233,7 +233,7 @@ function ScoreRing({ score }: { score: number }) {
           transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-start justify-start">
         <CountUp
           value={score}
           className={cn('text-5xl sm:text-7xl font-extrabold tracking-tight', getScoreColorClass(score))}
@@ -553,8 +553,8 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
   if (!leadData) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#02091F' }}>
-        <div className="text-center px-4">
+      <div className="min-h-screen flex items-start justify-start" style={{ background: '#02091F' }}>
+        <div className="px-4">
           <div className="text-[80px] font-extralight mb-4" style={{ color: '#25D1F2' }}>404</div>
           <h1 className="text-2xl font-bold mb-3 text-white">Report not found</h1>
           <p className="mb-8 text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -847,7 +847,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         />
                       }
                     />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32} label={{ position: 'right', fill: '#374151', fontSize: 13, fontWeight: 600 }}>
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32} isAnimationActive animationDuration={1200} animationBegin={200} label={{ position: 'right', fill: '#374151', fontSize: 13, fontWeight: 600 }}>
                       {categoryChartData.map((entry, index) => (
                         <Cell key={index} fill={entry.fill} />
                       ))}
@@ -871,7 +871,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
               </CardTitle>
               <CardDescription>Multi-dimensional visibility analysis</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-1 items-center justify-center pb-0 pt-6">
+            <CardContent className="flex flex-1 items-start justify-start pb-0 pt-6">
               <ChartContainer
                 config={radarChartConfig}
                 className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[300px] min-h-[250px] w-full"
@@ -942,7 +942,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         />
                       }
                     />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={36} label={{ position: 'right', fill: '#1F2937', fontSize: 14, fontWeight: 600 }}>
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={36} isAnimationActive animationDuration={1200} animationBegin={200} label={{ position: 'right', fill: '#1F2937', fontSize: 14, fontWeight: 600 }}>
                       {competitorChartData.map((entry, index) => (
                         <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
                       ))}
@@ -1211,7 +1211,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 </ul>
                 <a
                   href="mailto:alex@vizbiz.ai"
-                  className="block w-full text-center border py-3.5 text-base font-semibold rounded-xl transition-all"
+                  className="block w-full border py-3.5 text-base font-semibold rounded-xl transition-all"
                   style={{ borderColor: '#22D3EE', color: '#22D3EE' }}
                 >
                   Get Started
@@ -1251,7 +1251,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 </ul>
                 <a
                   href="mailto:alex@vizbiz.ai"
-                  className="block w-full text-center py-3.5 text-base font-semibold rounded-xl transition-opacity"
+                  className="block w-full py-3.5 text-base font-semibold rounded-xl transition-opacity"
                   style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#1F2937' }}
                 >
                   Get Started
@@ -1259,14 +1259,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
               </CardContent>
             </Card>
           </div>
-          <p className="text-center text-sm mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <p className="text-sm mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Both plans include the full audit report. Cancel anytime. No setup fee.
           </p>
         </FadeIn>
 
         {/* ── 10. Bottom CTA ── */}
         <FadeIn>
-          <div className="text-center max-w-2xl mx-auto py-8">
+          <div className="max-w-2xl mx-auto py-8">
             <h3 className="text-2xl font-light mb-3">Prefer to talk first?</h3>
             <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
               Book a free 15-minute audit review call. No pressure, no obligation.
@@ -1286,7 +1286,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       <footer className="border-t py-12" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
-            <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="flex items-start justify-start gap-3 mb-3">
               <Image src="/logo.jpg" alt="VizBiz.ai" width={56} height={56} className="rounded-lg opacity-70" />
               <span className="text-base font-semibold">
                 VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
