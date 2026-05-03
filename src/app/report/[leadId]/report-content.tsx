@@ -8,9 +8,16 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardAction,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card';
-import { ChartContainer } from '@/components/ui/chart';
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 import { cn } from '@/lib/utils';
 import {
   BarChart,
@@ -26,7 +33,6 @@ import {
   Radar,
   Tooltip,
   Cell,
-  Legend,
 } from 'recharts';
 
 /* ── Types ────────────────────────────────────── */
@@ -88,6 +94,20 @@ interface LeadData {
   competitorSocial: CompetitorSocial[];
 }
 
+/* ── Inline Badge (shadcn-style) ─────────────── */
+function Badge({ children, variant = 'default', className = '', style }: { children: React.ReactNode; variant?: 'default' | 'outline'; className?: string; style?: React.CSSProperties }) {
+  const base = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors';
+  const variants = {
+    default: 'bg-primary/10 text-primary hover:bg-primary/20',
+    outline: 'border border-current bg-transparent',
+  };
+  return (
+    <span className={cn(base, variants[variant], className)} style={style}>
+      {children}
+    </span>
+  );
+}
+
 /* ── Helpers ──────────────────────────────────── */
 const getScoreLabel = (score: number): string => {
   if (score >= 60) return 'Strong';
@@ -105,12 +125,6 @@ const getScoreColorClass = (score: number): string => {
   if (score >= 60) return 'text-emerald-400';
   if (score >= 35) return 'text-amber-400';
   return 'text-red-400';
-};
-
-const getScoreBgClass = (score: number): string => {
-  if (score >= 60) return 'bg-emerald-400';
-  if (score >= 35) return 'bg-amber-400';
-  return 'bg-red-400';
 };
 
 const formatCurrency = (val: number, sym: string): string =>
@@ -154,16 +168,11 @@ function CountUp({
   className?: string;
 }) {
   const motionValue = useMotionValue(0);
-  const rounded = useTransform(motionValue, (v) =>
-    Math.round(v).toLocaleString()
-  );
+  const rounded = useTransform(motionValue, (v) => Math.round(v).toLocaleString());
   const [display, setDisplay] = useState('0');
 
   useEffect(() => {
-    const controls = animate(motionValue, value, {
-      duration,
-      ease: 'easeOut',
-    });
+    const controls = animate(motionValue, value, { duration, ease: 'easeOut' });
     return controls.stop;
   }, [value, duration, motionValue]);
 
@@ -200,12 +209,7 @@ function ScoreRing({ score }: { score: number }) {
 
   return (
     <div className="relative w-[180px] h-[180px] sm:w-[240px] sm:h-[240px]">
-      <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 260 260"
-        className="-rotate-90"
-      >
+      <svg width="100%" height="100%" viewBox="0 0 260 260" className="-rotate-90">
         <circle
           cx="130"
           cy="130"
@@ -521,22 +525,45 @@ const LEADS: Record<string, LeadData> = {
   },
 };
 
+/* ── Chart Configs ──────────────────────────── */
+const categoryChartConfig = {
+  score: {
+    label: 'Score',
+    color: 'var(--chart-1)',
+  },
+} satisfies ChartConfig;
+
+const radarChartConfig = {
+  score: {
+    label: 'Score',
+    color: 'var(--chart-1)',
+  },
+} satisfies ChartConfig;
+
+const competitorChartConfig = {
+  score: {
+    label: 'Score',
+    color: 'var(--chart-1)',
+  },
+} satisfies ChartConfig;
+
 /* ── Client Component ─────────────────────────── */
 export function ReportContent({ leadId }: { leadId: string }) {
   const leadData = LEADS[leadId];
 
   if (!leadData) {
     return (
-      <div className="min-h-screen bg-[#02091F] text-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#02091F' }}>
         <div className="text-center px-4">
-          <div className="text-[#25D1F2] text-[80px] font-extralight mb-4">404</div>
-          <h1 className="text-2xl font-bold mb-3">Report not found</h1>
-          <p className="text-white/50 mb-8 text-base">
+          <div className="text-[80px] font-extralight mb-4" style={{ color: '#25D1F2' }}>404</div>
+          <h1 className="text-2xl font-bold mb-3 text-white">Report not found</h1>
+          <p className="mb-8 text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
             The report you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
           <a
             href="https://vizbiz.ai"
-            className="inline-block bg-[#25D1F2] text-[#02091F] px-8 py-3 text-base font-semibold hover:bg-[#06B6D4] transition-colors rounded-xl"
+            className="inline-block px-8 py-3 text-base font-semibold rounded-xl transition-colors"
+            style={{ background: '#25D1F2', color: '#02091F' }}
           >
             Return to VizBiz.ai
           </a>
@@ -547,7 +574,6 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
   const {
     businessName,
-    contactName,
     location,
     aviScore,
     totalPrompts,
@@ -573,21 +599,17 @@ export function ReportContent({ leadId }: { leadId: string }) {
     []
   );
 
-  const competitorsBeating = competitors.filter(
-    (c) => !c.isYou && c.score > promptsAppeared
-  ).length;
-
+  const competitorsBeating = competitors.filter((c) => !c.isYou && c.score > promptsAppeared).length;
   const gapsFound = invisibleQueries.length;
-
   const scoreLabel = getScoreLabel(aviScore);
   const scoreAccent = getScoreAccent(aviScore);
+  const promptsPercentage = Math.round((promptsAppeared / totalPrompts) * 100);
 
   // Category chart data
   const categoryChartData = categories.map((c) => ({
     name: c.name,
     score: c.score,
-    fill:
-      c.score >= 60 ? '#22C55E' : c.score >= 35 ? '#F59E0B' : '#EF4444',
+    fill: c.score >= 60 ? '#22C55E' : c.score >= 35 ? '#F59E0B' : '#EF4444',
   }));
 
   // Radar chart data
@@ -602,7 +624,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
     name: c.name.replace(' (You)', ''),
     score: c.score,
     isYou: c.isYou || false,
-    fill: c.isYou ? '#25D1F2' : '#64748B',
+    fill: c.isYou ? '#25D1F2' : '#8B5CF6',
   }));
 
   // Social chart data
@@ -624,48 +646,49 @@ export function ReportContent({ leadId }: { leadId: string }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#02091F] text-white antialiased overflow-x-hidden">
-      {/* Noise overlay */}
-      <div
-        className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-        }}
-      />
-
-      {/* Background glows */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#22D3EE]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#06B6D4]/5 rounded-full blur-[100px]" />
-      </div>
+    <div
+      className="min-h-screen text-white antialiased overflow-x-hidden"
+      style={{ background: '#02091F' }}
+    >
+      {/* CSS Variables for shadcn components */}
+      <style jsx global>{`
+        :root {
+          --background: #02091F;
+          --foreground: #FFFFFF;
+          --card: #0F1729;
+          --card-foreground: #FFFFFF;
+          --popover: #0F1729;
+          --muted: #1A2744;
+          --muted-foreground: #94A3B8;
+          --border: #1E293B;
+          --chart-1: #25D1F2;
+          --chart-2: #8B5CF6;
+          --chart-3: #22C55E;
+          --chart-4: #F59E0B;
+          --chart-5: #EF4444;
+          --primary: #25D1F2;
+          --primary-foreground: #02091F;
+        }
+      `}</style>
 
       {/* ── 1. Header ── */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#02091F]/80 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b backdrop-blur-lg" style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(2,9,31,0.8)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-[72px]">
             <div className="flex items-center gap-3">
-              <Image
-                src="/logo.jpg"
-                alt="VizBiz.ai"
-                width={44}
-                height={44}
-                className="rounded-lg"
-              />
+              <Image src="/logo.jpg" alt="VizBiz.ai" width={44} height={44} className="rounded-lg" />
               <div>
-                <span className="text-lg sm:text-xl font-bold tracking-tight">
-                  VizBiz.ai
-                </span>
-                <span className="hidden sm:inline text-sm text-white/40 ml-2">
+                <span className="text-lg sm:text-xl font-bold tracking-tight">VizBiz.ai</span>
+                <span className="hidden sm:inline text-sm ml-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   AI Visibility Report
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm sm:text-base font-semibold text-white/80">
+              <div className="text-sm sm:text-base font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 {businessName}
               </div>
-              <div className="text-xs text-white/30 hidden sm:block">
+              <div className="text-xs hidden sm:block" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {location} · {dateGenerated}
               </div>
             </div>
@@ -673,216 +696,192 @@ export function ReportContent({ leadId }: { leadId: string }) {
         </div>
       </header>
 
-      {/* ── 2. Hero Score + Stats ── */}
-      <section className="relative z-10 py-14 lg:py-24">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left: score ring */}
-              <div className="flex flex-col items-center lg:items-start gap-4 lg:gap-6">
-                <div className="text-sm uppercase tracking-widest text-white/40 font-medium">
-                  Your AI Visibility Score
-                </div>
-                <div className="flex items-center gap-4 lg:gap-8">
-                  <ScoreRing score={aviScore} />
-                  <div className="flex flex-col gap-3">
-                    <div
-                      className="text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full"
-                      style={{
-                        color: scoreAccent,
-                        background: `${scoreAccent}15`,
-                        border: `1px solid ${scoreAccent}40`,
-                      }}
-                    >
-                      {scoreLabel}
-                    </div>
-                    <div className="text-sm text-white/30">Benchmark: 60+</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: stat cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
-                      AI Visibility Score
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle className={cn('text-2xl sm:text-4xl', getScoreColorClass(aviScore))}>
-                      <CountUp value={aviScore} />
-                    </CardTitle>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
-                      Prompts Appeared
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle className="text-2xl sm:text-4xl text-[#25D1F2]">
-                      <CountUp value={promptsAppeared} />
-                      <span className="text-xl text-white/30 ml-1">
-                        /{totalPrompts}
-                      </span>
-                    </CardTitle>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
-                      Competitors Ahead
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle className="text-2xl sm:text-4xl text-red-400">
-                      <CountUp value={competitorsBeating} />
-                    </CardTitle>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <CardDescription className="text-white/50 uppercase tracking-wider text-xs sm:text-sm">
-                      Gaps Found
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CardTitle className="text-2xl sm:text-4xl text-amber-400">
-                      <CountUp value={gapsFound} />
-                    </CardTitle>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ── 3. Profit at Risk ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 text-center py-8 sm:py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* ── 2. Stats Row (Kiranism pattern) ── */}
+        <FadeIn>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
               <CardHeader>
-                <CardDescription className="text-white/40 uppercase tracking-widest text-sm">
-                  Estimated Monthly Profit at Risk
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CardTitle className="text-2xl sm:text-4xl sm:text-5xl font-extralight tracking-tight mb-2">
-                  <span className="text-[#25D1F2]">
-                    {currencySymbol}
-                    <CountUp value={profitAtRisk.low} />
-                  </span>
-                  <span className="text-white/20 mx-3">—</span>
-                  <span className="text-[#25D1F2]">
-                    {currencySymbol}
-                    <CountUp value={profitAtRisk.high} />
-                  </span>
-                  <span className="text-white/30 text-xl font-normal ml-2">
-                    /mo
-                  </span>
+                <CardDescription>AVI Score</CardDescription>
+                <CardTitle className={cn('text-2xl font-semibold tabular-nums @[250px]/card:text-3xl', getScoreColorClass(aviScore))}>
+                  <CountUp value={aviScore} />
                 </CardTitle>
-                <p className="text-base text-white/40 max-w-lg mx-auto mt-4 leading-relaxed">
-                  Profit currently flowing to competitors who rank higher in AI
-                  recommendations.
-                </p>
-              </CardContent>
+                <CardAction>
+                  <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
+                    {scoreLabel}
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  {scoreLabel} visibility
+                </div>
+                <div style={{ color: 'var(--muted-foreground)' }}>Benchmark: 60+</div>
+              </CardFooter>
             </Card>
-          </FadeIn>
-        </div>
-      </section>
 
-      {/* ── 4. Category Scores (BarChart) ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
-              Category Scores
-            </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-              <CardContent className="pt-6">
-                <ChartContainer
-                  config={{
-                    score: {
-                      label: 'Score',
-                    },
-                  }}
-                  className="h-[280px] sm:h-[320px] w-full"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={categoryChartData}
-                      layout="vertical"
-                      margin={{ top: 10, right: 40, bottom: 10, left: 10 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={false}
-                        stroke="rgba(255,255,255,0.08)"
-                      />
-                      <XAxis
-                        type="number"
-                        domain={[0, 100]}
-                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                        width={120}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: 'rgba(2, 9, 31, 0.95)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '12px',
-                          color: '#fff',
-                        }}
-                      />
-                      <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={28}>
-                        {categoryChartData.map((entry, index) => (
-                          <Cell key={index} fill={entry.fill} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
+            <Card>
+              <CardHeader>
+                <CardDescription>Prompts Appeared</CardDescription>
+                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                  {promptsAppeared}
+                  <span className="text-lg ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/{totalPrompts}</span>
+                </CardTitle>
+                <CardAction>
+                  <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
+                    {promptsPercentage}%
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  {promptsAppeared} out of {totalPrompts} prompts
+                </div>
+                <div style={{ color: 'var(--muted-foreground)' }}>AI-generated queries tested</div>
+              </CardFooter>
             </Card>
-          </FadeIn>
-        </div>
-      </section>
 
-      {/* ── 5. Visibility Radar ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
-              Visibility Radar
-            </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-              <CardContent className="pt-6">
-                <ChartContainer
-                  config={{
-                    score: { label: 'Score' },
-                  }}
-                  className="mx-auto aspect-square max-h-[400px] min-h-[280px] w-full"
-                >
-                  <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                    <PolarGrid
-                      stroke="rgba(255,255,255,0.15)"
+            <Card>
+              <CardHeader>
+                <CardDescription>Competitors Ahead</CardDescription>
+                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-red-400">
+                  <CountUp value={competitorsBeating} />
+                </CardTitle>
+                <CardAction>
+                  <Badge variant="outline" className="text-red-400 border-red-400/25">
+                    Action needed
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  Out of {competitors.filter(c => !c.isYou).length} tracked competitors
+                </div>
+                <div style={{ color: 'var(--muted-foreground)' }}>Rank higher in AI results</div>
+              </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardDescription>Profit at Risk</CardDescription>
+                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                  {currencySymbol}
+                  <CountUp value={profitAtRisk.low} />
+                  <span className="text-lg mx-1" style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
+                  <CountUp value={profitAtRisk.high} />
+                </CardTitle>
+                <CardAction>
+                  <Badge variant="outline" style={{ color: '#F59E0B', borderColor: 'rgba(245,158,11,0.25)' }}>
+                    /mo
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  Estimated monthly loss
+                </div>
+                <div style={{ color: 'var(--muted-foreground)' }}>Flowing to competitors</div>
+              </CardFooter>
+            </Card>
+          </div>
+        </FadeIn>
+
+        {/* ── 3. AVI Score Ring (hero element) ── */}
+        <FadeIn>
+          <Card className="flex flex-col items-center py-10 sm:py-14">
+            <CardHeader className="items-center pb-2">
+              <CardDescription>Your AI Visibility Score</CardDescription>
+              <CardTitle className="text-2xl font-bold tracking-tight">
+                {businessName}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <ScoreRing score={aviScore} />
+              <div
+                className="text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full"
+                style={{
+                  color: scoreAccent,
+                  background: `${scoreAccent}15`,
+                  border: `1px solid ${scoreAccent}40`,
+                }}
+              >
+                {scoreLabel}
+              </div>
+              <p className="text-sm max-w-md text-center" style={{ color: 'var(--muted-foreground)' }}>
+                Based on {totalPrompts} AI-generated queries across 5 visibility categories.
+                {aviScore >= 60
+                  ? ' Your brand is well-positioned in AI recommendations.'
+                  : aviScore >= 35
+                  ? ' There is room for improvement in key categories.'
+                  : ' Significant visibility gaps detected across all categories.'}
+              </p>
+            </CardContent>
+          </Card>
+        </FadeIn>
+
+        {/* ── 4. Category Scores (BarChart like Kiranism) ── */}
+        <FadeIn>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Category Scores
+                <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
+                  Avg: {Math.round(categories.reduce((a, c) => a + c.score, 0) / categories.length)}
+                </Badge>
+              </CardTitle>
+              <CardDescription>Performance across {categories.length} visibility dimensions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={categoryChartConfig} className="h-[300px] sm:h-[340px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={categoryChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <Tooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          indicator="dot"
+                          formatter={(value: unknown) => `${String(value)} / 100`}
+                        />
+                      }
                     />
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={28}>
+                      {categoryChartData.map((entry, index) => (
+                        <Cell key={index} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </FadeIn>
+
+        {/* ── 5. Visibility Radar (RadarChart) ── */}
+        <FadeIn>
+          <Card className="flex flex-col">
+            <CardHeader className="items-center pb-0">
+              <CardTitle>
+                Visibility Radar
+                <Badge variant="outline" style={{ color: scoreAccent, borderColor: `${scoreAccent}40` }}>
+                  {scoreLabel}
+                </Badge>
+              </CardTitle>
+              <CardDescription>Multi-dimensional visibility analysis</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-1 items-center justify-center pb-0 pt-6">
+              <ChartContainer
+                config={radarChartConfig}
+                className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[300px] min-h-[250px] w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+                    <PolarGrid stroke="rgba(255,255,255,0.15)" />
                     <PolarAngleAxis
                       dataKey="category"
-                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11 }}
                     />
                     <PolarRadiusAxis
                       angle={90}
@@ -901,73 +900,165 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       animationDuration={1500}
                     />
                     <Tooltip
-                      contentStyle={{
-                        background: 'rgba(2, 9, 31, 0.95)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px',
-                        color: '#fff',
-                      }}
+                      content={
+                        <ChartTooltipContent
+                          hideLabel
+                          formatter={(value: unknown) => `${String(value)} / 100`}
+                        />
+                      }
                     />
                   </RadarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </FadeIn>
-        </div>
-      </section>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </FadeIn>
 
-      {/* ── 6. Competitor Comparison ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
-              Competitor Comparison
+        {/* ── 6. Competitor Comparison (BarChart) ── */}
+        <FadeIn>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Competitor Comparison
+                <Badge variant="outline" className="text-red-400 border-red-400/25">
+                  -{competitorsBeating}
+                </Badge>
+              </CardTitle>
+              <CardDescription>How you rank against competitors in AI visibility</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={competitorChartConfig} className="h-[240px] sm:h-[280px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={competitorChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={160} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <Tooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          indicator="dot"
+                          formatter={(value: unknown) => `${String(value)} prompt appearances`}
+                        />
+                      }
+                    />
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32}>
+                      {competitorChartData.map((entry, index) => (
+                        <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </FadeIn>
+
+        {/* ── 7. Social Media Presence ── */}
+        <FadeIn>
+          <div className="space-y-4">
+            {/* Social stat cards (3 small cards in a row) */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardDescription>Instagram</CardDescription>
+                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                    {socialPresence.instagram?.toLocaleString() || '—'}
+                  </CardTitle>
+                  <CardAction>
+                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
+                      Followers
+                    </Badge>
+                  </CardAction>
+                </CardHeader>
+                <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                  <div style={{ color: 'var(--muted-foreground)' }}>
+                    {socialPresence.instagram && socialPresence.instagram > 0
+                      ? 'Active social presence'
+                      : 'No profile detected'}
+                  </div>
+                </CardFooter>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardDescription>Facebook</CardDescription>
+                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                    {socialPresence.facebook?.toLocaleString() || '—'}
+                  </CardTitle>
+                  <CardAction>
+                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
+                      Likes
+                    </Badge>
+                  </CardAction>
+                </CardHeader>
+                <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                  <div style={{ color: 'var(--muted-foreground)' }}>
+                    {socialPresence.facebook && socialPresence.facebook > 0
+                      ? 'Active social presence'
+                      : 'No profile detected'}
+                  </div>
+                </CardFooter>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardDescription>Google Reviews</CardDescription>
+                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                    {socialPresence.googleReviews}
+                  </CardTitle>
+                  <CardAction>
+                    <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
+                      Reviews
+                    </Badge>
+                  </CardAction>
+                </CardHeader>
+                <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                  <div style={{ color: 'var(--muted-foreground)' }}>
+                    Overall score: {socialPresence.overallScore}/10
+                  </div>
+                </CardFooter>
+              </Card>
             </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-              <CardContent className="pt-6">
+
+            {/* Instagram comparison chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Instagram Followers
+                  <Badge variant="outline" style={{ color: '#8B5CF6', borderColor: 'rgba(139,92,246,0.25)' }}>
+                    vs Competitors
+                  </Badge>
+                </CardTitle>
+                <CardDescription>Social media reach comparison</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <ChartContainer
-                  config={{
-                    score: { label: 'Score' },
-                  }}
-                  className="h-[240px] sm:h-[280px] w-full"
+                  config={{ followers: { label: 'Followers', color: 'var(--chart-1)' } }}
+                  className="h-[220px] w-full"
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={competitorChartData}
-                      layout="vertical"
-                      margin={{ top: 10, right: 40, bottom: 10, left: 10 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={false}
-                        stroke="rgba(255,255,255,0.08)"
-                      />
+                    <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
                       <XAxis
                         type="number"
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
                         axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                        width={140}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                      />
+                      <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                       <Tooltip
-                        contentStyle={{
-                          background: 'rgba(2, 9, 31, 0.95)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '12px',
-                          color: '#fff',
-                        }}
-                      />
-                      <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32}>
-                        {competitorChartData.map((entry, index) => (
-                          <Cell
-                            key={index}
-                            fill={entry.isYou ? '#25D1F2' : '#8B5CF6'}
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            indicator="dot"
+                            formatter={(value: unknown) => (value as number).toLocaleString()}
                           />
+                        }
+                      />
+                      <Bar dataKey="instagram" radius={[0, 6, 6, 0]} barSize={24}>
+                        {socialChartData.map((entry, index) => (
+                          <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -975,494 +1066,233 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 </ChartContainer>
               </CardContent>
             </Card>
-          </FadeIn>
-        </div>
-      </section>
 
-      {/* ── 7. Social Media Presence ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
-              Social Media Presence
-            </div>
-            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 overflow-hidden">
-              <CardContent className="pt-6">
-                {/* Social stats summary */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
-                    <div className="text-3xl font-bold text-[#25D1F2]">
-                      {socialPresence.instagram?.toLocaleString() || '—'}
-                    </div>
-                    <div className="text-sm text-white/40 uppercase tracking-wider mt-1">
-                      Instagram
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
-                    <div className="text-3xl font-bold text-[#25D1F2]">
-                      {socialPresence.facebook?.toLocaleString() || '—'}
-                    </div>
-                    <div className="text-sm text-white/40 uppercase tracking-wider mt-1">
-                      Facebook
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
-                    <div className="text-3xl font-bold text-[#25D1F2]">
-                      {socialPresence.googleReviews}
-                    </div>
-                    <div className="text-sm text-white/40 uppercase tracking-wider mt-1">
-                      Google Reviews
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
-                    <div className="text-3xl font-bold text-[#25D1F2]">
-                      {socialPresence.overallScore}
-                      <span className="text-lg text-white/30">/10</span>
-                    </div>
-                    <div className="text-sm text-white/40 uppercase tracking-wider mt-1">
-                      Overall Score
-                    </div>
-                  </div>
-                </div>
-
-                {/* Instagram comparison chart */}
-                <div className="mb-6">
-                  <div className="text-sm uppercase tracking-wider text-white/50 mb-3">
-                    Instagram Followers
-                  </div>
-                  <ChartContainer
-                    config={{ followers: { label: 'Followers' } }}
-                    className="h-[220px]"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={socialChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 40, bottom: 5, left: 10 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={false}
-                          stroke="rgba(255,255,255,0.08)"
-                        />
-                        <XAxis
-                          type="number"
-                          tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                          tickFormatter={(v: number) =>
-                            v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString()
-                          }
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                          width={120}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                        />
-                        <Tooltip
-                          formatter={(value) =>
-                            (value as number).toLocaleString()
-                          }
-                          contentStyle={{
-                            background: 'rgba(2, 9, 31, 0.95)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            color: '#fff',
-                          }}
-                        />
-                        <Bar
-                          dataKey="instagram"
-                          radius={[0, 6, 6, 0]}
-                          barSize={24}
-                        >
-                          {socialChartData.map((entry, index) => (
-                            <Cell
-                              key={index}
-                              fill={entry.isYou ? '#25D1F2' : '#8B5CF6'}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-
-                {/* Facebook comparison chart */}
-                <div className="mb-6">
-                  <div className="text-sm uppercase tracking-wider text-white/50 mb-3">
-                    Facebook Likes
-                  </div>
-                  <ChartContainer
-                    config={{ likes: { label: 'Likes' } }}
-                    className="h-[220px]"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={socialChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 40, bottom: 5, left: 10 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={false}
-                          stroke="rgba(255,255,255,0.08)"
-                        />
-                        <XAxis
-                          type="number"
-                          tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                          tickFormatter={(v: number) =>
-                            v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString()
-                          }
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                          width={120}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                        />
-                        <Tooltip
-                          formatter={(value) =>
-                            (value as number).toLocaleString()
-                          }
-                          contentStyle={{
-                            background: 'rgba(2, 9, 31, 0.95)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            color: '#fff',
-                          }}
-                        />
-                        <Bar
-                          dataKey="facebook"
-                          radius={[0, 6, 6, 0]}
-                          barSize={24}
-                        >
-                          {socialChartData.map((entry, index) => (
-                            <Cell
-                              key={index}
-                              fill={entry.isYou ? '#25D1F2' : '#8B5CF6'}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-
-                {/* Google Reviews comparison */}
-                <div>
-                  <div className="text-sm uppercase tracking-wider text-white/50 mb-3">
-                    Google Reviews
-                  </div>
-                  <ChartContainer
-                    config={{ reviews: { label: 'Reviews' } }}
-                    className="h-[220px]"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={socialChartData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 40, bottom: 5, left: 10 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={false}
-                          stroke="rgba(255,255,255,0.08)"
-                        />
-                        <XAxis
-                          type="number"
-                          tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                          width={120}
-                          axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                        />
-                        <Tooltip
-                          formatter={(value) =>
-                            (value as number).toLocaleString()
-                          }
-                          contentStyle={{
-                            background: 'rgba(2, 9, 31, 0.95)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            color: '#fff',
-                          }}
-                        />
-                        <Bar
-                          dataKey="googleReviews"
-                          radius={[0, 6, 6, 0]}
-                          barSize={24}
-                        >
-                          {socialChartData.map((entry, index) => (
-                            <Cell
-                              key={index}
-                              fill={entry.isYou ? '#25D1F2' : '#8B5CF6'}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
+            {/* Facebook comparison chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Facebook Likes
+                  <Badge variant="outline" style={{ color: '#8B5CF6', borderColor: 'rgba(139,92,246,0.25)' }}>
+                    vs Competitors
+                  </Badge>
+                </CardTitle>
+                <CardDescription>Social media engagement comparison</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  config={{ likes: { label: 'Likes', color: 'var(--chart-1)' } }}
+                  className="h-[220px] w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                      <XAxis
+                        type="number"
+                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
+                      />
+                      <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <Tooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            indicator="dot"
+                            formatter={(value: unknown) => (value as number).toLocaleString()}
+                          />
+                        }
+                      />
+                      <Bar dataKey="facebook" radius={[0, 6, 6, 0]} barSize={24}>
+                        {socialChartData.map((entry, index) => (
+                          <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
-          </FadeIn>
-        </div>
-      </section>
+          </div>
+        </FadeIn>
 
-      {/* ── 8. Where You Appear / Where You're Invisible ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-sm sm:text-base uppercase tracking-widest text-white/40 font-medium mb-4 lg:mb-6">
-              Visibility Map
-            </div>
-          </FadeIn>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        {/* ── 8. Where You Appear / Where You're Invisible ── */}
+        <FadeIn>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Visible */}
-            <FadeIn delay={100}>
-              <Card className="bg-white/[0.06] border-white/10 border-l-4 border-l-emerald-400 text-white">
-                <CardHeader>
+            <Card>
+              <CardHeader>
+                <CardDescription style={{ color: '#22C55E' }}>
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                    <CardDescription className="text-emerald-400 uppercase tracking-wider text-sm font-semibold">
-                      Where you appear
-                    </CardDescription>
-                    <span className="text-xs text-white/20 ml-auto bg-white/[0.12] px-2 py-0.5 rounded-full">
+                    Where you appear
+                    <Badge variant="outline" className="ml-auto text-emerald-400 border-emerald-400/25">
                       {visibleQueries.length}
-                    </span>
+                    </Badge>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {visibleQueries.map((q, i) => (
-                      <li
-                        key={i}
-                        className="text-base text-white/70 flex items-center gap-3"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                        {q}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </FadeIn>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {visibleQueries.map((q, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                      {q}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  {visibleQueries.length} queries where your brand appears in AI results
+                </div>
+              </CardFooter>
+            </Card>
 
             {/* Invisible */}
-            <FadeIn delay={200}>
-              <Card className="bg-white/[0.06] border-white/10 border-l-4 border-l-red-400 text-white">
-                <CardHeader>
+            <Card>
+              <CardHeader>
+                <CardDescription style={{ color: '#EF4444' }}>
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                    <CardDescription className="text-red-400 uppercase tracking-wider text-sm font-semibold">
-                      Where you&apos;re invisible
-                    </CardDescription>
-                    <span className="text-xs text-white/20 ml-auto bg-white/[0.12] px-2 py-0.5 rounded-full">
+                    Where you&apos;re invisible
+                    <Badge variant="outline" className="ml-auto text-red-400 border-red-400/25">
                       {invisibleQueries.length}
-                    </span>
+                    </Badge>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {invisibleQueries.map((q, i) => (
-                      <li
-                        key={i}
-                        className="text-base text-white/40 flex items-center gap-3"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-400/50 flex-shrink-0" />
-                        {q}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </FadeIn>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {invisibleQueries.map((q, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400/50 flex-shrink-0" />
+                      {q}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  {invisibleQueries.length} queries where competitors appear but you don&apos;t
+                </div>
+              </CardFooter>
+            </Card>
           </div>
-        </div>
-      </section>
+        </FadeIn>
 
-      {/* ── 9. Pricing ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-3">
-                Pricing
-              </div>
-              <h2 className="text-3xl lg:text-2xl sm:text-4xl font-extralight leading-tight">
-                We found {recommendations.length} specific gaps costing you
-                visibility
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+        {/* ── 9. Pricing ── */}
+        <FadeIn>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-w-3xl mx-auto">
             {/* Fix */}
-            <FadeIn delay={100}>
-              <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 hover:border-white/20 transition-all">
-                <CardHeader>
-                  <CardDescription className="text-[#25D1F2] uppercase tracking-widest text-sm font-medium">
-                    Fix
-                  </CardDescription>
-                  <CardTitle className="text-2xl sm:text-4xl font-extralight">
-                    $299
-                    <span className="text-lg text-white/30 font-normal">
-                      /mo
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-8">
-                    {[
-                      'Full AI visibility audit (80+ queries)',
-                      'We implement every fix for you',
-                      'Monthly re-audit included',
-                    ].map((item, i) => (
-                      <li
-                        key={i}
-                        className="text-base text-white/60 flex items-start gap-3"
-                      >
-                        <svg
-                          className="w-5 h-5 text-[#22D3EE] mt-0.5 flex-shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="mailto:alex@vizbiz.ai"
-                    className="block w-full text-center border border-[#22D3EE] text-[#22D3EE] py-3.5 text-base font-semibold hover:bg-[#22D3EE]/10 transition-all rounded-xl"
-                  >
-                    Get Started
-                  </a>
-                </CardContent>
-              </Card>
-            </FadeIn>
+            <Card>
+              <CardHeader>
+                <CardDescription style={{ color: '#25D1F2' }}>Fix</CardDescription>
+                <CardTitle className="text-3xl font-extralight">
+                  $299<span className="text-lg font-normal ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/mo</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Full AI visibility audit (80+ queries)',
+                    'We implement every fix for you',
+                    'Monthly re-audit included',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#22D3EE' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="mailto:alex@vizbiz.ai"
+                  className="block w-full text-center border py-3.5 text-base font-semibold rounded-xl transition-all"
+                  style={{ borderColor: '#22D3EE', color: '#22D3EE' }}
+                >
+                  Get Started
+                </a>
+              </CardContent>
+            </Card>
 
             {/* Fix + Monitor */}
-            <FadeIn delay={200}>
-              <Card className="relative bg-white/[0.07] border-2 border-[#22D3EE]/50 text-white shadow-[0_0_30px_rgba(34,211,238,0.08)]">
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-[#02091F] px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                  Most Popular
-                </div>
-                <CardHeader className="pt-8">
-                  <CardDescription className="text-[#25D1F2] uppercase tracking-widest text-sm font-medium">
-                    Fix + Monitor
-                  </CardDescription>
-                  <CardTitle className="text-2xl sm:text-4xl font-extralight">
-                    $499
-                    <span className="text-lg text-white/30 font-normal">
-                      /mo
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-8">
-                    {[
-                      'Everything in Fix',
-                      'Competitor tracking',
-                      'Ongoing optimization as AI tools change',
-                      'Priority support',
-                    ].map((item, i) => (
-                      <li
-                        key={i}
-                        className="text-base text-white/80 flex items-start gap-3"
-                      >
-                        <svg
-                          className="w-5 h-5 text-[#22D3EE] mt-0.5 flex-shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="mailto:alex@vizbiz.ai"
-                    className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white py-3.5 text-base font-semibold hover:opacity-90 transition-opacity rounded-xl shadow-lg shadow-[#22D3EE]/20"
-                  >
-                    Get Started
-                  </a>
-                </CardContent>
-              </Card>
-            </FadeIn>
+            <Card className="relative" style={{ border: '2px solid rgba(34,211,238,0.5)' }}>
+              <div
+                className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
+                style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#02091F' }}
+              >
+                Most Popular
+              </div>
+              <CardHeader className="pt-8">
+                <CardDescription style={{ color: '#25D1F2' }}>Fix + Monitor</CardDescription>
+                <CardTitle className="text-3xl font-extralight">
+                  $499<span className="text-lg font-normal ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/mo</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    'Everything in Fix',
+                    'Competitor tracking',
+                    'Ongoing optimization as AI tools change',
+                    'Priority support',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      <svg className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#22D3EE' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="mailto:alex@vizbiz.ai"
+                  className="block w-full text-center py-3.5 text-base font-semibold rounded-xl transition-opacity"
+                  style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#fff' }}
+                >
+                  Get Started
+                </a>
+              </CardContent>
+            </Card>
           </div>
-
-          <p className="text-center text-sm text-white/20 mt-8">
-            Both plans include the full audit report. Cancel anytime. No setup
-            fee.
+          <p className="text-center text-sm mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Both plans include the full audit report. Cancel anytime. No setup fee.
           </p>
-        </div>
-      </section>
+        </FadeIn>
 
-      {/* ── 10. Bottom CTA + Footer ── */}
-      <section className="relative z-10 py-12 lg:py-20">
-        <div className="max-w-2xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
-          <FadeIn>
-            <h3 className="text-2xl font-light mb-3">
-              Prefer to talk first?
-            </h3>
-            <p className="text-base text-white/40 mb-8">
-              Book a free 15-minute audit review call. No pressure, no
-              obligation.
+        {/* ── 10. Bottom CTA ── */}
+        <FadeIn>
+          <div className="text-center max-w-2xl mx-auto py-8">
+            <h3 className="text-2xl font-light mb-3">Prefer to talk first?</h3>
+            <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Book a free 15-minute audit review call. No pressure, no obligation.
             </p>
             <a
               href="mailto:alex@vizbiz.ai"
-              className="inline-block border border-[#22D3EE]/40 text-[#22D3EE] px-8 py-3.5 text-base font-medium hover:bg-[#22D3EE]/10 transition-all rounded-xl"
+              className="inline-block border px-8 py-3.5 text-base font-medium rounded-xl transition-all"
+              style={{ borderColor: 'rgba(34,211,238,0.4)', color: '#22D3EE' }}
             >
               Book a Free Call
             </a>
-          </FadeIn>
-        </div>
-      </section>
+          </div>
+        </FadeIn>
+      </main>
 
-      <footer className="relative z-10 border-t border-white/10 py-12">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
+      {/* ── Footer ── */}
+      <footer className="border-t py-12" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <div className="flex items-center justify-center gap-3 mb-3">
-              <Image
-                src="/logo.jpg"
-                alt="VizBiz.ai"
-                width={56}
-                height={56}
-                className="rounded-lg opacity-70"
-              />
+              <Image src="/logo.jpg" alt="VizBiz.ai" width={56} height={56} className="rounded-lg opacity-70" />
               <span className="text-base font-semibold">
-                VizBiz<span className="text-[#25D1F2]">.ai</span>
+                VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
               </span>
             </div>
-            <p className="text-sm text-white/20 mb-1">
+            <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
               Generated by VizBiz.ai — AI Visibility Intelligence
             </p>
-            <a
-              href="https://vizbiz.ai"
-              className="text-sm text-[#22D3EE]/50 hover:text-[#22D3EE] transition-colors"
-            >
+            <a href="https://vizbiz.ai" className="text-sm transition-colors" style={{ color: 'rgba(34,211,238,0.5)' }}>
               vizbiz.ai
             </a>
           </FadeIn>
