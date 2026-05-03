@@ -835,9 +835,9 @@ export function ReportContent({ leadId }: { leadId: string }) {
               <ChartContainer config={categoryChartConfig} className="h-[300px] sm:h-[340px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categoryChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: '#D1D5DB' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -930,9 +930,9 @@ export function ReportContent({ leadId }: { leadId: string }) {
               <ChartContainer config={competitorChartConfig} className="h-[240px] sm:h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={competitorChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
-                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={130} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
+                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: '#D1D5DB' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -1042,14 +1042,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
+                      <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
                       <XAxis
                         type="number"
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        axisLine={{ stroke: '#D1D5DB' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
                       <Tooltip
                         cursor={false}
                         content={
@@ -1088,14 +1088,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
+                      <CartesianGrid strokeDasharray="" horizontal={false} stroke="#D1D5DB" />
                       <XAxis
                         type="number"
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                        axisLine={{ stroke: '#D1D5DB' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 13, fontWeight: 500 }} width={150} axisLine={{ stroke: '#D1D5DB' }} />
                       <Tooltip
                         cursor={false}
                         content={
