@@ -642,25 +642,32 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
       {/* ── 1. Header ── */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#02091F]/80 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[72px]">
-            <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-[72px]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Image
+                src="/logo.jpg"
+                alt="VizBiz.ai"
+                width={40}
+                height={40}
+                className="sm:hidden rounded-lg"
+              />
               <Image
                 src="/logo.jpg"
                 alt="VizBiz.ai"
                 width={56}
                 height={56}
-                className="rounded-lg"
+                className="hidden sm:block rounded-lg"
               />
-              <span className="text-xl font-bold tracking-tight">
+              <span className="text-base sm:text-xl font-bold tracking-tight">
                 AI Visibility Report
               </span>
             </div>
             <div className="text-right">
-              <div className="text-base font-semibold text-white/90">
+              <div className="text-sm sm:text-base font-semibold text-white/90">
                 {businessName}
               </div>
-              <div className="text-sm text-white/40">
+              <div className="text-xs sm:text-sm text-white/40">
                 {location} · {dateGenerated}
               </div>
             </div>
@@ -669,7 +676,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </header>
 
       {/* ── 2. Hero Score + Stats ── */}
-      <section className="relative z-10 py-16 lg:py-24">
+      <section className="relative z-10 py-10 lg:py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -698,7 +705,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
               {/* Right: stat cards */}
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       AI Visibility Score
@@ -711,7 +718,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Prompts Appeared
@@ -727,7 +734,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Competitors Ahead
@@ -740,7 +747,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+                <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
                   <CardHeader className="pb-2">
                     <CardDescription className="text-white/40 uppercase tracking-wider text-sm">
                       Gaps Found
@@ -759,10 +766,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 3. Profit at Risk ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
-            <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md text-center py-12">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 text-center py-12">
               <CardHeader>
                 <CardDescription className="text-white/40 uppercase tracking-widest text-sm">
                   Estimated Monthly Profit at Risk
@@ -794,13 +801,13 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 4. Category Scores (BarChart) ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Category Scores
             </div>
-            <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
@@ -857,53 +864,53 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 5. Visibility Radar ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Visibility Radar
             </div>
-            <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
                     score: { label: 'Score' },
                   }}
-                  className="h-[400px]"
+                  className="mx-auto aspect-square max-h-[400px] min-h-[280px] w-full"
                 >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={radarData}>
-                      <PolarGrid
-                        stroke="rgba(255,255,255,0.1)"
-                      />
-                      <PolarAngleAxis
-                        dataKey="category"
-                        tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                      />
-                      <PolarRadiusAxis
-                        angle={90}
-                        domain={[0, 100]}
-                        tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
-                        stroke="rgba(255,255,255,0.1)"
-                      />
-                      <Radar
-                        name="Score"
-                        dataKey="score"
-                        stroke="#25D1F2"
-                        fill="#25D1F2"
-                        fillOpacity={0.25}
-                        strokeWidth={2}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: 'rgba(2, 9, 31, 0.95)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '12px',
-                          color: '#fff',
-                        }}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                  <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+                    <PolarGrid
+                      stroke="rgba(255,255,255,0.15)"
+                    />
+                    <PolarAngleAxis
+                      dataKey="category"
+                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
+                    />
+                    <PolarRadiusAxis
+                      angle={90}
+                      domain={[0, 100]}
+                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
+                      stroke="rgba(255,255,255,0.1)"
+                    />
+                    <Radar
+                      name="Score"
+                      dataKey="score"
+                      stroke="#25D1F2"
+                      fill="#25D1F2"
+                      fillOpacity={0.35}
+                      strokeWidth={2.5}
+                      isAnimationActive
+                      animationDuration={1500}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'rgba(2, 9, 31, 0.95)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        color: '#fff',
+                      }}
+                    />
+                  </RadarChart>
                 </ChartContainer>
               </CardContent>
             </Card>
@@ -912,13 +919,13 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 6. Competitor Comparison ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Competitor Comparison
             </div>
-            <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
               <CardContent className="pt-6">
                 <ChartContainer
                   config={{
@@ -975,17 +982,17 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 7. Social Media Presence ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
               Social Media Presence
             </div>
-            <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md">
+            <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20">
               <CardContent className="pt-6">
                 {/* Social stats summary */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
-                  <div className="text-center p-4 rounded-xl bg-white/[0.08]">
+                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
                     <div className="text-3xl font-bold text-[#25D1F2]">
                       {socialPresence.instagram?.toLocaleString() || '—'}
                     </div>
@@ -993,7 +1000,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       Instagram
                     </div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.08]">
+                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
                     <div className="text-3xl font-bold text-[#25D1F2]">
                       {socialPresence.facebook?.toLocaleString() || '—'}
                     </div>
@@ -1001,7 +1008,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       Facebook
                     </div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.08]">
+                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
                     <div className="text-3xl font-bold text-[#25D1F2]">
                       {socialPresence.googleReviews}
                     </div>
@@ -1009,7 +1016,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       Google Reviews
                     </div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-white/[0.08]">
+                  <div className="text-center p-4 rounded-xl bg-white/[0.12]">
                     <div className="text-3xl font-bold text-[#25D1F2]">
                       {socialPresence.overallScore}
                       <span className="text-lg text-white/30">/10</span>
@@ -1212,7 +1219,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 8. Where You Appear / Where You're Invisible ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-sm uppercase tracking-widest text-white/30 font-medium mb-6">
@@ -1229,7 +1236,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                     <CardDescription className="text-emerald-400 uppercase tracking-wider text-sm font-semibold">
                       Where you appear
                     </CardDescription>
-                    <span className="text-xs text-white/20 ml-auto bg-white/[0.08] px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-white/20 ml-auto bg-white/[0.12] px-2 py-0.5 rounded-full">
                       {visibleQueries.length}
                     </span>
                   </div>
@@ -1259,7 +1266,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                     <CardDescription className="text-red-400 uppercase tracking-wider text-sm font-semibold">
                       Where you&apos;re invisible
                     </CardDescription>
-                    <span className="text-xs text-white/20 ml-auto bg-white/[0.08] px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-white/20 ml-auto bg-white/[0.12] px-2 py-0.5 rounded-full">
                       {invisibleQueries.length}
                     </span>
                   </div>
@@ -1284,7 +1291,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 9. Pricing ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-12">
@@ -1301,7 +1308,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
             {/* Fix */}
             <FadeIn delay={100}>
-              <Card className="bg-white/[0.12] border-white/20 text-white backdrop-blur-md hover:border-white/20 transition-all">
+              <Card className="bg-white/[0.18] border-white/30 text-white backdrop-blur-md shadow-lg shadow-black/20 hover:border-white/20 transition-all">
                 <CardHeader>
                   <CardDescription className="text-[#25D1F2] uppercase tracking-widest text-sm font-medium">
                     Fix
@@ -1416,7 +1423,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
       </section>
 
       {/* ── 10. Bottom CTA + Footer ── */}
-      <section className="relative z-10 py-16">
+      <section className="relative z-10 py-10 lg:py-16">
         <div className="max-w-2xl mx-auto px-6 lg:px-8 text-center">
           <FadeIn>
             <h3 className="text-2xl font-light mb-3">
