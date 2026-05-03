@@ -660,7 +660,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
           --popover: #F8F7F4;
           --muted: #E8E6E1;
           --muted-foreground: #6B7280;
-          --border: #E5E2DC;
+          --border: #D4D0C8;
           --chart-1: #25D1F2;
           --chart-2: #8B5CF6;
           --chart-3: #22C55E;
@@ -837,7 +837,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   <BarChart data={categoryChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                     <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -847,7 +847,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         />
                       }
                     />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={28}>
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32} label={{ position: 'right', fill: '#374151', fontSize: 13, fontWeight: 600 }}>
                       {categoryChartData.map((entry, index) => (
                         <Cell key={index} fill={entry.fill} />
                       ))}
@@ -932,7 +932,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                   <BarChart data={competitorChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                     <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={130} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={130} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -942,7 +942,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         />
                       }
                     />
-                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={32}>
+                    <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={36} label={{ position: 'right', fill: '#1F2937', fontSize: 14, fontWeight: 600 }}>
                       {competitorChartData.map((entry, index) => (
                         <Cell key={index} fill={entry.isYou ? '#25D1F2' : '#8B5CF6'} />
                       ))}
@@ -1049,7 +1049,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                       <Tooltip
                         cursor={false}
                         content={
@@ -1095,7 +1095,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                         axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#1F2937', fontSize: 15, fontWeight: 500 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                       <Tooltip
                         cursor={false}
                         content={
