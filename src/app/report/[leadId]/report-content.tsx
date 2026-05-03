@@ -215,7 +215,7 @@ function ScoreRing({ score }: { score: number }) {
           cy="130"
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke="#D1D5DB"
           strokeWidth={stroke}
         />
         <motion.circle
@@ -655,12 +655,12 @@ export function ReportContent({ leadId }: { leadId: string }) {
         :root {
           --background: #02091F;
           --foreground: #FFFFFF;
-          --card: #0F1729;
-          --card-foreground: #FFFFFF;
-          --popover: #0F1729;
-          --muted: #1A2744;
-          --muted-foreground: #94A3B8;
-          --border: #1E293B;
+          --card: #F8F7F4;
+          --card-foreground: #1A1A2E;
+          --popover: #F8F7F4;
+          --muted: #E8E6E1;
+          --muted-foreground: #6B7280;
+          --border: #E5E2DC;
           --chart-1: #25D1F2;
           --chart-2: #8B5CF6;
           --chart-3: #22C55E;
@@ -703,7 +703,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <Card>
               <CardHeader>
                 <CardDescription>AVI Score</CardDescription>
-                <CardTitle className={cn('text-2xl font-semibold tabular-nums @[250px]/card:text-3xl', getScoreColorClass(aviScore))}>
+                <CardTitle className={cn('text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl', getScoreColorClass(aviScore))}>
                   <CountUp value={aviScore} />
                 </CardTitle>
                 <CardAction>
@@ -723,7 +723,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <Card>
               <CardHeader>
                 <CardDescription>Prompts Appeared</CardDescription>
-                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
                   {promptsAppeared}
                   <span className="text-lg ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>/{totalPrompts}</span>
                 </CardTitle>
@@ -744,7 +744,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <Card>
               <CardHeader>
                 <CardDescription>Competitors Ahead</CardDescription>
-                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-red-400">
+                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl text-red-400">
                   <CountUp value={competitorsBeating} />
                 </CardTitle>
                 <CardAction>
@@ -764,10 +764,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
             <Card>
               <CardHeader>
                 <CardDescription>Profit at Risk</CardDescription>
-                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#EF4444' }}>
                   {currencySymbol}
                   <CountUp value={profitAtRisk.low} />
-                  <span className="text-lg mx-1" style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
+                  <span className="text-lg mx-1" style={{ color: '#D1D5DB' }}>—</span>
                   <CountUp value={profitAtRisk.high} />
                 </CardTitle>
                 <CardAction>
@@ -791,7 +791,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
           <Card className="flex flex-col items-center py-10 sm:py-14">
             <CardHeader className="items-center pb-2">
               <CardDescription>Your AI Visibility Score</CardDescription>
-              <CardTitle className="text-2xl font-bold tracking-tight">
+              <CardTitle className="text-3xl font-bold tracking-tight">
                 {businessName}
               </CardTitle>
             </CardHeader>
@@ -835,9 +835,9 @@ export function ReportContent({ leadId }: { leadId: string }) {
               <ChartContainer config={categoryChartConfig} className="h-[300px] sm:h-[340px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categoryChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                     <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -878,7 +878,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                    <PolarGrid stroke="rgba(255,255,255,0.15)" />
+                    <PolarGrid stroke="#D1D5DB" />
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 11 }}
@@ -887,7 +887,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                       angle={90}
                       domain={[0, 100]}
                       tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
-                      stroke="rgba(255,255,255,0.1)"
+                      stroke="#D1D5DB"
                     />
                     <Radar
                       name="Score"
@@ -930,9 +930,9 @@ export function ReportContent({ leadId }: { leadId: string }) {
               <ChartContainer config={competitorChartConfig} className="h-[240px] sm:h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={competitorChartData} layout="vertical" margin={{ top: 10, right: 40, bottom: 10, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                     <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={160} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={130} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                     <Tooltip
                       cursor={false}
                       content={
@@ -957,17 +957,20 @@ export function ReportContent({ leadId }: { leadId: string }) {
         {/* ── 7. Social Media Presence ── */}
         <FadeIn>
           <div className="space-y-4">
-            {/* Social stat cards (3 small cards in a row) */}
+            <div className="text-base text-muted-foreground">
+              Your social media profiles vs {competitors.filter(c => !c.isYou).map(c => c.name).join(', ')} — AI platforms use social signals to rank businesses.
+            </div>
+            {/* Your social stat cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Card>
                 <CardHeader>
-                  <CardDescription>Instagram</CardDescription>
-                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                  <CardDescription>Your Instagram Followers</CardDescription>
+                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
                     {socialPresence.instagram?.toLocaleString() || '—'}
                   </CardTitle>
                   <CardAction>
                     <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Followers
+                      Yours
                     </Badge>
                   </CardAction>
                 </CardHeader>
@@ -982,13 +985,13 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
               <Card>
                 <CardHeader>
-                  <CardDescription>Facebook</CardDescription>
-                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                  <CardDescription>Your Facebook Likes</CardDescription>
+                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
                     {socialPresence.facebook?.toLocaleString() || '—'}
                   </CardTitle>
                   <CardAction>
                     <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Likes
+                      Yours
                     </Badge>
                   </CardAction>
                 </CardHeader>
@@ -1003,13 +1006,13 @@ export function ReportContent({ leadId }: { leadId: string }) {
 
               <Card>
                 <CardHeader>
-                  <CardDescription>Google Reviews</CardDescription>
-                  <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
+                  <CardDescription>Your Google Reviews</CardDescription>
+                  <CardTitle className="text-3xl sm:text-4xl font-bold tabular-nums @[250px]/card:text-3xl" style={{ color: '#25D1F2' }}>
                     {socialPresence.googleReviews}
                   </CardTitle>
                   <CardAction>
                     <Badge variant="outline" style={{ color: '#25D1F2', borderColor: 'rgba(37,209,242,0.25)' }}>
-                      Reviews
+                      Yours
                     </Badge>
                   </CardAction>
                 </CardHeader>
@@ -1027,10 +1030,10 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 <CardTitle>
                   Instagram Followers
                   <Badge variant="outline" style={{ color: '#8B5CF6', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    vs Competitors
+                    You vs Competitors
                   </Badge>
                 </CardTitle>
-                <CardDescription>Social media reach comparison</CardDescription>
+                <CardDescription>AI platforms favor businesses with stronger social proof</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer
@@ -1039,14 +1042,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                       <XAxis
                         type="number"
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
                         axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                       <Tooltip
                         cursor={false}
                         content={
@@ -1085,14 +1088,14 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={socialChartData} layout="vertical" margin={{ top: 5, right: 40, bottom: 5, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.08)" />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#D1D5DB" />
                       <XAxis
                         type="number"
                         tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
                         axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
                         tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toString())}
                       />
-                      <YAxis type="category" dataKey="name" tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }} width={140} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#374151', fontSize: 14 }} width={120} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
                       <Tooltip
                         cursor={false}
                         content={
@@ -1249,7 +1252,7 @@ export function ReportContent({ leadId }: { leadId: string }) {
                 <a
                   href="mailto:alex@vizbiz.ai"
                   className="block w-full text-center py-3.5 text-base font-semibold rounded-xl transition-opacity"
-                  style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#fff' }}
+                  style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#1F2937' }}
                 >
                   Get Started
                 </a>
