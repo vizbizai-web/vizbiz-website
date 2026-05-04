@@ -6,7 +6,7 @@
  * in the results.
  */
 
-import { detectNiche } from "./niche-detector";
+import { detectNiche, getNicheByName } from "./niche-detector";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
@@ -88,20 +88,144 @@ export async function runResearch(
   const resolvedName = resolveBusinessName(businessName, website);
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
   
-  // Detect niche for prompt templates — use both name and website
+  // STEP 1: Scan the website to understand what the business actually does
+  const websiteInsight = await scanWebsite(website);
+  console.info(`[research-runner] Website scan: services=[${websiteInsight.services.slice(0,5).join(', ')}] keywords=[${websiteInsight.keywords.slice(0,5).join(', ')}]`);
+  
+  // STEP 2: Detect niche using BOTH the website content and business name
   const nicheConfig = detectNiche(resolvedName, website);
+  const finalNiche = websiteInsight.niche || nicheConfig.niche;
+  console.info(`[research-runner] Detected niche: ${nicheConfig.niche}, website-inferred: ${websiteInsight.niche || 'none'}, final: ${finalNiche}`);
   
-  // Generate prompts based on niche
-  const prompts = generatePrompts(nicheConfig, resolvedName, city);
+  // Use the website-informed niche config if available, otherwise fallback
+  const activeNicheConfig = websiteInsight.nicheConfig || nicheConfig;
   
-  // Run searches and track appearances — check against BOTH names
+  // STEP 3: Generate prompts based on niche + actual services from website
+  const prompts = generatePrompts(activeNicheConfig, resolvedName, city, websiteInsight.services);
+  
+  // STEP 4: Run searches and track appearances — check against BOTH names
   const results = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
   
-  // Calculate scores and bands
-  const finalResult = calculateScores(results, resolvedName, competitors, nicheConfig.niche);
+  // STEP 5: Calculate scores and bands
+  const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
   
   finalResult.resolvedName = resolvedName;
   return finalResult;
+}
+
+/**
+ * Scan the business website to understand what they actually do.
+ * This is the source of truth — not the business name, not our assumptions.
+ */
+async function scanWebsite(website: string): Promise<{
+  keywords: string[];
+  services: string[];
+  niche: string | null;
+  nicheConfig: ReturnType<typeof detectNiche> | null;
+}> {
+  const result = { keywords: [] as string[], services: [] as string[], niche: null as string | null, nicheConfig: null as ReturnType<typeof detectNiche> | null };
+  
+  try {
+    const url = website.startsWith('http') ? website : `https://${website}`;
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10000), // 10s timeout
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VizBizBot/1.0)' },
+    });
+    
+    if (!response.ok) {
+      console.warn(`[research-runner] Website scan failed: ${response.status} for ${url}`);
+      return result;
+    }
+    
+    const html = await response.text();
+    
+    // Extract text content (strip HTML tags)
+    const text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+    
+    // Extract page title
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].toLowerCase() : '';
+    
+    // Scan for service-specific keywords to identify the actual niche
+    const nicheSignals: Record<string, string[]> = {
+      spray_tanning: ['spray tan', 'sunless tan', 'airbrush tan', 'mobile tan', 'bridal tan', 'tanning party', 'custom blend', 'bronze', 'contour tan'],
+      beauty_salon: ['hair salon', 'haircut', 'hair color', 'blowout', 'keratin', 'balayage', 'highlights', 'barber', 'beauty salon'],
+      nail_salon: ['nail art', 'manicure', 'pedicure', 'gel nails', 'acrylic nails', 'nail salon'],
+      med_spa: ['botox', 'filler', 'laser', 'chemical peel', 'microneedling', 'med spa', 'injectables'],
+      car_dealership: ['dealership', 'inventory', 'financing', 'lease', 'trade-in', 'service center', 'certified pre-owned', 'test drive'],
+      venue_wedding: ['wedding venue', 'reception', 'ballroom', 'ceremony space', 'catering', 'event venue', 'banquet'],
+      dance_studio: ['dance class', 'ballet', 'salsa', 'hip hop', 'choreography', 'dance studio', 'dance lessons'],
+      real_estate: ['real estate', 'realtor', 'property', 'home sale', 'listing', 'buying a home', 'selling a home'],
+      restaurant: ['menu', 'reservation', 'dining', 'restaurant', 'catering', 'takeout', 'delivery'],
+      fitness: ['gym', 'personal training', 'group fitness', 'yoga', 'pilates', 'crossfit', 'membership'],
+      photography: ['photography', 'photo session', 'portrait', 'wedding photographer', 'headshot'],
+      cleaning: ['cleaning service', 'house cleaning', 'deep clean', 'maid service', 'janitorial'],
+    };
+    
+    // Score each niche by how many of its signals appear in the website text
+    let bestNiche: string | null = null;
+    let bestScore = 0;
+    for (const [niche, signals] of Object.entries(nicheSignals)) {
+      const score = signals.filter(s => text.includes(s) || title.includes(s)).length;
+      if (score > bestScore) {
+        bestScore = score;
+        bestNiche = niche;
+      }
+    }
+    
+    // Only use website-detected niche if we found strong signals (2+ matches)
+    if (bestScore >= 2 && bestNiche) {
+      result.niche = bestNiche;
+      // Get the niche config if it exists in our NICHES array
+      const nicheConfig = getNicheByName(bestNiche);
+      if (nicheConfig) {
+        result.nicheConfig = nicheConfig;
+      }
+    }
+    
+    // Extract service-related phrases
+    const servicePatterns = [
+      /we (?:specialize|offer|provide|do) ([^.!?]+)/gi,
+      /(?:specializing|offering|providing) ([^.!?]+)/gi,
+      /our (?:services|products) (?:include|are) ([^.!?]+)/gi,
+      /services?[:\-] ([^.!?]+)/gi,
+    ];
+    
+    const foundServices: string[] = [];
+    for (const pattern of servicePatterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null && foundServices.length < 10) {
+        const service = match[1].trim().replace(/\s+/g, ' ').slice(0, 100);
+        if (service.length > 5) foundServices.push(service);
+      }
+    }
+    result.services = foundServices;
+    
+    // Extract top keywords (most frequent meaningful words)
+    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'shall', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their', 'what', 'which', 'who', 'whom', 'when', 'where', 'why', 'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'because', 'as', 'until', 'while', 'if', 'then', 'else', 'about', 'up', 'out', 'also', 'into', 'from', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'once', 'here', 'there', 'any', 'make', 'like', 'get', 'got', 'go', 'going', 'come', 'take', 'see', 'know', 'think', 'want', 'need', 'give', 'use', 'find', 'tell', 'ask', 'work', 'seem', 'feel', 'try', 'leave', 'call', 'keep', 'let', 'begin', 'show', 'hear', 'play', 'run', 'move', 'live', 'believe', 'bring', 'happen', 'write', 'provide', 'include', 'your', 'you', 'we']);
+    const words = text.split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w));
+    const freq: Record<string, number> = {};
+    for (const w of words) {
+      freq[w] = (freq[w] || 0) + 1;
+    }
+    result.keywords = Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([w]) => w);
+    
+    console.info(`[research-runner] Website scanned: title="${title.slice(0, 80)}" text_length=${text.length} services=${foundServices.length} niche=${result.niche || 'not detected'}`);
+    
+  } catch (error) {
+    console.warn(`[research-runner] Website scan failed for ${website}:`, error instanceof Error ? error.message : error);
+    // Non-blocking — continue with keyword-based detection
+  }
+  
+  return result;
 }
 
 /**
@@ -144,12 +268,13 @@ function resolveBusinessName(businessName: string, website: string): string {
 function generatePrompts(
   nicheConfig: ReturnType<typeof detectNiche>,
   businessName: string,
-  city: string
+  city: string,
+  websiteServices: string[] = []
 ): string[] {
   // Use niche-specific templates
   const templates = nicheConfig.promptTemplates;
   
-  // Generate 15-20 prompts (use first 15 templates or cycle through them)
+  // Generate prompts from templates
   const generatedPrompts: string[] = [];
   
   for (let i = 0; i < 15 && i < templates.length; i++) {
@@ -158,13 +283,13 @@ function generatePrompts(
       .replace("{make}", extractMakeFromBusiness(businessName))
       .replace("{businessName}", businessName)
       .replace("{city}", city)
-      .replace("{neighborhood}", city); // Simple fallback
+      .replace("{neighborhood}", city);
     
     generatedPrompts.push(prompt);
   }
   
   // Always add business-name-specific prompts to check brand visibility
-  const shortName = businessName.split(' ').slice(0, 2).join(' '); // First 2 words
+  const shortName = businessName.split(' ').slice(0, 2).join(' ');
   generatedPrompts.push(
     `${shortName} in ${city}`,
     `${shortName} reviews`,
