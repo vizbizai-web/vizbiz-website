@@ -63,6 +63,7 @@ async function tavilySearch(query: string): Promise<TavilySearchResult[]> {
 export interface ResearchResult {
   prompts: string[];
   promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string }[];
+  resolvedName: string;
   appearedCount: number;
   totalPrompts: number;
   competitorAppearedCount: number;
@@ -83,19 +84,61 @@ export async function runResearch(
   city: string,
   competitors: string[]
 ): Promise<ResearchResult> {
-  // Detect niche for prompt templates
-  const nicheConfig = detectNiche(businessName, website);
+  // Resolve the best business name to use for searches
+  const resolvedName = resolveBusinessName(businessName, website);
+  console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
+  
+  // Detect niche for prompt templates — use both name and website
+  const nicheConfig = detectNiche(resolvedName, website);
   
   // Generate prompts based on niche
-  const prompts = generatePrompts(nicheConfig, businessName, city);
+  const prompts = generatePrompts(nicheConfig, resolvedName, city);
   
-  // Run searches and track appearances
-  const results = await runPromptSearches(prompts, businessName, website, competitors);
+  // Run searches and track appearances — check against BOTH names
+  const results = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
   
   // Calculate scores and bands
-  const finalResult = calculateScores(results, businessName, competitors, nicheConfig.niche);
+  const finalResult = calculateScores(results, resolvedName, competitors, nicheConfig.niche);
   
+  finalResult.resolvedName = resolvedName;
   return finalResult;
+}
+
+/**
+ * Resolve the best business name to use.
+ * If the website domain contains more info than the provided name,
+ * derive the name from the domain — it's the canonical identity.
+ */
+function resolveBusinessName(businessName: string, website: string): string {
+  const domain = website.toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\.(com|ca|co\.uk|co|io|net|org|ai|biz|info|me).*$/, '')
+    .trim();
+  
+  // Split domain on common word boundaries: 'and', 'by', 'the', 'of', 'for'
+  // Also split camelCase-like patterns
+  const readable = domain
+    .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
+    .replace(/([a-z])(and|by|the|of|for|in|at)([a-z])/gi, '$1 $2 $3') // word boundaries
+    .replace(/[\-_.]/g, ' ')
+    .trim();
+  
+  const domainWords = readable.split(/\s+/).filter(w => w.length > 0);
+  const domainName = domainWords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  
+  // If domain has more words than the business name, it's likely more complete
+  const nameWords = businessName.trim().split(/\s+/).filter(w => w.length > 0);
+  if (domainWords.length > nameWords.length) {
+    // Replace "And" with "&" if the original name uses it
+    const ampersandName = businessName.includes('&') 
+      ? domainName.replace(/\bAnd\b/g, '&')
+      : domainName;
+    console.info(`[research-runner] Domain "${domain}" is more descriptive than "${businessName}" → using "${ampersandName}"`);
+    return ampersandName;
+  }
+  
+  return businessName;
 }
 
 function generatePrompts(
@@ -164,7 +207,8 @@ async function runPromptSearches(
   prompts: string[],
   businessName: string,
   website: string,
-  competitors: string[]
+  competitors: string[],
+  originalName?: string
 ): Promise<PromptResult[]> {
   const results: PromptResult[] = [];
   
@@ -172,8 +216,11 @@ async function runPromptSearches(
     try {
       const searchResults = await tavilySearch(prompt);
       
-      // Check if business appears
-      const businessAppeared = checkBusinessAppearance(searchResults, businessName, website);
+      // Check if business appears — use resolved name AND original name
+      let businessAppeared = checkBusinessAppearance(searchResults, businessName, website);
+      if (!businessAppeared && originalName && originalName !== businessName) {
+        businessAppeared = checkBusinessAppearance(searchResults, originalName, website);
+      }
       
       // Check if any competitor appears
       const competitorResult = checkCompetitorAppearance(searchResults, competitors);
@@ -312,6 +359,7 @@ function calculateScores(
       competitorAppeared: r.competitorAppeared,
       competitorName: r.competitorName,
     })),
+    resolvedName: '', // Will be set by caller
     appearedCount,
     totalPrompts,
     competitorAppearedCount,

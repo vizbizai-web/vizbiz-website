@@ -107,6 +107,10 @@ export async function POST(request: Request) {
         
         // Save detailed research results to notes field in Google Sheets
         const researchJson = JSON.stringify({
+          businessName: researchResult.resolvedName || lead.dealershipName,
+          website: lead.website,
+          city: lead.city,
+          contactName: lead.contactName,
           niche: researchResult.niche,
           appearedCount: researchResult.appearedCount,
           totalPrompts: researchResult.totalPrompts,
