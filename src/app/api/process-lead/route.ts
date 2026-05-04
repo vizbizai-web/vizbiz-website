@@ -18,7 +18,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getLeadsByStatus, updateLeadResearchResults } from "@/lib/google-sheets";
+import { getLeadsByStatus, getLeadByLeadId, updateLeadResearchResults } from "@/lib/google-sheets";
 import { detectNiche } from "@/lib/niche-detector";
 import { discoverCompetitors } from "@/lib/competitor-discovery";
 import { runResearch } from "@/lib/research-runner";
@@ -27,8 +27,26 @@ export async function POST(request: Request) {
   try {
     console.info("[process-lead] Starting lead processing");
     
-    // Get all leads with status "new"
-    const newLeads = await getLeadsByStatus("new");
+    // Check if a specific leadId was provided in the request body
+    let targetLeadId: string | null = null;
+    try {
+      const body = await request.clone().json().catch(() => ({}));
+      targetLeadId = body?.leadId || null;
+    } catch { /* not JSON, that's fine */ }
+    
+    let newLeads;
+    if (targetLeadId) {
+      // Process a specific lead by ID
+      const lead = await getLeadByLeadId(targetLeadId);
+      if (!lead) {
+        return NextResponse.json({ success: false, message: `Lead ${targetLeadId} not found` }, { status: 404 });
+      }
+      newLeads = [lead];
+      console.info(`[process-lead] Processing specific lead: ${targetLeadId}`);
+    } else {
+      // Get all leads with status "new"
+      newLeads = await getLeadsByStatus("new");
+    }
     
     if (newLeads.length === 0) {
       console.info("[process-lead] No new leads to process");

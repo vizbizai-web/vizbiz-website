@@ -40,7 +40,7 @@ const blurredRows = [
 export default async function ThankYouPage({
   searchParams,
 }: {
-  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string }>;
+  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string }>;
 }) {
   const params = await searchParams;
   const appeared = Number(params.appeared || "3");
@@ -49,6 +49,7 @@ export default async function ThankYouPage({
   const competitorMention = typeof params.competitor === "string" && params.competitor.trim()
     ? params.competitor
     : "nearby competitors";
+  const leadId = params.lid || '';
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
@@ -111,6 +112,26 @@ export default async function ThankYouPage({
                 ))}
               </div>
             </div>
+
+            {leadId && (
+              <div className="text-center">
+                <Link
+                  href={`/report/${leadId}`}
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold transition-all"
+                  style={{
+                    background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
+                    color: '#02091F',
+                    boxShadow: '0 0 20px rgba(37,209,242,0.2)',
+                  }}
+                >
+                  View Your AI Visibility Report
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <p className="mt-3 text-xs text-[var(--text-secondary)]/70">
+                  Your report is being generated now. Refresh in 1-2 minutes if it's still loading.
+                </p>
+              </div>
+            )}
 
             <p className="text-center text-xs text-[var(--text-secondary)]/70">
               We&apos;ll send your mini snapshot recap by email within 24 hours.

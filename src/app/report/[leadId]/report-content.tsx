@@ -21,6 +21,8 @@ import {
   Cell,
 } from 'recharts';
 
+import type { LeadPageData } from './page';
+
 /* ── Types ────────────────────────────────────── */
 interface Category {
   name: string;
@@ -1740,10 +1742,67 @@ const LEADS: Record<string, LeadData> = {
 };
 
 /* ── Main Component ────────────────────────────── */
-export default function ReportContent({ leadId }: { leadId: string }) {
+export default function ReportContent({ leadId, leadData }: { leadId: string; leadData: LeadPageData | null }) {
   const { theme, toggle } = useTheme();
-  const data = LEADS[leadId] || LEADS['VZB-MOJSCVQM'];
   const t = getThemeStyles(theme);
+
+  // Resolve data: use mock LEADS if available, otherwise build from leadData
+  let data = LEADS[leadId];
+
+  if (!data && leadData) {
+    // Build LeadData from the Sheets lead
+    const snapshot = leadData.snapshotAppeared || '';
+    const appearedMatch = snapshot.match(/(\d+)\s+of\s+(\d+)/);
+    const promptsAppeared = appearedMatch ? parseInt(appearedMatch[1]) : 0;
+    const totalPrompts = appearedMatch ? parseInt(appearedMatch[2]) : 20;
+    const band = leadData.visibilityBand || 'Pending';
+    const aviScore = band === 'Strong' ? 72 : band === 'Moderate' ? 42 : 18;
+
+    const competitorName = leadData.competitor || 'Top Competitor';
+
+    data = {
+      businessName: leadData.businessName,
+      contactName: leadData.contactName,
+      location: leadData.location,
+      website: leadData.website,
+      aviScore,
+      totalPrompts,
+      promptsAppeared,
+      currencySymbol: '$',
+      currencyCode: 'USD',
+      profitAtRisk: { low: 2300, high: 9900 },
+      categories: [
+        { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
+        { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
+        { name: 'Service Visibility', score: Math.max(aviScore - 10, 5), description: 'Whether you appear for service-related queries' },
+        { name: 'Competitive Position', score: Math.max(aviScore - 5, 5), description: 'How you stack up against competitors' },
+        { name: 'Content & Authority', score: Math.max(aviScore - 15, 5), description: 'Whether AI tools see you as an authority' },
+      ],
+      visibleQueries: [],
+      invisibleQueries: [],
+      competitors: [
+        { name: `${leadData.businessName.split(' ')[0]} (You)`, score: promptsAppeared, isYou: true },
+        { name: competitorName, score: Math.min(promptsAppeared + 5, totalPrompts) },
+      ],
+      recommendations: [
+        { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
+        { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' as const },
+        { id: 3, title: 'Improve competitive positioning', description: 'Highlight what makes your business unique compared to competitors.', impact: 'Medium' as const },
+      ],
+      socialPresence: {
+        instagram: null,
+        facebook: null,
+        googleReviews: 0,
+        overallScore: 0,
+      },
+      competitorSocial: [],
+    };
+  }
+
+  // Fallback to first mock lead
+  if (!data) {
+    data = LEADS['VZB-MOJSCVQM'];
+  }
 
   return (
     <div className="min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>

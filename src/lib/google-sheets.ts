@@ -427,6 +427,14 @@ function getSheetRange(): string {
 }
 
 /**
+ * Get a single lead by leadId
+ */
+export async function getLeadByLeadId(leadId: string): Promise<LeadRow | null> {
+  const all = await getAllLeads();
+  return all.find((lead) => lead.leadId === leadId) || null;
+}
+
+/**
  * Check if Google Sheets CRM is configured
  */
 export function isSheetsConfigured(): boolean {

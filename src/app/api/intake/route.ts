@@ -126,6 +126,22 @@ export async function POST(request: Request) {
     // Non-blocking
   }
 
+  // Fire research asynchronously — don't block the redirect
+  if (sheetsOk && leadId) {
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    fetch(`${baseUrl}/api/process-lead`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId }),
+    }).then(() => {
+      console.info('[intake] research triggered for lead', leadId);
+    }).catch((err) => {
+      console.error('[intake] research trigger failed (non-blocking):', err);
+    });
+  }
+
   // Redirect to thank-you page with snapshot results
   const thankYouParams = new URLSearchParams({
     submitted: "1",
@@ -134,6 +150,7 @@ export async function POST(request: Request) {
     service: snapshotSummary.service.toLowerCase().replace(/\s+/g, "-"),
     competitor: cleanPayload.competitor?.trim() || "nearby competitors",
     crm: sheetsOk ? "captured" : "pending",
+    ...(leadId ? { lid: leadId } : {}),
   });
 
   return NextResponse.redirect(new URL(`/thank-you?${thankYouParams.toString()}`, request.url), 303);
