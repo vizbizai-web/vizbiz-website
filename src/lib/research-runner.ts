@@ -106,10 +106,10 @@ function generatePrompts(
   // Use niche-specific templates
   const templates = nicheConfig.promptTemplates;
   
-  // Generate 15-20 prompts (use first 20 templates or cycle through them)
+  // Generate 15-20 prompts (use first 15 templates or cycle through them)
   const generatedPrompts: string[] = [];
   
-  for (let i = 0; i < 20 && i < templates.length; i++) {
+  for (let i = 0; i < 15 && i < templates.length; i++) {
     const template = templates[i];
     const prompt = template
       .replace("{make}", extractMakeFromBusiness(businessName))
@@ -119,6 +119,16 @@ function generatePrompts(
     
     generatedPrompts.push(prompt);
   }
+  
+  // Always add business-name-specific prompts to check brand visibility
+  const shortName = businessName.split(' ').slice(0, 2).join(' '); // First 2 words
+  generatedPrompts.push(
+    `${shortName} in ${city}`,
+    `${shortName} reviews`,
+    `${shortName} near me`,
+    `best ${shortName.replace(/^(the|a|an)\s+/i, '')} in ${city}`,
+    `${shortName} hours and location`,
+  );
   
   return generatedPrompts.slice(0, 20); // Ensure exactly 20 prompts
 }
