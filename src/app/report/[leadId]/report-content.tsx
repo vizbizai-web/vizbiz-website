@@ -664,7 +664,7 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
       <GlassCard className="max-w-4xl mx-auto p-5 sm:p-6 lg:p-8" theme={theme}>
         <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Score Breakdown</h3>
         <p className="text-xs sm:text-sm mb-6 sm:mb-8" style={{ color: t.textMuted }}>
-          Your AI visibility broken into 5 categories that affect whether AI platforms recommend you. Each score is based on how often {data.businessName} appeared in real buyer-intent queries across ChatGPT, Gemini, and Perplexity.
+          Each score is 0–100 based on how often {data.businessName} appeared in real buyer-intent queries. Above 60 = strong (AI recommends you regularly). 35–60 = moderate. Below 35 = weak (AI rarely mentions you).
         </p>
         <div className="space-y-5 sm:space-y-6">
           {data.categories.map((cat, i) => (
