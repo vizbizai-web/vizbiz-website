@@ -466,8 +466,23 @@ function calculateScores(
     serviceVisibility = "Moderate";
   }
   
-  // Competitor mention
-  const competitorMention = competitors.length > 0 ? competitors[0] : "nearby competitors";
+  // Competitor mention — find the most frequently appearing competitor
+  const competitorNameCounts = new Map<string, number>();
+  for (const r of results) {
+    if (r.competitorAppeared && r.competitorName) {
+      const count = competitorNameCounts.get(r.competitorName) || 0;
+      competitorNameCounts.set(r.competitorName, count + 1);
+    }
+  }
+  let topCompetitorName = "nearby competitors";
+  let topCompetitorCount = 0;
+  for (const [name, count] of competitorNameCounts) {
+    if (count > topCompetitorCount) {
+      topCompetitorCount = count;
+      topCompetitorName = name;
+    }
+  }
+  const competitorMention = topCompetitorName;
   
   // Competitor line
   const competitorRate = competitorAppearedCount / competitorTotalPrompts;
