@@ -145,10 +145,20 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
   // Clean up
   const cleaned = name.trim();
   
-  // Skip if too short, too long, or looks like a generic phrase
+  // Skip if too short, too long, or looks like a generic/directory phrase
   if (cleaned.length < 3 || cleaned.length > 60) return null;
   if (/^(best|top|find|near|about|home|welcome)/i.test(cleaned)) return null;
   if (/\.(com|net|org|io)$/i.test(cleaned)) return null;
+  
+  // Skip directory-style results (lists, rankings, compilations)
+  if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me/i.test(cleaned)) return null;
+  if (/^\d/.test(cleaned)) return null; // Skip results starting with numbers
+  
+  // Skip obvious directory/aggregator words
+  const directoryWords = ['yelp', 'google maps', 'foursquare', 'facebook', 'instagram', 'yellow pages', 'brownbook', 'superpages', 'merchant circle', 'citysearch', 'kudzu', 'angies list', 'nextdoor', 'tripadvisor'];
+  for (const word of directoryWords) {
+    if (cleaned.toLowerCase().includes(word)) return null;
+  }
   
   return cleaned;
 }

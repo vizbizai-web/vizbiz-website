@@ -1499,293 +1499,16 @@ function ReportFooter({ theme }: { theme: Theme }) {
 }
 
 /* ── Lead Data ─────────────────────────────────── */
-const LEADS: Record<string, LeadData> = {
-  'VZB-MOJSCVQM': {
-    businessName: 'The Venue Experts',
-    contactName: 'Stacey',
-    location: 'Melton Mowbray, UK',
-    website: 'thevenueexperts.co.uk',
-    aviScore: 42,
-    totalPrompts: 20,
-    promptsAppeared: 8,
-    currencySymbol: '£',
-    currencyCode: 'GBP',
-    profitAtRisk: { low: 300, high: 900 },
-    categories: [
-      { name: 'Brand Discovery', score: 65, description: 'How often you appear when venue owners search for consultancy services' },
-      { name: 'Trust & Reviews', score: 50, description: 'What AI platforms say about your reputation' },
-      { name: 'Consultancy Visibility', score: 35, description: 'Whether you appear for venue consultancy queries' },
-      { name: 'Competitive Position', score: 40, description: 'How you compare to Kelly Chandler and Kelly Mortimer' },
-      { name: 'Content & Authority', score: 30, description: 'Whether AI tools see you as an authority in venue consulting' },
-    ],
-    visibleQueries: [
-      'venue consultant UK',
-      'wedding venue consultant',
-      'venue consultancy services',
-    ],
-    invisibleQueries: [
-      'wedding venue sales training',
-      'how to increase wedding bookings',
-      'venue profitability consulting',
-      'venue marketing strategies',
-      'hotel wedding sales consultant',
-      'rural venue diversification',
-      'venue customer experience training',
-      'wedding venue business coach',
-      'luxury venue consultant UK',
-      'venue sales director',
-    ],
-    competitors: [
-      { name: 'The Venue Experts (You)', score: 8, isYou: true },
-      { name: 'Kelly Chandler Consulting', score: 13 },
-      { name: 'Kelly Mortimer', score: 15 },
-    ],
-    recommendations: [
-      { id: 1, title: 'Strengthen venue consultancy content', description: 'Create detailed guides and case studies about venue consultancy services to improve visibility for consultancy-related queries.', impact: 'High' },
-      { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' },
-      { id: 3, title: 'Expand competitive positioning', description: 'Highlight what makes The Venue Experts unique compared to Kelly Chandler and Kelly Mortimer.', impact: 'Medium' },
-    ],
-    socialPresence: {
-      instagram: 1240,
-      facebook: 890,
-      googleReviews: 12,
-      overallScore: 4.2,
-    },
-    competitorSocial: [
-      { name: 'Kelly Chandler Consulting', instagram: 5430, facebook: 2100, googleReviews: 28 },
-      { name: 'Kelly Mortimer', instagram: 8900, facebook: 3400, googleReviews: 45 },
-    ],
-  },
-  'VZB-MOKMWAAI': {
-    businessName: 'E&A Dance Studio',
-    contactName: 'Enrique & Amy',
-    location: 'Auckland, NZ',
-    website: 'eadancestudiosnz.com',
-    aviScore: 28,
-    totalPrompts: 20,
-    promptsAppeared: 4,
-    currencySymbol: 'NZ$',
-    currencyCode: 'NZD',
-    profitAtRisk: { low: 400, high: 1200 },
-    categories: [
-      { name: 'Brand Discovery', score: 35, description: 'How often you appear in dance studio searches' },
-      { name: 'Trust & Reviews', score: 40, description: 'What AI platforms say about your reputation' },
-      { name: 'Class & Booking Visibility', score: 15, description: 'Whether you appear for class-related queries' },
-      { name: 'Competitive Position', score: 20, description: 'How you compare to Neverland Studios and Ceroc' },
-    ],
-    visibleQueries: [
-      'dance studio Auckland',
-      'ballroom dancing classes',
-      'Auckland dance lessons',
-      'best dance school',
-    ],
-    invisibleQueries: [
-      'wedding dance lessons Auckland',
-      'salsa dancing Auckland',
-      'kids dance classes',
-      'adult dance classes',
-      'hip hop dance studio',
-      'contemporary dance Auckland',
-      'dance studio near me',
-      'private dance lessons',
-      'dance classes for beginners',
-      'latin dance Auckland',
-    ],
-    competitors: [
-      { name: 'E&A Dance Studio (You)', score: 4, isYou: true },
-      { name: 'Neverland Studios', score: 12 },
-      { name: 'Ceroc French Jive', score: 11 },
-      { name: 'Viva Dance', score: 9 },
-    ],
-    recommendations: [
-      { id: 1, title: 'Improve class booking visibility', description: 'Create specific content about dance classes, booking options, and schedules to appear for class-related queries.', impact: 'High' },
-      { id: 2, title: 'Expand style-specific content', description: 'Add detailed information about different dance styles offered (ballroom, latin, contemporary) to capture more specific searches.', impact: 'High' },
-      { id: 3, title: 'Build local reputation signals', description: 'Encourage more reviews and testimonials from Auckland-based students to improve local trust scores.', impact: 'Medium' },
-    ],
-    socialPresence: {
-      instagram: 680,
-      facebook: 420,
-      googleReviews: 8,
-      overallScore: 3.5,
-    },
-    competitorSocial: [
-      { name: 'Neverland Studios', instagram: 3200, facebook: 1800, googleReviews: 22 },
-      { name: 'Ceroc French Jive', instagram: 5400, facebook: 3100, googleReviews: 35 },
-      { name: 'Viva Dance', instagram: 2100, facebook: 1200, googleReviews: 15 },
-    ],
-  },
-  'VZB-MOLHDGJK': {
-    businessName: 'ARTWOW',
-    contactName: 'Liz',
-    location: 'London/Essex, UK',
-    website: 'artwow.co',
-    aviScore: 89,
-    totalPrompts: 19,
-    promptsAppeared: 17,
-    currencySymbol: '£',
-    currencyCode: 'GBP',
-    profitAtRisk: { low: 400, high: 1250 },
-    categories: [
-      { name: 'Portfolio & Inquiry Visibility', score: 92, description: 'How often your products appear in art print searches' },
-      { name: 'Brand Discovery', score: 88, description: 'Whether AI tools recognize your brand' },
-      { name: 'Trust & Reviews', score: 85, description: 'What AI platforms say about your quality' },
-      { name: 'Content & Authority', score: 82, description: 'Whether AI tools see you as an authority' },
-      { name: 'Competitive Position', score: 95, description: 'How you compare to Redbubble and Eleanor Bowmer' },
-    ],
-    visibleQueries: [
-      'art prints UK',
-      'unique wall art',
-      'independent artist prints',
-      'art gifts UK',
-      'homeware art prints',
-      'buy art prints online UK',
-      'modern art prints',
-      'affordable art UK',
-    ],
-    invisibleQueries: [
-      'unique wedding gifts UK',
-      'personalized housewarming presents',
-      'art prints for living room',
-      'best art print marketplace UK',
-    ],
-    competitors: [
-      { name: 'Redbubble', score: 18 },
-      { name: 'ARTWOW (You)', score: 17, isYou: true },
-      { name: 'Eleanor Bowmer', score: 10 },
-    ],
-    recommendations: [
-      { id: 1, title: 'Maintain strong portfolio visibility', description: 'Continue showcasing your unique art prints and maintain the strong portfolio presence that is working well.', impact: 'Low' },
-      { id: 2, title: 'Expand into gift markets', description: 'Create content targeting gift-related searches like wedding gifts and housewarming presents to capture additional market share.', impact: 'Medium' },
-      { id: 3, title: 'Leverage competitive advantage', description: 'Highlight what makes ARTWOW unique compared to larger marketplaces like Redbubble to maintain your strong competitive position.', impact: 'Medium' },
-    ],
-    socialPresence: {
-      instagram: 15400,
-      facebook: 8900,
-      googleReviews: 67,
-      overallScore: 8.5,
-    },
-    competitorSocial: [
-      { name: 'Redbubble', instagram: 280000, facebook: 450000, googleReviews: 3200 },
-      { name: 'Eleanor Bowmer', instagram: 24500, facebook: 12300, googleReviews: 89 },
-    ],
-  },
-  'VZB-MOO1ESDC': {
-    businessName: 'GoalCraft',
-    contactName: 'Akchhat',
-    location: 'Kapurthala, India',
-    website: 'goalcraft.in',
-    aviScore: 35,
-    totalPrompts: 18,
-    promptsAppeared: 6,
-    currencySymbol: '₹',
-    currencyCode: 'INR',
-    profitAtRisk: { low: 5600, high: 45000 },
-    categories: [
-      { name: 'Brand Discovery', score: 30, description: 'How often you appear in restaurant consulting searches' },
-      { name: 'Trust & Authority', score: 25, description: 'What AI platforms say about your expertise' },
-      { name: 'Service Offering Visibility', score: 40, description: 'Whether you appear for Zomato/Swiggy consulting queries' },
-      { name: 'Competitive Position', score: 35, description: 'How you compare to Restrosol' },
-      { name: 'Content & Authority', score: 20, description: 'Whether AI tools see you as an authority' },
-    ],
-    visibleQueries: [
-      'restaurant consultant India',
-      'Zomato optimization',
-      'online food delivery consulting',
-    ],
-    invisibleQueries: [
-      'how to increase Zomato orders',
-      'Swiggy listing optimization',
-      'restaurant menu engineering India',
-      'cloud kitchen consultant',
-      'restaurant growth consulting',
-      'food delivery app optimization',
-      'restaurant online order consultant',
-    ],
-    competitors: [
-      { name: 'GoalCraft (You)', score: 6, isYou: true },
-      { name: 'Restrosol', score: 9 },
-    ],
-    recommendations: [
-      { id: 1, title: 'Improve brand discovery', description: 'Create more content about your restaurant consulting services and expertise to appear in more searches.', impact: 'High' },
-      { id: 2, title: 'Build trust and authority signals', description: 'Showcase client testimonials, case studies, and credentials to improve trust scores.', impact: 'High' },
-      { id: 3, title: 'Expand service content', description: 'Create detailed content about Zomato and Swiggy optimization services to capture more service-specific queries.', impact: 'Medium' },
-    ],
-    socialPresence: {
-      instagram: 320,
-      facebook: 180,
-      googleReviews: 5,
-      overallScore: 3.8,
-    },
-    competitorSocial: [
-      { name: 'Restrosol', instagram: 1200, facebook: 900, googleReviews: 18 },
-    ],
-  },
-  'VZB-MOOLDT0J': {
-    businessName: 'Old Touch Spices',
-    contactName: 'Madhavi',
-    location: 'Ahmedabad, India',
-    website: 'oldtouchspices.com',
-    aviScore: 72,
-    totalPrompts: 22,
-    promptsAppeared: 16,
-    currencySymbol: '₹',
-    currencyCode: 'INR',
-    profitAtRisk: { low: 8000, high: 25000 },
-    categories: [
-      { name: 'Product Discovery', score: 78, description: 'How often your spice products appear in searches' },
-      { name: 'Brand Recognition', score: 70, description: 'Whether AI tools recognize Old Touch Spices' },
-      { name: 'Trust & Reviews', score: 68, description: 'What AI platforms say about your product quality' },
-      { name: 'Competitive Position', score: 75, description: 'How you compare to other spice brands' },
-      { name: 'Content & Authority', score: 65, description: 'Whether AI tools see you as an authority in spices' },
-    ],
-    visibleQueries: [
-      'buy spices online India',
-      'authentic Indian spices',
-      'organic spices Ahmedabad',
-      'best spice brand India',
-      'premium quality spices',
-    ],
-    invisibleQueries: [
-      'wholesale spices supplier',
-      'export quality spices India',
-      'spice gift boxes',
-      'custom spice blends',
-      'ayurvedic spices',
-    ],
-    competitors: [
-      { name: 'Old Touch Spices (You)', score: 16, isYou: true },
-      { name: 'Masala Monk', score: 14 },
-      { name: 'The Spice Company', score: 12 },
-      { name: 'Spice Tribe', score: 10 },
-    ],
-    recommendations: [
-      { id: 1, title: 'Expand wholesale visibility', description: 'Create content targeting wholesale and export queries to capture B2B market opportunities.', impact: 'Medium' },
-      { id: 2, title: 'Leverage product authority', description: 'Highlight your expertise in authentic Indian spices and traditional processing methods.', impact: 'Medium' },
-      { id: 3, title: 'Build review momentum', description: 'Encourage more customer reviews to improve trust scores and competitive positioning.', impact: 'Low' },
-    ],
-    socialPresence: {
-      instagram: 4500,
-      facebook: 2800,
-      googleReviews: 32,
-      overallScore: 4.6,
-    },
-    competitorSocial: [
-      { name: 'Masala Monk', instagram: 8900, facebook: 5600, googleReviews: 45 },
-      { name: 'The Spice Company', instagram: 6200, facebook: 4100, googleReviews: 38 },
-      { name: 'Spice Tribe', instagram: 3400, facebook: 2100, googleReviews: 22 },
-    ],
-  },
-};
 
 /* ── Main Component ────────────────────────────── */
 export default function ReportContent({ leadId, leadData, researchData }: { leadId: string; leadData: LeadPageData | null; researchData: ResearchData | null }) {
   const { theme, toggle } = useTheme();
   const t = getThemeStyles(theme);
 
-  // Resolve data: use mock LEADS if available, otherwise build from research/lead data
-  let data = LEADS[leadId];
-
-  if (!data && researchData) {
+  // Build report data from research or lead data
+  let data: LeadData | null = null;
+  
+  if (researchData) {
     // Build from detailed research results
     // AVI Score is computed from actual appearance rate, not hardcoded
     const appearanceRate = researchData.appearedCount / Math.max(researchData.totalPrompts, 1);
@@ -1984,7 +1707,25 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
   // Fallback to first mock lead
   if (!data) {
-    data = LEADS['VZB-MOJSCVQM'];
+    data = {
+      businessName: leadData?.businessName || "Unknown Business",
+      contactName: leadData?.contactName || "Client",
+      location: leadData?.location || "Unknown",
+      website: leadData?.website || "",
+      aviScore: 0,
+      totalPrompts: 0,
+      promptsAppeared: 0,
+      currencySymbol: "$",
+      currencyCode: "USD",
+      profitAtRisk: { low: 0, high: 0 },
+      categories: [],
+      visibleQueries: [],
+      invisibleQueries: [],
+      competitors: [],
+      recommendations: [],
+      socialPresence: { instagram: 0, facebook: 0, googleReviews: 0, overallScore: 0 },
+      competitorSocial: [],
+    };
   }
 
   return (
