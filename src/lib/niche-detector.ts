@@ -55,21 +55,56 @@ const NICHES: NicheConfig[] = [
     ]
   },
   {
-    niche: "beauty_salon",
+    niche: "spray_tanning",
     keywords: [
-      "salon", "spa", "beauty", "tanning", "tan", "glow", "nail",
-      "hair", "barber", "cosmetology", "esthetician", "lashes", "brows",
-      "waxing", "facial", "makeup", "bridal beauty", "skin care",
-      "bronze", "sunless", "spray tan", "keratin", "blowout",
-      "colorist", "stylist", "beautician"
+      "spray tan", "sunless", "tanning", "tan", "glow", "bronze",
+      "mobile tan", "bridal tan", "airbrush tan", "custom tan",
+      "tanning salon", "tanning studio", "fake tan", "self tan"
     ],
     promptTemplates: [
-      "best tanning salon in {city}",
+      "best spray tan in {city}",
+      "spray tanning near me {city}",
+      "top rated tanning salon in {city}",
+      "best place for a spray tan in {city}",
+      "bridal spray tan in {city}",
+      "mobile spray tanning in {city}",
+      "sunless tanning in {city}",
+      "airbrush tan near me in {city}",
+      "best tanning salon for wedding in {city}",
+      "natural looking spray tan in {city}",
+      "custom spray tan in {city}",
+      "tanning salon open on weekends in {city}",
+      "walk-in spray tan in {city}",
+      "best tanning deals in {city}",
+      "tanning salon with good reviews in {city}",
+      "spray tan party in {city}",
+      "group spray tanning in {city}",
+      "spray tan before wedding in {city}",
+      "best sunless tan in {city}",
+      "tanning membership in {city}"
+    ],
+    competitorSearchQueries: [
+      "spray tan salons in {city}",
+      "best tanning salons {city}",
+      "sunless tanning {city}",
+      "tanning salons near me {city}",
+      "mobile spray tan {city}"
+    ]
+  },
+  {
+    niche: "beauty_salon",
+    keywords: [
+      "salon", "spa", "beauty", "nail", "hair", "barber",
+      "cosmetology", "esthetician", "lashes", "brows",
+      "waxing", "facial", "makeup", "bridal beauty",
+      "keratin", "blowout", "colorist", "stylist", "beautician"
+    ],
+    promptTemplates: [
+      "best hair salon in {city}",
       "top rated beauty salon in {city}",
       "hair salon with best reviews in {city}",
       "nail salon near me in {city}",
       "best place for a facial in {city}",
-      "spray tan near me in {city}",
       "best hair colorist in {city}",
       "affordable salon in {city}",
       "salon open on weekends in {city}",
@@ -78,19 +113,20 @@ const NICHES: NicheConfig[] = [
       "lash extensions near me in {city}",
       "keratin treatment in {city}",
       "best blowout bar in {city}",
-      "salon with good parking in {city}",
       "walk-in salon in {city}",
       "best mens haircut in {city}",
       "barbershop with best reviews in {city}",
       "day spa in {city}",
-      "med spa in {city}"
+      "med spa in {city}",
+      "full service salon in {city}",
+      "salon with nail services in {city}"
     ],
     competitorSearchQueries: [
-      "tanning salons in {city}",
-      "best beauty salons {city}",
+      "best beauty salons in {city}",
       "top rated salons {city}",
       "hair salons near me {city}",
-      "nail salons {city}"
+      "nail salons {city}",
+      "day spas {city}"
     ]
   },
   {

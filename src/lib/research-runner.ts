@@ -379,6 +379,8 @@ function getCompetitorCategories(niche: string): string[] {
   switch (niche) {
     case "car_dealership":
       return ["stronger local review presence", "clearer service and fixed ops pages"];
+    case "spray_tanning":
+      return ["stronger local review presence", "clearer service and booking pages"];
     case "beauty_salon":
       return ["stronger local review presence", "clearer service and booking pages"];
     case "venue_wedding":
@@ -396,6 +398,8 @@ function getWhyThisMatters(niche: string): string {
   switch (niche) {
     case "car_dealership":
       return "AI can shape the shortlist before a buyer visits your lot, compares inventory, or books service.";
+    case "spray_tanning":
+      return "AI can shape the shortlist before someone books a tan, compares tanning salons, or reads reviews.";
     case "beauty_salon":
       return "AI can shape the shortlist before someone books an appointment, compares salons, or reads reviews.";
     case "venue_wedding":
