@@ -102,12 +102,24 @@ export async function discoverCompetitors(
     }
   }
 
+  // Clean up — filter out directory/junk names from the final list
+  const cleanedCompetitors = competitors.filter(c => {
+    // Reject short acronym-style names with digits (F6S, F8, 3D, etc.)
+    if (/^[A-Z0-9]{2,5}$/i.test(c) && c.toLowerCase() !== c.toUpperCase()) return false;
+    // Reject single-word names shorter than 4 chars that aren't clear brand names
+    if (!c.includes(' ') && c.length <= 3) return false;
+    // Reject obvious junk
+    if (/^f\d+s?$/i.test(c)) return false;
+    if (/^(top|best|near|find|about|home)$/i.test(c)) return false;
+    return true;
+  });
+
   // If we couldn't find any competitors, return a generic fallback
-  if (competitors.length === 0) {
+  if (cleanedCompetitors.length === 0) {
     return ["local competitors", "nearby businesses", "similar companies"];
   }
 
-  return competitors.slice(0, 3); // Return top 3
+  return cleanedCompetitors.slice(0, 3); // Return top 3
 }
 
 function extractBusinessNameFromResult(result: TavilySearchResult, originalBusinessName: string): string | null {
@@ -195,8 +207,9 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
   if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me|yelp/i.test(finalName)) return null;
   if (/^\d/.test(finalName)) return null;
   
-  // Reject names that look like short codes, acronyms, or directories (F6S, YC, SEO, API, etc.)
-  if (/^[A-Z]{2,4}\d*$/i.test(finalName) && finalName.length < 6) return null;
+  // Reject names that look like short codes, acronyms, or directories (F6S, YC, SEO, F8, API-2, etc.)
+  if (/^[A-Z]{1,5}\d+[A-Z0-9]*$/i.test(finalName) && finalName.length < 8) return null;
+  if (/^[A-Z]{1,3}\d*$/i.test(finalName) && finalName.length < 6) return null;
   
   return finalName;
 }
