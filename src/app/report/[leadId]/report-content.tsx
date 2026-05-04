@@ -1410,7 +1410,7 @@ function BottomCTA({ theme }: { theme: Theme }) {
           Book a free 15-minute audit review call. No pressure, no obligation.
         </p>
         <a
-            href="mailto:alex@vizbiz.ai?subject=Free%20Audit%20Review%20Call"
+            href="https://calendly.com/vizbiz-ai/15min"
           style={{
             borderColor: t.ctaOutlineBorder,
             color: t.ctaOutlineText,
