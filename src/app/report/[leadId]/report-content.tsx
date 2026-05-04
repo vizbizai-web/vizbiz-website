@@ -138,7 +138,7 @@ function getThemeStyles(theme: Theme) {
       statCardTintGreen: 'rgba(34, 197, 94, 0.04)',
       statCardTintAmber: 'rgba(245, 158, 11, 0.04)',
       statCardTintRed: 'rgba(239, 68, 68, 0.04)',
-      radarFill: 'rgba(37, 209, 242, 0.12)',
+      radarFill: 'rgba(37, 209, 242, 0.2)',
       radarStroke: '#25D1F2',
       competitorBarYou: ['#22D3EE', '#06B6D4'],
       ctaOutlineBorder: 'rgba(37, 209, 242, 0.4)',
@@ -158,15 +158,15 @@ function getThemeStyles(theme: Theme) {
     bgCard: '#111827',
     bgFooter: '#020617',
     textPrimary: '#FFFFFF',
-    textSecondary: '#94A3B8',
-    textMuted: '#64748B',
-    borderSubtle: 'rgba(255, 255, 255, 0.06)',
+    textSecondary: '#CBD5E1',
+    textMuted: '#94A3B8',
+    borderSubtle: 'rgba(255, 255, 255, 0.08)',
     borderAccent: 'rgba(37, 209, 242, 0.25)',
     glassBg: 'rgba(255, 255, 255, 0.03)',
     glassBorder: 'rgba(37, 209, 242, 0.12)',
     glassHover: 'rgba(37, 209, 242, 0.08)',
-    gridStroke: 'rgba(255, 255, 255, 0.04)',
-    axisText: '#94A3B8',
+    gridStroke: 'rgba(255, 255, 255, 0.15)',
+    axisText: '#E2E8F0',
     ringBg: 'rgba(255, 255, 255, 0.05)',
     shadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
     barBg: 'rgba(255, 255, 255, 0.05)',
@@ -714,7 +714,7 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
                   <PolarGrid stroke={t.gridStroke} gridType="polygon" />
                   <PolarAngleAxis
                     dataKey="category"
-                    tick={{ fill: t.axisText, fontSize: 11, fontFamily: 'Poppins, sans-serif' }}
+                    tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
                   />
                   <PolarRadiusAxis tick={false} axisLine={false} />
                   <Radar
