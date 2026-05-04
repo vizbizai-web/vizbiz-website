@@ -1016,8 +1016,21 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   }));
 
   const hasSocialData = data.socialPresence.instagram || data.socialPresence.facebook || data.socialPresence.googleReviews;
+  const hasCompetitorSocialData = data.competitorSocial && data.competitorSocial.length > 0;
 
-  if (!hasSocialData) return null;
+  if (!hasSocialData && !hasCompetitorSocialData) return (
+    <FadeIn>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media Presence</h3>
+        <p className="text-sm mb-4" style={{ color: t.textMuted }}>Social signals influence whether AI platforms recommend your business</p>
+        <div className="py-6 text-center">
+          <p className="text-sm" style={{ color: t.textSecondary }}>
+            Your full report includes a detailed social media analysis with follower counts, posting frequency, and competitor comparisons.
+          </p>
+        </div>
+      </GlassCard>
+    </FadeIn>
+  );
 
   return (
     <FadeIn>
@@ -1803,7 +1816,21 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       promptsAppeared: researchData.appearedCount,
       currencySymbol: '$',
       currencyCode: 'USD',
-      profitAtRisk: { low: 2300, high: 9900 },
+      // Revenue at risk — scaled by niche (estimated monthly revenue lost from poor AI visibility)
+      profitAtRisk: (() => {
+        const nicheRevenueMap: Record<string, { low: number; high: number }> = {
+          spray_tanning: { low: 300, high: 1200 },
+          beauty_salon: { low: 800, high: 3000 },
+          nail_salon: { low: 500, high: 2000 },
+          car_dealership: { low: 5600, high: 45000 },
+          venue_wedding: { low: 2000, high: 8000 },
+          dance_studio: { low: 400, high: 1500 },
+          real_estate: { low: 3000, high: 15000 },
+          restaurant: { low: 1500, high: 6000 },
+          fitness: { low: 800, high: 3500 },
+        };
+        return nicheRevenueMap[researchData.niche] || { low: 1500, high: 6000 };
+      })(),
       categories: [
         { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
         { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
@@ -1856,7 +1883,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       promptsAppeared,
       currencySymbol: '$',
       currencyCode: 'USD',
-      profitAtRisk: { low: 2300, high: 9900 },
+      profitAtRisk: { low: 1500, high: 6000 },
       categories: [
         { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
         { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
