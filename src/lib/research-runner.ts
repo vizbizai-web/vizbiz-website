@@ -62,6 +62,7 @@ async function tavilySearch(query: string): Promise<TavilySearchResult[]> {
 
 export interface ResearchResult {
   prompts: string[];
+  promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string }[];
   appearedCount: number;
   totalPrompts: number;
   competitorAppearedCount: number;
@@ -295,6 +296,12 @@ function calculateScores(
   
   return {
     prompts: results.map(r => r.prompt),
+    promptResults: results.map(r => ({
+      prompt: r.prompt,
+      businessAppeared: r.businessAppeared,
+      competitorAppeared: r.competitorAppeared,
+      competitorName: r.competitorName,
+    })),
     appearedCount,
     totalPrompts,
     competitorAppearedCount,

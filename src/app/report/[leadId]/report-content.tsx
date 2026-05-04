@@ -21,7 +21,7 @@ import {
   Cell,
 } from 'recharts';
 
-import type { LeadPageData } from './page';
+import type { LeadPageData, ResearchData } from './page';
 
 /* ── Types ────────────────────────────────────── */
 interface Category {
@@ -1742,15 +1742,66 @@ const LEADS: Record<string, LeadData> = {
 };
 
 /* ── Main Component ────────────────────────────── */
-export default function ReportContent({ leadId, leadData }: { leadId: string; leadData: LeadPageData | null }) {
+export default function ReportContent({ leadId, leadData, researchData }: { leadId: string; leadData: LeadPageData | null; researchData: ResearchData | null }) {
   const { theme, toggle } = useTheme();
   const t = getThemeStyles(theme);
 
-  // Resolve data: use mock LEADS if available, otherwise build from leadData
+  // Resolve data: use mock LEADS if available, otherwise build from research/lead data
   let data = LEADS[leadId];
 
+  if (!data && researchData) {
+    // Build from detailed research results
+    const aviScore = researchData.statusBand === 'Strong' ? 72 : researchData.statusBand === 'Moderate' ? 42 : 18;
+    const competitorName = researchData.competitorMention || 'Top Competitor';
+
+    const visibleQueries = researchData.promptResults
+      .filter(r => r.businessAppeared)
+      .map(r => r.prompt);
+    const invisibleQueries = researchData.promptResults
+      .filter(r => !r.businessAppeared && r.competitorAppeared)
+      .map(r => r.prompt);
+
+    data = {
+      businessName: researchData.businessName,
+      contactName: researchData.contactName,
+      location: researchData.city,
+      website: researchData.website,
+      aviScore,
+      totalPrompts: researchData.totalPrompts,
+      promptsAppeared: researchData.appearedCount,
+      currencySymbol: '$',
+      currencyCode: 'USD',
+      profitAtRisk: { low: 2300, high: 9900 },
+      categories: [
+        { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
+        { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
+        { name: 'Service Visibility', score: Math.max(aviScore - 10, 5), description: 'Whether you appear for service-related queries' },
+        { name: 'Competitive Position', score: Math.max(aviScore - 5, 5), description: 'How you stack up against competitors' },
+        { name: 'Content & Authority', score: Math.max(aviScore - 15, 5), description: 'Whether AI tools see you as an authority' },
+      ],
+      visibleQueries,
+      invisibleQueries,
+      competitors: [
+        { name: `${researchData.businessName.split(' ')[0]} (You)`, score: researchData.appearedCount, isYou: true },
+        { name: competitorName, score: researchData.promptResults.filter(r => r.competitorAppeared).length },
+      ],
+      recommendations: [
+        { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
+        { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' as const },
+        { id: 3, title: 'Improve competitive positioning', description: 'Highlight what makes your business unique compared to competitors.', impact: 'Medium' as const },
+      ],
+      socialPresence: {
+        instagram: null,
+        facebook: null,
+        googleReviews: 0,
+        overallScore: 0,
+      },
+      competitorSocial: [],
+    };
+  }
+
   if (!data && leadData) {
-    // Build LeadData from the Sheets lead
+    // Build from Sheets lead data (no research yet)
     const snapshot = leadData.snapshotAppeared || '';
     const appearedMatch = snapshot.match(/(\d+)\s+of\s+(\d+)/);
     const promptsAppeared = appearedMatch ? parseInt(appearedMatch[1]) : 0;

@@ -105,13 +105,29 @@ export async function POST(request: Request) {
         console.info(`[process-lead] Research completed for ${lead.dealershipName}:`,
           `${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
         
-        // Update Google Sheet with results
+        // Save detailed research results to notes field in Google Sheets
+        const researchJson = JSON.stringify({
+          niche: researchResult.niche,
+          appearedCount: researchResult.appearedCount,
+          totalPrompts: researchResult.totalPrompts,
+          statusBand: researchResult.statusBand,
+          serviceVisibility: researchResult.serviceVisibility,
+          promptResults: researchResult.promptResults,
+          competitorMention: researchResult.competitorMention,
+          competitorLine: researchResult.competitorLine,
+          competitorCategories: researchResult.competitorCategories,
+          whyThisMatters: researchResult.whyThisMatters,
+          processedAt: new Date().toISOString(),
+        });
+        
+        // Update Google Sheet with results + research JSON in notes
         await updateLeadResearchResults(lead.leadId, {
           status: "email_drafted",
           researchStatus: "complete",
           snapshotAppeared: `${researchResult.appearedCount} of ${researchResult.totalPrompts} prompts`,
           visibilityBand: researchResult.statusBand,
-          serviceVisibility: researchResult.serviceVisibility
+          serviceVisibility: researchResult.serviceVisibility,
+          notes: `RESEARCH_DATA:${researchJson}`,
         });
         
         console.info(`[process-lead] Lead ${lead.leadId} processed successfully — status: email_drafted`);
