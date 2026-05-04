@@ -1270,7 +1270,7 @@ function BlurredReportPreview({ theme }: { theme: Theme }) {
             <p className="text-xs mt-1" style={{ color: t.textMuted }}>The complete audit includes 84 queries, competitor analysis, and a fix plan</p>
           </div>
           <a
-            href="mailto:alex@vizbiz.ai?subject=Full%20AI%20Visibility%20Report%20Request"
+            href="https://buy.stripe.com/5kQbJ2beTcQCexKdrq24000"
             className="px-6 py-2.5 text-sm font-semibold rounded-xl transition-all"
             style={{
               background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
@@ -1360,7 +1360,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                 ))}
               </ul>
               <a
-                href="mailto:alex@vizbiz.ai"
+                href={plan.name === 'Fix' ? 'https://buy.stripe.com/5kQbJ2beTcQCexKdrq24000' : 'https://buy.stripe.com/eVq8wQ4QvdUG4Xaevu24001'}
                 className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
                 style={plan.highlighted
                   ? {
@@ -1385,7 +1385,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                   }
                 }}
               >
-                Get Started
+                {plan.name === 'Fix' ? 'Get the Full Audit — $299' : 'Fix + Monitor — $499/mo'}
               </a>
             </div>
           ))}
@@ -1410,8 +1410,7 @@ function BottomCTA({ theme }: { theme: Theme }) {
           Book a free 15-minute audit review call. No pressure, no obligation.
         </p>
         <a
-          href="mailto:alex@vizbiz.ai"
-          className="inline-block border px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-medium rounded-xl transition-all"
+            href="mailto:alex@vizbiz.ai?subject=Free%20Audit%20Review%20Call"
           style={{
             borderColor: t.ctaOutlineBorder,
             color: t.ctaOutlineText,
