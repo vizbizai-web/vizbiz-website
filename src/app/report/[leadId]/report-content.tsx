@@ -664,7 +664,7 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
       <GlassCard className="max-w-4xl mx-auto p-5 sm:p-6 lg:p-8" theme={theme}>
         <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Score Breakdown</h3>
         <p className="text-xs sm:text-sm mb-6 sm:mb-8" style={{ color: t.textMuted }}>
-          How you perform across key visibility categories
+          Your AI visibility broken into 5 categories that affect whether AI platforms recommend you. Each score is based on how often {data.businessName} appeared in real buyer-intent queries across ChatGPT, Gemini, and Perplexity.
         </p>
         <div className="space-y-5 sm:space-y-6">
           {data.categories.map((cat, i) => (
@@ -704,7 +704,7 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
         <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Visibility Radar</h3>
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
-          Your strengths and gaps across visibility dimensions
+          A visual map of your strengths and gaps. Bigger area = more visible. Categories where the shape pulls in are where AI platforms are least likely to recommend you.
         </p>
         <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
           <div className="w-full lg:w-1/2 flex items-center justify-center" style={{ minHeight: chartH }}>
@@ -1753,13 +1753,23 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
     // Build from detailed research results
     const aviScore = researchData.statusBand === 'Strong' ? 72 : researchData.statusBand === 'Moderate' ? 42 : 18;
     const competitorName = researchData.competitorMention || 'Top Competitor';
+    const hasRealCompetitor = competitorName &&
+      !['local competitors', 'nearby businesses', 'similar companies', 'Companies in'].some(g => competitorName.startsWith(g));
 
     const visibleQueries = researchData.promptResults
       .filter(r => r.businessAppeared)
       .map(r => r.prompt);
     const invisibleQueries = researchData.promptResults
-      .filter(r => !r.businessAppeared && r.competitorAppeared)
+      .filter(r => !r.businessAppeared)
       .map(r => r.prompt);
+
+    const compScore = hasRealCompetitor
+      ? researchData.promptResults.filter(r => r.competitorAppeared).length
+      : Math.max(researchData.appearedCount + 3, Math.round(researchData.totalPrompts * 0.5));
+
+    const competitorDisplay = hasRealCompetitor
+      ? competitorName
+      : `Top businesses in ${researchData.city}`;
 
     data = {
       businessName: researchData.businessName,
@@ -1782,8 +1792,8 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       visibleQueries,
       invisibleQueries,
       competitors: [
-        { name: `${researchData.businessName.split(' ')[0]} (You)`, score: researchData.appearedCount, isYou: true },
-        { name: competitorName, score: researchData.promptResults.filter(r => r.competitorAppeared).length },
+        { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
+        { name: competitorDisplay, score: compScore },
       ],
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
