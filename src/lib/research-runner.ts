@@ -519,6 +519,12 @@ function calculateScores(
       topCompetitorName = name;
     }
   }
+  
+  // Fallback: if no competitor appeared in results but we have competitor names from discovery, use the first one
+  if (topCompetitorName === "nearby competitors" && competitors.length > 0) {
+    topCompetitorName = competitors[0];
+  }
+  
   const competitorMention = topCompetitorName;
   
   // Competitor line
