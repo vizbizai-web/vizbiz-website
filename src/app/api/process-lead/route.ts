@@ -84,6 +84,7 @@ export async function POST(request: Request) {
           competitors = [lead.competitor.trim()];
         } else {
           console.info(`[process-lead] Discovering competitors for ${lead.dealershipName}`);
+          // niche is detected inside discoverCompetitors; no variable at this scope
           competitors = await discoverCompetitors(
             lead.dealershipName,
             lead.website,

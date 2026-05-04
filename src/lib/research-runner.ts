@@ -418,17 +418,54 @@ function checkCompetitorAppearance(
   searchResults: TavilySearchResult[],
   competitors: string[]
 ): CompetitorCheckResult {
+  // Build search keys: the full name AND the first significant word
+  // e.g. "VRAI San Francisco Showroom" → "vrai san francisco showroom" AND "vrai"
+  // e.g. "Brilliant Earth" → "brilliant earth" AND "brilliant"
+  // e.g. "Padis Jewelry" → "padis jewelry" AND "padis"
   const lowerCompetitors = competitors.map(c => c.toLowerCase());
+  
+  // Also extract the first word of each competitor as a fallback key
+  const firstWordSet = new Set<string>();
+  const fullMatchSet = new Set<string>(lowerCompetitors);
+  for (const c of lowerCompetitors) {
+    const firstWord = c.split(/\s+/)[0];
+    if (firstWord && firstWord.length >= 3 && !['the', 'a', 'an', 'and', 'or', 'for'].includes(firstWord)) {
+      firstWordSet.add(firstWord);
+    }
+  }
+  
+  const seenNames = new Set<string>();
   
   for (const result of searchResults) {
     const lowerTitle = result.title.toLowerCase();
     const lowerContent = result.content.toLowerCase();
+    const combined = lowerTitle + " " + lowerContent;
     
-    for (const competitor of lowerCompetitors) {
-      if (lowerTitle.includes(competitor) || lowerContent.includes(competitor)) {
-        return { appeared: true, name: competitors.find(c => c.toLowerCase() === competitor) };
+    // Try full name match first
+    for (const competitor of fullMatchSet) {
+      if (combined.includes(competitor)) {
+        const originalName = competitors.find(c => c.toLowerCase() === competitor);
+        if (originalName && !seenNames.has(originalName)) {
+          seenNames.add(originalName);
+        }
       }
     }
+    
+    // Try first-word match as fallback (catches "VRAI" appearing as just "VRAI")
+    for (const firstWord of firstWordSet) {
+      if (combined.includes(firstWord)) {
+        // Find the original competitor whose first word matches
+        const matchingOriginal = competitors.find(c => c.toLowerCase().split(/\s+/)[0] === firstWord);
+        if (matchingOriginal && !seenNames.has(matchingOriginal)) {
+          seenNames.add(matchingOriginal);
+        }
+      }
+    }
+  }
+  
+  // Return the found competitor (if any)
+  if (seenNames.size > 0) {
+    return { appeared: true, name: Array.from(seenNames)[0] };
   }
   
   return { appeared: false };
