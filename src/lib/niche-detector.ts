@@ -275,9 +275,9 @@ const NICHES: NicheConfig[] = [
       "sustainable jewelry brands in {city}"
     ],
     competitorSearchQueries: [
-      "lab grown diamond brands San Francisco",  // DTC brands like Brilliant Earth, Vrai
-      "best jewelry stores in {city} San Francisco",
-      "engagement rings San Francisco fine jewelry",
+      "lab grown diamond brands {city}",
+      "best jewelry stores in {city}",
+      "engagement rings {city} fine jewelry",
       "best online diamond jewelry brands 2025",
       "jewelry brands similar to Brilliant Earth Vrai"
     ]
