@@ -110,7 +110,7 @@ export async function discoverCompetitors(
     if (!c.includes(' ') && c.length <= 3) return false;
     // Reject obvious junk
     if (/^f\d+s?$/i.test(c)) return false;
-    if (/^(top|best|near|find|about|home)$/i.test(c)) return false;
+    if (/^(top|best|near|find|about|home|wikipedia|wiki|shop|store|list|page|homepage)$/i.test(c)) return false;
     return true;
   });
 
@@ -145,7 +145,7 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
       .join(' ');
     
     // Skip URL-based names that are obviously not brand names (generic words)
-    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed'];
+    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed', 'wikipedia', 'wiki'];
     if (genericUrlWords.some(w => urlnName!.toLowerCase().includes(w))) {
       urlnName = null;
     }

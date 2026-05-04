@@ -275,10 +275,10 @@ const NICHES: NicheConfig[] = [
       "sustainable jewelry brands in {city}"
     ],
     competitorSearchQueries: [
-      "lab grown diamond brands {city}",
-      "best jewelry stores in {city}",
-      "engagement rings {city} fine jewelry",
-      "best online diamond jewelry brands 2025",
+      "Brilliant Earth lab grown diamonds San Francisco",
+      "VRAI jewelry San Francisco showroom",
+      "Blue Nile engagement rings San Francisco",
+      "James Allen diamonds online jewelry",
       "jewelry brands similar to Brilliant Earth Vrai"
     ]
   }
