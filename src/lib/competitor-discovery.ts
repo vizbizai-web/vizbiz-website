@@ -117,48 +117,83 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
   }
 
   const title = result.title;
+  const url = result.url;
   
-  // Pattern 1: "Business Name - City | Yelp/Google" → extract before dash/pipe
-  let name = title.split(/\s*[-–—|]\s*/)[0];
+  // Strategy 1: Extract business name from URL path segments
+  // e.g., "trabertgoldsmiths.com/collections/lab-grown-diamond" → "Trabert Goldsmiths"
+  // e.g., "vrai.com/showrooms/san-francisco" → "VRAI"
+  // e.g., "padisgems.com/collections/engagement-rings" → "Padis Jewelry"
+  let urlnName = null;
+  try {
+    const urlPath = new URL(url).hostname.replace('www.', '').split('.')[0];
+    // Convert kebab-case to Title Case
+    urlnName = urlPath
+      .split(/[-_]/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    
+    // Skip URL-based names that are obviously not brand names (generic words)
+    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn'];
+    if (genericUrlWords.some(w => urlnName!.toLowerCase().includes(w))) {
+      urlnName = null;
+    }
+  } catch { urlnName = null; }
   
-  // Pattern 2: Remove trailing location like "in City, State"
-  name = name.replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '');
+  // Strategy 2: Try to find business name at the end of pipe/dash-separated title
+  // "Engagement Rings San Francisco | Natural & Lab Diamonds | Yadav Jewelry" → "Yadav Jewelry"
+  // "Lab Grown - Engagement Rings in San Francisco - Padis Jewelry" → "Padis Jewelry"
+  const parts = title.split(/\s*[-–—|]\s*/).filter(p => p.trim().length > 0);
+  let pipedName = null;
   
-  // Pattern 3: Remove review count like "(142 reviews)"
-  name = name.replace(/\s*\(\d+\s*reviews?\)\s*/i, '');
-  
-  // Pattern 4: Remove rating like "4.8 ★"
-  name = name.replace(/\s*\d\.\d+\s*★?\s*/, '');
-  
-  // Remove common prefixes
-  name = name
-    .replace(/^(Best|Top|Top Rated|#\d+|\d+\.\s)\s+/i, "")
-    .replace(/^(A|An|The)\s+/i, "");
-  
-  // Remove common suffixes
-  name = name
-    .replace(/\s+-\s+ Yelp$/i, '')
-    .replace(/\s+-\s+ Google Reviews$/i, '')
-    .replace(/\s*\|\s*Facebook$/i, '')
-    .replace(/\s*\|\s*Instagram$/i, '');
-  
-  // Clean up
-  const cleaned = name.trim();
-  
-  // Skip if too short, too long, or looks like a generic/directory phrase
-  if (cleaned.length < 3 || cleaned.length > 60) return null;
-  if (/^(best|top|find|near|about|home|welcome)/i.test(cleaned)) return null;
-  if (/\.(com|net|org|io)$/i.test(cleaned)) return null;
-  
-  // Skip directory-style results (lists, rankings, compilations)
-  if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me/i.test(cleaned)) return null;
-  if (/^\d/.test(cleaned)) return null; // Skip results starting with numbers
-  
-  // Skip obvious directory/aggregator words
-  const directoryWords = ['yelp', 'google maps', 'foursquare', 'facebook', 'instagram', 'yellow pages', 'brownbook', 'superpages', 'merchant circle', 'citysearch', 'kudzu', 'angies list', 'nextdoor', 'tripadvisor'];
-  for (const word of directoryWords) {
-    if (cleaned.toLowerCase().includes(word)) return null;
+  if (parts.length >= 2) {
+    // Try the last part first — often contains the actual business name
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const candidate = parts[i].trim()
+        .replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '')
+        .replace(/\s*\(\d+\s*reviews?\)\s*/i, '')
+        .replace(/\s*\d\.\d+\s*★?\s*/, '')
+        .replace(/^(A|An|The)\s+/i, "")
+        .trim();
+      
+      // Check if this looks like a business name (not a directory, not generic)
+      if (candidate.length >= 3 && 
+          !/^(best|top|top rated|#\d+|\d+\.)/i.test(candidate) &&
+          !/^\d/.test(candidate)) {
+        pipedName = candidate;
+        break;
+      }
+    }
   }
   
-  return cleaned;
+  // Strategy 3: Fallback to full title with filters (old approach but improved)
+  let cleanedName = null;
+  if (!pipedName) {
+    cleanedName = title
+      .split(/\s*[-–—|]\s*/)[0]
+      .replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '')
+      .replace(/\s*\(\d+\s*reviews?\)\s*/i, '')
+      .replace(/\s+[-–—]+\s+Yelp$/i, '')
+      .replace(/\s+[-–—]+\s+Google Reviews$/i, '')
+      .replace(/^(Best |Top |Top Rated |#\d+ |\d+\.\s)/i, '')
+      .replace(/^(A |An |The )/i, '')
+      .trim();
+  }
+  
+  // Choose the best strategy result
+  let finalName = pipedName || cleanedName || urlnName;
+  
+  // Prefer actual name from pipe/end over URL-derived
+  if (pipedName && pipedName.length >= 3 && !/^\d/.test(pipedName)) {
+    finalName = pipedName;
+  } else if (urlnName && !pipedName && urlnName.length >= 3) {
+    finalName = urlnName;
+  }
+  
+  if (!finalName || finalName.length < 3 || finalName.length > 60) return null;
+  if (/^(best|top|find|near|about|home|welcome)/i.test(finalName)) return null;
+  if (/\.(com|net|org|io)$/i.test(finalName)) return null;
+  if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me|yelp/i.test(finalName)) return null;
+  if (/^\d/.test(finalName)) return null;
+  
+  return finalName;
 }
