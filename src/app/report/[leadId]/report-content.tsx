@@ -1751,9 +1751,32 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
   if (!data && researchData) {
     // Build from detailed research results
     const aviScore = researchData.statusBand === 'Strong' ? 72 : researchData.statusBand === 'Moderate' ? 42 : 18;
-    const competitorName = researchData.competitorMention || 'Top Competitor';
-    const hasRealCompetitor = competitorName &&
-      !['local competitors', 'nearby businesses', 'similar companies', 'Companies in'].some(g => competitorName.startsWith(g));
+    // Find the most frequently mentioned real competitor from prompt results
+    const competitorFreq: Record<string, number> = {};
+    for (const r of researchData.promptResults) {
+      if (r.competitorName && r.competitorAppeared) {
+        competitorFreq[r.competitorName] = (competitorFreq[r.competitorName] || 0) + 1;
+      }
+    }
+    // Filter out directory/generic names
+    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies'];
+    const realCompetitors = Object.entries(competitorFreq)
+      .filter(([name]) => !genericCompetitors.some(g => name.toLowerCase() === g || name.toLowerCase().startsWith(g + ' ')))
+      .map(([name, count]) => {
+        // Clean up competitor names: strip taglines like "Step into Luxury:"
+        const cleaned = name.replace(/^[^:]+:\s*/, (match) => {
+          // Only strip if the part before : is clearly a tagline (more than 2 words before :)
+          const parts = match.split(':');
+          return parts[0].trim().split(' ').length >= 3 ? '' : match;
+        }).trim();
+        return [cleaned, count] as [string, number];
+      })
+      .filter(([name]) => name.length > 0)
+      .sort((a, b) => b[1] - a[1]);
+    
+    const topCompetitor = realCompetitors.length > 0 ? realCompetitors[0][0] : null;
+    const hasRealCompetitor = !!topCompetitor;
+    const competitorName = topCompetitor || researchData.competitorMention || 'Top Competitor';
 
     const visibleQueries = researchData.promptResults
       .filter(r => r.businessAppeared)
@@ -1792,7 +1815,10 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       invisibleQueries,
       competitors: [
         { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
-        { name: competitorDisplay, score: compScore },
+        // Add top real competitors from prompt results
+        ...realCompetitors.slice(0, 3).map(([name, count]) => ({ name, score: count as number })),
+        // Fallback if no real competitors found
+        ...(realCompetitors.length === 0 ? [{ name: competitorDisplay, score: compScore }] : []),
       ],
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
