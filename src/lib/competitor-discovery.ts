@@ -133,7 +133,7 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
       .join(' ');
     
     // Skip URL-based names that are obviously not brand names (generic words)
-    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn'];
+    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed'];
     if (genericUrlWords.some(w => urlnName!.toLowerCase().includes(w))) {
       urlnName = null;
     }
@@ -194,6 +194,9 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
   if (/\.(com|net|org|io)$/i.test(finalName)) return null;
   if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me|yelp/i.test(finalName)) return null;
   if (/^\d/.test(finalName)) return null;
+  
+  // Reject names that look like short codes, acronyms, or directories (F6S, YC, SEO, API, etc.)
+  if (/^[A-Z]{2,4}\d*$/i.test(finalName) && finalName.length < 6) return null;
   
   return finalName;
 }
