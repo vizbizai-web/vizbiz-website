@@ -274,11 +274,10 @@ function generatePrompts(
 ): string[] {
   // Use niche-specific templates
   const templates = nicheConfig.promptTemplates;
-  
-  // Generate prompts from templates
+  // Generate prompts from templates — use up to 20 niche-specific prompts
   const generatedPrompts: string[] = [];
   
-  for (let i = 0; i < 15 && i < templates.length; i++) {
+  for (let i = 0; i < 20 && i < templates.length; i++) {
     const template = templates[i];
     const prompt = template
       .replace("{make}", extractMakeFromBusiness(businessName))
@@ -289,15 +288,21 @@ function generatePrompts(
     generatedPrompts.push(prompt);
   }
   
-  // Always add business-name-specific prompts to check brand visibility
-  const shortName = businessName.split(' ').slice(0, 2).join(' ');
-  generatedPrompts.push(
-    `${shortName} in ${city}`,
-    `${shortName} reviews`,
-    `${shortName} near me`,
-    `best ${shortName.replace(/^(the|a|an)\s+/i, '')} in ${city}`,
-    `${shortName} hours and location`,
-  );
+  // If fewer than 20 niche prompts, fill remaining with brand-specific queries
+  if (generatedPrompts.length < 20) {
+    const shortName = businessName.split(' ').slice(0, 2).join(' ');
+    const brandPrompts = [
+      `${shortName} in ${city}`,
+      `${shortName} reviews`,
+      `${shortName} near me`,
+      `best ${shortName.replace(/^(the|a|an)\s+/i, '')} in ${city}`,
+      `${shortName} hours and location`,
+    ];
+    for (const bp of brandPrompts) {
+      if (generatedPrompts.length >= 20) break;
+      generatedPrompts.push(bp);
+    }
+  }
   
   return generatedPrompts.slice(0, 20); // Ensure exactly 20 prompts
 }
@@ -515,6 +520,8 @@ function getCompetitorCategories(niche: string): string[] {
       return ["stronger presence on class-style queries", "clearer schedule and booking information"];
     case "real_estate":
       return ["stronger local market content", "clearer neighborhood expertise signals"];
+    case "fine_jewelry":
+      return ["stronger online presence in diamond and jewelry searches", "clearer brand positioning against major lab-grown diamond retailers"];
     default:
       return ["stronger local online presence", "clearer service information"];
   }
