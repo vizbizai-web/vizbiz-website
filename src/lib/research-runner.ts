@@ -165,6 +165,7 @@ async function scanWebsite(website: string): Promise<{
       fitness: ['gym', 'personal training', 'group fitness', 'yoga', 'pilates', 'crossfit', 'membership'],
       photography: ['photography', 'photo session', 'portrait', 'wedding photographer', 'headshot'],
       cleaning: ['cleaning service', 'house cleaning', 'deep clean', 'maid service', 'janitorial'],
+      fine_jewelry: ['jewelry', 'diamond', 'engagement ring', 'wedding band', 'fine jewelry', 'lab grown', 'lab-grown', '14k gold', '18k gold', 'gemstone', 'necklace', 'bracelet', 'earring', 'pendant', 'jewelry store', 'gold jewelry', 'custom jewelry', 'bespoke'],
     };
     
     // Score each niche by how many of its signals appear in the website text

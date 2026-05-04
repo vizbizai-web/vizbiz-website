@@ -237,6 +237,50 @@ const NICHES: NicheConfig[] = [
       "real estate agents near me {city}",
       "real estate agencies {city}"
     ]
+  },
+  {
+    niche: "fine_jewelry",
+    keywords: [
+      "jewelry", "jeweller", "jeweler", "jewellery", "diamond",
+      "engagement ring", "wedding band", "gold", "silver", "platinum",
+      "gemstone", "bracelet", "necklace", "earring", "pendant",
+      "fine jewelry", "lab grown", "lab-grown", "lab created",
+      "jewelry store", "jewelry shop", "ring", "rings",
+      "14k", "18k", "carat", "karat", "ct", "tw",
+      "sapphire", "ruby", "emerald", "moissanite",
+      "bridal jewelry", "anniversary ring", "promise ring",
+      "custom jewelry", "bespoke jewelry", "handcrafted jewelry",
+      "jewelry designer", "goldsmith", "silversmith"
+    ],
+    promptTemplates: [
+      "best jewelry store in {city}",
+      "best place to buy an engagement ring in {city}",
+      "top rated jewelers in {city}",
+      "lab grown diamond jewelry in {city}",
+      "fine jewelry stores near me in {city}",
+      "where to buy engagement rings in {city}",
+      "best diamond jewelry in {city}",
+      "custom jewelry design in {city}",
+      "wedding band shops in {city}",
+      "affordable fine jewelry in {city}",
+      "luxury jewelry stores in {city}",
+      "gold jewelry stores in {city}",
+      "best jewelry for gifts in {city}",
+      "jewelry stores with lab diamonds in {city}",
+      "necklace and bracelet stores in {city}",
+      "jewelry stores open on weekends in {city}",
+      "jewelry stores with good reviews in {city}",
+      "best place for jewelry repair in {city}",
+      "earring stores in {city}",
+      "sustainable jewelry brands in {city}"
+    ],
+    competitorSearchQueries: [
+      "jewelry stores in {city}",
+      "best jewelers {city}",
+      "engagement ring stores {city}",
+      "fine jewelry {city}",
+      "diamond jewelry {city}"
+    ]
   }
 ];
 

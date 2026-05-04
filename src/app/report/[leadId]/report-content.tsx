@@ -1851,6 +1851,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           dance_studio: { low: 400, high: 1500 },
           real_estate: { low: 3000, high: 15000 },
           restaurant: { low: 1500, high: 6000 },
+          fine_jewelry: { low: 2000, high: 12000 },
           fitness: { low: 800, high: 3500 },
         };
         return nicheRevenueMap[researchData.niche] || { low: 1500, high: 6000 };

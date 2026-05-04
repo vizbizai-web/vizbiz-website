@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       dance_studio: 'dance studio',
       real_estate: 'real estate',
       restaurant: 'restaurant',
+      fine_jewelry: 'fine jewelry',
       fitness: 'fitness',
     };
     const nicheLabel = nicheLabels[niche] || 'local business';

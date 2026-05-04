@@ -105,6 +105,21 @@ export async function POST(request: Request) {
         console.info(`[process-lead] Research completed for ${lead.dealershipName}:`,
           `${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
         
+        // Alert if niche detection failed — Vlad needs to know
+        if (researchResult.niche === 'local_business') {
+          console.warn(`[process-lead] ⚠️ NICHE NOT DETECTED for ${lead.dealershipName} — fell back to local_business`);
+          try {
+            await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: '6960754854',
+                text: `⚠️ Niche not detected for ${lead.dealershipName} (${lead.leadId}). Research ran with generic queries. Add niche to detector and re-run.`,
+              }),
+            });
+          } catch {} // non-blocking
+        }
+        
         // Save detailed research results to notes field in Google Sheets
         const researchJson = JSON.stringify({
           businessName: researchResult.resolvedName || lead.dealershipName,
@@ -135,6 +150,36 @@ export async function POST(request: Request) {
         });
         
         console.info(`[process-lead] Lead ${lead.leadId} processed successfully — status: email_drafted`);
+        
+        // Send report email (fire-and-forget, non-blocking)
+        if (lead.email) {
+          const emailPayload = {
+            to: lead.email,
+            leadId: lead.leadId,
+            businessName: researchResult.resolvedName || lead.dealershipName,
+            contactName: lead.contactName,
+            city: lead.city,
+            aviScore: researchResult.statusBand === 'Strong' ? 72 : researchResult.statusBand === 'Moderate' ? 42 : 18,
+            statusBand: researchResult.statusBand,
+            appearedCount: researchResult.appearedCount,
+            totalPrompts: researchResult.totalPrompts,
+            competitorName: researchResult.competitorMention,
+            competitorScore: researchResult.promptResults.filter(r => r.competitorAppeared).length,
+            niche: researchResult.niche,
+          };
+          
+          // Fire-and-forget email send
+          fetch('https://vizbiz.ai/api/send-report-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(emailPayload),
+          }).then(res => {
+            if (res.ok) console.info(`[process-lead] Report email sent to ${lead.email}`);
+            else console.warn(`[process-lead] Email send failed: ${res.status}`);
+          }).catch(err => {
+            console.warn(`[process-lead] Email send error:`, err);
+          });
+        }
         processedCount++;
         
       } catch (error) {
