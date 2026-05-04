@@ -1787,7 +1787,54 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
   if (!data && researchData) {
     // Build from detailed research results
-    const aviScore = researchData.statusBand === 'Strong' ? 72 : researchData.statusBand === 'Moderate' ? 42 : 18;
+    // AVI Score is computed from actual appearance rate, not hardcoded
+    const appearanceRate = researchData.appearedCount / Math.max(researchData.totalPrompts, 1);
+    const aviScore = Math.round(appearanceRate * 100); // 0-100 based on actual data
+    
+    // Categorize prompts into score categories based on position and content
+    const totalPrompts = researchData.promptResults.length;
+    const nichePrompts = researchData.promptResults.slice(0, 15); // First 15 = niche-specific service queries
+    const brandPrompts = researchData.promptResults.slice(15);   // Last 5 = brand name queries
+    
+    // Brand Discovery: how often the brand appears in brand-name searches
+    const brandAppeared = brandPrompts.filter(r => r.businessAppeared).length;
+    const brandScore = brandPrompts.length > 0 ? Math.round((brandAppeared / brandPrompts.length) * 100) : 0;
+    
+    // Service Visibility: how often the business appears in service/niche queries
+    const serviceAppeared = nichePrompts.filter(r => r.businessAppeared).length;
+    const serviceScore = nichePrompts.length > 0 ? Math.round((serviceAppeared / nichePrompts.length) * 100) : 0;
+    
+    // Trust & Reviews: derived from review-related prompt appearances
+    const reviewPrompts = researchData.promptResults.filter(r => 
+      r.prompt.toLowerCase().includes('review') || 
+      r.prompt.toLowerCase().includes('rating') || 
+      r.prompt.toLowerCase().includes('top rated') || 
+      r.prompt.toLowerCase().includes('best')
+    );
+    const reviewAppeared = reviewPrompts.filter(r => r.businessAppeared).length;
+    const trustScore = reviewPrompts.length > 0 ? Math.round((reviewAppeared / reviewPrompts.length) * 100) : Math.round(appearanceRate * 60); // fallback to overall rate
+    
+    // Competitive Position: business vs competitor appearances
+    const competitorAppearedCount = researchData.promptResults.filter(r => r.competitorAppeared).length;
+    const competitiveScore = (() => {
+      if (competitorAppearedCount === 0 && researchData.appearedCount === 0) return 5; // Nobody found anyone — very low
+      if (competitorAppearedCount === 0) return Math.round(appearanceRate * 80); // No competitor found — moderate
+      const compRate = competitorAppearedCount / totalPrompts;
+      const bizRate = researchData.appearedCount / totalPrompts;
+      if (bizRate >= compRate) return Math.round(bizRate * 100); // Winning
+      return Math.round((bizRate / Math.max(compRate, 0.01)) * 50); // Losing — capped lower
+    })();
+    
+    // Content & Authority: overall presence weight (how visible across all query types)
+    const contentScore = Math.round(appearanceRate * 70); // Conservative — most businesses score low here
+    
+    const categories = [
+      { name: 'Brand Discovery', score: Math.max(brandScore, 3), description: 'How often you appear when people search for your business by name' },
+      { name: 'Trust & Reviews', score: Math.max(trustScore, 3), description: 'What AI platforms say about your reputation' },
+      { name: 'Service Visibility', score: Math.max(serviceScore, 3), description: 'Whether you appear for service-related queries' },
+      { name: 'Competitive Position', score: Math.max(Math.min(competitiveScore, 100), 3), description: 'How you stack up against competitors' },
+      { name: 'Content & Authority', score: Math.max(contentScore, 3), description: 'Whether AI tools see you as an authority' },
+    ];
     // Find the most frequently mentioned real competitor from prompt results
     const competitorFreq: Record<string, number> = {};
     for (const r of researchData.promptResults) {
@@ -1856,13 +1903,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         };
         return nicheRevenueMap[researchData.niche] || { low: 1500, high: 6000 };
       })(),
-      categories: [
-        { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
-        { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
-        { name: 'Service Visibility', score: Math.max(aviScore - 10, 5), description: 'Whether you appear for service-related queries' },
-        { name: 'Competitive Position', score: Math.max(aviScore - 5, 5), description: 'How you stack up against competitors' },
-        { name: 'Content & Authority', score: Math.max(aviScore - 15, 5), description: 'Whether AI tools see you as an authority' },
-      ],
+      categories,
       visibleQueries,
       invisibleQueries,
       competitors: [
@@ -1897,6 +1938,16 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
     const aviScore = band === 'Strong' ? 72 : band === 'Moderate' ? 42 : 18;
 
     const competitorName = leadData.competitor || 'Top Competitor';
+    
+    // Fallback categories from appearance rate — these are estimates, not per-category data
+    const fallbackAppearanceRate = totalPrompts > 0 ? promptsAppeared / totalPrompts : 0;
+    const fallbackCategories = [
+      { name: 'Brand Discovery', score: Math.max(Math.round(fallbackAppearanceRate * 100), 3), description: 'How often you appear when people search for your business by name' },
+      { name: 'Trust & Reviews', score: Math.max(Math.round(fallbackAppearanceRate * 80), 3), description: 'What AI platforms say about your reputation' },
+      { name: 'Service Visibility', score: Math.max(Math.round(fallbackAppearanceRate * 90), 3), description: 'Whether you appear for service-related queries' },
+      { name: 'Competitive Position', score: Math.max(Math.round(fallbackAppearanceRate * 70), 3), description: 'How you stack up against competitors' },
+      { name: 'Content & Authority', score: Math.max(Math.round(fallbackAppearanceRate * 60), 3), description: 'Whether AI tools see you as an authority' },
+    ];
 
     data = {
       businessName: leadData.businessName,
@@ -1909,13 +1960,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       currencySymbol: '$',
       currencyCode: 'USD',
       profitAtRisk: { low: 1500, high: 6000 },
-      categories: [
-        { name: 'Brand Discovery', score: Math.min(aviScore + 15, 100), description: 'How often you appear when people search for your services' },
-        { name: 'Trust & Reviews', score: Math.min(aviScore + 5, 100), description: 'What AI platforms say about your reputation' },
-        { name: 'Service Visibility', score: Math.max(aviScore - 10, 5), description: 'Whether you appear for service-related queries' },
-        { name: 'Competitive Position', score: Math.max(aviScore - 5, 5), description: 'How you stack up against competitors' },
-        { name: 'Content & Authority', score: Math.max(aviScore - 15, 5), description: 'Whether AI tools see you as an authority' },
-      ],
+      categories: fallbackCategories,
       visibleQueries: [],
       invisibleQueries: [],
       competitors: [
