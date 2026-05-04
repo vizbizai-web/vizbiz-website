@@ -134,7 +134,7 @@ export default async function ThankYouPage({
             )}
 
             <p className="text-center text-xs text-[var(--text-secondary)]/70">
-              We&apos;ll send your mini snapshot recap by email within 24 hours.
+              We&apos;re running your AI visibility analysis now. Your free report will be delivered to your email shortly — usually within a few minutes.
             </p>
 
             <div className="glass-card rounded-[2rem] p-6">

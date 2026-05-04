@@ -146,10 +146,10 @@ export default function SnapshotIntakeForm({
 
       <div>
         <label htmlFor="competitor" className={labelClassName}>
-          Top competitors <span className="text-[var(--text-secondary)]">(optional)</span>
+          Top competitors <span className="text-[var(--text-secondary)]">(recommended)</span>
         </label>
         <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-          Who do you most often compete with in your market?
+          Naming your top 1-3 competitors helps us build a more detailed comparison showing exactly where you're winning and losing. The more specific you are, the better your report.
         </p>
         <input
           id="competitor"
@@ -179,7 +179,7 @@ export default function SnapshotIntakeForm({
         disabled={isSubmitting}
         className="premium-button min-h-13 w-full rounded-2xl px-6 py-3.5 text-sm font-semibold"
       >
-        {isSubmitting ? "Preparing your snapshot..." : "Generate My Snapshot"}
+        {isSubmitting ? "Analyzing your AI visibility..." : "Get My Free AI Visibility Report"}
       </button>
     </form>
   );

@@ -41,14 +41,14 @@ export default async function IntakePage({
               Get your AI visibility snapshot.
             </h1>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Share a few basics about your dealership. After you submit, we’ll send you to the booking step for your 15-minute review call.
+              Share a few basics about your business. We'll analyze how you appear in AI search results like ChatGPT, Gemini, and Perplexity, and send your free visibility report to your email within minutes.
             </p>
             <div className="glass-card mt-8 rounded-[1.75rem] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">What happens next</p>
               <ol className="mt-4 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <li>1. Submit your dealership details.</li>
-                <li>2. We prepare your snapshot.</li>
-                <li>3. You book your 15-minute review call on the next page.</li>
+                <li>1. Submit your business details.</li>
+                <li>2. We run AI visibility analysis across multiple platforms.</li>
+                <li>3. Your free report is delivered to your email — usually within a few minutes.</li>
               </ol>
             </div>
           </div>
