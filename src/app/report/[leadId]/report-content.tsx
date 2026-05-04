@@ -752,6 +752,39 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
   );
 }
 
+/* ── Comparison Bar (like AnimatedBar but for competitors) */
+function ComparisonBar({ name, score, total, pct, color, isYou, theme, delay = 0 }: {
+  name: string; score: number; total: number; pct: number; color: string; isYou: boolean; theme: Theme; delay?: number;
+}) {
+  const t = getThemeStyles(theme);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const tmr = setTimeout(() => setWidth(pct), 300 + delay);
+    return () => clearTimeout(tmr);
+  }, [pct, delay]);
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium" style={{ color: isYou ? color : t.textPrimary }}>{name}</span>
+        <span className="text-sm font-semibold tabular-nums" style={{ color }}>{score}/{total} queries</span>
+      </div>
+      <div className="h-3 rounded-full overflow-hidden" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${width}%` }}
+          transition={{ duration: 1.2, ease: 'easeOut', delay: delay / 1000 }}
+          style={{
+            background: `linear-gradient(to right, ${color}, ${color}88)`,
+            boxShadow: theme === 'dark' ? `0 0 8px ${color}40` : 'none',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 /* ── Competitor Comparison ───────────────────── */
 function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
@@ -804,33 +837,24 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
         </div>
 
         {mounted ? (
-          <div style={{ height: chartH }}>
-            <ResponsiveContainer width="100%" height={chartH}>
-              <BarChart data={compData} layout="vertical" margin={{ left: isMobile ? 80 : 140, right: 40, top: 10, bottom: 10 }}>
-                <CartesianGrid stroke={t.gridStroke} horizontal={false} />
-                <XAxis type="number" domain={[0, totalQ]} tick={{ fill: t.axisText, fontSize: 11 }} label={{ value: `out of ${totalQ} queries`, position: 'insideBottomRight', fill: t.textMuted, fontSize: 10, offset: -5 }} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tick={{ fill: t.axisText, fontSize: 11, fontFamily: 'Poppins, sans-serif' }}
-                  width={isMobile ? 100 : 180}
-                  axisLine={false}
-                  tickLine={false}
+          <div className="space-y-4">
+            {compData.map((entry, index) => {
+              const barColor = entry.isYou ? '#22D3EE' : compColors[(index - 1) % compColors.length];
+              const barScore = Math.round((entry.score / totalQ) * 100);
+              return (
+                <ComparisonBar
+                  key={entry.name}
+                  name={entry.name}
+                  score={entry.score}
+                  total={totalQ}
+                  pct={barScore}
+                  color={barColor}
+                  isYou={!!entry.isYou}
+                  theme={theme}
+                  delay={index * 150}
                 />
-                <Tooltip content={(props) => <DarkTooltip {...props} theme={theme} />} />
-                <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={isMobile ? 24 : 32}>
-                  {compData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.isYou
-                        ? '#22D3EE'
-                        : compColors[(index - 1) % compColors.length]
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+              );
+            })}
           </div>
         ) : (
           <div style={{ height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
