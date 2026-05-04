@@ -91,7 +91,26 @@ export async function POST(request: Request) {
             lead.city,
             lead.competitor
           );
-          console.info(`[process-lead] Found competitors: ${competitors.join(", ")}`);
+          
+          // Fallback: if discoverCompetitors returned generic/empty results, use niche defaults
+          const genericCompetitors = ['local competitors', 'nearby businesses', 'similar companies'];
+          const allGeneric = competitors.length > 0 && competitors.every(c => genericCompetitors.includes(c));
+          if (competitors.length === 0 || allGeneric) {
+            const nicheDefaults: Record<string, string[]> = {
+              fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
+              car_dealership: ["local dealerships", "other dealers in the area"],
+              spray_tanning: ["local spray tan studios", "other tanning salons"],
+              beauty_salon: ["local salons", "other beauty studios"],
+              dental: ["local dental practices", "other dentists in the area"],
+              real_estate: ["local real estate agents", "other agencies"],
+              fitness: ["local gyms and trainers", "other fitness studios"],
+            };
+            const defaultCompetitors = nicheDefaults[nicheConfig.niche] || genericCompetitors;
+            console.info(`[process-lead] Competitors were generic, using niche defaults for ${nicheConfig.niche}: ${defaultCompetitors.join(", ")}`);
+            competitors = defaultCompetitors;
+          }
+          
+          console.info(`[process-lead] Final competitors: ${competitors.join(", ")}`);
         }
         
         // Run research
