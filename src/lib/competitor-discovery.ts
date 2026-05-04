@@ -116,28 +116,39 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
     return null;
   }
 
-  // Try to extract business name from title
   const title = result.title;
   
-  // Remove location suffixes
-  const withoutLocation = title.replace(/\s+in\s+[^\s]+$/, "").replace(/\s+-\s+[^\s]+$/, "");
+  // Pattern 1: "Business Name - City | Yelp/Google" → extract before dash/pipe
+  let name = title.split(/\s*[-–—|]\s*/)[0];
+  
+  // Pattern 2: Remove trailing location like "in City, State"
+  name = name.replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '');
+  
+  // Pattern 3: Remove review count like "(142 reviews)"
+  name = name.replace(/\s*\(\d+\s*reviews?\)\s*/i, '');
+  
+  // Pattern 4: Remove rating like "4.8 ★"
+  name = name.replace(/\s*\d\.\d+\s*★?\s*/, '');
   
   // Remove common prefixes
-  const withoutPrefix = withoutLocation
-    .replace(/^(Best|Top|Top Rated|#\d+)\s+/i, "")
+  name = name
+    .replace(/^(Best|Top|Top Rated|#\d+|\d+\.\s)\s+/i, "")
     .replace(/^(A|An|The)\s+/i, "");
   
-  // Remove business type suffixes
-  const withoutSuffix = withoutPrefix
-    .replace(/\s+(Dealer|Dealership|Venue|Studio|Agency|Company|Business|Service|Center|Club)$/i, "");
+  // Remove common suffixes
+  name = name
+    .replace(/\s+-\s+ Yelp$/i, '')
+    .replace(/\s+-\s+ Google Reviews$/i, '')
+    .replace(/\s*\|\s*Facebook$/i, '')
+    .replace(/\s*\|\s*Instagram$/i, '');
   
   // Clean up
-  const cleaned = withoutSuffix.trim();
+  const cleaned = name.trim();
   
-  // Skip if too short or looks like a generic phrase
-  if (cleaned.length < 3 || cleaned.toLowerCase().includes("best ")) {
-    return null;
-  }
+  // Skip if too short, too long, or looks like a generic phrase
+  if (cleaned.length < 3 || cleaned.length > 60) return null;
+  if (/^(best|top|find|near|about|home|welcome)/i.test(cleaned)) return null;
+  if (/\.(com|net|org|io)$/i.test(cleaned)) return null;
   
   return cleaned;
 }

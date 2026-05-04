@@ -55,6 +55,45 @@ const NICHES: NicheConfig[] = [
     ]
   },
   {
+    niche: "beauty_salon",
+    keywords: [
+      "salon", "spa", "beauty", "tanning", "tan", "glow", "nail",
+      "hair", "barber", "cosmetology", "esthetician", "lashes", "brows",
+      "waxing", "facial", "makeup", "bridal beauty", "skin care",
+      "bronze", "sunless", "spray tan", "keratin", "blowout",
+      "colorist", "stylist", "beautician"
+    ],
+    promptTemplates: [
+      "best tanning salon in {city}",
+      "top rated beauty salon in {city}",
+      "hair salon with best reviews in {city}",
+      "nail salon near me in {city}",
+      "best place for a facial in {city}",
+      "spray tan near me in {city}",
+      "best hair colorist in {city}",
+      "affordable salon in {city}",
+      "salon open on weekends in {city}",
+      "bridal hair and makeup in {city}",
+      "best waxing salon in {city}",
+      "lash extensions near me in {city}",
+      "keratin treatment in {city}",
+      "best blowout bar in {city}",
+      "salon with good parking in {city}",
+      "walk-in salon in {city}",
+      "best mens haircut in {city}",
+      "barbershop with best reviews in {city}",
+      "day spa in {city}",
+      "med spa in {city}"
+    ],
+    competitorSearchQueries: [
+      "tanning salons in {city}",
+      "best beauty salons {city}",
+      "top rated salons {city}",
+      "hair salons near me {city}",
+      "nail salons {city}"
+    ]
+  },
+  {
     niche: "venue_wedding",
     keywords: [
       "venue", "wedding", "event", "celebration", "banquet", "hall",
