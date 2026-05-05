@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "audit": "tsx src/engines/research/cli.ts",
+    "fix": "tsx src/engines/fix/cli.ts"
   },
   "dependencies": {
+    "better-sqlite3": "^11.8.1",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
     "react": "19.2.3",
@@ -16,12 +20,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
   }
 }

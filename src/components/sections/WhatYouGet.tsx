@@ -71,7 +71,7 @@ export default function WhatYouGet() {
         
         {/* Deliverables Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {deliverables.map((item, index) => (
+          {deliverables.map((item) => (
             <div
               key={item.title}
               className={`group bg-white rounded-2xl p-6 border card-hover ${

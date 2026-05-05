@@ -59,7 +59,7 @@ export default function Solution() {
         
         {/* Features Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div
               key={feature.title}
               className="group bg-white rounded-2xl p-6 border border-gray-200 card-hover"
