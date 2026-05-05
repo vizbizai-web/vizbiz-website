@@ -93,8 +93,11 @@ export async function POST(request: Request) {
           );
           
           // Fallback: if discoverCompetitors returned generic/empty results, use niche defaults
+          const platformNames = ['medium', 'wikipedia', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'youtube', 'github', 'reddit', 'blog', 'homepage', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed'];
           const genericCompetitors = ['local competitors', 'nearby businesses', 'similar companies'];
-          const allGeneric = competitors.length > 0 && competitors.every(c => genericCompetitors.includes(c));
+          const allGeneric = competitors.length > 0 && competitors.every(c => 
+            genericCompetitors.includes(c) || platformNames.includes(c.toLowerCase())
+          );
           if (competitors.length === 0 || allGeneric) {
             const nicheDefaults: Record<string, string[]> = {
               fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
@@ -111,6 +114,11 @@ export async function POST(request: Request) {
           }
           
           console.info(`[process-lead] Final competitors: ${competitors.join(", ")}`);
+          // Log what niche defaults would give us
+          const nicheDefaultsCheck: Record<string, string[]> = {
+            fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
+          };
+          console.info(`[process-lead] Niche defaults would give: ${nicheDefaultsCheck[nicheConfig.niche]?.join(", ") || 'none'}`);
         }
         
         // Run research

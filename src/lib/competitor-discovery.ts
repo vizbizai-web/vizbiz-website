@@ -111,6 +111,10 @@ export async function discoverCompetitors(
     // Reject obvious junk
     if (/^f\d+s?$/i.test(c)) return false;
     if (/^(top|best|near|find|about|home|wikipedia|wiki|shop|store|list|page|homepage)$/i.test(c)) return false;
+    // Reject generic platform names that aren't real businesses
+    if (/^(medium|blog|homepage|facebook|instagram|twitter|linkedin|pinterest|youtube|github|reddit)$/i.test(c)) return false;
+    // Reject article-style titles that leak through (e.g., "and They're Not All AI Startups")
+    if (c.length > 12 && /^(and|but|the|this|how|why|what|when|where|which|these|those)/i.test(c)) return false;
     return true;
   });
 

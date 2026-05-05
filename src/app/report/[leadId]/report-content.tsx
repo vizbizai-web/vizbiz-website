@@ -1598,7 +1598,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
     const competitorDisplay = hasRealCompetitor
       ? competitorName
-      : `Top businesses in ${researchData.city}`;
+      : researchData.competitorMention || `Top businesses in ${researchData.city}`;
 
     data = {
       businessName: researchData.businessName,

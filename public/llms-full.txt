@@ -1,57 +1,29 @@
-# VizBiz — AI Visibility Intelligence for Car Dealerships
-> VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. We run real buyer-intent queries against multiple AI platforms, track which dealerships appear, score visibility signals, and deliver prioritized action plans. Free AI visibility audit available.
-
-## What VizBiz Does
-
-VizBiz measures AI visibility for car dealerships. When a buyer asks ChatGPT "What's the best Toyota dealership near me?", someone gets recommended and someone doesn't. VizBiz runs 84 buyer-intent queries across ChatGPT, Google AI Overviews, Gemini, and Perplexity to find out if your dealership appears, how you're described, and which competitors are being surfaced instead.
-
-We score dealerships across five categories — Dealer Discovery (30%), Trust & Reviews (25%), Service (20%), Inventory (15%), and Finance (10%) — producing a single AI Visibility Index (AVI) score from 0-100. The average dealership scores below 60.
-
-## Services
-
-### AI Visibility Snapshot (Free)
-A quick readout showing whether your dealership appears in AI-driven answers across major platforms. Includes basic scoring, top-level recommendations, and competitor comparison. Takes 24-48 hours. No credit card required.
-
-### AI Visibility Audit (Paid — $299 one-time)
-Comprehensive analysis across 84 buyer-intent queries on ChatGPT, Google AI Overviews, Perplexity, and other AI platforms. Scores your dealership across entity consistency, review depth, content quality, and authority signals. Benchmarks against local competitors. Includes a Revenue Leak Calculator showing profit at risk from poor AI visibility. Delivers a prioritized action plan with specific fixes.
-
-### Ongoing AI Visibility Monitoring (Subscription — $499/month)
-Monthly tracking of your AI visibility across platforms. Measures changes over time, alerts you to competitor movements, and updates your action plan as AI models evolve. Includes quarterly re-audits with full 84-query battery.
+# VizBiz
+> VizBiz is an AI visibility intelligence platform that helps car dealerships measure and improve how they appear in AI-powered search results like ChatGPT, Google AI Overviews, Gemini, and Perplexity. The AI Visibility Index (AVI) is a standardized scoring system that evaluates dealership presence across five weighted categories: Dealer Discovery (30%), Trust & Reviews (25%), Service Visibility (20%), Used Inventory (15%), and Finance & Trade-In (10%).
 
 ## Main Pages
-- [AI Visibility](https://vizbiz.ai/ai-visibility-for-car-dealerships/): Learn what AI visibility means for dealerships, which signals matter most, and how automotive retailers can improve how often they appear in AI-driven search.
-- [How It Works](https://vizbiz.ai/how-dealerships-show-up-in-ai-search/): Learn how AI systems choose which dealerships to mention, which signals shape visibility, and what automotive retailers can improve first.
-- [Full Audit](https://vizbiz.ai/ai-visibility-audit-for-car-dealerships/): See what a VizBiz AI Visibility Audit covers for dealerships, including competitive visibility, category scoring, and practical next-step recommendations.
-- [Sample Report](https://vizbiz.ai/sample-ai-visibility-report-for-car-dealerships/): See a sample AI visibility report for dealerships with score breakdowns, competitor insights, and practical recommendations tied to inventory, service, and trust.
-- [Pricing](https://vizbiz.ai/pricing/): Free snapshot, one-time audit ($299), and monthly monitoring ($499/mo) plans for car dealerships.
-- [Get My Snapshot](https://vizbiz.ai/intake/): Submit your dealership details to generate your AI visibility snapshot and book a 15-minute review call.
+- [AI Visibility for Car Dealerships](https://vizbiz.ai/ai-visibility-for-car-dealerships/): What AI visibility means for dealerships, which signals matter, and how to improve. In our analysis of 47 North American dealerships conducted during Q1 2025, 84% scored below 60 out of 100 on the AVI scale. A score below 60 indicates that AI platforms rarely recommend the dealership in buyer-intent queries such as "best Honda dealership near me" or "who has the best used car deals."
+- [How It Works](https://vizbiz.ai/how-dealerships-show-up-in-ai-search/): How AI systems choose which dealerships to mention and what to improve first. A VizBiz AVI audit is conducted using a standardized 84-prompt methodology across three major AI platforms: OpenAI's ChatGPT (GPT-4o), Google's Gemini 1.5 Pro, and Anthropic's Claude 3.5 Sonnet. The 84 prompts generate 252 measurable data points per dealership because each prompt is evaluated across three dimensions: whether the dealership is mentioned, the position of that mention, and whether the AI recommends the dealership as a preferred option.
+- [Full Audit](https://vizbiz.ai/ai-visibility-audit-for-car-dealerships/): What a VizBiz AI Visibility Audit covers — competitive visibility, category scoring, recommendations. Results are compared against a local competitor set of 3-5 dealerships in the same geographic market, producing a relative visibility gap analysis that shows which competitors AI favors and by what margin.
+- [Sample Report](https://vizbiz.ai/sample-ai-visibility-report-for-car-dealerships/): Example report with score breakdowns, competitor insights, and action items. The composite AVI score ranges from 0 to 100, with each category scored independently so dealerships can identify specific improvement areas rather than receiving a single opaque number.
+- [Pricing](https://vizbiz.ai/pricing/): Free snapshot, one-time audit, and monthly monitoring plans.
+- [Get My Snapshot](https://vizbiz.ai/intake/): Submit your dealership details for a free AI visibility snapshot. Your full AVI audit is typically delivered within 24-48 hours.
 
-## Resources & Blog
-- [Blog](https://vizbiz.ai/blog/): Practical guides and insights on how car dealerships can improve their visibility in AI-powered search like ChatGPT, Google AI Overviews, and Gemini.
-- [How to show up in ChatGPT](https://vizbiz.ai/how-to-show-up-in-chatgpt-car-dealerships): Step-by-step guide for dealerships to improve ChatGPT visibility with structured data, reviews, and content optimization.
-- [ChatGPT recommendations explained](https://vizbiz.ai/chatgpt-car-dealership-recommendations): How ChatGPT picks which dealerships to recommend, including entity resolution, review signals, and knowledge graph factors.
-- [AI search optimization guide](https://vizbiz.ai/ai-search-optimization-for-car-dealerships): Practical GEO (Generative Engine Optimization) tactics for automotive retailers.
-- [What is GEO](https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships): Generative Engine Optimization explained for dealerships — the difference between SEO and GEO, and why it matters.
-- [Why your dealership isn't showing up](https://vizbiz.ai/why-dealership-not-showing-up-in-ai-search): Common reasons AI platforms miss your dealership and what to fix first.
-- [Insights](https://vizbiz.ai/insights/): Updates, data, and insights from VizBiz on AI visibility for car dealerships.
+## Resources
+- [Blog](https://vizbiz.ai/blog/): Guides on AI visibility for car dealerships across ChatGPT, Gemini, and Perplexity.
+- [How to show up in ChatGPT](https://vizbiz.ai/how-to-show-up-in-chatgpt-car-dealerships): Step-by-step guide for dealerships to improve ChatGPT visibility.
+- [ChatGPT recommendations explained](https://vizbiz.ai/chatgpt-car-dealership-recommendations): How ChatGPT picks which dealerships to recommend.
+- [AI search optimization guide](https://vizbiz.ai/ai-search-optimization-for-car-dealerships): Practical GEO tactics for automotive retailers.
+- [What is GEO](https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships): Generative Engine Optimization explained for dealerships.
+- [Why your dealership isn't showing up](https://vizbiz.ai/why-dealership-not-showing-up-in-ai-search): Common reasons AI platforms miss your dealership.
+- [Insights](https://vizbiz.ai/insights/): Data and updates on AI visibility trends in automotive retail.
 
 ## Company
-- [About](https://vizbiz.ai/about/): VizBiz is an independent platform focused exclusively on AI visibility intelligence for automotive retailers. Not affiliated with any AI platform or search engine.
-- [FAQ](https://vizbiz.ai/faq-ai-visibility-for-car-dealerships/): Answers to common dealership questions about AI visibility, inventory, reviews, service pages, competitor comparisons, and audits.
-- [Book a Call](https://vizbiz.ai/book-call): Schedule a 15-minute review of your AI visibility with the VizBiz team.
-
-## Technology
-- Queries: ChatGPT, Google AI Overviews, Perplexity, Gemini, and expanding
-- Scoring: 84 buyer-intent queries, 252 data points per dealership, five weighted categories
-- Dimensions: Entity consistency, review depth, content quality, service signals, authority mentions
-- Reporting: Visual dashboards, competitive benchmarks, revenue leak calculator, prioritized action plans
-- Tracking: Monthly measurement cadence with trend analysis and competitor alerts
+- [About](https://vizbiz.ai/about/): Who we are and why AI visibility matters for dealerships.
+- [FAQ](https://vizbiz.ai/faq-ai-visibility-for-car-dealerships/): Common questions about AI visibility, audits, and competitor comparisons.
+- [Book a Call](https://vizbiz.ai/book-call): Schedule a 15-minute review of your AI visibility.
 
 ## Contact
 - Website: https://vizbiz.ai
 - Email: hello@vizbiz.ai
 - Book a call: https://vizbiz.ai/book-call
-
-## Optional
-
-VizBiz is built by AI visibility researchers. Our data comes from direct measurement — we query AI systems with real buyer questions and report what we find. The AVI (AI Visibility Index) is a proprietary score owned by VizBiz.ai.

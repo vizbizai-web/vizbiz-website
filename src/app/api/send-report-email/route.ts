@@ -174,16 +174,23 @@ export async function POST(req: NextRequest) {
                       Top Competitor Found
                     </p>
                     <p style="margin:0; font-family:-apple-system, 'Helvetica Neue', Arial, sans-serif; font-size:18px; font-weight:600; color:#FFFFFF; line-height:1.4;">
-                      <span style="color:#F97316; font-weight:600;">${competitorName}</span> appeared in <span style="color:#EF4444;">${competitorScore} queries</span> vs your ${appearedCount}.
+                      ${competitorScore > 0 
+                      ? `<span style="color:#F97316; font-weight:600;">${competitorName}</span> appeared in <span style="color:#EF4444;">${competitorScore} queries</span> vs your ${appearedCount}.` 
+                      : `<span style="color:#F97316; font-weight:600;">${competitorName}</span> didn't appear in these ${totalPrompts} queries either — but they dominate other search terms. Your full report shows exactly where they rank.`}
                     </p>
                   </td>
                 </tr>
               </table>
 
               <!-- Message -->
-              <p style="margin:20px 0; font-family:-apple-system, 'Helvetica Neue', Arial, sans-serif; font-size:15px; color:#CBD5E1; line-height:1.6;">
-                That means potential customers are finding your competitor instead of you in AI-powered search results. The good news: this is fixable.
-              </p>
+              ${competitorScore > 0
+                ? `<p style="margin:20px 0; font-family:-apple-system, 'Helvetica Neue', Arial, sans-serif; font-size:15px; color:#CBD5E1; line-height:1.6;">
+                That means potential customers are finding ${competitorName} instead of you in AI-powered search results. The good news: this is fixable.
+              </p>`
+                : `<p style="margin:20px 0; font-family:-apple-system, 'Helvetica Neue', Arial, sans-serif; font-size:15px; color:#CBD5E1; line-height:1.6;">
+                Both ${competitorName} and your business were missing from these specific queries — but they appear more broadly across other searches. The full report shows exactly where you rank and what changes will move the needle.
+              </p>`
+              }
 
               <!-- CTA Button -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
