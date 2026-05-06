@@ -75,6 +75,7 @@ export async function POST(request: Request) {
         
         // Auto-detect niche
         console.info(`[process-lead] Detecting niche for ${lead.dealershipName}`);
+        // Note: In a future version, we can pull the scrapedContent from the lead.notes if stored there
         const nicheConfig = detectNiche(lead.dealershipName, lead.website);
         console.info(`[process-lead] Detected niche: ${nicheConfig.niche}`);
         
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
               dental: ["local dental practices", "other dentists in the area"],
               real_estate: ["local real estate agents", "other agencies"],
               fitness: ["local gyms and trainers", "other fitness studios"],
+              mobile_bar: ["local cocktail bars", "event bartending services"],
             };
             const defaultCompetitors = nicheDefaults[nicheConfig.niche] || genericCompetitors;
             console.info(`[process-lead] Competitors were generic, using niche defaults for ${nicheConfig.niche}: ${defaultCompetitors.join(", ")}`);
@@ -121,13 +123,36 @@ export async function POST(request: Request) {
           console.info(`[process-lead] Niche defaults would give: ${nicheDefaultsCheck[nicheConfig.niche]?.join(", ") || 'none'}`);
         }
         
-        // Run research
+        // Run research — pass PreFlight profile if available in notes to avoid duplicate site fetch
         console.info(`[process-lead] Running research for ${lead.dealershipName}`);
+        
+        // Try to extract PreFlight profile from notes (stored by intake)
+        let preflightProfile: any = undefined;
+        const pfMarker = 'PREFLIGHT:';
+        const pfIdx = lead.notes.indexOf(pfMarker);
+        if (pfIdx >= 0) {
+          try {
+            // Extract JSON after PREFLIGHT: prefix — it's the last structured data before the next section
+            const rawAfter = lead.notes.slice(pfIdx + pfMarker.length);
+            // Find the first { and last } to extract valid JSON
+            const jsonStart = rawAfter.indexOf('{');
+            const jsonEnd = rawAfter.lastIndexOf('}');
+            if (jsonStart >= 0 && jsonEnd > jsonStart) {
+              const pfData = rawAfter.slice(jsonStart, jsonEnd + 1);
+              preflightProfile = JSON.parse(pfData);
+              console.info(`[process-lead] Found PreFlight profile for ${lead.dealershipName}: niche=${preflightProfile.niche}`);
+            }
+          } catch (e) {
+            console.warn(`[process-lead] PreFlight profile parse failed:`, e);
+          }
+        }
+        
         const researchResult = await runResearch(
           lead.dealershipName,
           lead.website,
           lead.city,
-          competitors
+          competitors,
+          preflightProfile // pass preflight data to skip duplicate fetch
         );
         
         console.info(`[process-lead] Research completed for ${lead.dealershipName}:`,

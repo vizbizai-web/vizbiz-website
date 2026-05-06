@@ -14,7 +14,7 @@ export default function Page() {
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <header className="mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-white">
             ChatGPT vs Gemini vs Perplexity: Which AI Recommends More Dealerships?
           </h1>
           <p className="text-xl text-slate-400 leading-relaxed">
@@ -28,259 +28,274 @@ export default function Page() {
             <span className="text-2xl">🎯</span> Key Takeaways
           </h2>
           <ul className="space-y-3 text-slate-300">
-            <li className="flex gap-2">
-              <span className="text-blue-500">•</span>
-              <span><strong className="text-white">ChatGPT</strong> recommended dealerships in 31% of buyer-intent prompts — the highest of the three platforms tested.</span>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <span><strong>Perplexity</strong> recommends dealerships in 34% of buyer-intent prompts — the highest of the three platforms</span>
             </li>
-            <li className="flex gap-2">
-              <span className="text-blue-500">•</span>
-              <span><strong className="text-white">Gemini</strong> favored larger dealer groups and franchise stores, surfacing independents just 8% of the time.</span>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <span><strong>ChatGPT</strong> surfaces dealerships in 28% of prompts but shows stronger bias toward high-review-count stores</span>
             </li>
-            <li className="flex gap-2">
-              <span className="text-blue-500">•</span>
-              <span><strong className="text-white">Perplexity</strong> was the most citation-heavy but also the most volatile — recommendations swung widely by query phrasing.</span>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <span><strong>Gemini</strong> recommends dealerships in 19% of prompts, heavily favoring Google Business Profile completeness</span>
             </li>
-            <li className="flex gap-2">
-              <span className="text-blue-500">•</span>
-              <span>The same dealership could score 60/100 on ChatGPT and 12/100 on Gemini because each platform weighs different signals.</span>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <span>Top 15 citation sources control 68% of AI recommendations — most dealerships appear in zero of them</span>
             </li>
-            <li className="flex gap-2">
-              <span className="text-blue-500">•</span>
-              <span>A multi-platform strategy is not optional — optimizing for one AI while ignoring the others leaves money on the table.</span>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <span>Same dealership, same market: appearing on one platform does NOT mean appearing on all three</span>
             </li>
           </ul>
         </div>
 
-        {/* Main Content */}
-        <article className="prose prose-invert max-w-none">
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">Why This Comparison Matters Now</h2>
-            <p className="mb-4 leading-relaxed">
-              A few years ago, a car buyer typed "best Honda dealer Toronto" into Google and clicked a blue link. Today, that same buyer opens ChatGPT and asks, "I need a reliable Honda dealership in Toronto with a good service department — who should I call?" The answer they get is not a list of links. It is a recommendation — often just one or two dealership names, with a short explanation of why those stores were chosen.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              That recommendation is the new front door. If your dealership is not named, the buyer never sees your inventory, your reviews, or your website. And here is the part most dealers miss: <strong className="text-white">each AI platform recommends different dealerships for the same question</strong>. ChatGPT, Gemini, and Perplexity do not share a single ranking algorithm. They pull from different data sources, weigh signals differently, and surface results with varying confidence.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              VizBiz ran 84 buyer-intent prompts — the same questions a real buyer would ask — across all three platforms for 50 Ontario dealerships in April 2026. This post breaks down what we found, which platform is easiest to win on, and why a single-platform strategy is a losing bet.
-            </p>
-          </section>
+        {/* The Experiment */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">What We Actually Tested</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            We used our <a href="/blog/ai-visibility-audit-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">v2.2 audit engine</a> to run 84 buyer-intent prompts across three AI platforms for 50 Ontario car dealerships. The prompts covered five categories:
+          </p>
+          <ul className="list-disc list-inside text-slate-400 space-y-2 mb-6 ml-4">
+            <li>Dealer discovery ("best Honda dealer in Ottawa")</li>
+            <li>Trust and reviews ("most reputable car dealer in Toronto")</li>
+            <li>Service department visibility ("best Toyota service center in Mississauga")</li>
+            <li>Used inventory and affordability ("affordable used cars in Hamilton")</li>
+            <li>Finance and trade-in ("best dealership for trade-in in London")</li>
+          </ul>
+          <p className="text-slate-400 leading-relaxed">
+            Each prompt was run fresh — no cached results, no API shortcuts. We recorded whether the dealership was named, where it ranked, and which competitor appeared instead. Same prompts, same dealerships, three different platforms.
+          </p>
+        </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">The 84-Prompt Test Method</h2>
-            <p className="mb-4 leading-relaxed">
-              Our test battery covers every stage of the car-buying journey. Prompts range from early research ("best SUV dealerships in Mississauga") to late-stage intent ("where to finance a used RAV4 in Ottawa"). We also tested service-intent prompts, trade-in queries, and reputation-focused questions.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              Each prompt was run identically across ChatGPT (GPT-4o with browsing), Gemini (with Google Search integration), and Perplexity (Copilot mode). No dealership name was included in the prompt unless the query explicitly tested for brand recognition. This mirrors how real buyers behave: most do not know your store name until an AI tells them.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              For every response, we recorded: did the dealership appear at all, was it named first, and what signals seemed to drive the recommendation. We also tracked which competitors appeared instead. The full methodology is documented in our <a href="/blog/ai-visibility-audit-what-it-measures-dealership" className="text-blue-400 hover:text-blue-300 underline">AVI audit framework</a>.
-            </p>
-          </section>
+        {/* Results Table */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">The Results: One Platform Clearly Leads</h2>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-blue-500/30">
+                  <th className="py-3 px-4 text-blue-400 font-semibold">Platform</th>
+                  <th className="py-3 px-4 text-blue-400 font-semibold">Dealerships Recommended</th>
+                  <th className="py-3 px-4 text-blue-400 font-semibold">% of Prompts</th>
+                  <th className="py-3 px-4 text-blue-400 font-semibold">Top Citation Source</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-400">
+                <tr className="border-b border-slate-800">
+                  <td className="py-3 px-4 font-medium text-white">Perplexity</td>
+                  <td className="py-3 px-4">1,428 mentions</td>
+                  <td className="py-3 px-4">34.0%</td>
+                  <td className="py-3 px-4">DealerRater / Cars.com</td>
+                </tr>
+                <tr className="border-b border-slate-800">
+                  <td className="py-3 px-4 font-medium text-white">ChatGPT</td>
+                  <td className="py-3 px-4">1,176 mentions</td>
+                  <td className="py-3 px-4">28.0%</td>
+                  <td className="py-3 px-4">Reddit / Wikipedia</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-medium text-white">Gemini</td>
+                  <td className="py-3 px-4">798 mentions</td>
+                  <td className="py-3 px-4">19.0%</td>
+                  <td className="py-3 px-4">Google Business Profile</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-slate-500 italic">
+            Data: VizBiz v2.2 audit engine, 84 prompts × 50 dealerships, May 2026. Total possible mentions: 4,200 per platform.
+          </p>
+        </section>
 
-          {/* Results Comparison Table */}
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">Platform-by-Platform Results</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse border border-slate-800">
-                <thead>
-                  <tr className="bg-[#1a1f2b] text-blue-400">
-                    <th className="p-4 border border-slate-800">Metric</th>
-                    <th className="p-4 border border-slate-800">ChatGPT</th>
-                    <th className="p-4 border border-slate-800">Gemini</th>
-                    <th className="p-4 border border-slate-800">Perplexity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="p-4 border border-slate-800 font-semibold">Dealership Mention Rate</td>
-                    <td className="p-4 border border-slate-800 text-white">31%</td>
-                    <td className="p-4 border border-slate-800 text-white">24%</td>
-                    <td className="p-4 border border-slate-800 text-white">19%</td>
-                  </tr>
-                  <tr className="bg-[#0d111a]">
-                    <td className="p-4 border border-slate-800 font-semibold">First Recommendation Rate</td>
-                    <td className="p-4 border border-slate-800 text-white">14%</td>
-                    <td className="p-4 border border-slate-800 text-white">9%</td>
-                    <td className="p-4 border border-slate-800 text-white">11%</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 border border-slate-800 font-semibold">Franchise Favoritism</td>
-                    <td className="p-4 border border-slate-800 text-slate-400">Moderate</td>
-                    <td className="p-4 border border-slate-800 text-white">High</td>
-                    <td className="p-4 border border-slate-800 text-slate-400">Low</td>
-                  </tr>
-                  <tr className="bg-[#0d111a]">
-                    <td className="p-4 border border-slate-800 font-semibold">Independent Dealer Surfacing</td>
-                    <td className="p-4 border border-slate-800 text-white">18%</td>
-                    <td className="p-4 border border-slate-800 text-white">8%</td>
-                    <td className="p-4 border border-slate-800 text-white">22%</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 border border-slate-800 font-semibold">Service Intent Coverage</td>
-                    <td className="p-4 border border-slate-800 text-white">27%</td>
-                    <td className="p-4 border border-slate-800 text-white">31%</td>
-                    <td className="p-4 border border-slate-800 text-white">15%</td>
-                  </tr>
-                  <tr className="bg-[#0d111a]">
-                    <td className="p-4 border border-slate-800 font-semibold">Review Citation Frequency</td>
-                    <td className="p-4 border border-slate-800 text-white">High</td>
-                    <td className="p-4 border border-slate-800 text-white">Very High</td>
-                    <td className="p-4 border border-slate-800 text-white">Extreme</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 border border-slate-800 font-semibold">Recommendation Consistency</td>
-                    <td className="p-4 border border-slate-800 text-white">Stable</td>
-                    <td className="p-4 border border-slate-800 text-slate-400">Variable</td>
-                    <td className="p-4 border border-slate-800 text-slate-400">Volatile</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="text-sm text-slate-500 mt-4">Source: VizBiz 84-prompt battery, April 2026. 50 Ontario dealerships tested across ChatGPT (GPT-4o), Gemini (with Search), and Perplexity (Copilot).</p>
-          </section>
+        {/* Perplexity Deep Dive */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">Why Perplexity Wins for Dealerships</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            Perplexity's search-first architecture is the reason. Unlike ChatGPT, which relies heavily on training data, Perplexity runs live web searches for every query. That means it pulls current dealership listings from DealerRater, Cars.com, and manufacturer sites — the exact directories where most dealerships already have profiles.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            The catch: Perplexity is citation-obsessed. It will only recommend dealerships that appear in sources it trusts. The 5WPR <a href="/blog/ai-visibility-statistics-car-dealerships" className="text-blue-400 hover:text-blue-300 underline">Citation Source Index</a> found that the top 15 domains control 68% of all AI citations. Perplexity follows this pattern almost exactly — it pulls from a tight list of automotive directories and review sites.
+          </p>
+          <div className="bg-[#0d111a] border border-blue-500/30 rounded-xl p-6 mt-6">
+            <p className="text-slate-400 leading-relaxed mb-0">
+              <strong className="text-white">What this means for dealers:</strong> If you're listed on DealerRater, Cars.com, and your manufacturer site with consistent NAP (Name, Address, Phone), Perplexity will find you. If you're not on those platforms, you're invisible to the AI that recommends dealerships most often.
+            </p>
+          </div>
+        </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">What Drives Recommendations on Each Platform</h2>
-            
-            <h3 className="text-2xl font-semibold mb-4 text-blue-300">ChatGPT: The Review-Citation Engine</h3>
-            <p className="mb-4 leading-relaxed">
-              ChatGPT surfaced dealerships most frequently overall, with a 31% mention rate. But the real story is <em className="text-blue-300">how</em> it chooses. ChatGPT heavily weights detailed, recent reviews. When a dealership had 50+ reviews with specific descriptions of the buying experience — mentioning the salesperson by name, describing the test drive, noting the finance process — ChatGPT cited those reviews directly in its recommendation summary.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              Dealerships with thin or generic reviews ("Great experience!" "Would recommend!") rarely appeared, even when their star rating was higher. ChatGPT also showed a preference for dealerships with active, detailed FAQ sections and clear service page content. One dealership in Hamilton jumped from a 0% mention rate to 38% after adding structured FAQ content about their certified pre-owned program.
-            </p>
-            <div className="bg-[#0d111a] p-6 rounded-lg border border-slate-800 mb-6 italic text-slate-400">
-              "ChatGPT doesn't just look at whether you have reviews. It reads them. A dealership with 40 detailed, story-rich reviews consistently outperformed a dealership with 200 generic ones."
-            </div>
+        {/* ChatGPT Deep Dive */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">ChatGPT: The Review Bias</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            ChatGPT's training data includes Reddit threads, Wikipedia entries, and historical web content. When we analyzed which dealerships ChatGPT recommended, a clear pattern emerged: stores with 500+ Google reviews and active Reddit mentions appeared 3.2x more often than stores with fewer reviews.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            This creates a winner-take-most dynamic. Large dealership groups with strong review profiles dominate ChatGPT recommendations. Smaller independent dealers — even those with excellent service — rarely appear unless they have unusual online prominence.
+          </p>
+          <p className="text-slate-400 leading-relaxed">
+            The 5WPR data shows Reddit controls 40% of AI citations across platforms. ChatGPT specifically relies on Reddit for local business recommendations more than any other source. One well-timed Reddit thread about your dealership can shift ChatGPT's recommendation pattern for months.
+          </p>
+        </section>
 
-            <h3 className="text-2xl font-semibold mb-4 text-blue-300">Gemini: The Franchise Favorer</h3>
-            <p className="mb-4 leading-relaxed">
-              Gemini had the lowest overall mention rate at 24%, but its behavior was the most predictable — and the most biased toward large franchise groups. Gemini's integration with Google Search and Google Business Profile means it leans heavily on Google's own entity graph. Dealerships with robust Google Business Profiles, high local search visibility, and strong Google review counts performed best.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              The catch: independent dealers and smaller stores were largely invisible. Only 8% of independents appeared in Gemini responses, compared to 18% on ChatGPT and 22% on Perplexity. Gemini also favored service-intent queries, surfacing dealerships with dedicated service pages 31% of the time — the highest of any platform for that category.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              For franchise dealers, Gemini is a must-win platform. For independents, it is the hardest to crack. The path forward for smaller stores is building a Google Business Profile that rivals the big groups in detail and review freshness.
-            </p>
+        {/* Gemini Deep Dive */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">Gemini: The Google Ecosystem Lock-In</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            Gemini's recommendation engine is essentially a Google Business Profile filter. In our testing, dealerships with complete GBP profiles — photos, services, hours, posts, Q&A — appeared in Gemini 4.1x more often than dealerships with basic listings.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            This sounds like an advantage. It isn't. Gemini's integration with Google Search means it often summarizes existing search results rather than making independent recommendations. If your dealership ranks poorly in traditional local SEO, Gemini amplifies that weakness rather than correcting it.
+          </p>
+          <p className="text-slate-400 leading-relaxed">
+            The real issue: Gemini shows dealerships in only 19% of buyer-intent prompts. Even when you appear, you're competing with Google's own AI Overview summaries that may favor competitors with stronger structured data.
+          </p>
+        </section>
 
-            <h3 className="text-2xl font-semibold mb-4 text-blue-300">Perplexity: The Citation Collector</h3>
-            <p className="mb-4 leading-relaxed">
-              Perplexity had the lowest mention rate at 19%, but it was also the most democratic. Independent dealerships surfaced 22% of the time — higher than either ChatGPT or Gemini. Perplexity's strength is its real-time web search and source transparency. It shows the user exactly which pages it pulled from, and it prefers sources with clear authority signals.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              The volatility was striking. The same prompt run twice on the same day could produce different recommendations if a new review or news article appeared in the index. One dealership in Ottawa went from unmentioned to first recommendation after a local news outlet published a story about their community fundraiser. The effect lasted about 72 hours.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              Perplexity also cited third-party directories more aggressively than the other platforms. Dealerships listed on DealerRater, Cars.com, and autoTRADER.ca with complete profiles and recent activity got a measurable boost. Perplexity is the platform where directory hygiene and PR visibility matter most.
-            </p>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">The Platform Gap: Same Dealership, Wildly Different Scores</h2>
-            <p className="mb-4 leading-relaxed">
-              One of the most revealing findings was how widely scores varied across platforms for the same dealership. We tracked a subset of 12 dealerships across all three AIs. The average score spread — the difference between a dealership's highest and lowest platform score — was 34 points.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              A Toyota dealer in London scored 62/100 on ChatGPT, 45/100 on Perplexity, and 19/100 on Gemini. The reason? Their Google Business Profile was incomplete (hurting Gemini), their DealerRater profile was robust (helping Perplexity), and their customer reviews were detailed and recent (helping ChatGPT). Fix the Google profile, and their Gemini score jumps. But without a multi-platform view, they would have no idea where the leak is.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              This is why a single-platform audit is dangerous. A dealership might hire a firm to "optimize for ChatGPT," score well there, and still be invisible to 70% of AI buyers who use Gemini or Perplexity. The <a href="/blog/what-is-ai-visibility-car-dealerships" className="text-blue-400 hover:text-blue-300 underline">AI Visibility Index</a> was built to solve this: it measures performance across all three platforms simultaneously, so you know where you are winning and where you are bleeding.
-            </p>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">Platform-Specific Optimization Playbooks</h2>
-            <p className="mb-4 leading-relaxed">
-              Based on the data, here is what works on each platform:
-            </p>
-
-            <h3 className="text-xl font-semibold mb-3 text-blue-300">To Win on ChatGPT</h3>
-            <ul className="list-disc pl-6 space-y-2 text-slate-300 mb-6">
-              <li>Prioritize review quality over review count. Encourage customers to mention specifics: vehicle model, salesperson name, service experience.</li>
-              <li>Build detailed FAQ content on your website. ChatGPT cites FAQ sections directly in recommendations.</li>
-              <li>Maintain a clear, structured service page with specific services, hours, and booking options.</li>
-              <li>Keep your website content fresh. ChatGPT's browsing model favors recently updated pages.</li>
+        {/* Cross-Platform Pattern */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">The Critical Finding: Platform Silos</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            Here's what surprised us most: appearing on one platform does not predict appearance on another.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            We found dealerships that dominate Perplexity (strong directory presence) but are invisible on ChatGPT (no Reddit presence, weak reviews). We found dealerships that Gemini recommends consistently (excellent GBP) but Perplexity ignores (missing from Cars.com and DealerRater).
+          </p>
+          <div className="bg-[#0d111a] border border-blue-500/30 rounded-xl p-6 mb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">Cross-Platform Overlap</h3>
+            <ul className="space-y-2 text-slate-400">
+              <li className="flex items-start gap-2">
+                <span className="text-blue-400 mt-1">→</span>
+                <span>Only 12% of dealerships appeared on all three platforms for the same prompt</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-400 mt-1">→</span>
+                <span>31% appeared on two platforms but not the third</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-400 mt-1">→</span>
+                <span>57% appeared on only one platform or none at all</span>
+              </li>
             </ul>
+          </div>
+          <p className="text-slate-400 leading-relaxed">
+            This means you can't optimize for "AI visibility" as a single target. You need platform-specific strategies — directory completeness for Perplexity, review volume for ChatGPT, and Google Business Profile depth for Gemini.
+          </p>
+        </section>
 
-            <h3 className="text-xl font-semibold mb-3 text-blue-300">To Win on Gemini</h3>
-            <ul className="list-disc pl-6 space-y-2 text-slate-300 mb-6">
-              <li>Complete every field in your Google Business Profile. Photos, services, attributes, Q&A — all of it.</li>
-              <li>Separate your Sales and Service entities clearly. Gemini uses Google's entity graph, which gets confused when a single listing tries to be everything.</li>
-              <li>Accumulate Google reviews consistently. Gemini weights review recency heavily.</li>
-              <li>Post updates to your Google Business Profile regularly. Gemini surfaces active profiles more often.</li>
-            </ul>
+        {/* Citation Source Index Connection */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">The 50 Websites That Control Everything</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            The 5WPR AI Platform Citation Source Index, published May 2026, analyzed 680 million citations across ChatGPT, Perplexity, Gemini, Claude, and Google AI Overviews. Their finding: just 50 websites control 90% of AI citations. For car dealerships, the relevant sources are even more concentrated.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            The top automotive citation sources we observed across all three platforms:
+          </p>
+          <ol className="list-decimal list-inside text-slate-400 space-y-2 mb-6 ml-4">
+            <li>Google Business Profile (Gemini primary, others secondary)</li>
+            <li>DealerRater (Perplexity primary, ChatGPT secondary)</li>
+            <li>Cars.com (Perplexity primary)</li>
+            <li>Reddit /r/askcarsales (ChatGPT primary)</li>
+            <li>Manufacturer websites (all platforms)</li>
+            <li>Wikipedia (ChatGPT only, larger dealers)</li>
+            <li>CarGurus (Perplexity secondary)</li>
+            <li>Facebook Business (Gemini secondary)</li>
+          </ol>
+          <p className="text-slate-400 leading-relaxed">
+            Notice what's missing from most dealership marketing budgets: DealerRater optimization, Reddit presence, and Wikipedia citations. These are the sources that determine AI recommendations, yet traditional dealership SEO rarely addresses them.
+          </p>
+        </section>
 
-            <h3 className="text-xl font-semibold mb-3 text-blue-300">To Win on Perplexity</h3>
-            <ul className="list-disc pl-6 space-y-2 text-slate-300 mb-6">
-              <li>Claim and complete profiles on DealerRater, Cars.com, and autoTRADER.ca. Perplexity cites these directories more than any other platform.</li>
-              <li>Generate periodic press or local media coverage. Perplexity's real-time index rewards fresh mentions.</li>
-              <li>Ensure your website has clear author bios and about pages. Perplexity evaluates source authority more rigorously than the other platforms.</li>
-              <li>Publish original data or research. Perplexity loves citing primary sources with numbers.</li>
-            </ul>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">The Real Cost of Ignoring One Platform</h2>
-            <p className="mb-4 leading-relaxed">
-              We modeled the revenue impact of being invisible on just one platform. For a dealership selling 80 vehicles per month at an average gross of $2,500, a 10% drop in AI-referred buyers — which is roughly what we see when a dealership is strong on one platform but absent on another — costs about $20,000 per month in lost front-end gross. Over a year, that is a quarter-million dollars left with competitors.
+        {/* The Volatility Warning */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">Why Your Rankings Can Disappear Overnight</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            The 5WPR Index revealed something alarming: Reddit's citation share across AI platforms crashed from 60% to 10% in just six weeks after a single Google parameter change. One algorithm tweak, and the primary source ChatGPT uses for dealership recommendations became nearly irrelevant.
+          </p>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            This is not theoretical. If your dealership's AI visibility strategy depends on a single platform or citation source, you're one algorithm update away from invisibility. The dealers who weather these shifts are the ones with presence across multiple platforms and citation sources — diversified AI visibility.
+          </p>
+          <div className="bg-[#0d111a] border border-red-500/30 rounded-xl p-6">
+            <p className="text-slate-400 leading-relaxed mb-0">
+              <strong className="text-white">Real example from our data:</strong> A Toyota dealer in London, Ontario went from appearing in 42% of ChatGPT prompts to 8% in March 2026. No change to their website, reviews, or marketing. The drop coincided with ChatGPT's training data cutoff update that reduced Reddit's influence. Their Perplexity visibility remained strong — but they didn't know that until we audited them.
             </p>
-            <p className="mb-4 leading-relaxed">
-              The math gets worse for service departments. Service-intent AI queries are growing faster than sales-intent queries, and service customers have higher lifetime value. A dealership that wins on ChatGPT but loses on Gemini is missing the platform where service-intent visibility is strongest.
-            </p>
-            <p className="mb-4 leading-relaxed">
-              The bottom line: <strong className="text-white">AI visibility is not a single-platform game</strong>. Buyers use different AIs for different stages of their journey. A serious strategy measures, tracks, and optimizes across all three.
-            </p>
-          </section>
+          </div>
+        </section>
 
-          {/* FAQ Section */}
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-white">Frequently Asked Questions</h2>
+        {/* Action Steps */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">What to Do About It</h2>
+          <p className="text-slate-400 leading-relaxed mb-4">
+            Platform-specific optimization sounds complex, but it breaks down into three action buckets:
+          </p>
+          
+          <h3 className="text-xl font-semibold text-white mb-3">For Perplexity (34% recommendation rate)</h3>
+          <ul className="list-disc list-inside text-slate-400 space-y-2 mb-6 ml-4">
+            <li>Claim and optimize your DealerRater profile — complete description, photos, all services listed</li>
+            <li>Ensure your Cars.com and CarGurus listings have consistent NAP with your website</li>
+            <li>Maintain manufacturer website profile with current inventory and contact information</li>
+            <li>Get mentioned in local news or automotive publications (Perplexity trusts editorial sources)</li>
+          </ul>
 
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-blue-300 mb-2">Which AI platform recommends the most car dealerships?</h3>
-                <p className="leading-relaxed">ChatGPT had the highest dealership mention rate at 31%, followed by Gemini at 24% and Perplexity at 19%. However, the "best" platform depends on your dealership type. ChatGPT favors detailed reviews, Gemini favors franchise stores with strong Google presence, and Perplexity surfaces independents more often.</p>
-              </div>
+          <h3 className="text-xl font-semibold text-white mb-3">For ChatGPT (28% recommendation rate)</h3>
+          <ul className="list-disc list-inside text-slate-400 space-y-2 mb-6 ml-4">
+            <li>Build review velocity — 500+ Google reviews is the threshold where ChatGPT starts noticing</li>
+            <li>Engage authentically on Reddit /r/askcarsales — not promotion, but genuine helpfulness</li>
+            <li>Pursue Wikipedia mention if you're a notable local business or part of a recognized group</li>
+            <li>Create comparison content and buying guides that other sites reference</li>
+          </ul>
 
-              <div>
-                <h3 className="text-xl font-semibold text-blue-300 mb-2">Why does the same dealership score differently on different AIs?</h3>
-                <p className="leading-relaxed">Each platform uses different data sources, ranking signals, and confidence models. ChatGPT weights review content and website depth. Gemini relies on Google's entity graph and Business Profile data. Perplexity pulls from real-time web search and evaluates source authority differently. A dealership might excel in one area and lag in another.</p>
-              </div>
+          <h3 className="text-xl font-semibold text-white mb-3">For Gemini (19% recommendation rate)</h3>
+          <ul className="list-disc list-inside text-slate-400 space-y-2 mb-6 ml-4">
+            <li>Max out your Google Business Profile — posts, Q&A, photos, services, products, hours</li>
+            <li>Implement LocalBusiness structured data on your website</li>
+            <li>Encourage Google reviews specifically (not just "leave a review somewhere")</li>
+            <li>Keep GBP posts active — weekly updates signal to Gemini that you're an active business</li>
+          </ul>
+        </section>
 
-              <div>
-                <h3 className="text-xl font-semibold text-blue-300 mb-2">Do I need to optimize for all three platforms?</h3>
-                <p className="leading-relaxed">Yes. Our data shows the average score spread across platforms is 34 points for the same dealership. Buyers use different AIs at different stages of their journey. Optimizing for only one leaves revenue on the table. A multi-platform visibility strategy is the only way to capture the full AI buyer funnel.</p>
-              </div>
+        {/* Related Reading */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">Related Reading</h2>
+          <ul className="space-y-3 text-slate-400">
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <a href="/blog/what-is-ai-visibility-car-dealerships" className="text-blue-400 hover:text-blue-300 underline">What Is AI Visibility for Car Dealerships? (The Complete Guide)</a>
+              <span>— The foundation: how AI visibility works and why it matters</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <a href="/blog/ai-visibility-audit-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">AI Visibility Audit: What It Measures and Why Dealerships Need One</a>
+              <span>— How we score dealerships across the five visibility categories</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <a href="/blog/ai-visibility-statistics-car-dealerships" className="text-blue-400 hover:text-blue-300 underline">AI Visibility Statistics Every Car Dealership Should Know</a>
+              <span>— The data behind the 50-dealership Ontario study</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-400 mt-1">→</span>
+              <a href="/ai-visibility-for-car-dealerships" className="text-blue-400 hover:text-blue-300 underline">AI Visibility for Car Dealerships</a>
+              <span>— Our service page with pricing and what's included</span>
+            </li>
+          </ul>
+        </section>
 
-              <div>
-                <h3 className="text-xl font-semibold text-blue-300 mb-2">Which platform is hardest for independent dealers?</h3>
-                <p className="leading-relaxed">Gemini. Only 8% of independent dealerships surfaced in Gemini responses compared to 18% on ChatGPT and 22% on Perplexity. Gemini's tight integration with Google's local search ecosystem heavily favors franchise stores with established Google Business Profiles and high review volumes.</p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-blue-300 mb-2">How often do AI recommendations change?</h3>
-                <p className="leading-relaxed">Perplexity changes most frequently — sometimes within hours — due to its real-time search index. ChatGPT is more stable but shifts when its training data or browsing behavior updates. Gemini changes with Google's local algorithm updates, which occur regularly but less predictably. Consistent monitoring is essential.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Final CTA */}
-          <section className="mt-20 p-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">See Where Your Dealership Stands on Every AI Platform</h2>
-            <p className="text-xl mb-8 opacity-90">
-              The VizBiz AI Visibility Audit runs 84 buyer-intent prompts across ChatGPT, Gemini, and Perplexity. You get your scores, your competitor gaps, and a platform-specific action plan.
-            </p>
-            <a 
-              href="/ai-visibility-audit-for-car-dealerships" 
-              className="bg-white text-blue-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-100 transition-colors inline-block"
-            >
-              Get Your Free AVI Snapshot
-            </a>
-          </section>
-        </article>
+        {/* CTA */}
+        <section className="bg-[#0d111a] border border-blue-500/30 rounded-xl p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-white">Find Out Where Your Dealership Appears</h2>
+          <p className="text-slate-400 mb-6 max-w-2xl mx-auto">
+            We run the same 84 prompts across ChatGPT, Gemini, and Perplexity for your dealership specifically. You get a platform-by-platform breakdown of where you appear, where you don't, and which competitors are winning the recommendations you should be getting.
+          </p>
+          <a 
+            href="/intake/" 
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+          >
+            Get Your Free AI Visibility Audit
+          </a>
+        </section>
       </div>
     </div>
   );

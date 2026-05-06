@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Calendar, CheckCircle2, Lock } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle2, Lock, AlertCircle, ShieldCheck, Zap } from "lucide-react";
 import { CALENDLY_URL } from "@/lib/lead-flow";
 
 export const metadata: Metadata = {
@@ -40,7 +40,7 @@ const blurredRows = [
 export default async function ThankYouPage({
   searchParams,
 }: {
-  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string }>;
+  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string; score?: string; llms?: string; schema?: string; niche?: string; revLossMin?: string; revLossMax?: string; nicheLabel?: string }>;
 }) {
   const params = await searchParams;
   const appeared = Number(params.appeared || "3");
@@ -50,6 +50,15 @@ export default async function ThankYouPage({
     ? params.competitor
     : "nearby competitors";
   const leadId = params.lid || '';
+  
+  // AI Readiness Data
+  const score = Number(params.score || "0");
+  const hasLlms = params.llms === "1";
+  const hasSchema = params.schema === "1";
+  const detectedNiche = params.niche || "local business";
+  const revLossMin = Number(params.revLossMin || "0");
+  const revLossMax = Number(params.revLossMax || "0");
+  const nicheLabel = params.nicheLabel ? decodeURIComponent(params.nicheLabel) : detectedNiche.replace("_", " ");
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
@@ -74,30 +83,92 @@ export default async function ThankYouPage({
           </div>
 
           <div className="mt-10 mx-auto max-w-4xl space-y-6">
+            <div className="glass-card rounded-[2rem] p-6 border-2 border-[var(--neon-cyan)]/30 bg-[rgba(37,209,242,0.05)]">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Instant AI-Readiness Scan</p>
+                <div className="flex items-center gap-2 rounded-full bg-[var(--neon-cyan)] px-3 py-1 text-xs font-bold text-[var(--bg-primary)]">
+                  <Zap className="h-3 w-3" />
+                  SCORE: {score}/100
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${hasLlms ? "border-green-500/50 bg-green-500/5" : "border-white/10 bg-white/5"}`}>
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    {hasLlms ? <ShieldCheck className="h-4 w-4 text-green-500" /> : <AlertCircle className="h-4 w-4 text-white/40" />}
+                    AI Manifest (llms.txt)
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {hasLlms ? "Found. Your site is communicating with LLMs." : "Missing. AI models are guessing your data."}
+                  </p>
+                </div>
+                <div className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${hasSchema ? "border-green-500/50 bg-green-500/5" : "border-white/10 bg-white/5"}`}>
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    {hasSchema ? <ShieldCheck className="h-4 w-4 text-green-500" /> : <AlertCircle className="h-4 w-4 text-white/40" />}
+                    Structured Data
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {hasSchema ? "Found. Services are logically mapped." : "Missing. AI can't verify your specifics."}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Zap className="h-4 w-4 text-[var(--neon-cyan)]" />
+                    Detected Niche
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Identified as <span className="text-white font-medium">{detectedNiche.replace("_", " ")}</span>
+                  </p>
+                </div>
+              </div>
+
+              {revLossMin > 0 && revLossMax > 0 && (
+                <div className="mt-6 rounded-2xl p-5 border" style={{
+                  background: 'rgba(255, 200, 0, 0.06)',
+                  borderColor: 'rgba(255, 200, 0, 0.2)'
+                }}>
+                  <p className="text-sm uppercase tracking-[0.18em] font-semibold text-amber-400 mb-2">Estimated Revenue Leak</p>
+                  <p className="text-3xl font-bold text-white">
+                    ${revLossMin.toLocaleString()} – ${revLossMax.toLocaleString()}
+                    <span className="text-base font-normal text-amber-300 ml-1">/month</span>
+                  </p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">
+                    Based on your niche ({nicheLabel}) and current AI infrastructure score — this is how much you may be losing in AI-driven leads each month.
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-4 rounded-2xl bg-white/5 p-4 border border-white/10">
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                  <strong className="text-white">What this means:</strong> This is a technical check of your site's AI infrastructure. We've detected that your site is <span className={score < 50 ? "text-red-400" : "text-green-400"}>{score < 50 ? "under-optimized" : "well-optimized"}</span> for AI agents. Your full report will show exactly which gaps are costing you revenue.
+                </p>
+              </div>
+            </div>
+
             <div className="glass-card rounded-[2rem] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Free mini snapshot</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Free AI Visibility Report (Pending)</p>
 
               <div className="mt-5 border-b border-white/8 pb-5">
-                <p className="text-4xl font-semibold text-[var(--text-primary)]">We're preparing your full AI visibility analysis</p>
+                <p className="text-4xl font-semibold text-[var(--text-primary)]">We&apos;re preparing your full deep-dive analysis</p>
               </div>
 
               <div className="border-b border-white/8 py-5">
                 <p className="text-4xl font-semibold text-[var(--text-primary)]">Overall AI Visibility: Analysis in Progress</p>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  We're checking how your dealership appears across buyer-intent search prompts
+                  We're simulating 20+ buyer-intent prompts to see exactly where you appear and where competitors are stealing your leads.
                 </p>
               </div>
 
               <div className="border-b border-white/8 py-5">
                 <p className="text-4xl font-semibold text-[var(--text-primary)]">Service Department Visibility: Analysis in Progress</p>
                 <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  We're analyzing how your service department shows up compared to nearby competitors
+                  We're analyzing how your service department shows up compared to nearby competitors.
                 </p>
               </div>
 
               <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>We're analyzing your visibility compared to nearby competitors.</p>
-                <p>AI can shape the shortlist before a buyer visits your site, compares inventory, or books service.</p>
+                <p>This full report will be delivered to your email shortly.</p>
+                <p>Once delivered, you'll get a link to the <span className="text-white font-medium">Visual Breakdown</span> of your visibility gaps.</p>
               </div>
 
               <div className="mt-6 space-y-3">

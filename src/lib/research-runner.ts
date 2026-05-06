@@ -7,6 +7,8 @@
  */
 
 import { detectNiche, getNicheByName } from "./niche-detector";
+import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
+import type { PromptSet } from "./prompt-curator";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
@@ -76,32 +78,56 @@ export interface ResearchResult {
   whyThisMatters: string;
   recommendedNextStep: string;
   niche: string;
+  revenueLoss?: number;
+  leadsLost?: number;
+  recoveryPotential?: string;
+  valueProposition?: string;
+  pricingInfo?: string | null;
+  estimatedRevenueGap?: { low: number; high: number; currency: string };
 }
 
 export async function runResearch(
   businessName: string,
   website: string,
   city: string,
-  competitors: string[]
+  competitors: string[],
+  preflightProfile?: {
+    niche: string;
+    valueProposition: string;
+    pricingInfo: string | null;
+    estimatedRevenueGap: { low: number; high: number; currency: string };
+    aiReadinessScore: number;
+  }
 ): Promise<ResearchResult> {
   // Resolve the best business name to use for searches
   const resolvedName = resolveBusinessName(businessName, website);
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
   
-  // STEP 1: Scan the website to understand what the business actually does
-  const websiteInsight = await scanWebsite(website);
-  console.info(`[research-runner] Website scan: services=[${websiteInsight.services.slice(0,5).join(', ')}] keywords=[${websiteInsight.keywords.slice(0,5).join(', ')}]`);
+  // STEP 1: Use PreFlight profile if available (no duplicate site fetch needed)
+  let websiteInsight;
+  let finalNiche;
   
-  // STEP 2: Detect niche using BOTH the website content and business name
-  const nicheConfig = detectNiche(resolvedName, website);
-  const finalNiche = websiteInsight.niche || nicheConfig.niche;
-  console.info(`[research-runner] Detected niche: ${nicheConfig.niche}, website-inferred: ${websiteInsight.niche || 'none'}, final: ${finalNiche}`);
+  if (preflightProfile) {
+    console.info(`[research-runner] Using PreFlight profile: niche=${preflightProfile.niche}, prop="${preflightProfile.valueProposition.substring(0, 80)}"`);
+    websiteInsight = {
+      services: preflightProfile.valueProposition ? [preflightProfile.valueProposition] : [],
+      keywords: [preflightProfile.niche],
+      niche: preflightProfile.niche,
+      nicheConfig: getNicheByName(preflightProfile.niche) || null,
+    };
+    finalNiche = preflightProfile.niche;
+  } else {
+    // Fallback: scan website ourselves
+    websiteInsight = await scanWebsite(website);
+    finalNiche = websiteInsight.niche || detectNiche(resolvedName, website).niche;
+  }
   
-  // Use the website-informed niche config if available, otherwise fallback
-  const activeNicheConfig = websiteInsight.nicheConfig || nicheConfig;
+  console.info(`[research-runner] Website scan: services=[${(websiteInsight.services || []).slice(0,5).join(', ')}] keywords=[${(websiteInsight.keywords || []).slice(0,5).join(', ')}]`);
+  console.info(`[research-runner] Final niche: ${finalNiche}`);
   
   // STEP 3: Generate prompts based on niche + actual services from website
-  const prompts = generatePrompts(activeNicheConfig, resolvedName, city, websiteInsight.services);
+  const promptSet = getPromptSetForNiche(finalNiche);
+  const prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
   
   // STEP 4: Run searches and track appearances — check against BOTH names
   const results = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
@@ -109,7 +135,21 @@ export async function runResearch(
   // STEP 5: Calculate scores and bands
   const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
   
+  // STEP 6: Add revenue loss analysis
+  const revLoss = calculateRevenueLoss(finalResult.appearedCount, finalResult.totalPrompts, finalNiche);
+  
   finalResult.resolvedName = resolvedName;
+  finalResult.revenueLoss = revLoss.loss;
+  finalResult.leadsLost = revLoss.leadsLost;
+  finalResult.recoveryPotential = revLoss.recoveryPotential;
+  
+  // Attach PreFlight enhanced data
+  if (preflightProfile) {
+    finalResult.valueProposition = preflightProfile.valueProposition;
+    finalResult.pricingInfo = preflightProfile.pricingInfo;
+    finalResult.estimatedRevenueGap = preflightProfile.estimatedRevenueGap;
+  }
+  
   return finalResult;
 }
 
@@ -166,6 +206,7 @@ async function scanWebsite(website: string): Promise<{
       photography: ['photography', 'photo session', 'portrait', 'wedding photographer', 'headshot'],
       cleaning: ['cleaning service', 'house cleaning', 'deep clean', 'maid service', 'janitorial'],
       fine_jewelry: ['jewelry', 'diamond', 'engagement ring', 'wedding band', 'fine jewelry', 'lab grown', 'lab-grown', '14k gold', '18k gold', 'gemstone', 'necklace', 'bracelet', 'earring', 'pendant', 'jewelry store', 'gold jewelry', 'custom jewelry', 'bespoke'],
+      mobile_bar: ['cocktail', 'mixology', 'mobile bar', 'cocktail catering', 'pre-bottled cocktail', 'premix', 'drinks catering', 'bartender', 'mocktail'],
     };
     
     // Score each niche by how many of its signals appear in the website text
@@ -267,13 +308,13 @@ function resolveBusinessName(businessName: string, website: string): string {
 }
 
 function generatePrompts(
-  nicheConfig: ReturnType<typeof detectNiche>,
+  promptSet: PromptSet,
   businessName: string,
   city: string,
   websiteServices: string[] = []
 ): string[] {
-  // Use niche-specific templates
-  const templates = nicheConfig.promptTemplates;
+  // Use niche-specific templates from the prompt set
+  const templates = promptSet.prompts;
   // Generate prompts from templates — use up to 20 niche-specific prompts
   const generatedPrompts: string[] = [];
   
@@ -418,6 +459,11 @@ function checkCompetitorAppearance(
   searchResults: TavilySearchResult[],
   competitors: string[]
 ): CompetitorCheckResult {
+  // HARD BLOCK LIST — these are directories, platforms, or non-business entities
+  // even if a competitor name happens to contain these words, the competitor is noise
+  const HARD_BLOCK_RX = /^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book|car gurus|car guru|car and driver|motortrend|roadshow|the drive|jalopnik|top rated|best in|nearby|local options|recommended by|others in|featuring|featured|compare|vs\.|versus)$/i;
+  const GENERIC_BLOCK = ['the best', 'top rated', 'best in', 'nearby', 'local', 'recommended', 'featured', 'compare', 'vs', 'versus', 'reviews of'];
+  
   // Build search keys: the full name AND the first significant word
   // e.g. "VRAI San Francisco Showroom" → "vrai san francisco showroom" AND "vrai"
   // e.g. "Brilliant Earth" → "brilliant earth" AND "brilliant"
@@ -463,9 +509,26 @@ function checkCompetitorAppearance(
     }
   }
   
-  // Return the found competitor (if any)
+  // Return the found competitor (if any) — with verification
   if (seenNames.size > 0) {
-    return { appeared: true, name: Array.from(seenNames)[0] };
+    const rawName = Array.from(seenNames)[0];
+    
+    // Verify: reject names that are directories, platform names, or generic phrases
+    if (HARD_BLOCK_RX.test(rawName)) return { appeared: false };
+    
+    // Reject generic non-business phrases
+    const lowerName = rawName.toLowerCase();
+    if (GENERIC_BLOCK.some(b => lowerName.includes(b))) return { appeared: false };
+    
+    // Reject single-word names unless they look like proper nouns (capitalized)
+    const words = rawName.split(/\s+/);
+    if (words.length === 1 && rawName.length < 4) return { appeared: false };
+    if (words.length === 1 && /^[a-z]/.test(rawName)) return { appeared: false };
+    
+    // Reject names that are clearly URLs or email addresses
+    if (/\.[a-z]{2,}(\/|$)/i.test(rawName)) return { appeared: false };
+    
+    return { appeared: true, name: rawName };
   }
   
   return { appeared: false };

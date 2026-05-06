@@ -1566,7 +1566,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       }
     }
     // Filter out directory/generic names
-    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies', 'mapquest', 'google maps', 'yelp', 'tripadvisor', 'yellow pages', 'white pages', 'foursquare', 'bbb', 'wikipedia', 'medium', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'youtube', 'bbb'];
+    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies', 'mapquest', 'google maps', 'yelp', 'tripadvisor', 'yellow pages', 'white pages', 'foursquare', 'bbb', 'wikipedia', 'medium', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'youtube', 'bbb', 'best in', 'top rated', 'featured', 'recommended by', 'nearby', 'local options', 'others in the area'];
     const realCompetitors = Object.entries(competitorFreq)
       .filter(([name]) => !genericCompetitors.some(g => name.toLowerCase() === g || name.toLowerCase().startsWith(g + ' ')))
       .map(([name, count]) => {
@@ -1687,7 +1687,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       visibleQueries: [],
       invisibleQueries: [],
       competitors: [
-        { name: `${leadData.businessName.split(' ')[0]} (You)`, score: promptsAppeared, isYou: true },
+        { name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true },
         { name: competitorName, score: Math.min(promptsAppeared + 5, totalPrompts) },
       ],
       recommendations: [
