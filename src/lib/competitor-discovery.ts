@@ -112,7 +112,7 @@ export async function discoverCompetitors(
     if (/^f\d+s?$/i.test(c)) return false;
     if (/^(top|best|near|find|about|home|wikipedia|wiki|shop|store|list|page|homepage)$/i.test(c)) return false;
     // Reject generic platform names that aren't real businesses
-    if (/^(medium|blog|homepage|facebook|instagram|twitter|linkedin|pinterest|youtube|github|reddit)$/i.test(c)) return false;
+    if (/^(medium|blog|homepage|facebook|instagram|twitter|linkedin|pinterest|youtube|github|reddit|mapquest|yelp|tripadvisor|yellowpages|whitepages|foursquare|bbb|angies?\s*list|homeadvisor|thumbtack|booking\.com|airbnb|expedia|hotels?\.com|zillow|trulia|realtor\.com|cars?\.com|autotrader|edmunds|kelly\s*blue\s*book|kbb|cargurus|truecar)$/i.test(c)) return false;
     // Reject article-style titles that leak through (e.g., "and They're Not All AI Startups")
     if (c.length > 12 && /^(and|but|the|this|how|why|what|when|where|which|these|those)/i.test(c)) return false;
     return true;
@@ -149,7 +149,7 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
       .join(' ');
     
     // Skip URL-based names that are obviously not brand names (generic words)
-    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed', 'wikipedia', 'wiki'];
+    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed', 'wikipedia', 'wiki', 'mapquest', 'tripadvisor', 'yellowpages', 'whitepages', 'foursquare', 'bbb', 'booking', 'airbnb', 'expedia', 'zillow', 'trulia', 'realtor', 'cars', 'autotrader', 'edmunds', 'cargurus', 'truecar', 'homeadvisor', 'thumbtack', 'angi'];
     if (genericUrlWords.some(w => urlnName!.toLowerCase().includes(w))) {
       urlnName = null;
     }
