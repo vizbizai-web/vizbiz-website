@@ -284,8 +284,8 @@ const NICHES: NicheConfig[] = [
   }
 ];
 
-export function detectNiche(businessName: string, website: string): NicheConfig {
-  const combinedText = `${businessName} ${website}`.toLowerCase();
+export function detectNiche(businessName: string, website: string, scrapedContent?: string): NicheConfig {
+  const combinedText = `${businessName} ${website} ${scrapedContent || ""}`.toLowerCase();
   
   // Check each niche for keyword matches
   for (const niche of NICHES) {

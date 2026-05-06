@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { appendLead, isSheetsConfigured } from "@/lib/google-sheets";
 import { buildMiniSnapshot } from "@/lib/mini-snapshot";
 import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
+import { preflightScan } from "@/lib/preflight-engine";
 
 type IntakePayload = {
   name: string;
@@ -74,6 +75,15 @@ export async function POST(request: Request) {
     service: "Pending",
   };
 
+  // Analyze AI readiness and niche BEFORE storing — do this regardless of Sheets config
+  const aiReport = isSheetsConfigured() ? await preflightScan(cleanPayload.websiteUrl) : { 
+    niche: "local_business", nicheLabel: "Local Business", pricingInfo: null, valueProposition: "",
+    contentQuality: "low" as const, hasLlmsTxt: false, hasSchema: false, 
+    aiReadinessScore: 0, estimatedRevenueGap: { low: 0, high: 0, currency: "USD" }
+  };
+  
+  const revGap = aiReport.estimatedRevenueGap;
+  
   // Store in Google Sheets CRM
   let leadId = "";
   let sheetsOk = false;
@@ -95,11 +105,11 @@ export async function POST(request: Request) {
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}`,
+        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}. AI-Niche: ${aiReport.niche}. AI-Score: ${aiReport.aiReadinessScore} (LLMS:${aiReport.hasLlmsTxt}, Schema:${aiReport.hasSchema}). PREFLIGHT:${JSON.stringify({ niche: aiReport.niche, valueProposition: aiReport.valueProposition, pricingInfo: aiReport.pricingInfo, estimatedRevenueGap: aiReport.estimatedRevenueGap, aiReadinessScore: aiReport.aiReadinessScore })}`,
         source: cleanPayload.source,
       });
       sheetsOk = true;
-      console.info("[intake] lead stored in Sheets", { leadId, email: cleanPayload.email });
+      console.info("[intake] lead stored in Sheets", { leadId, email: cleanPayload.email, niche: aiReport.niche });
     } catch (error) {
       console.error("[intake] Sheets write failed", error);
       // Continue — don't block the user experience
@@ -150,6 +160,13 @@ export async function POST(request: Request) {
     service: snapshotSummary.service.toLowerCase().replace(/\s+/g, "-"),
     competitor: cleanPayload.competitor?.trim() || "nearby competitors",
     crm: sheetsOk ? "captured" : "pending",
+    score: aiReport.aiReadinessScore.toString(),
+    llms: aiReport.hasLlmsTxt ? "1" : "0",
+    schema: aiReport.hasSchema ? "1" : "0",
+    niche: aiReport.niche,
+    revLossMin: revGap.low.toString(),
+    revLossMax: revGap.high.toString(),
+    nicheLabel: encodeURIComponent(aiReport.nicheLabel),
     ...(leadId ? { lid: leadId } : {}),
   });
 
