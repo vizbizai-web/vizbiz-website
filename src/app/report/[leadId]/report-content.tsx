@@ -1566,7 +1566,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       }
     }
     // Filter out directory/generic names
-    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies'];
+    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies', 'mapquest', 'google maps', 'yelp', 'tripadvisor', 'yellow pages', 'white pages', 'foursquare', 'bbb', 'wikipedia', 'medium', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'youtube', 'bbb'];
     const realCompetitors = Object.entries(competitorFreq)
       .filter(([name]) => !genericCompetitors.some(g => name.toLowerCase() === g || name.toLowerCase().startsWith(g + ' ')))
       .map(([name, count]) => {
