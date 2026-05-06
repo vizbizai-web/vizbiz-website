@@ -504,8 +504,9 @@ function calculateScores(
   }
   
   // Competitor mention — find the most frequently appearing competitor
+  const filteredResults = results.filter(r => r.competitorName && !/^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book)$/i.test(r.competitorName.trim()));
   const competitorNameCounts = new Map<string, number>();
-  for (const r of results) {
+  for (const r of filteredResults) {
     if (r.competitorAppeared && r.competitorName) {
       const count = competitorNameCounts.get(r.competitorName) || 0;
       competitorNameCounts.set(r.competitorName, count + 1);
@@ -539,15 +540,22 @@ function calculateScores(
   // Niche-specific competitor categories and messaging
   const competitorCategories = getCompetitorCategories(niche);
   const whyThisMatters = getWhyThisMatters(niche);
-  
+
+  // Directory/platform names that AI models mention but aren't real business competitors
+  const NOT_A_COMPETITOR = /^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book)$/i;
+
   return {
     prompts: results.map(r => r.prompt),
-    promptResults: results.map(r => ({
-      prompt: r.prompt,
-      businessAppeared: r.businessAppeared,
-      competitorAppeared: r.competitorAppeared,
-      competitorName: r.competitorName,
-    })),
+    promptResults: results.map(r => {
+      const cleanCompetitorName = r.competitorName && NOT_A_COMPETITOR.test(r.competitorName.trim()) ? undefined : r.competitorName;
+      const isCompetitorAppeared = cleanCompetitorName ? r.competitorAppeared : false;
+      return {
+        prompt: r.prompt,
+        businessAppeared: r.businessAppeared,
+        competitorAppeared: isCompetitorAppeared,
+        competitorName: cleanCompetitorName,
+      };
+    }),
     resolvedName: '', // Will be set by caller
     appearedCount,
     totalPrompts,
