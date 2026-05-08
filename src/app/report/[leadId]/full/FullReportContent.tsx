@@ -1,65 +1,67 @@
 /**
- * Full Report Content — Dynamic, data-driven
+ * Full Paid Report v3 — What the client actually gets
  *
- * Pulls real data from Google Sheets + research results.
- * Shows: AVI score, profit at risk, category breakdown, competitor comparison,
- * query visibility, implementation pack download.
+ * Not a dashboard. A deliverable.
+ * - Exact AI quotes with source citations
+ * - Where AI recommends competitors instead of you (and why)
+ * - Specific fixes with copy-paste content
+ * - Revenue impact per gap
  */
 
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FullReportProps {
   leadId: string;
   leadData: any;
   researchData: any;
+  aiCaptureData?: any; // From capture-v2 output
 }
 
-function getScoreColor(score: number) {
-  if (score >= 60) return 'bg-green-500';
-  if (score >= 35) return 'bg-amber-500';
-  return 'bg-red-500';
+function formatCurrency(n: number) {
+  return '$' + n.toLocaleString();
 }
 
-function getScoreTextColor(score: number) {
-  if (score >= 60) return 'text-green-400';
-  if (score >= 35) return 'text-amber-400';
-  return 'text-red-400';
-}
+export default function FullReportContent({ leadId, leadData, researchData, aiCaptureData }: FullReportProps) {
+  const [mounted, setMounted] = useState(false);
+  const [expandedQuery, setExpandedQuery] = useState<number | null>(null);
+  useEffect(() => { setMounted(true); }, []);
 
-function getScoreLabel(score: number) {
-  if (score >= 60) return 'Strong';
-  if (score >= 35) return 'Moderate';
-  return 'Weak';
-}
-
-export default function FullReportContent({ leadId, leadData, researchData }: FullReportProps) {
-  const [downloading, setDownloading] = useState(false);
-
-  // Derive all data from research results
-  const businessName = leadData?.dealershipName || researchData?.businessName || 'Business';
-  const location = leadData?.city || researchData?.city || 'Unknown';
-  const website = leadData?.website || researchData?.website || '';
+  const businessName = researchData?.businessName || leadData?.businessName || 'Business';
+  const location = researchData?.city || leadData?.city || '';
+  const website = researchData?.website || leadData?.website || '';
   const niche = researchData?.niche || 'local_business';
-  const competitor = researchData?.competitorMention || leadData?.competitor || 'Competitor';
-  const contactName = leadData?.contactName || '';
-
   const promptResults = researchData?.promptResults || [];
-  const totalPrompts = promptResults.length || researchData?.totalPrompts || 20;
-  const appearedCount = promptResults.filter((r: any) => r.businessAppeared).length || researchData?.appearedCount || 0;
+  const totalPrompts = promptResults.length || 20;
+  const appearedCount = promptResults.filter((r: any) => r.businessAppeared).length;
   const aviScore = Math.round((appearedCount / totalPrompts) * 100);
 
-  const visibleQueries = promptResults.filter((r: any) => r.businessAppeared).map((r: any) => r.prompt);
-  const invisibleQueries = promptResults.filter((r: any) => !r.businessAppeared).map((r: any) => r.prompt);
+  // Competitor data
+  const competitorFreq: Record<string, number> = {};
+  for (const p of promptResults) {
+    if (p.competitorName) competitorFreq[p.competitorName] = (competitorFreq[p.competitorName] || 0) + 1;
+  }
+  const topCompetitor = Object.entries(competitorFreq).sort((a, b) => b[1] - a[1])[0];
 
-  // Competitor analysis
-  const competitorAppeared = promptResults.filter((r: any) => r.competitorAppeared).length;
+  // AI capture data (real responses) — full 84-prompt if available
+  const captureResults = aiCaptureData?.results || [];
+  const isFullCapture = captureResults.length > 40; // 84×2 = 168, vs 20×2 = 40
+  const totalCapturePrompts = aiCaptureData?.totalPrompts || totalPrompts;
+  const captureSearchResults = captureResults.filter((r: any) => r.platform === 'search');
+  const captureVisibleCount = captureSearchResults.filter((r: any) => r.businessMentioned).length;
+  const fullAviScore = captureSearchResults.length > 0 ? Math.round((captureVisibleCount / captureSearchResults.length) * 100) : aviScore;
+  
+  const visibleQueries = promptResults.filter((q: any) => q.businessAppeared);
+  const invisibleQueries = promptResults.filter((q: any) => !q.businessAppeared);
+  const gapQueries = invisibleQueries.filter((q: any) => q.competitorAppeared);
 
-  // Revenue estimation based on niche
+  // Revenue estimates
   const revenueRanges: Record<string, { low: number; high: number }> = {
     car_dealership: { low: 5600, high: 45000 },
+    tourism_experience: { low: 2000, high: 12000 },
+    auto_transport: { low: 3000, high: 18000 },
     dance_studio: { low: 2300, high: 9900 },
     beauty_salon: { low: 1800, high: 8500 },
     fine_jewelry: { low: 2000, high: 12000 },
@@ -68,91 +70,78 @@ export default function FullReportContent({ leadId, leadData, researchData }: Fu
     local_business: { low: 1500, high: 8000 },
   };
   const range = revenueRanges[niche] || revenueRanges.local_business;
-  const visibilityFactor = aviScore / 100;
-  const monthlyLow = Math.round(range.low * (1 - visibilityFactor));
-  const monthlyHigh = Math.round(range.high * (1 - visibilityFactor));
-  const annualLow = monthlyLow * 12;
-  const annualHigh = monthlyHigh * 12;
+  const gapRevenueLow = Math.round((range.low / totalPrompts) * gapQueries.length);
+  const gapRevenueHigh = Math.round((range.high / totalPrompts) * gapQueries.length);
 
-  // Categories derived from research
-  const categories = [
-    { name: 'Brand Discovery', icon: '🔍', description: 'How often you appear when buyers search for your type of business', weight: 0.30 },
-    { name: 'Trust & Reviews', icon: '⭐', description: 'What AI platforms say when asked about your reputation', weight: 0.25 },
-    { name: 'Service Visibility', icon: '📋', description: 'Whether you appear for service-specific queries', weight: 0.20 },
-    { name: 'Competitive Position', icon: '🏆', description: 'How you stack up against competitors in AI results', weight: 0.15 },
-    { name: 'Content & Authority', icon: '📄', description: 'Whether your content gets cited by AI platforms', weight: 0.10 },
-  ];
+  // Find a real AI quote for the hero
+  const heroQuote = captureResults.find((r: any) => r.businessMentioned && r.mentionContext);
+  const heroGap = captureResults.find((r: any) => !r.businessMentioned && r.competitorMentioned);
 
-  // Assign category scores based on AVI with variation
-  const categoryScores = categories.map((cat, i) => {
-    const offset = [-5, -10, -15, -8, -20][i];
-    return {
-      ...cat,
-      score: Math.max(5, Math.min(100, aviScore + offset)),
-    };
-  });
+  // Per-platform scores from capture
+  const geminiResults = captureResults.filter((r: any) => r.platform === 'gemini');
+  const searchResults = captureResults.filter((r: any) => r.platform === 'search');
+  const geminiScore = geminiResults.length > 0 ? Math.round((geminiResults.filter((r: any) => r.businessMentioned).length / geminiResults.length) * 100) : null;
+  const searchScore = searchResults.length > 0 ? Math.round((searchResults.filter((r: any) => r.businessMentioned).length / searchResults.length) * 100) : null;
 
-  // Recommendations based on data
-  const recommendations = [
-    ...(invisibleQueries.length > 0 ? [{
-      title: `Optimize for your top invisible queries`,
-      description: `You're missing from ${invisibleQueries.length} buyer-intent searches. Target the highest-value ones with dedicated content pages.`,
-      impact: 'High' as const,
+  // Fixes derived from gaps
+  const fixes = [
+    ...(gapQueries.length > 0 ? [{
+      title: `Create pages targeting your ${gapQueries.length} gap queries`,
+      detail: `These are searches where AI recommends your competitor instead of you. Each one represents real buyers who never find you.`,
+      queries: gapQueries.map((q: any) => q.prompt),
+      impact: 'High',
+      effort: 'Medium',
+      type: 'content' as const,
     }] : []),
-    ...(aviScore < 40 ? [{
-      title: 'Deploy schema markup on your website',
-      description: 'JSON-LD schema helps AI platforms understand your business entity, services, and location. Quick technical win.',
-      impact: 'High' as const,
-    }] : []),
-    ...(aviScore < 60 ? [{
-      title: 'Create an llms.txt file',
-      description: 'This tells AI crawlers exactly what your business does and which pages matter. Most competitors don\'t have one yet.',
-      impact: 'Medium' as const,
+    ...(gapQueries.filter((q: any) => q.prompt.toLowerCase().includes('best') || q.prompt.toLowerCase().includes('top')).length > 0 ? [{
+      title: 'Build "Best of" comparison content',
+      detail: `AI platforms love listicles and comparisons. Create pages like "Best Tours Near ${location}" that naturally include your business alongside others.`,
+      queries: gapQueries.filter((q: any) => q.prompt.toLowerCase().includes('best') || q.prompt.toLowerCase().includes('top')).map((q: any) => q.prompt),
+      impact: 'High',
+      effort: 'Low',
+      type: 'content' as const,
     }] : []),
     {
-      title: 'Build FAQ content targeting AI queries',
-      description: 'Create FAQ pages that directly answer the questions AI platforms are being asked about your niche.',
-      impact: 'Medium' as const,
+      title: 'Deploy structured data (JSON-LD schema)',
+      detail: `Add LocalBusiness + TouristAttraction schema to your homepage. This helps AI understand exactly what you offer, where you are, and your hours.`,
+      queries: [],
+      impact: 'Medium',
+      effort: 'Low',
+      type: 'technical' as const,
     },
-  ].slice(0, 4);
+    {
+      title: 'Create llms.txt in your website root',
+      detail: `This file speaks directly to AI crawlers. Tell them your services, location, unique selling points, and key pages. Most competitors don\'t have one.`,
+      queries: [],
+      impact: 'Medium',
+      effort: 'Low',
+      type: 'technical' as const,
+    },
+    {
+      title: 'Claim and optimize your Google Business Profile',
+      detail: `Google Business Profile data feeds directly into AI Overviews and Gemini. Ensure your category, services, hours, and photos are complete and accurate.`,
+      queries: [],
+      impact: 'High',
+      effort: 'Low',
+      type: 'listing' as const,
+    },
+    {
+      title: 'Get listed on third-party sites AI trusts',
+      detail: `AI platforms cite TripAdvisor, Visit NSW, and local tourism directories. Ensure your listings are complete, accurate, and consistent across all of them.`,
+      queries: [],
+      impact: 'High',
+      effort: 'Medium',
+      type: 'listing' as const,
+    },
+  ];
 
-  const handleDownload = useCallback(async () => {
-    setDownloading(true);
-    try {
-      const res = await fetch(`/api/download-pack?leadId=${leadId}`);
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `vizbiz-${businessName.toLowerCase().replace(/\s+/g, '-')}-implementation-pack.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Download failed — implementation pack may not be ready yet.');
-      }
-    } catch {
-      alert('Download failed. Please try again.');
-    } finally {
-      setDownloading(false);
-    }
-  }, [leadId, businessName]);
-
-  // No data state
   if (!leadData && !researchData) {
     return (
       <div className="min-h-screen bg-[#02091F] text-white flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <h1 className="text-2xl font-bold mb-4">Report Not Available</h1>
-          <p className="text-gray-400 mb-6">
-            This report hasn't been generated yet, or the lead ID is invalid.
-          </p>
-          <a href="/intake/" className="inline-block bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium">
-            Get Your Free Snapshot
-          </a>
+          <p className="text-gray-400 mb-6">This report hasn't been generated yet.</p>
+          <a href="/intake/" className="inline-block bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium">Get Your Free Snapshot</a>
         </div>
       </div>
     );
@@ -160,287 +149,380 @@ export default function FullReportContent({ leadId, leadData, researchData }: Fu
 
   return (
     <div className="min-h-screen bg-[#02091F] text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Header */}
-      <header className="bg-[#0A0F1E] border-b border-cyan-500/15">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-3">
-              <Image src="/logo.jpg" alt="VizBiz.ai Logo" width={40} height={40} className="rounded" />
-              <div className="text-xl font-bold">VizBiz<span className="text-[#25D1F2]">.ai</span></div>
+      {/* === HEADER === */}
+      <header className="bg-[#0A0F1E] border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Image src="/logo.jpg" alt="VizBiz" width={36} height={36} className="rounded" />
+            <div>
+              <div className="text-base font-semibold">VizBiz<span className="text-[#25D1F2]">.ai</span></div>
+              <div className="text-[10px] text-gray-500 tracking-wider uppercase">AI Visibility Report</div>
             </div>
-            <div className="text-center hidden sm:block">
-              <h1 className="text-lg font-semibold">Full AI Visibility Report</h1>
-              <p className="text-sm text-gray-400">{businessName} • {location}</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="bg-[#25D1F2] text-[#02091F] px-4 py-2 rounded-lg hover:bg-[#06B6D4] transition-colors font-medium disabled:opacity-50"
-              >
-                {downloading ? 'Preparing...' : 'Download Pack'}
-              </button>
-            </div>
+          </div>
+          <div className="text-right text-sm">
+            <div className="font-medium">{businessName}</div>
+            <div className="text-xs text-gray-500">{location} • {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
           </div>
         </div>
       </header>
 
-      {/* Hero Score */}
-      <div className="bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white py-10 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-            <div className="lg:col-span-2">
-              <div className="text-sm opacity-90 mb-2">AI Visibility Score (AVI)</div>
-              <div className="flex items-baseline gap-4">
-                <div className="text-6xl font-bold">{aviScore}</div>
-                <div className="text-2xl opacity-80">/100</div>
-              </div>
-              <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(aviScore)} text-white mt-4`}>
-                {getScoreLabel(aviScore)}
-              </div>
-              <p className="mt-4 opacity-80 max-w-lg text-sm">
-                Based on {totalPrompts} buyer-intent queries across ChatGPT, Google AI Overviews, and Gemini.
-                {appearedCount === 0 && ` ${businessName} did not appear in any AI recommendations for these searches.`}
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white/10 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold">{appearedCount}</div>
-                <div className="text-xs opacity-80 mt-1">Appeared</div>
-                <div className="text-xs opacity-60">/ {totalPrompts}</div>
-              </div>
-              <div className="bg-white/10 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold">{competitorAppeared}</div>
-                <div className="text-xs opacity-80 mt-1">{competitor} appeared</div>
-              </div>
-              <div className="bg-white/10 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold">{recommendations.length}</div>
-                <div className="text-xs opacity-80 mt-1">Fixes available</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <main className="max-w-5xl mx-auto px-6 py-10 space-y-16">
 
-      {/* Profit at Risk */}
-      <div className="bg-[#0A0F1E] py-10 sm:py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Profit at Risk</h2>
-            <p className="text-gray-300 max-w-3xl mx-auto text-sm sm:text-base">
-              Based on your AVI score and {niche.replace(/_/g, ' ')} industry benchmarks, here's the estimated profit
-              flowing to competitors who appear in AI recommendations while you don't.
+        {/* === 1. EXECUTIVE SUMMARY === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-4">Executive Summary</h2>
+          <div className="space-y-4 text-base leading-relaxed text-gray-300">
+            <p>
+              <span className="text-white font-medium">{businessName}</span> has <span className="text-white font-semibold">{aviScore}% AI visibility</span> across {totalPrompts} buyer-intent searches.
+              AI platforms mention you in {appearedCount} out of {totalPrompts} queries tested.
             </p>
+            {topCompetitor && (
+              <p>
+                Your top competitor, <span className="text-amber-400 font-medium">{topCompetitor[0]}</span>, appears in {topCompetitor[1]} out of {totalPrompts} queries — 
+                {topCompetitor[1] > appearedCount ? ` ${topCompetitor[1] - appearedCount} more than you.` : ' roughly equal to you.'}
+              </p>
+            )}
+            {gapQueries.length > 0 && (
+              <p>
+                There are <span className="text-red-400 font-medium">{gapQueries.length} queries</span> where AI explicitly recommends your competitor instead of you.
+                These gaps represent an estimated <span className="text-red-400 font-medium">{formatCurrency(gapRevenueLow)}–{formatCurrency(gapRevenueHigh)}/month</span> in potential revenue going elsewhere.
+              </p>
+            )}
+            {heroQuote && (
+              <div className="mt-6 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                <div className="text-xs text-emerald-400 mb-2">What AI says about you:</div>
+                <p className="text-white italic">"{heroQuote.mentionContext}"</p>
+                {heroQuote.sourceUrls?.[0] && <p className="text-xs text-gray-500 mt-2">Source: {heroQuote.sourceUrls[0]}</p>}
+              </div>
+            )}
           </div>
+        </section>
 
-          <div className="bg-gradient-to-r from-[#22D3EE]/20 to-[#06B6D4]/20 border border-cyan-500/20 rounded-2xl p-6 sm:p-8 mb-8">
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-[#25D1F2] mb-2">
-                ${monthlyLow.toLocaleString()}–${monthlyHigh.toLocaleString()}/month
+        {/* === 2. SCORE OVERVIEW === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-6">Your AI Visibility Score</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="col-span-1 rounded-2xl p-6 flex flex-col items-center justify-center text-center" style={{ background: 'linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%)' }}>
+              <div className="text-xs text-white/70 mb-1 uppercase tracking-wider">AVI Score</div>
+              <div className="text-5xl font-bold text-white">{fullAviScore}</div>
+              <div className="text-xs text-white/50">out of 100</div>
+              <div className="mt-2 px-3 py-1 rounded-full bg-white/20 text-xs text-white font-medium">
+                {fullAviScore >= 60 ? 'Strong' : fullAviScore >= 35 ? 'Moderate' : 'Weak'}
               </div>
-              <div className="text-lg sm:text-xl text-gray-300 mb-4">
-                ${annualLow.toLocaleString()}–${annualHigh.toLocaleString()}/year
+              {isFullCapture && <div className="text-[10px] text-white/40 mt-1">Based on {totalCapturePrompts} queries</div>}
+            </div>
+            <div className="col-span-2 grid grid-cols-2 gap-3">
+              <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider">Appeared In</div>
+                <div className="text-2xl font-bold mt-1">{appearedCount}<span className="text-sm text-gray-500">/{totalPrompts}</span></div>
+                <div className="text-[10px] text-gray-500">buyer-intent queries</div>
               </div>
-              <p className="text-gray-400 text-sm">Estimated profit at risk from low AI visibility</p>
+              <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gaps</div>
+                <div className="text-2xl font-bold mt-1 text-red-400">{gapQueries.length}</div>
+                <div className="text-[10px] text-gray-500">queries to competitor</div>
+              </div>
+              {searchScore !== null && (
+                <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Search AI Score</div>
+                  <div className="text-2xl font-bold mt-1">{searchScore}%</div>
+                  <div className="text-[10px] text-gray-500">AI-generated answers</div>
+                </div>
+              )}
+              {geminiScore !== null && (
+                <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gemini Score</div>
+                  <div className="text-2xl font-bold mt-1">{geminiScore}%</div>
+                  <div className="text-[10px] text-gray-500">Google Gemini</div>
+                </div>
+              )}
             </div>
           </div>
+        </section>
 
-          {/* Category Profit Breakdown */}
-          <div className="bg-[#111118] border border-cyan-500/15 rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Where the Profit Leaks</h3>
-            <div className="space-y-3">
-              {categoryScores.map((cat) => {
-                const catLow = Math.round(monthlyLow * cat.weight);
-                const catHigh = Math.round(monthlyHigh * cat.weight);
-                const share = Math.round(cat.weight * 100);
-                return (
-                  <div key={cat.name} className="flex items-center gap-4">
-                    <div className="w-40 sm:w-48 text-sm text-gray-300 shrink-0">{cat.name}</div>
-                    <div className="flex-1">
-                      <div className="w-full bg-gray-700/50 rounded-full h-3">
-                        <div
-                          className="h-3 rounded-full bg-[#25D1F2]/80"
-                          style={{ width: `${share}%` }}
-                        />
-                      </div>
+        {/* === 3. WHAT AI ACTUALLY SAYS === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">What AI Actually Says About You</h2>
+          <p className="text-xs text-gray-600 mb-6">Real responses from AI platforms when buyers search for businesses like yours.</p>
+
+          <div className="space-y-3">
+            {captureResults
+              .filter((r: any) => r.platform === 'search' && r.businessMentioned)
+              .slice(0, 6)
+              .map((r: any, i: number) => (
+                <div key={i} className="rounded-xl p-4 bg-white/[0.02] border border-white/5">
+                  <div className="flex items-start gap-3">
+                    <div className="text-emerald-400 text-lg mt-0.5">✓</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-gray-400 mb-1">Query: "{r.prompt}"</div>
+                      <p className="text-white text-sm leading-relaxed">"{r.mentionContext}"</p>
+                      {r.sourceUrls?.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {r.sourceUrls.slice(0, 3).map((url: string, j: number) => (
+                            <span key={j} className="text-[10px] text-gray-500 bg-white/5 px-2 py-0.5 rounded truncate max-w-[200px]">
+                              {url.replace(/https?:\/\/(www\.)?/, '').split('/')[0]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="w-40 text-right text-sm">
-                      <span className={getScoreTextColor(cat.score)}>
-                        ${catLow.toLocaleString()}–${catHigh.toLocaleString()}/mo
-                      </span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
+
+        {/* === 4. WHERE YOU'RE INVISIBLE === */}
+        {gapQueries.length > 0 && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Where You're Invisible</h2>
+            <p className="text-xs text-gray-600 mb-6">Queries where AI recommends your competitor instead of you. Each one = real buyers finding someone else.</p>
+
+            <div className="space-y-3">
+              {gapQueries.map((q: any, i: number) => {
+                const captureMatch = captureResults.find((r: any) => r.platform === 'search' && r.prompt === q.prompt);
+                return (
+                  <div key={i} className="rounded-xl p-4 bg-red-500/5 border border-red-500/15">
+                    <div className="flex items-start gap-3">
+                      <div className="text-red-400 text-lg mt-0.5">✗</div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-white mb-1">"{q.prompt}"</div>
+                        {q.competitorName && (
+                          <div className="text-sm text-amber-400">→ AI recommended: {q.competitorName}</div>
+                        )}
+                        {captureMatch?.responseSnippet && (
+                          <p className="text-xs text-gray-400 mt-2 leading-relaxed">{captureMatch.responseSnippet.slice(0, 200)}...</p>
+                        )}
+                        {captureMatch?.sourceUrls?.length > 0 && (
+                          <div className="mt-2 text-[10px] text-gray-500">
+                            Sources AI used: {captureMatch.sourceUrls.slice(0, 3).map((u: string) => u.replace(/https?:\/\/(www\.)?/, '').split('/')[0]).join(', ')}
+                          </div>
+                        )}
+                        <div className="mt-2 text-[10px] text-red-400/70">
+                          Est. revenue impact: {formatCurrency(Math.round(range.low / totalPrompts))}–{formatCurrency(Math.round(range.high / totalPrompts))}/month
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Scores */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h3 className="text-xl font-bold mb-6">Category Breakdown</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {categoryScores.map((cat) => (
-            <div key={cat.name} className="bg-[#111118] border border-cyan-500/15 p-5 rounded-xl">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">{cat.icon}</span>
-                <h4 className="font-semibold text-sm">{cat.name}</h4>
-              </div>
-              <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-2xl font-bold">{cat.score}</span>
-                <span className="text-xs text-gray-400">/100</span>
-              </div>
-              <div className="w-full bg-gray-700/50 rounded-full h-2 mb-3">
-                <div
-                  className={`h-2 rounded-full ${getScoreColor(cat.score)}`}
-                  style={{ width: `${cat.score}%` }}
-                />
-              </div>
-              <p className="text-xs text-gray-400">{cat.description}</p>
+          </section>
+        )}
+          {isFullCapture && aiCaptureData?.categoryBreakdown && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Category Breakdown</h2>
+            <p className="text-xs text-gray-600 mb-6">Your visibility across {totalCapturePrompts} queries in 11 categories. Each category tests a different buyer scenario.</p>
+            <div className="space-y-3">
+              {aiCaptureData.categoryBreakdown.map((cat: any) => (
+                <div key={cat.category} className="flex items-center gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="w-28 text-xs text-gray-400 font-medium shrink-0">{cat.name}</div>
+                  <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${cat.score >= 80 ? 'bg-emerald-500' : cat.score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                      style={{ width: mounted ? `${cat.score}%` : '0%' }}
+                    />
+                  </div>
+                  <div className="w-16 text-right">
+                    <span className={`text-sm font-bold ${cat.score >= 80 ? 'text-emerald-400' : cat.score >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{cat.score}%</span>
+                  </div>
+                  <div className="w-16 text-right text-xs text-gray-500">{cat.mentioned}/{cat.total}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </section>
+        )}
 
-      {/* Query Visibility */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-[#111118] border border-green-500/20 p-6 rounded-xl">
-            <h3 className="text-lg font-semibold text-green-400 mb-4">
-              ✓ Where you appear ({visibleQueries.length})
-            </h3>
-            {visibleQueries.length === 0 ? (
-              <p className="text-gray-500 text-sm">No queries found. Your business didn't appear in any of the {totalPrompts} AI searches tested.</p>
-            ) : (
-              <ul className="space-y-2">
-                {visibleQueries.map((q: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-green-400 mt-0.5">✓</span>
-                    <span className="text-gray-300 text-sm">&ldquo;{q}&rdquo;</span>
-                  </li>
+        {/* === 5. COMPETITOR COMPARISON === */}
+        {topCompetitor && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Competitor Analysis</h2>
+            <p className="text-xs text-gray-600 mb-6">How you compare against {topCompetitor[0]} in AI recommendations.</p>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="rounded-xl p-5 bg-[#25D1F2]/5 border border-[#25D1F2]/20">
+                <div className="text-sm font-medium mb-2">{businessName} (You)</div>
+                <div className="text-3xl font-bold text-[#25D1F2]">{appearedCount}<span className="text-sm text-gray-500">/{totalPrompts}</span></div>
+                <div className="text-xs text-gray-500 mt-1">queries where AI mentions you</div>
+              </div>
+              <div className="rounded-xl p-5 bg-amber-500/5 border border-amber-500/20">
+                <div className="text-sm font-medium mb-2">{topCompetitor[0]}</div>
+                <div className="text-3xl font-bold text-amber-400">{topCompetitor[1]}<span className="text-sm text-gray-500">/{totalPrompts}</span></div>
+                <div className="text-xs text-gray-500 mt-1">queries where AI mentions them</div>
+              </div>
+            </div>
+
+            {/* Specific examples where competitor wins */}
+            <div className="text-xs text-gray-500 uppercase tracking-wider mb-3">Where they appear instead of you</div>
+            <div className="space-y-2">
+              {promptResults
+                .filter((q: any) => !q.businessAppeared && q.competitorAppeared)
+                .slice(0, 5)
+                .map((q: any, i: number) => (
+                  <div key={i} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-white/[0.02]">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-gray-300 flex-1">{q.prompt}</span>
+                    <span className="text-amber-400 text-xs">→ {q.competitorName}</span>
+                  </div>
                 ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="bg-[#111118] border border-red-500/20 p-6 rounded-xl">
-            <h3 className="text-lg font-semibold text-red-400 mb-4">
-              ✗ Where you're invisible ({invisibleQueries.length})
-            </h3>
-            {invisibleQueries.length === 0 ? (
-              <p className="text-gray-500 text-sm">Great news — you appeared in all queries tested.</p>
-            ) : (
-              <ul className="space-y-2">
-                {invisibleQueries.map((q: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-red-400 mt-0.5">✗</span>
-                    <span className="text-gray-300 text-sm">&ldquo;{q}&rdquo;</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Competitor */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-[#111118] border border-cyan-500/15 p-6 rounded-xl">
-          <h3 className="text-lg font-semibold mb-6">Competitor Comparison</h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-36 sm:w-44 text-sm font-medium text-gray-300">{businessName}</div>
-              <div className="flex-1">
-                <div className="w-full bg-gray-700/50 rounded-full h-4">
-                  <div className="h-4 rounded-full bg-[#06B6D4]" style={{ width: `${(appearedCount / totalPrompts) * 100}%` }} />
-                </div>
-              </div>
-              <div className="w-16 text-right text-sm font-medium">{appearedCount}/{totalPrompts}</div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-36 sm:w-44 text-sm font-medium text-gray-300">{competitor}</div>
-              <div className="flex-1">
-                <div className="w-full bg-gray-700/50 rounded-full h-4">
-                  <div className="h-4 rounded-full bg-amber-500" style={{ width: `${(competitorAppeared / totalPrompts) * 100}%` }} />
-                </div>
+          </section>
+        )}
+
+        {/* === 6. VOICE SEARCH === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Voice Search Readiness</h2>
+          <p className="text-xs text-gray-600 mb-6">When someone asks Siri, Alexa, or Google Assistant about businesses like yours.</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5 text-center">
+              <div className="text-2xl mb-2">🎙️</div>
+              <div className="text-xs text-gray-500">Siri / Apple Intelligence</div>
+              <div className={`text-lg font-bold mt-1 ${aviScore >= 60 ? 'text-emerald-400' : aviScore >= 35 ? 'text-amber-400' : 'text-red-400'}`}>
+                {aviScore >= 60 ? 'Likely Found' : aviScore >= 35 ? 'Partial' : 'Not Found'}
               </div>
-              <div className="w-16 text-right text-sm font-medium">{competitorAppeared}/{totalPrompts}</div>
+              <div className="text-[10px] text-gray-600 mt-1">Uses web search data</div>
+            </div>
+            <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5 text-center">
+              <div className="text-2xl mb-2">🔊</div>
+              <div className="text-xs text-gray-500">Google Assistant</div>
+              <div className={`text-lg font-bold mt-1 ${aviScore >= 60 ? 'text-emerald-400' : aviScore >= 35 ? 'text-amber-400' : 'text-red-400'}`}>
+                {aviScore >= 60 ? 'Likely Found' : aviScore >= 35 ? 'Partial' : 'Not Found'}
+              </div>
+              <div className="text-[10px] text-gray-600 mt-1">Uses Gemini + search</div>
+            </div>
+            <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5 text-center">
+              <div className="text-2xl mb-2">📱</div>
+              <div className="text-xs text-gray-500">Alexa</div>
+              <div className={`text-lg font-bold mt-1 ${aviScore >= 60 ? 'text-emerald-400' : aviScore >= 35 ? 'text-amber-400' : 'text-red-400'}`}>
+                {aviScore >= 60 ? 'Likely Found' : aviScore >= 35 ? 'Partial' : 'Not Found'}
+              </div>
+              <div className="text-[10px] text-gray-600 mt-1">Uses Bing search data</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h3 className="text-xl font-bold mb-6">Recommended Fixes</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {recommendations.map((rec, i) => (
-            <div key={i} className="bg-[#111118] border border-cyan-500/15 p-5 rounded-xl">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`w-8 h-8 rounded-full ${rec.impact === 'High' ? 'bg-red-500' : 'bg-amber-500'} flex items-center justify-center`}>
-                  <span className="text-white font-bold text-sm">{i + 1}</span>
-                </div>
-                <h4 className="font-semibold text-sm">{rec.title}</h4>
-              </div>
-              <p className="text-sm text-gray-400 mb-3">{rec.description}</p>
-              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${rec.impact === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                {rec.impact} Impact
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Implementation Pack Download */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-gradient-to-r from-[#22D3EE]/10 to-[#06B6D4]/10 border border-cyan-500/20 rounded-2xl p-6 sm:p-8 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold mb-3">Your Implementation Pack</h3>
-          <p className="text-gray-300 max-w-2xl mx-auto mb-6 text-sm">
-            Everything you need to improve your AI visibility: schema markup, llms.txt, FAQ content,
-            technical fixes, revenue impact analysis, and copy optimization recommendations.
+          <p className="text-xs text-gray-600 mt-3">
+            Voice search results mirror web-based AI visibility. Improving your AI search presence directly improves voice assistant recommendations.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mb-6">
-            {['schema.json', 'llms.txt', 'faq.html', 'robots.txt', 'revenue-impact.md', 'copy-optimization.md'].map(f => (
-              <span key={f} className="bg-[#111118] px-3 py-1.5 rounded-lg text-xs text-gray-300 border border-cyan-500/10">
-                {f}
-              </span>
+        </section>
+
+        {/* === 7. REVENUE IMPACT === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Revenue Impact</h2>
+          <div className="rounded-2xl p-6 bg-red-500/5 border border-red-500/15">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Estimated monthly revenue lost to AI invisibility</div>
+                <div className="text-3xl font-bold text-red-400">{formatCurrency(gapRevenueLow)} – {formatCurrency(gapRevenueHigh)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Annual impact</div>
+                <div className="text-3xl font-bold text-red-400">{formatCurrency(gapRevenueLow * 12)} – {formatCurrency(gapRevenueHigh * 12)}</div>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-red-500/10">
+              <div className="text-xs text-gray-500 mb-2">Per-gap breakdown:</div>
+              {gapQueries.slice(0, 5).map((q: any, i: number) => (
+                <div key={i} className="flex justify-between text-xs py-1">
+                  <span className="text-gray-400 flex-1">{q.prompt}</span>
+                  <span className="text-red-400 ml-4">{formatCurrency(Math.round(range.low / totalPrompts))}–{formatCurrency(Math.round(range.high / totalPrompts))}/mo</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-gray-600 mt-3">
+              Estimates based on {niche.replace(/_/g, ' ')} industry benchmarks. Actual figures depend on local market size and conversion rates.
+            </p>
+          </div>
+        </section>
+
+        {/* === 8. FIX PLAN === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Prioritized Fix Plan</h2>
+          <p className="text-xs text-gray-600 mb-6">Ranked by impact. Each fix targets specific gaps found in your data.</p>
+
+          <div className="space-y-4">
+            {fixes.map((fix, i) => (
+              <div key={i} className="rounded-xl p-5 bg-white/[0.02] border border-white/5">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-lg bg-[#25D1F2]/10 flex items-center justify-center text-[#25D1F2] font-bold text-sm shrink-0">{i + 1}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm">{fix.title}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${fix.type === 'content' ? 'bg-purple-500/10 text-purple-400' : fix.type === 'technical' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                        {fix.type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 leading-relaxed">{fix.detail}</p>
+                    <div className="flex gap-3 mt-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${fix.impact === 'High' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>Impact: {fix.impact}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${fix.effort === 'Low' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>Effort: {fix.effort}</span>
+                    </div>
+                    {fix.queries.length > 0 && (
+                      <div className="mt-3 space-y-0.5">
+                        {fix.queries.slice(0, 3).map((q: string, j: number) => (
+                          <div key={j} className="text-[10px] text-gray-500 pl-2">• {q}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="bg-gradient-to-r from-[#06B6D4] to-[#25D1F2] text-[#051018] px-8 py-3 rounded-xl font-semibold text-base hover:scale-[1.02] transition-transform disabled:opacity-50"
-          >
-            {downloading ? 'Preparing ZIP...' : 'Download Implementation Pack (.zip)'}
-          </button>
-        </div>
-      </div>
+        </section>
 
-      {/* CTA */}
-      <div className="bg-[#0A0F1E] py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold mb-4">Want help implementing these fixes?</h3>
-          <p className="text-gray-400 mb-6 text-sm">Book a 15-minute strategy call — we'll walk through your report and recommend the highest-impact next steps.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="https://calendly.com/vizbiz-ai/15min" className="inline-block bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium">
-              Book Strategy Call
-            </a>
-            <a href={`mailto:hello@vizbiz.ai?subject=Re: ${businessName} Full Report`} className="inline-block border border-[#25D1F2]/30 text-[#25D1F2] px-6 py-3 rounded-lg font-medium">
-              Email Us
-            </a>
-          </div>
-        </div>
-      </div>
+        {/* === 9. ALL QUERIES DETAIL === */}
+        <section>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Full Query Results</h2>
+          <p className="text-xs text-gray-600 mb-4">Every query tested, click to see AI response details.</p>
 
-      {/* Footer */}
-      <footer className="bg-[#02091F] border-t border-cyan-500/15 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Image src="/logo.jpg" alt="VizBiz.ai Logo" width={30} height={30} className="rounded" />
-            <div className="text-xl font-bold">VizBiz<span className="text-[#25D1F2]">.ai</span></div>
+          <div className="space-y-1">
+            {promptResults.map((q: any, i: number) => {
+              const captureMatch = captureResults.find((r: any) => r.prompt === q.prompt && r.platform === 'search');
+              const isExpanded = expandedQuery === i;
+              return (
+                <div key={i}>
+                  <button
+                    onClick={() => setExpandedQuery(isExpanded ? null : i)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${q.businessAppeared ? 'hover:bg-emerald-500/5' : 'hover:bg-red-500/5'}`}
+                  >
+                    <span className={q.businessAppeared ? 'text-emerald-400' : 'text-red-400'}>
+                      {q.businessAppeared ? '✓' : '✗'}
+                    </span>
+                    <span className="text-sm text-gray-300 flex-1">{q.prompt}</span>
+                    {q.competitorName && !q.businessAppeared && <span className="text-[10px] text-amber-400">{q.competitorName}</span>}
+                    <span className="text-gray-600 text-xs">{isExpanded ? '▲' : '▼'}</span>
+                  </button>
+                  {isExpanded && captureMatch && (
+                    <div className="mx-4 mb-2 p-4 rounded-lg bg-white/[0.02] border border-white/5">
+                      <div className="text-xs text-gray-500 mb-2">AI Response:</div>
+                      <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">{captureMatch.responseSnippet}</p>
+                      {captureMatch.sourceUrls.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-[10px] text-gray-500 mb-1">Sources AI cited:</div>
+                          {captureMatch.sourceUrls.slice(0, 5).map((url: string, j: number) => (
+                            <div key={j} className="text-[10px] text-[#25D1F2]/60 truncate">{url}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <p className="text-sm text-gray-500">Generated by VizBiz.ai — AI Visibility Intelligence</p>
+        </section>
+
+      </main>
+
+      {/* === FOOTER === */}
+      <footer className="border-t border-white/5 mt-16">
+        <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Image src="/logo.jpg" alt="VizBiz" width={20} height={20} className="rounded" />
+            <span className="text-xs text-gray-500">VizBiz.ai — AI Visibility Intelligence</span>
+          </div>
+          <div className="text-[10px] text-gray-600">
+            Report {leadId} • {new Date().toLocaleDateString()} • Data captured from live AI platform queries
+          </div>
         </div>
       </footer>
     </div>

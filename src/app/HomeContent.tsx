@@ -1,598 +1,511 @@
 'use client';
 
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  Search, Sparkles, BarChart3, Zap, ShieldCheck, CheckCircle2,
+  RadioTower, Braces, BadgeCheck, ArrowRight, Mail, FileSearch,
+  Eye, Lock, Menu, X
+} from 'lucide-react';
 import Link from 'next/link';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
-import { ContainerScroll } from '@/components/ui/container-scroll-animation';
-import { CheckCircle2, Search, BarChart3, Zap, ChevronDown } from 'lucide-react';
-import SiteHeader from '@/components/SiteHeader';
-import StickyMobileCTA from '@/components/StickyMobileCTA';
 
-/* ─── data ─── */
-const stats = [
-  { value: 84, suffix: '%', label: 'of dealerships score below 60/100 on AI visibility' },
-  { value: 30, suffix: '%', label: 'of car buyers now use AI to research vehicles' },
-  { value: 252, suffix: '', label: 'data points analyzed per dealership' },
+/* ─── TICKER WORDS ─── */
+const tickerWords = [
+  'dentists.', 'law firms.', 'car dealerships.', 'solopreneurs.',
+  'immigration lawyers.', 'coaches.', 'mortgage brokers.', 'PI attorneys.',
+  'consultants.', 'med spas.', 'accountants.', 'real estate agents.',
+  'chiropractors.', 'financial advisors.', 'auto retailers.', 'career coaches.',
+  'insurance brokers.', 'nutritionists.', 'therapists.', 'your business.',
 ];
 
-/* ─── HIGH-CITABILITY CONTENT BLOCKS (GEO optimized: 134-167 words, self-contained, data-rich) ─── */
-const heroDataBlock = `The AI Visibility Index (AVI) is a standardized scoring system that measures how often car dealerships appear in AI-generated answers across ChatGPT, Gemini, Google AI Overviews, and Perplexity. In our analysis of 47 North American dealerships conducted during Q1 2025, 84% scored below 60 out of 100 on the AVI scale. A score below 60 indicates that AI platforms rarely recommend the dealership in buyer-intent queries such as "best Honda dealership near me" or "who has the best used car deals." By contrast, dealerships scoring above 75 appeared in AI responses 3.2 times more frequently than those scoring below 50, and those above 80 were cited as the top recommendation in 68% of relevant queries. The AVI score is calculated from 252 data points across five weighted categories — Dealer Discovery, Trust \u0026 Reviews, Service Visibility, Used Inventory, and Finance \u0026 Trade-In — providing a measurable benchmark for dealership AI visibility that can be tracked and improved over time.`;
-
-const aviScoreBlock = `The AI Visibility Index (AVI) is a five-category scoring framework that measures dealership presence in AI-generated recommendations. Each category is weighted by its impact on buyer decisions. Dealer Discovery (30%) measures how frequently AI platforms recommend the dealership for buyer-intent searches such as "best Toyota dealer in Mississauga." Trust & Reviews (25%) quantifies review signals, star ratings, and trust markers that AI systems weigh when ranking recommendations. Service Visibility (20%) tracks mentions of the service department in repair and maintenance queries. Used Inventory (15%) measures pre-owned vehicle appearance in AI shopping searches. Finance & Trade-In (10%) evaluates financing and trade-in signal strength. The composite score ranges from 0 to 100, with each category scored independently so dealerships can identify specific improvement areas rather than receiving a single opaque number. A dealership with strong reviews but weak service visibility, for example, can prioritize service-related signals without over-investing in categories already performing well.`;
-
-const methodologyBlock = `A VizBiz AVI audit is conducted using a standardized 84-prompt methodology across three major AI platforms: OpenAI's ChatGPT (GPT-4o), Google's Gemini 1.5 Pro, and Anthropic's Claude 3.5 Sonnet. Each prompt represents a real buyer-intent query that car shoppers actually ask AI systems, covering new vehicle searches, used inventory, service recommendations, financing, and trade-in valuations. The 84 prompts generate 252 measurable data points per dealership because each prompt is evaluated across three dimensions: whether the dealership is mentioned, the position of that mention (first, second, or later), and whether the AI recommends the dealership as a preferred option. Results are compared against a local competitor set of 3-5 dealerships in the same geographic market, producing a relative visibility gap analysis that shows which competitors AI favors and by what margin. Audits are delivered within 24-48 hours and include a prioritized action plan.`;
-
-const faqSeoBlock = `VizBiz does not replace search engine optimization (SEO); it measures a separate and increasingly important channel called AI visibility, which refers to how often and how prominently a dealership appears in AI-generated answers across ChatGPT, Gemini, Google AI Overviews, and Perplexity. According to a 2025 automotive consumer behavior survey, 30% of car buyers now use AI assistants to research vehicles before visiting a dealership, a percentage that has grown 340% since 2023. Traditional SEO tools measure keyword rankings, backlinks, and technical site health, but they do not capture whether AI systems mention, recommend, or omit a dealership in conversational answers. VizBiz complements SEO by providing a dedicated score, competitor benchmark, and action plan specifically for AI recommendation channels, filling a measurement gap that standard SEO platforms do not address. Dealerships should maintain both SEO and AI visibility strategies, as the two channels capture different stages of the buyer journey.`;
-
-const comparisonBlock = `VizBiz is an AI visibility intelligence platform purpose-built for automotive retail, differing from DIY searching, generic SEO agencies, and brand monitoring tools in three measurable ways. A DIY approach involves sporadic manual searches with no scoring framework, no competitor comparison, and no repeatable methodology; dealers see scattered impressions but cannot benchmark progress or track improvement. Generic SEO agencies deliver broad keyword optimization and monthly retainers averaging $2,000-$5,000, yet their reporting does not measure AI-specific recommendation behavior or the 30% of buyers who now research through ChatGPT and Gemini. Brand mention trackers report when a dealership name appears online but provide no score, no gap analysis against local competitors, and no prioritized action plan. VizBiz delivers an AVI score (0-100), a competitor gap analysis, platform-specific findings, and a ranked list of fixes tailored to how AI systems evaluate dealerships across ChatGPT, Gemini, Google AI, and Perplexity.`;
-
-const aviCategories = [
-  { name: 'Dealer Discovery', weight: '30%', score: 42, description: 'How often AI recommends your dealership for buyer-intent searches' },
-  { name: 'Trust & Reviews', weight: '25%', score: 37, description: 'Review signals, ratings, and trust markers AI relies on' },
-  { name: 'Service Visibility', weight: '20%', score: 34, description: 'Service department mentions in AI-generated answers' },
-  { name: 'Used Inventory', weight: '15%', score: 52, description: 'Pre-owned inventory appearance in AI shopping queries' },
-  { name: 'Finance & Trade-In', weight: '10%', score: 28, description: 'Financing and trade-in signal presence' },
-];
-
-const recentMentions = [
-  { question: 'Best Honda dealerships near Oakville?', position: '#4', context: 'AI recommended 3 competitors before this dealership appeared.' },
-  { question: 'Who has the best used car deals in the GTA?', position: 'Not mentioned', context: 'This dealership was invisible. AI recommended 5 other dealers.' },
-  { question: 'Reliable Toyota service department in Mississauga?', position: '#2', context: 'Strong service visibility. Appeared early in AI recommendations.' },
-];
-
-const howItWorks = [
-  { number: '01', title: 'Tell us about your dealership', body: "Share your dealership's website, location, and inventory. Our 84-prompt engine evaluates visibility across ChatGPT, Gemini, Google AI, and Perplexity.", icon: Search },
-  { number: '02', title: 'We run your AVI audit', body: '84 buyer-intent prompts across three AI platforms — 252 data points per dealership — compared against your local competitors.', icon: BarChart3 },
-  { number: '03', title: 'Get your score and action plan', body: 'Your AVI score (0–100), competitor gap analysis, platform breakdown, and a prioritized action plan telling you exactly what to fix first.', icon: Zap },
-];
-
-const signals = ['AVI score and band', 'Competitor comparison', 'Platform visibility review', 'Buyer-intent findings', 'Priority fixes ranked', 'Next-step roadmap'];
-
-const comparisonRows = [
-  { option: 'DIY guessing', get: 'Manual searches and scattered impressions', missing: 'No benchmark, no scoring, no competitor view' },
-  { option: 'Generic SEO agency', get: 'Broad SEO advice and retainers', missing: 'Not built for AI recommendation behavior' },
-  { option: 'Monitoring tools', get: 'Brand mention tracking and dashboards', missing: 'Tells you the score, not what to fix' },
-  { option: 'VizBiz', get: 'AVI score, competitor gaps, buyer-intent analysis, action plan', missing: 'Built specifically for dealerships', highlight: true },
-];
-
-const faqs = [
-  { question: 'Does VizBiz replace SEO?', answer: faqSeoBlock },
-  { question: 'Does it work with Dealer.com, CDK, or WordPress?', answer: 'Yes. VizBiz evaluates AI visibility independently of your CMS. We analyze how AI platforms interpret your dealership across the web — your website, reviews, directories, and third-party sources.' },
-  { question: 'What do I actually receive?', answer: 'An AVI score (0–100), competitor comparison showing which local dealerships AI recommends instead of you, platform-specific findings, and a prioritized action plan. 84 prompts, 252 data points per dealership.' },
-  { question: 'How fast do I get results?', answer: 'Your full AVI audit is typically delivered within 24-48 hours. You\'ll receive a detailed report with your score, findings, and recommended next steps.' },
-  { question: 'How does VizBiz track improvement over time?', answer: 'We re-run the same 84-prompt battery across all AI platforms to measure whether your dealership is appearing more often, being recommended higher, and closing gaps with competitors.' },
-];
-
-/* ─── animated counter ─── */
-function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const [display, setDisplay] = useState(0);
-
+/* ─── SECTION OBSERVER ─── */
+function useActiveSection(sectionIds: string[]) {
+  const [active, setActive] = useState('');
   useEffect(() => {
-    if (!isInView) return;
-    const duration = 1500;
-    const start = performance.now();
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setDisplay(Math.round(eased * value));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [isInView, value]);
-
-  return <span ref={ref}>{display}{suffix}</span>;
+    const observers: IntersectionObserver[] = [];
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActive(id); },
+        { threshold: 0.3 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, [sectionIds]);
+  return active;
 }
 
-/* ─── accordion ─── */
-function FAQItem({ item, i }: { item: typeof faqs[0]; i: number }) {
-  const [open, setOpen] = useState(false);
+/* ─── TICKER ─── */
+function Ticker() {
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<'in' | 'out'>('in');
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setPhase('out');
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % tickerWords.length);
+        setPhase('in');
+      }, 260);
+    }, 1150);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ delay: i * 0.08, duration: 0.4 }}
-      className="glass-card rounded-2xl overflow-hidden"
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-6 text-left"
+    <span className="hero-ticker-outer" aria-live="polite" aria-atomic="true">
+      <span
+        className={`hero-ticker-word ${phase === 'in' ? 'hero-ticker-word-in' : 'hero-ticker-word-out'}`}
       >
-        <h3 className="text-base font-semibold text-white pr-4">{item.question}</h3>
-        <motion.div
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="flex-shrink-0"
-        >
-          <ChevronDown className="h-5 w-5 text-white/40" />
-        </motion.div>
-      </button>
-      <motion.div
-        initial={false}
-        animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="overflow-hidden"
-      >
-        <p className="px-6 pb-6 text-[0.94rem] leading-[1.85] text-[var(--text-secondary)]">{item.answer}</p>
-      </motion.div>
-    </motion.div>
+        {tickerWords[idx]}
+      </span>
+    </span>
   );
 }
 
-/* ─── main component ─── */
+/* ─── FAQ ITEM ─── */
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden transition-all hover:border-white/10">
+      <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between p-5 sm:p-6 text-left">
+        <span className="text-sm font-semibold text-white pr-4">{q}</span>
+        <span className="flex-shrink-0 text-lg transition-transform duration-300" style={{ transform: open ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+      </button>
+      <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: open ? '400px' : '0px', opacity: open ? 1 : 0 }}>
+        <p className="px-5 pb-5 sm:px-6 sm:pb-6 text-sm leading-relaxed text-white/50">{a}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── HEADER ─── */
+function Header({ activeSection }: { activeSection: string }) {
+  const [open, setOpen] = useState(false);
+  const items = [
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'What You Get', href: '#what-you-get' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'FAQ', href: '#faq' },
+  ];
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+      setOpen(false);
+    }
+  };
+
+  return (
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#020617]/88 backdrop-blur-xl">
+      <div className="mx-auto max-w-[88rem] px-4 sm:px-6 lg:px-10">
+        <div className="flex h-[4.5rem] items-center justify-between">
+          <Link href="/" className="inline-flex items-center gap-2" aria-label="VizBiz.ai home">
+            <img src="/vizbiz-icon-256.svg" alt="" className="h-9 w-9 object-contain" />
+            <span className="font-sans text-[1.35rem] leading-none tracking-[-0.035em] text-white">VizBiz<span className="text-[#22D3EE]">.ai</span></span>
+          </Link>
+          <nav className="hidden items-center gap-8 md:flex">
+            {items.map((item) => (
+              <a key={item.href} href={item.href} onClick={(e) => handleClick(e, item.href)}
+                className={`text-sm font-medium transition-colors ${activeSection === item.href.slice(1) ? 'text-[#22D3EE]' : 'text-slate-300 hover:text-[#22D3EE]'}`}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <button onClick={() => setOpen(!open)} aria-label="Toggle menu"
+            className="rounded-xl border border-cyan-300/25 bg-white/5 p-2 text-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.12)] transition hover:border-cyan-300/50 hover:bg-white/10 md:hidden">
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="border-t border-white/8 bg-[#020617]/96 px-4 pb-4 pt-3 backdrop-blur-2xl md:hidden">
+          <nav className="mx-auto flex max-w-[88rem] flex-col gap-1">
+            {items.map((item) => (
+              <a key={item.href} href={item.href} onClick={(e) => handleClick(e, item.href)}
+                className="rounded-xl px-4 py-3 text-sm font-medium text-white/70 hover:bg-white/4">{item.label}</a>
+            ))}
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* ─── INTAKE FORM ─── */
+function IntakeForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const payload = new FormData();
+    payload.append('dealershipName', fd.get('name') as string);
+    payload.append('name', fd.get('name') as string);
+    payload.append('email', fd.get('email') as string);
+    const url = (fd.get('websiteUrl') as string || '').trim();
+    payload.append('websiteUrl', /^https?:\/\//i.test(url) ? url : url ? `https://${url}` : '');
+    payload.append('cityMarket', fd.get('city') as string);
+    const c1 = fd.get('competitorOne') as string;
+    const c2 = fd.get('competitorTwo') as string;
+    payload.append('competitor', [c1, c2].filter(Boolean).join(', '));
+    payload.append('phone', 'Not provided');
+    payload.append('source', 'hero form');
+    payload.append('originalCta', 'Show my score preview + prepare email report');
+    payload.append('originalPage', '/');
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/intake', { method: 'POST', body: payload });
+      if (res.redirected) { window.location.href = res.url; }
+      else { window.location.href = '/thank-you?submitted=1'; }
+    } catch { setIsSubmitting(false); }
+  }
+
+  const fieldClass = 'w-full rounded-xl border border-slate-300 bg-white/90 px-4 py-3 text-sm text-[#0F172A] outline-none ring-[#22D3EE] focus:ring-2 placeholder:text-slate-400';
+
+  return (
+    <form onSubmit={handleSubmit} id="free-mini-report"
+      className="w-full max-w-full overflow-hidden rounded-[1.5rem] border border-cyan-200/40 bg-gradient-to-br from-[#E0F7FA] to-[#CFFAFE] p-4 text-[#0F172A] shadow-[0_0_60px_rgba(34,211,238,0.22)] sm:rounded-[2rem] sm:p-6">
+
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[#0F172A]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#0F172A]">
+            <Sparkles className="h-3.5 w-3.5 text-[#06B6D4]" /> Free AVI mini report
+          </div>
+          <h2 className="font-serif text-xl leading-tight sm:text-3xl">See if AI recommends your business.</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">Enter your website and two competitors. We&apos;ll check the AI answers buyers are likely to see before they call you.</p>
+        </div>
+        <div className="hidden shrink-0 rounded-2xl bg-[#0F172A] p-2 shadow-[0_0_24px_rgba(15,23,42,0.16)] sm:block" aria-hidden="true">
+          <img src="/vizbiz-icon-256.svg" alt="" width="48" height="48" className="h-12 w-12 object-contain" />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="space-y-1 text-sm font-semibold">Business name <span className="text-red-400">*</span>
+          <input required placeholder="Oakville Family Dental" className={fieldClass} name="name" />
+        </label>
+        <label className="space-y-1 text-sm font-semibold">Email to unlock summary <span className="text-red-400">*</span>
+          <input type="email" required placeholder="you@business.com" className={fieldClass} name="email" />
+        </label>
+        <label className="space-y-1 text-sm font-semibold">Website
+          <input placeholder="business.com" className={fieldClass} name="websiteUrl" />
+        </label>
+        <label className="space-y-1 text-sm font-semibold">City / market <span className="text-red-400">*</span>
+          <input required placeholder="Oakville" className={fieldClass} name="city" />
+        </label>
+        <label className="space-y-1 text-sm font-semibold sm:col-span-2">Primary service / niche <span className="font-normal text-slate-500">optional</span>
+          <input placeholder="Emergency dental, roof repair, family law..." className={fieldClass} name="primaryService" />
+        </label>
+        <div className="space-y-2 sm:col-span-2">
+          <p className="text-sm font-semibold">Top 2 competitors recommended</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="space-y-1 text-sm font-semibold">Competitor 1
+              <input placeholder="Competitor name or website" className={fieldClass} name="competitorOne" />
+            </label>
+            <label className="space-y-1 text-sm font-semibold">Competitor 2
+              <input placeholder="Competitor name or website" className={fieldClass} name="competitorTwo" />
+            </label>
+          </div>
+          <span className="block text-xs text-slate-600">Add the two businesses customers compare you against. Names or websites are fine. If you leave one blank, we can research likely competitors later, but your own picks are more accurate.</span>
+        </div>
+      </div>
+
+      <button type="submit" disabled={isSubmitting}
+        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F172A] px-6 py-4 font-bold text-white transition hover:bg-[#020617] disabled:cursor-not-allowed disabled:opacity-70">
+        <Mail className="h-5 w-5" />
+        {isSubmitting ? 'Building score preview...' : 'Show my score preview + prepare email report'}
+        <ArrowRight className="h-5 w-5" />
+      </button>
+      <p className="mt-3 text-center text-xs text-slate-600">We&apos;ll infer your niche from the website when possible. Competitors are capped at two so the report stays focused.</p>
+    </form>
+  );
+}
+
+/* ─── MAIN ─── */
 export default function HomeContent() {
+  const activeSection = useActiveSection(['how-it-works', 'what-you-get', 'pricing', 'faq']);
+
   return (
     <>
-      <SiteHeader />
-      <main>
-        {/* ─── HERO — Bombon-style ─── */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#02091F] via-[#0A0F1E] to-[#02091F]" aria-hidden="true" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(6,182,212,0.08),transparent)]" aria-hidden="true" />
+      <Header activeSection={activeSection} />
 
-          <div className="relative z-10 w-full max-w-6xl mx-auto">
-            {/* Top area: centered text + buttons (like Bombon) */}
-            <div className="flex flex-col items-center text-center pt-32 pb-16 md:pt-40 md:pb-24">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-                className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-xs font-medium tracking-wider text-white/60 uppercase"
-              >
-                AI Visibility Intelligence
-              </motion.div>
+      <main className="min-h-screen overflow-x-hidden">
 
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.7 }}
-                className="text-[3rem] sm:text-[4.5rem] md:text-[6rem] lg:text-[7rem] font-bold leading-[0.9] tracking-[-0.04em] text-white"
-              >
-                AI isn't
-                <br />
-                recommending
-                <br />
-                <span className="bg-gradient-to-r from-[#06B6D4] to-[#25D1F2] bg-clip-text text-transparent">
-                  your dealership.
-                </span>
-              </motion.h1>
+        {/* ═══════ HERO ═══════ */}
+        <section className="relative isolate overflow-hidden bg-[#020617] pt-20 text-white">
+          {/* bg gradient */}
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.22),transparent_34%),linear-gradient(180deg,#020617_0%,#0F172A_65%,#020617_100%)]" />
+          <div className="absolute left-1/2 top-16 -z-10 h-80 w-80 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="mt-8 max-w-3xl text-base sm:text-lg leading-8 text-[var(--text-secondary)]"
-              >
-                <p className="geo-citable-block bg-white/[0.03] border border-white/10 rounded-xl p-5 text-[var(--text-secondary)] leading-[1.75]">
-                  {heroDataBlock}
-                </p>
-              </motion.div>
+          <div className="mx-auto grid max-w-[88rem] gap-12 overflow-hidden px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.22fr)_minmax(420px,0.78fr)] lg:gap-14 lg:px-10 lg:py-24 xl:gap-16">
+            {/* Left: copy */}
+            <div className="flex min-w-0 flex-col justify-center">
+              <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/30 bg-white/5 px-4 py-2 text-sm text-cyan-100 backdrop-blur">
+                <span className="h-2 w-2 rounded-full bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.85)]" />
+                AI visibility reports for local businesses
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-              >
-                <Link
-                  href="/intake/"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#06B6D4] to-[#25D1F2] px-8 py-4 text-sm font-semibold text-white shadow-[0_0_30px_rgba(6,182,212,0.3)] transition-all hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] hover:scale-[1.02] min-h-14 text-base"
-                >
-                  Get My AVI Snapshot
-                </Link>
-                <Link
-                  href="/sample-ai-visibility-report-for-car-dealerships/"
-                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-8 py-4 text-sm font-medium text-white/80 transition-all hover:bg-white/[0.06] hover:text-white min-h-14"
-                >
-                  See Sample Report
-                </Link>
-              </motion.div>
+              <h1 className="max-w-full font-sans text-[clamp(2.1rem,9.5vw,5.125rem)] font-semibold leading-[1.06] tracking-[-0.03em] sm:text-[clamp(3rem,6vw,5.125rem)]">
+                <span className="block sm:whitespace-nowrap">Be the business</span>
+                <span className="block sm:whitespace-nowrap">AI cites <span className="hero-cursor" aria-hidden="true" /></span>
+                <Ticker />
+              </h1>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
-                className="mt-6 text-xs text-white/30"
-              >
-                Free audit · No credit card · Delivered in 24-48 hours
-              </motion.p>
-            </div>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-xl sm:leading-8">
+                See whether ChatGPT, Gemini, Claude, Perplexity, and Google AI are more likely to recommend you or the two competitors customers already compare you with.
+              </p>
 
-            {/* Bottom area: scroll-reveal dashboard card (like Bombon's hero image) */}
-            <div className="flex flex-col overflow-hidden pb-20">
-              <ContainerScroll
-                titleComponent={<></>}
-              >
-                <div className="h-full w-full bg-[#0f1117] rounded-2xl p-5 md:p-8 relative overflow-hidden">
-                  {/* Dashboard header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
-                        <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
-                        <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
-                      </div>
-                      <span className="text-xs text-white/40 ml-2">vizbiz.ai/dashboard</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-[#06B6D4]/10 border border-[#06B6D4]/20 rounded-lg px-3 py-1.5">
-                      <span className="text-xs text-[#25D1F2] font-medium">AVI Score</span>
-                      <span className="text-2xl font-bold text-[#06B6D4]">42</span>
-                      <span className="text-xs text-[#06B6D4]/60">/100</span>
-                    </div>
-                  </div>
-
-                  {/* Score bars */}
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Dealer Discovery', score: 42, weight: 30, color: '#25D1F2' },
-                      { name: 'Trust & Reviews', score: 37, weight: 25, color: '#EF4444' },
-                      { name: 'Service Visibility', score: 34, weight: 20, color: '#EF4444' },
-                      { name: 'Used Inventory', score: 52, weight: 15, color: '#FBBF24' },
-                      { name: 'Finance & Trade-In', score: 28, weight: 10, color: '#EF4444' },
-                    ].map((cat) => (
-                      <div key={cat.name} className="flex items-center gap-4">
-                        <span className="text-xs text-white/50 w-36 text-right shrink-0">{cat.name}</span>
-                        <div className="flex-1 h-2 bg-white/[0.05] rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-1000"
-                            style={{ width: `${cat.score}%`, backgroundColor: cat.color }}
-                          />
-                        </div>
-                        <span className="text-sm font-bold w-8" style={{ color: cat.color }}>{cat.score}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Competitor comparison */}
-                  <div className="mt-6 pt-5 border-t border-white/[0.06]">
-                    <p className="text-xs text-white/30 mb-3 uppercase tracking-wider">Competitor Gap</p>
-                    <div className="flex gap-6 items-end">
-                      {[{ name: 'Your Store', score: 42, color: '#06B6D4' }, { name: 'Competitor A', score: 78, color: '#22C55E' }, { name: 'Competitor B', score: 65, color: '#22C55E' }].map((c) => (
-                        <div key={c.name} className="flex flex-col items-center gap-2 flex-1">
-                          <div className="w-full bg-white/[0.03] rounded-lg overflow-hidden h-20 flex items-end">
-                            <div
-                              className="w-full rounded-lg transition-all duration-1000"
-                              style={{ height: `${c.score}%`, backgroundColor: c.color, opacity: 0.8 }}
-                            />
-                          </div>
-                          <span className="text-[10px] text-white/40">{c.name}</span>
-                          <span className="text-sm font-bold" style={{ color: c.color }}>{c.score}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <div className="mt-8 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <RadioTower className="mb-3 h-5 w-5 text-[#22D3EE]" />
+                  Prompt clusters built from your niche
                 </div>
-              </ContainerScroll>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <Braces className="mb-3 h-5 w-5 text-[#22D3EE]" />
+                  Website, schema, and local signal gaps
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <BadgeCheck className="mb-3 h-5 w-5 text-[#22D3EE]" />
+                  Two real competitors, not a generic average
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <a href="#free-mini-report" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-7 py-4 font-bold text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.35)] transition hover:scale-[1.01]">
+                  Run the free mini report <ArrowRight className="h-5 w-5" />
+                </a>
+                <a href="#pricing" className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10">
+                  View full report options
+                </a>
+              </div>
+            </div>
+
+            {/* Right: intake */}
+            <div className="w-full justify-self-stretch sm:max-w-[34rem] sm:justify-self-end">
+              <IntakeForm />
             </div>
           </div>
         </section>
 
-        {/* ─── STATS BAR ─── */}
-        <section className="chapter-dark border-t border-white/6 px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="text-center"
-              >
-                <p className="text-[2.8rem] font-bold tracking-[-0.04em] text-[var(--accent-blue)] sm:text-[3.2rem]">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">{stat.label}</p>
-              </motion.div>
-            ))}
+        {/* ═══════ WHAT YOU GET ═══════ */}
+        <section id="what-you-get" className="bg-[#020617] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#22D3EE]">Why AI recommends your competitors</p>
+              <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">AI does not guess who to trust. It looks for evidence.</h2>
+              <p className="mt-5 text-lg leading-8 text-slate-300">When someone asks ChatGPT, Gemini, Claude, Perplexity, or Google AI for a local recommendation, your website is only one signal. The answer usually comes from a pattern: clear services, clean local data, reviews, schema, and third-party mentions that all point to the same business.</p>
+            </div>
+
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { icon: Search, title: 'The business is easy to identify', desc: 'AI tools need a clean entity trail: business name, city, service area, contact details, Google profile, and consistent listings. If that trail is messy, the model hesitates.' },
+                { icon: Sparkles, title: 'The services match the buyer\'s question', desc: 'A page that says "we do dental care" is weaker than a page that clearly answers "emergency dentist in Oakville." Specific pages give AI something useful to cite.' },
+                { icon: BarChart3, title: 'Reviews use the language buyers use', desc: 'Stars help, but the words matter too. Reviews that mention speed, trust, price, or service quality give AI systems more evidence than generic praise.' },
+                { icon: ShieldCheck, title: 'The website is machine-readable', desc: 'Schema, FAQs, service pages, headings, internal links, robots.txt, sitemap, and llms.txt all help crawlers understand what the business does and where it operates.' },
+                { icon: Zap, title: 'Other sites confirm the story', desc: 'AI systems do not only trust your homepage. They compare your website against directories, local profiles, category pages, reviews, articles, and competitor mentions.' },
+                { icon: CheckCircle2, title: 'Competitors create the benchmark', desc: 'A score by itself is not enough. VizBiz compares you with the two businesses customers already consider, then shows which signals they have that you do not.' },
+              ].map((item, i) => (
+                <div key={i} className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 shadow-[0_0_50px_rgba(15,23,42,0.35)] transition-all hover:border-white/10 hover:bg-white/[0.04]">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#22D3EE]/10">
+                    <item.icon className="h-5 w-5 text-[#22D3EE]" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/45">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* highlight banner */}
+            <div className="mt-10 rounded-2xl border border-cyan-200/30 bg-gradient-to-br from-[#E0F7FA] to-[#CFFAFE] p-6 text-center shadow-[0_0_60px_rgba(34,211,238,0.12)] sm:p-8">
+              <p className="font-serif text-2xl leading-tight text-[#0F172A] sm:text-3xl">What the free report checks first</p>
+              <p className="mx-auto mt-3 max-w-xl text-base text-[#0F172A]/60">Enter your website and two competitors. VizBiz shows whether AI is more likely to recommend you, where the evidence breaks down, and which fixes should come first.</p>
+            </div>
           </div>
         </section>
 
-        {/* ─── AVI SCORE ─── */}
-        <section className="chapter-dark px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl"
-            >
-              <div className="section-kicker">Your AVI Score</div>
-              <h2 className="display-font mt-5 text-[2.4rem] font-semibold tracking-[-0.04em] text-white sm:text-[3rem]">
-                Five categories. One score. Clear priorities.
-              </h2>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.6 }}
-                className="mt-4 text-lg leading-8 text-[var(--text-secondary)]"
-              >
-                {aviScoreBlock}
-              </motion.p>
-            </motion.div>
+        {/* ═══════ HOW IT WORKS ═══════ */}
+        <section id="how-it-works" className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" style={{ background: 'linear-gradient(135deg, #FAF7F2, #F2EDE4)' }}>
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">From score to fix list</p>
+              <h2 className="mt-4 font-serif text-4xl leading-tight text-[#0F172A] sm:text-5xl">A mini report should do more than give you a number.</h2>
+              <p className="mt-5 text-lg leading-8 text-slate-600">The free report gives you the first useful read: where AI sees you, where it prefers a competitor, and which trust signals are missing. The paid report goes deeper and turns that into work we can actually ship.</p>
+            </div>
 
-            <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_1fr]">
+            <div className="mt-12 grid gap-8 lg:grid-cols-2">
+              {/* Left: benefits */}
               <div className="space-y-4">
-                {aviCategories.map((cat, i) => (
-                  <motion.div
-                    key={cat.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: '-50px' }}
-                    transition={{ delay: i * 0.08, duration: 0.4 }}
-                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.06)' }}
-                    className="glass-card rounded-2xl p-5 cursor-default"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-white">{cat.name} <span className="text-[var(--accent-blue)]">({cat.weight})</span></p>
-                        <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{cat.description}</p>
-                      </div>
-                      <div className="ml-4 flex-shrink-0 text-right">
-                        <p className={`text-2xl font-bold ${cat.score < 35 ? 'text-red-400' : cat.score < 50 ? 'text-yellow-400' : 'text-[var(--accent-blue)]'}`}>{cat.score}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3 scene-bar-shell">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${cat.score}%` }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: 'easeOut' }}
-                        className={`scene-bar ${cat.score < 35 ? 'scene-bar-red' : cat.score < 50 ? 'scene-bar-yellow' : 'scene-bar-blue'}`}
-                      />
-                    </div>
-                  </motion.div>
+                {[
+                  'Know if AI recommends you or the two businesses customers already compare you with',
+                  'Find the buyer questions where your website, reviews, or local signals are weakest',
+                  'Preview the Revenue Opportunity Gap™ as a directional estimate, not a promise',
+                  'Move from a free preview to a full report, fix package, or monthly monitoring',
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-xl bg-white/60 p-4">
+                    <Eye className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#06B6D4]" />
+                    <span className="text-sm text-[#0F172A]/70">{item}</span>
+                  </div>
                 ))}
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="space-y-5"
-              >
-                <div className="glass-card rounded-2xl p-6">
-                  <div className="flex items-center justify-between border-b border-white/8 pb-4">
-                    <div>
-                      <p className="scene-eyebrow">Sample dealership</p>
-                      <h3 className="mt-2 text-xl font-semibold text-white">Recent AI Mentions</h3>
-                    </div>
-                    <div className="scene-score-pill">
-                      <span>AVI</span>
-                      <strong>42</strong>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-4">
-                    {recentMentions.map((m, i) => (
-                      <motion.div
-                        key={m.question}
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.4 + i * 0.1, duration: 0.3 }}
-                        className="rounded-xl bg-white/4 p-4 border border-white/6"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="text-sm font-medium text-white/90">{m.question}</p>
-                          <span className={`flex-shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold ${m.position === 'Not mentioned' ? 'bg-red-500/16 text-red-400' : 'bg-[var(--accent-blue)]/16 text-[var(--accent-blue)]'}`}>
-                            {m.position}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs leading-5 text-white/50">{m.context}</p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+              {/* Right: dark card */}
+              <div className="rounded-3xl bg-[#020617] p-6 text-white shadow-2xl sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#22D3EE]">Mini report flow</p>
+                <p className="mt-2 text-sm text-white/50">Simple enough to start. Specific enough to sell the next step.</p>
 
-                <div className="glass-card rounded-2xl p-5">
-                  <p className="scene-eyebrow">What you get</p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    {signals.map((s) => (
-                      <div key={s} className="flex items-center gap-2 text-sm text-white/70">
-                        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-[var(--accent-blue)]" />
-                        <span>{s}</span>
+                <div className="mt-6 space-y-4">
+                  {[
+                    { num: '01', title: 'Run the free scan', desc: 'Share your website, market, email, and two competitors. That is enough to create a useful first read without making you fill out a long intake form.' },
+                    { num: '02', title: 'See where AI loses confidence', desc: 'The mini report shows your score, your weakest buyer questions, and whether the two competitors you named look easier for AI to recommend.' },
+                    { num: '03', title: 'Fix the missing signals', desc: 'The full report turns the preview into a prioritized fix list: service pages, schema, FAQs, local entity signals, reviews, and monitoring.' },
+                  ].map((step, i) => (
+                    <div key={i} className="flex gap-4">
+                      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-cyan-300/10 text-xs font-bold text-cyan-200">{step.num}</span>
+                      <div>
+                        <h4 className="text-sm font-semibold text-white">{step.title}</h4>
+                        <p className="mt-1 text-sm leading-relaxed text-white/40">{step.desc}</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── HOW IT WORKS ─── */}
-        <section className="chapter-dark border-t border-white/6 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl"
-            >
-              <div className="section-kicker">How it works</div>
-              <h2 className="display-font mt-5 text-[2.2rem] font-semibold tracking-[-0.04em] text-white sm:text-[2.8rem]">
-                From invisible to unmissable in three steps.
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-[var(--text-secondary)]">{methodologyBlock}</p>
-            </motion.div>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {howItWorks.map((step, i) => (
-                <motion.div
-                  key={step.number}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ delay: i * 0.15, duration: 0.5 }}
-                  whileHover={{ y: -4, borderColor: 'rgba(37,209,242,0.3)' }}
-                  className="glass-card rounded-2xl p-6 border border-transparent transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-blue)]/12">
-                      <step.icon className="h-5 w-5 text-[var(--accent-blue)]" />
                     </div>
-                    <span className="text-xs font-bold tracking-[0.2em] uppercase text-[var(--accent-blue)]">{step.number}</span>
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold text-white">{step.title}</h3>
-                  <p className="mt-3 text-[0.94rem] leading-[1.85] text-[var(--text-secondary)]">{step.body}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ─── COMPARISON ─── */}
-        <section className="chapter-dark border-t border-white/6 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <div className="mx-auto max-w-5xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl"
-            >
-              <div className="section-kicker">Why VizBiz</div>
-              <h2 className="display-font mt-5 text-[2.2rem] font-semibold tracking-[-0.04em] text-white sm:text-[2.8rem]">
-                Not another dashboard. A diagnosis and a plan.
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-[var(--text-secondary)]">{comparisonBlock}</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="comparison-stage-v2 mt-10"
-            >
-              <div className="grid grid-cols-[1fr_1fr_1fr] gap-0">
-                <div className="comparison-head-v2">Approach</div>
-                <div className="comparison-head-v2">What you get</div>
-                <div className="comparison-head-v2">What's missing</div>
-              </div>
-              {comparisonRows.map((row) => (
-                <div key={row.option} className={`comparison-row-v2 ${row.highlight ? 'comparison-highlight-v2' : ''}`}>
-                  <div className="comparison-cell-v2 font-semibold">{row.option}</div>
-                  <div className="comparison-cell-v2">{row.get}</div>
-                  <div className="comparison-cell-v2">{row.missing}</div>
+                  ))}
                 </div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
 
-        {/* ─── IS / ISN'T ─── */}
-        <section className="chapter-dark border-t border-white/6 px-4 py-16 sm:px-6 sm:py-22 lg:px-8">
-          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5 }}
-              className="glass-card rounded-2xl p-6"
-            >
-              <div className="section-kicker">What VizBiz is</div>
-              <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{comparisonBlock}</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="glass-card rounded-2xl p-6"
-            >
-              <div className="section-kicker">What VizBiz isn't</div>
-              <ul className="mt-5 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <li className="flex items-start gap-2"><span className="mt-1 h-4 w-4 flex-shrink-0 text-white/30">✕</span> A generic SEO retainer</li>
-                <li className="flex items-start gap-2"><span className="mt-1 h-4 w-4 flex-shrink-0 text-white/30">✕</span> A vanity score with no explanation</li>
-                <li className="flex items-start gap-2"><span className="mt-1 h-4 w-4 flex-shrink-0 text-white/30">✕</span> A website rebuild</li>
-                <li className="flex items-start gap-2"><span className="mt-1 h-4 w-4 flex-shrink-0 text-white/30">✕</span> A promise of instant rankings</li>
-              </ul>
-            </motion.div>
-          </div>
-        </section>
+                {/* CTA path card */}
+                <div className="mt-6 rounded-xl bg-gradient-to-br from-[#E0F7FA] to-[#CFFAFE] p-4">
+                  <p className="text-sm font-semibold text-[#0F172A]">Free report first. Full report and fix package next. Monitoring when they want to track movement.</p>
+                </div>
+                {/* Locked value card */}
+                <div className="mt-3 flex items-center gap-3 rounded-xl bg-white/5 p-4">
+                  <Lock className="h-4 w-4 text-[#22D3EE]" />
+                  <p className="text-sm text-white/50">Prompt evidence, raw results, competitor breakdowns, and fixes your site can use.</p>
+                </div>
 
-        {/* ─── FAQ ─── */}
-        <section className="chapter-dark border-t border-white/6 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <div className="mx-auto max-w-5xl">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl"
-            >
-              <div className="section-kicker">Common questions</div>
-              <h2 className="display-font mt-5 text-[2.2rem] font-semibold tracking-[-0.04em] text-white sm:text-[2.8rem]">
-                Answers that make the next step easier.
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-[var(--text-secondary)]">{faqSeoBlock}</p>
-            </motion.div>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {faqs.map((item, i) => (
-                <FAQItem key={item.question} item={item} i={i} />
-              ))}
+                <a href="#free-mini-report" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] transition hover:scale-[1.01]">
+                  Start with the free mini report <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ─── FINAL CTA ─── */}
-        <motion.section
-          className="chapter-final px-4 py-24 sm:px-6 sm:py-32 lg:px-8"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
-        >
+        {/* ═══════ PRICING (2 CARDS) ═══════ */}
+        <section id="pricing" className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" style={{ background: 'linear-gradient(135deg, #FAF7F2, #F2EDE4)' }}>
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">Paid next steps</p>
+              <h2 className="mt-4 font-serif text-4xl leading-tight text-[#0F172A] sm:text-5xl">Choose the level of fix you want.</h2>
+              <p className="mt-5 text-lg leading-8 text-slate-600">Start with the free score. Then move into a fix package or fix + monitoring when you want the gaps tracked and improved over time.</p>
+            </div>
+
+            <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2">
+              {/* Fix */}
+              <div className="rounded-[2rem] border border-slate-200 bg-white/80 p-8 shadow-lg">
+                <div className="text-sm font-semibold uppercase tracking-wider text-[#06B6D4]">Fix</div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-[#0F172A]">$299</span>
+                  <span className="text-slate-500">/mo</span>
+                </div>
+                <ul className="mt-6 space-y-3">
+                  {['Full AI visibility audit (80+ queries)', 'We implement every fix for you', 'Monthly re-audit included'].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#0F172A]/70">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#06B6D4]" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <a href="#free-mini-report" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#0F172A] px-6 py-3.5 font-semibold text-white transition hover:bg-[#020617]">Get Started</a>
+              </div>
+
+              {/* Fix + Monitor */}
+              <div className="rounded-[2rem] border-2 border-cyan-300/30 bg-white/80 p-8 shadow-lg ring-2 ring-cyan-300/20 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#020617]">Most Popular</div>
+                <div className="text-sm font-semibold uppercase tracking-wider text-[#06B6D4]">Fix + Monitor</div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-[#0F172A]">$499</span>
+                  <span className="text-slate-500">/mo</span>
+                </div>
+                <ul className="mt-6 space-y-3">
+                  {['Everything in Fix', 'Competitor tracking', 'Ongoing optimization as AI tools change', 'Priority support'].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#0F172A]/70">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#06B6D4]" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <a href="#free-mini-report" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.01]">Get Started</a>
+              </div>
+            </div>
+
+            <p className="mt-8 text-center text-sm text-slate-500">Both plans include the full audit report. Cancel anytime. No setup fee.</p>
+          </div>
+        </section>
+
+        {/* ═══════ FAQ ═══════ */}
+        <section id="faq" className="bg-[#020617] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+          <div className="mx-auto max-w-3xl">
+            <div className="text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#22D3EE]">Common questions</p>
+              <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">Answers that make the next step easier.</h2>
+            </div>
+            <div className="mt-12 space-y-3">
+              <FAQItem q="Does VizBiz replace SEO?" a="No. VizBiz measures AI visibility — how often you appear in ChatGPT, Gemini, Claude, Perplexity, and Google AI answers. SEO is still critical for traditional search. We complement it by filling the gap that SEO tools don't address." />
+              <FAQItem q="What do I actually receive?" a="An AVI score (0–100) showing your AI visibility strength, a competitor comparison revealing which local businesses AI recommends instead of you, platform-specific findings, and a prioritized action plan ranked by impact." />
+              <FAQItem q="How fast do I get results?" a="Your free mini report is delivered within minutes. Full reports are typically ready within 24–48 hours after we complete the multi-platform AI analysis across 20+ buyer-intent prompts." />
+              <FAQItem q="How does VizBiz track improvement over time?" a="We re-run the same prompt battery across all AI platforms monthly or quarterly, depending on your plan. This measures whether your business is appearing more often and closing gaps with competitors." />
+              <FAQItem q="Does it work with any CMS or website builder?" a="Yes. VizBiz evaluates AI visibility independently of your CMS. We analyze how AI platforms interpret your business across the web — your website, reviews, directories, and third-party sources." />
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════ FINAL CTA ═══════ */}
+        <section className="relative overflow-hidden bg-[#020617] px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_50%)]" />
           <div className="mx-auto max-w-4xl text-center">
-            <div className="section-kicker">Next step</div>
-            <h2 className="super-display mt-6 text-[2.6rem] leading-[0.9] tracking-[-0.05em] text-white sm:text-[4rem] lg:text-[5rem]">
-              See whether AI<br />recommends you.
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[var(--text-secondary)]">
-              Get your AVI score, competitor comparison, and a clear view of where your dealership stands across ChatGPT, Gemini, Google AI, and Perplexity.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/intake/" className="premium-button rounded-xl px-7 py-4 text-sm font-semibold min-h-14 px-8 text-base">
-                Get My AVI Snapshot
-              </Link>
-              <Link href="/sample-ai-visibility-report-for-car-dealerships/" className="secondary-button min-h-14 rounded-xl px-7 text-sm font-medium">
-                See Sample Report
-              </Link>
+            <Link href="/" className="inline-flex items-center gap-2">
+              <img src="/vizbiz-icon-256.svg" alt="" className="h-10 w-10 object-contain" />
+              <span className="text-2xl tracking-[-0.035em] text-white">VizBiz<span className="text-[#22D3EE]">.ai</span></span>
+            </Link>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-white/5 px-4 py-2 text-sm text-cyan-100 backdrop-blur">
+              <FileSearch className="h-4 w-4" /> Start with the free AI visibility read
             </div>
+            <h2 className="mt-6 font-serif text-4xl leading-tight sm:text-5xl">Ready to see if AI cites your business?</h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-300">Run the free mini report, compare your business against two real competitors, and see which signals AI systems need before they recommend you.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <a href="#free-mini-report" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-8 py-4 font-bold text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.35)] transition hover:scale-[1.01]">
+                Run the free mini report <ArrowRight className="h-5 w-5" />
+              </a>
+              <a href="#pricing" className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-8 py-4 font-semibold text-white transition hover:bg-white/10">
+                View paid options
+              </a>
+            </div>
+            <p className="mt-4 text-xs text-white/30">No generic scorecard. Your website, your market, and the two competitors customers already compare you with.</p>
           </div>
-        </motion.section>
+        </section>
 
-        {/* ─── FOOTER ─── */}
-        <footer className="border-t border-white/6 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <Link href="/">
-                <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '36px', width: 'auto' }} />
-              </Link>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-[var(--text-secondary)]">
-                AI Visibility Intelligence for car dealerships.
-              </p>
+        {/* ═══════ FOOTER ═══════ */}
+        <footer className="border-t border-white/[0.06] bg-[#020617] px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
+              <div>
+                <Link href="/" className="inline-flex items-center gap-2">
+                  <img src="/vizbiz-icon-256.svg" alt="" className="h-9 w-9 object-contain" />
+                  <span className="text-lg tracking-[-0.035em] text-white">VizBiz<span className="text-[#22D3EE]">.ai</span></span>
+                </Link>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/40">AI Visibility Intelligence for local businesses. See whether ChatGPT, Gemini, Claude, Perplexity, and Google AI recommend you.</p>
+              </div>
+              <div className="flex flex-wrap gap-x-10 gap-y-4 text-sm text-white/40">
+                <Link href="/sample-ai-visibility-report-for-car-dealerships" className="hover:text-white">Sample Report</Link>
+                <Link href="/blog" className="hover:text-white">Blog</Link>
+                <Link href="/faq-ai-visibility-for-car-dealerships" className="hover:text-white">FAQ</Link>
+                <Link href="/about" className="hover:text-white">About</Link>
+                <Link href="/intake/" className="font-semibold text-[#22D3EE] hover:text-white">Get My Snapshot</Link>
+              </div>
             </div>
-            <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[var(--text-secondary)]">
-              <Link href="/sample-ai-visibility-report-for-car-dealerships" className="transition-colors hover:text-white">Sample Report</Link>
-              <Link href="/blog" className="transition-colors hover:text-white">Blog</Link>
-              <Link href="/faq-ai-visibility-for-car-dealerships" className="transition-colors hover:text-white">FAQ</Link>
-              <Link href="/intake/" className="font-semibold text-[var(--accent-blue)] transition-colors hover:text-white">Get My Snapshot</Link>
-            </nav>
-          </div>
-          <div className="mx-auto mt-8 max-w-6xl border-t border-white/6 pt-6 text-center text-xs text-white/30">
-            © {new Date().getFullYear()} VizBiz.ai — All rights reserved.
+            <div className="mt-8 border-t border-white/[0.06] pt-6 text-center text-xs text-white/20">
+              © {new Date().getFullYear()} VizBiz.ai — All rights reserved.
+            </div>
           </div>
         </footer>
-
-        <StickyMobileCTA />
       </main>
     </>
   );

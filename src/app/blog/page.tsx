@@ -14,6 +14,13 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "90-day-ai-visibility-playbook-car-dealerships",
+    title: "90-Day AI Visibility Playbook for Car Dealerships",
+    description:
+      "A step-by-step 90-day playbook to improve your dealership's AI visibility. Week-by-week actions you can implement without hiring a new team — based on data from 50 real Ontario dealerships.",
+    date: "2026-05-08",
+  },
+  {
     slug: "ai-visibility-audit-what-it-measures-dealership",
     title: "AI Visibility Audit: What It Measures and Why Your Dealership Needs One",
     description:

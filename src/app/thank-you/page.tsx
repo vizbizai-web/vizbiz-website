@@ -1,39 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Calendar, CheckCircle2, Lock, AlertCircle, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle2, Lock, AlertCircle, ShieldCheck, Zap, Search } from "lucide-react";
 import { CALENDLY_URL } from "@/lib/lead-flow";
 
 export const metadata: Metadata = {
   title: "Your AI Visibility Snapshot Is Being Prepared | VizBiz",
   description:
-    "We're checking how your dealership appears in AI-driven search and where nearby competitors may be winning attention first.",
+    "We're analyzing how your business appears in AI-driven search results and where you may be missing out on visibility.",
   alternates: {
     canonical: "https://vizbiz.ai/thank-you",
   },
 };
 
 const expectations = [
-  "We've received your dealership details.",
-  "We're checking how your dealership appears in AI-driven search.",
-  "We're comparing where nearby competitors may be winning attention first.",
+  "We've received your business details.",
+  "We're running a deep analysis of how AI search engines see your business.",
+  "We'll show you exactly where you appear — and where you're invisible.",
 ];
-
-function formatBand(value: string | undefined) {
-  if (!value) return "Moderate";
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function formatServiceVisibility(value: string | undefined) {
-  if (!value) return "Weak";
-  return value
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 const blurredRows = [
   "Prompt-by-prompt AI answer breakdown",
-  "Additional competitor mentions and visibility gaps",
+  "Competitor mentions and visibility gaps",
   "Recommended fixes prioritized by impact",
 ];
 
@@ -43,22 +30,12 @@ export default async function ThankYouPage({
   searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string; score?: string; llms?: string; schema?: string; niche?: string; revLossMin?: string; revLossMax?: string; nicheLabel?: string }>;
 }) {
   const params = await searchParams;
-  const appeared = Number(params.appeared || "3");
-  const band = formatBand(params.band);
-  const serviceVisibility = formatServiceVisibility(params.service);
-  const competitorMention = typeof params.competitor === "string" && params.competitor.trim()
-    ? params.competitor
-    : "nearby competitors";
   const leadId = params.lid || '';
   
-  // AI Readiness Data
+  // AI Readiness Data — safe to show (technical, not niche-dependent)
   const score = Number(params.score || "0");
   const hasLlms = params.llms === "1";
   const hasSchema = params.schema === "1";
-  const detectedNiche = params.niche || "local business";
-  const revLossMin = Number(params.revLossMin || "0");
-  const revLossMax = Number(params.revLossMax || "0");
-  const nicheLabel = params.nicheLabel ? decodeURIComponent(params.nicheLabel) : detectedNiche.replace("_", " ");
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
@@ -78,28 +55,29 @@ export default async function ThankYouPage({
               Your AI Visibility Snapshot Is Being Prepared
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Here&apos;s what we found so far. Book a 15-minute call to review the full picture.
+              Here&apos;s what we found from a quick scan. Your full report is being generated now.
             </p>
           </div>
 
           <div className="mt-10 mx-auto max-w-4xl space-y-6">
+            {/* Instant technical scan — safe because it's infrastructure, not niche-dependent */}
             <div className="glass-card rounded-[2rem] p-6 border-2 border-[var(--neon-cyan)]/30 bg-[rgba(37,209,242,0.05)]">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Instant AI-Readiness Scan</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Quick AI-Readiness Scan</p>
                 <div className="flex items-center gap-2 rounded-full bg-[var(--neon-cyan)] px-3 py-1 text-xs font-bold text-[var(--bg-primary)]">
                   <Zap className="h-3 w-3" />
                   SCORE: {score}/100
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${hasLlms ? "border-green-500/50 bg-green-500/5" : "border-white/10 bg-white/5"}`}>
                   <div className="flex items-center gap-2 text-sm font-medium">
                     {hasLlms ? <ShieldCheck className="h-4 w-4 text-green-500" /> : <AlertCircle className="h-4 w-4 text-white/40" />}
                     AI Manifest (llms.txt)
                   </div>
                   <p className="text-xs text-[var(--text-secondary)]">
-                    {hasLlms ? "Found. Your site is communicating with LLMs." : "Missing. AI models are guessing your data."}
+                    {hasLlms ? "Found. Your site is communicating with AI models." : "Missing. AI models are guessing your business data."}
                   </p>
                 </div>
                 <div className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${hasSchema ? "border-green-500/50 bg-green-500/5" : "border-white/10 bg-white/5"}`}>
@@ -108,67 +86,32 @@ export default async function ThankYouPage({
                     Structured Data
                   </div>
                   <p className="text-xs text-[var(--text-secondary)]">
-                    {hasSchema ? "Found. Services are logically mapped." : "Missing. AI can't verify your specifics."}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Zap className="h-4 w-4 text-[var(--neon-cyan)]" />
-                    Detected Niche
-                  </div>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Identified as <span className="text-white font-medium">{detectedNiche.replace("_", " ")}</span>
+                    {hasSchema ? "Found. Your services are logically mapped for AI." : "Missing. AI can't verify what you offer."}
                   </p>
                 </div>
               </div>
 
-              {revLossMin > 0 && revLossMax > 0 && (
-                <div className="mt-6 rounded-2xl p-5 border" style={{
-                  background: 'rgba(255, 200, 0, 0.06)',
-                  borderColor: 'rgba(255, 200, 0, 0.2)'
-                }}>
-                  <p className="text-sm uppercase tracking-[0.18em] font-semibold text-amber-400 mb-2">Estimated Revenue Leak</p>
-                  <p className="text-3xl font-bold text-white">
-                    ${revLossMin.toLocaleString()} – ${revLossMax.toLocaleString()}
-                    <span className="text-base font-normal text-amber-300 ml-1">/month</span>
-                  </p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">
-                    Based on your niche ({nicheLabel}) and current AI infrastructure score — this is how much you may be losing in AI-driven leads each month.
-                  </p>
-                </div>
-              )}
-
               <div className="mt-4 rounded-2xl bg-white/5 p-4 border border-white/10">
                 <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  <strong className="text-white">What this means:</strong> This is a technical check of your site's AI infrastructure. We've detected that your site is <span className={score < 50 ? "text-red-400" : "text-green-400"}>{score < 50 ? "under-optimized" : "well-optimized"}</span> for AI agents. Your full report will show exactly which gaps are costing you revenue.
+                  <strong className="text-white">What this means:</strong> This is a quick technical check of your site&apos;s AI infrastructure. Your full report will show exactly how visible you are in AI-powered search results, where the gaps are, and what to fix first.
                 </p>
               </div>
             </div>
 
+            {/* Full report section — always "in progress" until the report page is ready */}
             <div className="glass-card rounded-[2rem] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Free AI Visibility Report (Pending)</p>
-
-              <div className="mt-5 border-b border-white/8 pb-5">
-                <p className="text-4xl font-semibold text-[var(--text-primary)]">We&apos;re preparing your full deep-dive analysis</p>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--neon-cyan)]/10">
+                  <Search className="h-5 w-5 text-[var(--neon-cyan)]" />
+                </div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">Full AI Visibility Report</p>
               </div>
 
-              <div className="border-b border-white/8 py-5">
-                <p className="text-4xl font-semibold text-[var(--text-primary)]">Overall AI Visibility: Analysis in Progress</p>
-                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  We're simulating 20+ buyer-intent prompts to see exactly where you appear and where competitors are stealing your leads.
+              <div className="mt-6 border-b border-white/8 pb-5">
+                <p className="text-3xl font-semibold text-[var(--text-primary)] sm:text-4xl">Analysis in progress</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                  We&apos;re simulating real customer searches to see exactly where your business appears in AI-generated answers — and where it doesn&apos;t.
                 </p>
-              </div>
-
-              <div className="border-b border-white/8 py-5">
-                <p className="text-4xl font-semibold text-[var(--text-primary)]">Service Department Visibility: Analysis in Progress</p>
-                <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                  We're analyzing how your service department shows up compared to nearby competitors.
-                </p>
-              </div>
-
-              <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>This full report will be delivered to your email shortly.</p>
-                <p>Once delivered, you'll get a link to the <span className="text-white font-medium">Visual Breakdown</span> of your visibility gaps.</p>
               </div>
 
               <div className="mt-6 space-y-3">
@@ -182,31 +125,15 @@ export default async function ThankYouPage({
                   </div>
                 ))}
               </div>
+
+              <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
+                <p>Your full report will be ready shortly. We&apos;ll walk you through the results on a quick call.</p>
+              </div>
             </div>
 
-            {leadId && (
-              <div className="text-center">
-                <Link
-                  href={`/report/${leadId}`}
-                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold transition-all"
-                  style={{
-                    background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
-                    color: '#02091F',
-                    boxShadow: '0 0 20px rgba(37,209,242,0.2)',
-                  }}
-                >
-                  View Your AI Visibility Report
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <p className="mt-3 text-xs text-[var(--text-secondary)]/70">
-                  Your report is being generated now. Refresh in 1-2 minutes if it's still loading.
-                </p>
+            <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
+                <p>Your full AI visibility report will be emailed to you within 24 hours. We review every report by hand to make sure the analysis is accurate and relevant to your business.</p>
               </div>
-            )}
-
-            <p className="text-center text-xs text-[var(--text-secondary)]/70">
-              We&apos;re running your AI visibility analysis now. Your free report will be delivered to your email shortly — usually within a few minutes.
-            </p>
 
             <div className="glass-card rounded-[2rem] p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[rgba(0,240,255,0.06)] text-[var(--neon-cyan)]">
@@ -214,7 +141,7 @@ export default async function ThankYouPage({
               </div>
               <h2 className="mt-5 text-2xl font-semibold">Book Your 15-Minute Review Call</h2>
               <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-                This is the next step. We'll review your snapshot, where competitors are showing up first, and whether a deeper audit is worth doing.
+                This is the fastest way to understand your results. We&apos;ll walk through your visibility snapshot, explain what the numbers mean, and show you where the biggest opportunities are.
               </p>
               <ul className="mt-6 space-y-3 text-sm text-[var(--text-secondary)]">
                 {expectations.map((item) => (

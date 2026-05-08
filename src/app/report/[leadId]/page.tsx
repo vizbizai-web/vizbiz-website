@@ -1,5 +1,7 @@
 import { getLeadByLeadId, isSheetsConfigured } from '@/lib/google-sheets';
+import { validateReportToken } from '@/lib/report-token';
 import ReportContent from './report-content';
+import ReportPending from './report-pending';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -43,18 +45,23 @@ export type LeadPageData = {
 
 export default async function ReportPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ leadId: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { leadId } = await params;
+  const { token } = await searchParams;
 
   let leadData: LeadPageData | null = null;
   let researchData: ResearchData | null = null;
+  let leadFound = false;
 
   if (isSheetsConfigured()) {
     try {
       const lead = await getLeadByLeadId(leadId);
       if (lead) {
+        leadFound = true;
         leadData = {
           leadId: lead.leadId,
           businessName: lead.dealershipName,
@@ -86,5 +93,32 @@ export default async function ReportPage({
     }
   }
 
+  // Gate 1: Lead must exist
+  if (!leadFound || !leadData) {
+    return <ReportPending leadId={leadId} status="not_found" />;
+  }
+
+  // Gate 2: Valid token required
+  if (!token) {
+    return <ReportPending leadId={leadId} status="no_token" businessName={leadData.businessName} />;
+  }
+
+  const tokenResult = validateReportToken(leadId, token);
+  if (!tokenResult.valid) {
+    console.warn(`[report] Invalid token for ${leadId}: ${tokenResult.reason}`);
+    return <ReportPending leadId={leadId} status="invalid_token" businessName={leadData.businessName} />;
+  }
+
+  // Gate 3: Lead must have completed research
+  if (leadData.researchStatus !== 'complete') {
+    return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
+  }
+
+  // Gate 4: Lead must be approved by Vlad (status must not be pending_review)
+  if (leadData.status === 'pending_review') {
+    return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
+  }
+
+  // All gates passed — show the full report
   return <ReportContent leadId={leadId} leadData={leadData} researchData={researchData} />;
 }

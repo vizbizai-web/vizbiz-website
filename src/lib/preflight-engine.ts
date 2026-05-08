@@ -40,6 +40,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
   dance_studio: { label: "Dance Studio", avgLeadValue: 150, monthlyVolume: 80 },
   real_estate: { label: "Real Estate", avgLeadValue: 3000, monthlyVolume: 20 },
   mobile_bar: { label: "Mobile Cocktail Bar", avgLeadValue: 350, monthlyVolume: 60 },
+  auto_transport: { label: "Auto Transport & Car Hauling", avgLeadValue: 500, monthlyVolume: 120 },
   restaurant: { label: "Restaurant", avgLeadValue: 50, monthlyVolume: 500 },
   photography: { label: "Photography", avgLeadValue: 250, monthlyVolume: 40 },
   cleaning_service: { label: "Cleaning Service", avgLeadValue: 150, monthlyVolume: 60 },
@@ -53,6 +54,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
   it_services: { label: "IT Services", avgLeadValue: 500, monthlyVolume: 30 },
   marketing_agency: { label: "Marketing Agency", avgLeadValue: 1000, monthlyVolume: 20 },
   local_business: { label: "Local Business", avgLeadValue: 200, monthlyVolume: 60 },
+  tourism_experience: { label: "Tourism Experience", avgLeadValue: 150, monthlyVolume: 80 },
   unknown: { label: "Unknown", avgLeadValue: 200, monthlyVolume: 40 },
 };
 
@@ -77,6 +79,8 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   landscaping: ["landscaping", "lawn", "garden", "landscape design"],
   it_services: ["it services", "tech support", "managed services", "cybersecurity"],
   marketing_agency: ["marketing agency", "digital marketing", "social media management", "seo services"],
+  auto_transport: ["auto transport", "car shipping", "car hauling", "vehicle transport", "vehicle shipping", "auto shipping", "car carrier", "vehicle logistics", "car delivery", "auto logistics", "car mover", "vehicle relocation", "transport group", "logistics group", "enclosed carrier", "car carrier service", "ship my car", "car hauling company"],
+  tourism_experience: ["pearl farm", "oyster farm", "aquaculture", "farm tour", "guided tour", "scenic cruise", "cellar door", "winery tour", "brewery tour", "eco tour", "wildlife tour", "boat tour", "adventure tour", "day trip", "day tour", "tourist attraction", "tourism", "nature tour", "cultural experience", "outdoor experience", "water activity", "river cruise", "seaplane", "food tour", "wine tasting", "cooking class", "kayak tour"],
 };
 
 /**
