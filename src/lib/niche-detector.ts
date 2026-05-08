@@ -239,6 +239,132 @@ const NICHES: NicheConfig[] = [
     ]
   },
   {
+    niche: "tourism_experience",
+    keywords: [
+      "pearl farm", "oyster farm", "aquaculture", "farm tour", "winery tour",
+      "brewery tour", "distillery", "eco tour", "wildlife tour", "boat tour",
+      "cruise", "kayak tour", "snorkel", "dive tour", "surf school",
+      "horse riding", "adventure tour", "guided tour", "experience",
+      "scenic cruise", "farm experience", "cellar door", "vineyard",
+      "orchard", "truffle farm", "cheese farm", "cooking class",
+      "food tour", "wine tasting", "whale watching", "safari",
+      "zip line", "hot air balloon", "helicopter tour", "seaplane",
+      "day trip", "day tour", "tourist attraction", "tourism",
+      "nature tour", "cultural experience", "indigenous tour",
+      "outdoor experience", "water activity", "river cruise"
+    ],
+    promptTemplates: [
+      "{businessName} in {city}",
+      "{businessName} tours",
+      "{businessName} reviews",
+      "{businessName} experience",
+      "best tours in {city}",
+      "things to do in {city}",
+      "unique experiences in {city}",
+      "best day trips from {city}",
+      "tourist attractions {city}",
+      "best guided tours {city}",
+      "outdoor activities {city}",
+      "adventure tours {city}",
+      "boat tours {city}",
+      "water activities {city}",
+      "nature tours near {city}",
+      "family friendly tours {city}",
+      "eco tourism {city}",
+      "farm tours near {city}",
+      "food and wine tours {city}",
+      "top rated tours {city}"
+    ],
+    competitorSearchQueries: [
+      "best tours in {city}",
+      "things to do in {city}",
+      "tourist attractions near {city}",
+      "day trips from {city}",
+      "unique experiences near {city}"
+    ]
+  },
+  {
+    niche: "restaurant",
+    keywords: [
+      "restaurant", "bistro", "cafe", "dining", "eatery", "brasserie",
+      "trattoria", "steakhouse", "bar and grill", "pub", "tavern",
+      "diner", "canteen", "brunch", "lunch", "dinner menu",
+      "takeaway", "takeout", "delivery", "catering"
+    ],
+    promptTemplates: [
+      "best restaurant in {city}",
+      "top rated restaurants in {city}",
+      "best place to eat in {city}",
+      "restaurants with good reviews in {city}",
+      "fine dining in {city}",
+      "best dinner spots in {city}",
+      "romantic restaurants in {city}",
+      "family restaurants in {city}",
+      "restaurants open late in {city}",
+      "best brunch in {city}",
+      "outdoor dining in {city}",
+      "best lunch spots in {city}",
+      "waterfront restaurants in {city}",
+      "new restaurants in {city}",
+      "best places for dinner in {city}",
+      "restaurants with a view in {city}",
+      "best takeaway in {city}",
+      "food delivery {city}",
+      "best burgers in {city}",
+      "best pizza in {city}"
+    ],
+    competitorSearchQueries: [
+      "best restaurants in {city}",
+      "top rated restaurants {city}",
+      "fine dining {city}",
+      "places to eat {city}",
+      "restaurant reviews {city}"
+    ]
+  },
+  {
+    niche: "auto_transport",
+    keywords: [
+      "auto transport", "car shipping", "car hauling", "vehicle transport",
+      "vehicle shipping", "auto shipping", "car carrier", "car transport",
+      "vehicle logistics", "car delivery", "auto logistics", "car mover",
+      "vehicle mover", "car relocation", "vehicle relocation",
+      "transport group", "logistics group", "enclosed carrier",
+      "open carrier", "car carrier service", "vehicle shipping company",
+      "auto transport company", "car transport service",
+      "ship my car", "move my car", "transport my car",
+      "car hauling company", "vehicle hauling"
+    ],
+    promptTemplates: [
+      "best auto transport company in {city}",
+      "car shipping companies in {city}",
+      "best car hauling service in {city}",
+      "vehicle transport near {city}",
+      "how to ship a car from {city}",
+      "auto transport companies with best reviews in {city}",
+      "reliable car shipping in {city}",
+      "affordable car transport in {city}",
+      "enclosed car transport in {city}",
+      "open car carrier in {city}",
+      "car delivery service in {city}",
+      "vehicle relocation service in {city}",
+      "car shipping cost from {city}",
+      "auto transport quotes in {city}",
+      "best car movers in {city}",
+      "door to door car shipping in {city}",
+      "car transport for dealerships in {city}",
+      "cross country car shipping from {city}",
+      "car carrier service near me in {city}",
+      "vehicle logistics companies in {city}"
+    ],
+    competitorSearchQueries: [
+      "auto transport companies in {city}",
+      "car shipping companies {city}",
+      "best car hauling {city}",
+      "vehicle transport services {city}",
+      "car transport near me {city}"
+    ]
+  },
+  {
     niche: "fine_jewelry",
     keywords: [
       "jewelry", "jeweller", "jeweler", "jewellery", "diamond",

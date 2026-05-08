@@ -34,6 +34,7 @@ interface Competitor {
   name: string;
   score: number;
   isYou?: boolean;
+  isYours?: boolean; // User-entered competitor (vs discovered by engine)
 }
 
 interface ProfitAtRisk {
@@ -696,8 +697,8 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
     fullMark: 100,
   }));
 
-  const chartH = isMobile ? 300 : 400;
-  const outerR = isMobile ? 90 : 130;
+  const chartH = isMobile ? 340 : 420;
+  const outerR = isMobile ? 75 : 110;
 
   return (
     <FadeIn>
@@ -714,7 +715,18 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
                   <PolarGrid stroke={t.gridStroke} gridType="polygon" />
                   <PolarAngleAxis
                     dataKey="category"
-                    tick={{ fill: t.axisText, fontSize: 12, fontFamily: 'Poppins, sans-serif' }}
+                    tick={{ fill: t.axisText, fontSize: 11, fontFamily: 'Poppins, sans-serif' }}
+                    tickFormatter={(value: string) => {
+                      // Shorten long labels for radar display
+                      const shortNames: Record<string, string> = {
+                        'Brand Discovery': 'Brand',
+                        'Trust & Reviews': 'Trust',
+                        'Service Visibility': 'Service',
+                        'Competitive Position': 'Competition',
+                        'Content & Authority': 'Authority',
+                      };
+                      return shortNames[value] || value;
+                    }}
                   />
                   <PolarRadiusAxis tick={false} axisLine={false} />
                   <Radar
@@ -798,6 +810,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
     score: c.score,
     pct: Math.round((c.score / totalQ) * 100),
     isYou: c.isYou,
+    isYours: c.isYours,
   }));
 
   const maxScore = Math.max(...compData.map(c => c.score));
@@ -838,16 +851,38 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
 
         {mounted ? (
           <div className="space-y-4">
-            {compData.map((entry, index) => {
+            {/* User-entered competitors section */}
+            {compData.some(c => c.isYours) && (
+              <div className="mb-2">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: t.textMuted }}>Your competitors</p>
+                {compData.filter(c => c.isYours).map((entry, index) => (
+                  <ComparisonBar
+                    key={entry.name}
+                    name={entry.score > 0 ? entry.name : `${entry.name} (not visible in AI)`}
+                    score={entry.score}
+                    total={totalQ}
+                    pct={Math.round((entry.score / totalQ) * 100)}
+                    color="#A78BFA"
+                    isYou={false}
+                    theme={theme}
+                    delay={index * 150}
+                  />
+                ))}
+              </div>
+            )}
+            {/* You + discovered competitors section */}
+            {compData.some(c => !c.isYours) && compData.some(c => c.isYours) && (
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2 mt-4" style={{ color: t.textMuted }}>Others AI recommends instead</p>
+            )}
+            {compData.filter(c => !c.isYours).map((entry, index) => {
               const barColor = entry.isYou ? '#22D3EE' : compColors[(index - 1) % compColors.length];
-              const barScore = Math.round((entry.score / totalQ) * 100);
               return (
                 <ComparisonBar
                   key={entry.name}
                   name={entry.name}
                   score={entry.score}
                   total={totalQ}
-                  pct={barScore}
+                  pct={Math.round((entry.score / totalQ) * 100)}
                   color={barColor}
                   isYou={!!entry.isYou}
                   theme={theme}
@@ -1566,7 +1601,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       }
     }
     // Filter out directory/generic names
-    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies', 'mapquest', 'google maps', 'yelp', 'tripadvisor', 'yellow pages', 'white pages', 'foursquare', 'bbb', 'wikipedia', 'medium', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'youtube', 'bbb', 'best in', 'top rated', 'featured', 'recommended by', 'nearby', 'local options', 'others in the area'];
+    const genericCompetitors = ['tanning salons', 'hair salons', 'nail salons', 'beauty salons', 'dentists', 'restaurants', 'gyms', 'real estate', 'cleaners', 'photographers', 'local competitors', 'nearby businesses', 'similar companies', 'mapquest', 'google maps', 'yelp', 'tripadvisor', 'yellow pages', 'white pages', 'foursquare', 'bbb', 'wikipedia', 'medium', 'facebook', 'instagram', 'linkedin', 'pinterest', 'reddit', 'youtube', 'bbb', 'whereis', 'best in', 'top rated', 'featured', 'recommended by', 'nearby', 'local options', 'others in the area'];
     const realCompetitors = Object.entries(competitorFreq)
       .filter(([name]) => !genericCompetitors.some(g => name.toLowerCase() === g || name.toLowerCase().startsWith(g + ' ')))
       .map(([name, count]) => {
@@ -1629,13 +1664,34 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       categories,
       visibleQueries,
       invisibleQueries,
-      competitors: [
-        { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
-        // Add top real competitors from prompt results
-        ...realCompetitors.slice(0, 3).map(([name, count]) => ({ name, score: count as number })),
-        // Fallback if no real competitors found
-        ...(realCompetitors.length === 0 ? [{ name: competitorDisplay, score: compScore }] : []),
-      ],
+      competitors: (() => {
+        // Parse user-entered competitors
+        const userCompetitors = (leadData?.competitor || '')
+          .split(',')
+          .map((c: string) => c.trim())
+          .filter((c: string) => c.length > 0);
+        const userCompWithScores = userCompetitors.map((uc: string) => {
+          const ucKey = uc.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
+          let appearances = 0;
+          for (const r of researchData.promptResults) {
+            if (r.competitorName && r.competitorName.toLowerCase().includes(ucKey)) {
+              appearances++;
+            }
+          }
+          return { name: uc, score: appearances, isYours: true } as Competitor;
+        });
+        const discoveredNames = new Set(realCompetitors.map(([n]) => n.toLowerCase()));
+        const uniqueUserComps = userCompWithScores.filter(uc =>
+          !discoveredNames.has(uc.name.toLowerCase()) &&
+          !discoveredNames.has(uc.name.toLowerCase().split('.')[0])
+        );
+        return [
+          { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
+          ...uniqueUserComps,
+          ...realCompetitors.slice(0, 3).map(([name, count]) => ({ name, score: count as number })),
+          ...(realCompetitors.length === 0 && uniqueUserComps.length === 0 ? [{ name: competitorDisplay, score: compScore }] : []),
+        ];
+      })(),
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
         { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' as const },

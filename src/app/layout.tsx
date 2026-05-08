@@ -1,37 +1,42 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Poppins, Lora } from "next/font/google";
 import "./globals.css";
 import SchemaMarkup from "@/components/SchemaMarkup";
 import { Analytics } from "@vercel/analytics/react";
 
-const inter = Inter({
+const poppins = Poppins({
+  weight: ["400", "600"],
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const lora = Lora({
+  weight: ["400"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-serif",
 });
 
 export const metadata: Metadata = {
   verification: {
     google: "UsciMz9QyGJczouaUP3mPrVVWUlGnTLQkU9EOQiMDF8",
   },
-  title: "VizBiz — AI Visibility Intelligence for Car Dealerships",
+  title: "VizBiz — AI Visibility Intelligence for Local Businesses",
   description:
-    "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
+    "VizBiz helps local businesses measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, Gemini, and Perplexity. Get your free AI visibility mini report.",
   keywords:
-    "AI visibility for car dealerships, dealership AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, dealership marketing, automotive retail AI",
+    "AI visibility for local businesses, AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, AI visibility report, local SEO, schema markup, llms.txt, competitor benchmarking",
   alternates: {
     canonical: "https://vizbiz.ai",
   },
   openGraph: {
-    title: "VizBiz — AI Visibility Intelligence for Car Dealerships",
+    title: "VizBiz — AI Visibility Intelligence for Local Businesses",
     description:
-      "VizBiz helps car dealerships measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini. Get your free AI visibility audit.",
+      "See whether AI recommends your business or your two closest competitors. Free AI visibility mini report.",
     type: "website",
     url: "https://vizbiz.ai",
+    siteName: "VizBiz.ai",
+    locale: "en_CA",
   },
 };
 
@@ -41,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${lora.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

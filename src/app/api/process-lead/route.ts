@@ -1,20 +1,8 @@
 /**
  * Lead Processing API Route
- * 
- * This endpoint processes new leads automatically:
- * 1. Finds leads with status "new"
- * 2. Updates status to "researching"
- * 3. Auto-detects business niche
- * 4. Auto-discovers competitors if none provided
- * 5. Runs AI visibility research (20-prompt Snapshot)
- * 6. Updates Google Sheet with real scores
- * 7. Marks status as "email_drafted" and research as "complete"
- * 8. On failure: resets to "new" + "failed" so cron retries next cycle
  *
- * Status flow: new → researching → email_drafted
- * On error: new → researching → new (retry) + researchStatus: failed
- * 
- * Can be called via cron or webhook to process pending leads.
+ * Status flow: new → researching → pending_review → approved (by Vlad)
+ * On error: new → researching → new (retry)
  */
 
 import { NextResponse } from "next/server";
@@ -23,20 +11,88 @@ import { detectNiche } from "@/lib/niche-detector";
 import { discoverCompetitors } from "@/lib/competitor-discovery";
 import { runResearch } from "@/lib/research-runner";
 
+/**
+ * Send Vlad a Telegram review alert with research summary
+ */
+async function sendVladReviewAlert(
+  leadId: string,
+  businessName: string,
+  city: string,
+  userCompetitors: string,
+  result: Awaited<ReturnType<typeof runResearch>>,
+) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) return;
+
+  const JUNK_PATTERNS = ['bbb','better business','yellow page','yelp','tripadvisor','google map','justdial','indiamart','nearby','local option','top rated','best in'];
+  const compNames = new Set<string>();
+  for (const p of result.promptResults) {
+    if (p.competitorName) compNames.add(p.competitorName);
+  }
+  const junkComps = [...compNames].filter(c => JUNK_PATTERNS.some(j => c.toLowerCase().includes(j)));
+  const nicheOk = result.niche !== 'local_business';
+  const resolvedName = result.resolvedName || businessName;
+  const brandPrompts = result.promptResults.filter(p => p.prompt.toLowerCase().includes(resolvedName.toLowerCase().split(' ')[0]));
+  const brandAppeared = brandPrompts.filter(p => p.businessAppeared).length;
+  const userComps = userCompetitors.split(',').map(c => c.trim()).filter(Boolean);
+  const userCompsFound = userComps.filter(uc => {
+    const key = uc.toLowerCase().split('.')[0].slice(0, 4);
+    return [...compNames].some(cn => cn.toLowerCase().includes(key));
+  });
+
+  let msg = `🔍 RESEARCH READY FOR REVIEW\n\n`;
+  msg += `${businessName} (${city})\n`;
+  msg += `Lead: ${leadId}\n`;
+  msg += `Niche: ${result.niche} ${nicheOk ? '✅' : '❌ GENERIC'}\n`;
+  msg += `Appearances: ${result.appearedCount}/${result.totalPrompts}\n`;
+  msg += `Band: ${result.statusBand}\n\n`;
+
+  if (userComps.length > 0) {
+    msg += `User competitors: ${userComps.join(', ')}\n`;
+    msg += `  Found in results: ${userCompsFound.length > 0 ? userCompsFound.join(', ') : 'NONE ⚠️'}\n`;
+  }
+
+  if (junkComps.length > 0) {
+    msg += `\n🗑️ Junk competitors: ${junkComps.join(', ')}\n`;
+  }
+
+  if (brandPrompts.length > 0 && brandAppeared === 0) {
+    msg += `\n⚠️ Zero brand appearances (${brandPrompts.length} brand queries)\n`;
+  }
+
+  const topComps = result.promptResults
+    .filter(p => p.competitorName && p.competitorAppeared)
+    .reduce((acc, p) => { acc[p.competitorName!] = (acc[p.competitorName!] || 0) + 1; return acc; }, {} as Record<string, number>);
+  const sorted = Object.entries(topComps).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  if (sorted.length > 0) {
+    msg += `\nTop discovered competitors:\n`;
+    for (const [name, count] of sorted) {
+      msg += `  • ${name} (${count}/${result.totalPrompts})\n`;
+    }
+  }
+
+  msg += `\nReport stays "processing" until approved.`;
+  msg += `\n\nReply: /approve ${leadId} | /hold ${leadId} | /rerun ${leadId}`;
+
+  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: '6960754854', text: msg }),
+  });
+}
+
 export async function POST(request: Request) {
   try {
     console.info("[process-lead] Starting lead processing");
-    
-    // Check if a specific leadId was provided in the request body
+
     let targetLeadId: string | null = null;
     try {
       const body = await request.clone().json().catch(() => ({}));
       targetLeadId = body?.leadId || null;
-    } catch { /* not JSON, that's fine */ }
-    
+    } catch { /* not JSON */ }
+
     let newLeads;
     if (targetLeadId) {
-      // Process a specific lead by ID
       const lead = await getLeadByLeadId(targetLeadId);
       if (!lead) {
         return NextResponse.json({ success: false, message: `Lead ${targetLeadId} not found` }, { status: 404 });
@@ -44,61 +100,32 @@ export async function POST(request: Request) {
       newLeads = [lead];
       console.info(`[process-lead] Processing specific lead: ${targetLeadId}`);
     } else {
-      // Get all leads with status "new"
       newLeads = await getLeadsByStatus("new");
     }
-    
+
     if (newLeads.length === 0) {
-      console.info("[process-lead] No new leads to process");
-      return NextResponse.json({
-        success: true,
-        processed: 0,
-        message: "No new leads found"
-      });
+      return NextResponse.json({ success: true, processed: 0, message: "No new leads found" });
     }
-    
-    console.info(`[process-lead] Found ${newLeads.length} new leads to process`);
-    
+
     let processedCount = 0;
     let errorCount = 0;
-    
-    // Process each lead
+
     for (const lead of newLeads) {
       try {
         console.info(`[process-lead] Processing lead ${lead.leadId}: ${lead.dealershipName}`);
-        
-        // Update status to "processing"
-        await updateLeadResearchResults(lead.leadId, {
-          status: "researching",
-          researchStatus: "running"
-        });
-        
-        // Auto-detect niche
-        console.info(`[process-lead] Detecting niche for ${lead.dealershipName}`);
-        // Note: In a future version, we can pull the scrapedContent from the lead.notes if stored there
+
+        await updateLeadResearchResults(lead.leadId, { status: "researching", researchStatus: "running" });
+
         const nicheConfig = detectNiche(lead.dealershipName, lead.website);
         console.info(`[process-lead] Detected niche: ${nicheConfig.niche}`);
-        
-        // Auto-discover competitors if none provided
+
         let competitors: string[] = [];
         if (lead.competitor && lead.competitor.trim() !== "") {
           competitors = [lead.competitor.trim()];
         } else {
-          console.info(`[process-lead] Discovering competitors for ${lead.dealershipName}`);
-          // niche is detected inside discoverCompetitors; no variable at this scope
-          competitors = await discoverCompetitors(
-            lead.dealershipName,
-            lead.website,
-            lead.city,
-            lead.competitor
-          );
-          
-          // Fallback: if discoverCompetitors returned generic/empty results, use niche defaults
-          const platformNames = ['medium', 'wikipedia', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'youtube', 'github', 'reddit', 'blog', 'homepage', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed'];
+          competitors = await discoverCompetitors(lead.dealershipName, lead.website, lead.city, lead.competitor);
           const genericCompetitors = ['local competitors', 'nearby businesses', 'similar companies'];
-          const allGeneric = competitors.length > 0 && competitors.every(c => 
-            genericCompetitors.includes(c) || platformNames.includes(c.toLowerCase())
-          );
+          const allGeneric = competitors.length > 0 && competitors.every(c => genericCompetitors.includes(c));
           if (competitors.length === 0 || allGeneric) {
             const nicheDefaults: Record<string, string[]> = {
               fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
@@ -110,70 +137,27 @@ export async function POST(request: Request) {
               fitness: ["local gyms and trainers", "other fitness studios"],
               mobile_bar: ["local cocktail bars", "event bartending services"],
             };
-            const defaultCompetitors = nicheDefaults[nicheConfig.niche] || genericCompetitors;
-            console.info(`[process-lead] Competitors were generic, using niche defaults for ${nicheConfig.niche}: ${defaultCompetitors.join(", ")}`);
-            competitors = defaultCompetitors;
+            competitors = nicheDefaults[nicheConfig.niche] || genericCompetitors;
           }
-          
-          console.info(`[process-lead] Final competitors: ${competitors.join(", ")}`);
-          // Log what niche defaults would give us
-          const nicheDefaultsCheck: Record<string, string[]> = {
-            fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
-          };
-          console.info(`[process-lead] Niche defaults would give: ${nicheDefaultsCheck[nicheConfig.niche]?.join(", ") || 'none'}`);
         }
-        
-        // Run research — pass PreFlight profile if available in notes to avoid duplicate site fetch
-        console.info(`[process-lead] Running research for ${lead.dealershipName}`);
-        
-        // Try to extract PreFlight profile from notes (stored by intake)
+
+        // Extract PreFlight profile from notes
         let preflightProfile: any = undefined;
-        const pfMarker = 'PREFLIGHT:';
-        const pfIdx = lead.notes.indexOf(pfMarker);
+        const pfIdx = (lead.notes || '').indexOf('PREFLIGHT:');
         if (pfIdx >= 0) {
           try {
-            // Extract JSON after PREFLIGHT: prefix — it's the last structured data before the next section
-            const rawAfter = lead.notes.slice(pfIdx + pfMarker.length);
-            // Find the first { and last } to extract valid JSON
+            const rawAfter = lead.notes.slice(pfIdx + 10);
             const jsonStart = rawAfter.indexOf('{');
             const jsonEnd = rawAfter.lastIndexOf('}');
             if (jsonStart >= 0 && jsonEnd > jsonStart) {
-              const pfData = rawAfter.slice(jsonStart, jsonEnd + 1);
-              preflightProfile = JSON.parse(pfData);
-              console.info(`[process-lead] Found PreFlight profile for ${lead.dealershipName}: niche=${preflightProfile.niche}`);
+              preflightProfile = JSON.parse(rawAfter.slice(jsonStart, jsonEnd + 1));
             }
-          } catch (e) {
-            console.warn(`[process-lead] PreFlight profile parse failed:`, e);
-          }
+          } catch { /* ignore */ }
         }
-        
-        const researchResult = await runResearch(
-          lead.dealershipName,
-          lead.website,
-          lead.city,
-          competitors,
-          preflightProfile // pass preflight data to skip duplicate fetch
-        );
-        
-        console.info(`[process-lead] Research completed for ${lead.dealershipName}:`,
-          `${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
-        
-        // Alert if niche detection failed — Vlad needs to know
-        if (researchResult.niche === 'local_business') {
-          console.warn(`[process-lead] ⚠️ NICHE NOT DETECTED for ${lead.dealershipName} — fell back to local_business`);
-          try {
-            await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: '6960754854',
-                text: `⚠️ Niche not detected for ${lead.dealershipName} (${lead.leadId}). Research ran with generic queries. Add niche to detector and re-run.`,
-              }),
-            });
-          } catch {} // non-blocking
-        }
-        
-        // Save detailed research results to notes field in Google Sheets
+
+        const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
+        console.info(`[process-lead] Research completed: ${researchResult.appearedCount}/${researchResult.totalPrompts}`);
+
         const researchJson = JSON.stringify({
           businessName: researchResult.resolvedName || lead.dealershipName,
           website: lead.website,
@@ -191,89 +175,48 @@ export async function POST(request: Request) {
           whyThisMatters: researchResult.whyThisMatters,
           processedAt: new Date().toISOString(),
         });
-        
-        // Update Google Sheet with results + research JSON in notes
+
+        // Save as pending_review — Vlad must approve before report goes live
         await updateLeadResearchResults(lead.leadId, {
-          status: "email_drafted",
+          status: "pending_review",
           researchStatus: "complete",
           snapshotAppeared: `${researchResult.appearedCount} of ${researchResult.totalPrompts} prompts`,
           visibilityBand: researchResult.statusBand,
           serviceVisibility: researchResult.serviceVisibility,
           notes: `RESEARCH_DATA:${researchJson}`,
         });
-        
-        console.info(`[process-lead] Lead ${lead.leadId} processed successfully — status: email_drafted`);
-        
-        // Send report email (fire-and-forget, non-blocking)
-        if (lead.email) {
-          const emailPayload = {
-            to: lead.email,
-            leadId: lead.leadId,
-            businessName: researchResult.resolvedName || lead.dealershipName,
-            contactName: lead.contactName,
-            city: lead.city,
-            aviScore: researchResult.statusBand === 'Strong' ? 72 : researchResult.statusBand === 'Moderate' ? 42 : 18,
-            statusBand: researchResult.statusBand,
-            appearedCount: researchResult.appearedCount,
-            totalPrompts: researchResult.totalPrompts,
-            competitorName: researchResult.competitorMention,
-            competitorScore: researchResult.promptResults.filter(r => r.competitorAppeared).length,
-            niche: researchResult.niche,
-          };
-          
-          // Fire-and-forget email send
-          fetch('https://vizbiz.ai/api/send-report-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(emailPayload),
-          }).then(res => {
-            if (res.ok) console.info(`[process-lead] Report email sent to ${lead.email}`);
-            else console.warn(`[process-lead] Email send failed: ${res.status}`);
-          }).catch(err => {
-            console.warn(`[process-lead] Email send error:`, err);
-          });
-        }
+
+        console.info(`[process-lead] Lead ${lead.leadId} research complete — awaiting Vlad review`);
+
+        // Send Vlad review alert (non-blocking)
+        sendVladReviewAlert(lead.leadId, lead.dealershipName, lead.city, lead.competitor, researchResult).catch(() => {});
+
         processedCount++;
-        
       } catch (error) {
         console.error(`[process-lead] Error processing lead ${lead.leadId}:`, error);
-        
-        // Update status to reflect failure — set back to "new" so cron retries next cycle
         try {
           await updateLeadResearchResults(lead.leadId, {
             status: "new",
             researchStatus: "failed",
             notes: `Auto-processing failed: ${error instanceof Error ? error.message : "Unknown error"}`
           });
-        } catch (updateError) {
-          console.error(`[process-lead] Failed to update failed status for lead ${lead.leadId}:`, updateError);
-        }
-        
+        } catch { /* ignore */ }
         errorCount++;
       }
     }
-    
-    console.info(`[process-lead] Processing complete: ${processedCount} success, ${errorCount} failed`);
-    
+
     return NextResponse.json({
       success: true,
       processed: processedCount,
       errors: errorCount,
       totalLeads: newLeads.length,
-      message: `Processed ${processedCount} leads successfully, ${errorCount} failed`
     });
-    
   } catch (error) {
-    console.error("[process-lead] Fatal error in lead processing:", error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-      message: "Lead processing failed"
-    }, { status: 500 });
+    console.error("[process-lead] Fatal error:", error);
+    return NextResponse.json({ success: false, error: "Processing failed" }, { status: 500 });
   }
 }
 
-// Also support GET for testing/cron purposes
 export async function GET() {
   return POST(new Request("http://localhost/api/process-lead", { method: "POST" }));
 }

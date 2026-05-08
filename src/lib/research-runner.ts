@@ -11,9 +11,13 @@ import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
 
 if (!TAVILY_API_KEY) {
   console.warn("[research-runner] TAVILY_API_KEY not configured");
+}
+if (!BRAVE_API_KEY) {
+  console.warn("[research-runner] BRAVE_SEARCH_API_KEY not configured — no fallback available");
 }
 
 interface TavilySearchResult {
@@ -62,6 +66,74 @@ async function tavilySearch(query: string): Promise<TavilySearchResult[]> {
   }
 }
 
+/**
+ * Brave Search API fallback
+ * Returns results in the same TavilySearchResult format for compatibility.
+ */
+async function braveSearch(query: string): Promise<TavilySearchResult[]> {
+  if (!BRAVE_API_KEY) {
+    throw new Error("BRAVE_API_KEY not configured");
+  }
+
+  try {
+    const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5&text_decorations=0`;
+    const response = await fetch(url, {
+      headers: {
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip",
+        "X-Subscription-Token": BRAVE_API_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Brave search failed: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const results = data?.web?.results || [];
+    
+    // Map Brave results to Tavily format
+    return results.map((r: any) => ({
+      title: r.title || "",
+      url: r.url || "",
+      content: r.description || "",
+    }));
+  } catch (error) {
+    console.error("[research-runner] Brave search error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Search with automatic fallback: Tavily → Brave
+ * Tries Tavily first. On any failure (rate limit, timeout, error), falls back to Brave.
+ */
+async function searchWithFallback(query: string): Promise<{ results: TavilySearchResult[]; provider: string }> {
+  // Try Tavily first
+  if (TAVILY_API_KEY) {
+    try {
+      const results = await tavilySearch(query);
+      return { results, provider: "tavily" };
+    } catch (error) {
+      console.warn(`[research-runner] Tavily failed for "${query}", falling back to Brave:`, error instanceof Error ? error.message : error);
+    }
+  }
+  
+  // Fallback to Brave
+  if (BRAVE_API_KEY) {
+    try {
+      const results = await braveSearch(query);
+      return { results, provider: "brave" };
+    } catch (error) {
+      console.error(`[research-runner] Brave also failed for "${query}":`, error instanceof Error ? error.message : error);
+      throw error;
+    }
+  }
+  
+  throw new Error("No search provider available (both Tavily and Brave failed or not configured)");
+}
+
 export interface ResearchResult {
   prompts: string[];
   promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string }[];
@@ -97,7 +169,8 @@ export async function runResearch(
     pricingInfo: string | null;
     estimatedRevenueGap: { low: number; high: number; currency: string };
     aiReadinessScore: number;
-  }
+  },
+  tier: 'free' | 'paid' = 'free'
 ): Promise<ResearchResult> {
   // Resolve the best business name to use for searches
   const resolvedName = resolveBusinessName(businessName, website);
@@ -125,12 +198,55 @@ export async function runResearch(
   console.info(`[research-runner] Website scan: services=[${(websiteInsight.services || []).slice(0,5).join(', ')}] keywords=[${(websiteInsight.keywords || []).slice(0,5).join(', ')}]`);
   console.info(`[research-runner] Final niche: ${finalNiche}`);
   
-  // STEP 3: Generate prompts based on niche + actual services from website
-  const promptSet = getPromptSetForNiche(finalNiche);
-  const prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
+  // STEP 3: Generate prompts based on niche + tier
+  let prompts: string[];
+  if (tier === 'paid') {
+    // Full 84-prompt set for paid reports
+    const { getPrompts } = await import('./full-prompts');
+    const fullPromptDefs = getPrompts({
+      businessName: resolvedName,
+      city,
+      niche: finalNiche,
+      competitorMention: competitors[0] || '',
+      websiteInsight,
+    }, 'paid');
+    prompts = fullPromptDefs.map(p => p.text);
+    console.info(`[research-runner] Using FULL 84-prompt set (paid tier): ${prompts.length} prompts`);
+  } else {
+    // Standard 20-prompt set for free reports
+    const promptSet = getPromptSetForNiche(finalNiche);
+    prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
+    console.info(`[research-runner] Using standard 20-prompt set (free tier)`);
+  }
   
   // STEP 4: Run searches and track appearances — check against BOTH names
-  const results = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
+  const { results, rawResults } = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
+  
+  // STEP 4.5: Discover competitors from search results
+  // If no competitors were provided or the known competitors didn't show up,
+  // scan ALL search results for recurring business names
+  const discoveredCompetitors = discoverCompetitorsFromResults(rawResults, resolvedName, website, businessName);
+  if (discoveredCompetitors.length > 0) {
+    console.info(`[research-runner] Discovered ${discoveredCompetitors.length} competitors from search results:`);
+    for (const dc of discoveredCompetitors) {
+      console.info(`[research-runner]   - ${dc.name} (appeared in ${dc.appearances} prompts)`);
+    }
+    
+    // Re-check competitor appearances using discovered competitors
+    const discoveredNames = discoveredCompetitors.map(dc => dc.name);
+    for (let i = 0; i < results.length; i++) {
+      if (!results[i].competitorAppeared) {
+        const promptRaw = rawResults[i];
+        if (promptRaw && promptRaw.results.length > 0) {
+          const discResult = checkCompetitorAppearance(promptRaw.results, discoveredNames);
+          if (discResult.appeared && discResult.name && isRealBusiness(discResult.name)) {
+            results[i].competitorAppeared = true;
+            results[i].competitorName = discResult.name;
+          }
+        }
+      }
+    }
+  }
   
   // STEP 5: Calculate scores and bands
   const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
@@ -206,6 +322,7 @@ async function scanWebsite(website: string): Promise<{
       photography: ['photography', 'photo session', 'portrait', 'wedding photographer', 'headshot'],
       cleaning: ['cleaning service', 'house cleaning', 'deep clean', 'maid service', 'janitorial'],
       fine_jewelry: ['jewelry', 'diamond', 'engagement ring', 'wedding band', 'fine jewelry', 'lab grown', 'lab-grown', '14k gold', '18k gold', 'gemstone', 'necklace', 'bracelet', 'earring', 'pendant', 'jewelry store', 'gold jewelry', 'custom jewelry', 'bespoke'],
+      tourism_experience: ['pearl farm', 'oyster farm', 'aquaculture', 'farm tour', 'guided tour', 'scenic cruise', 'cellar door', 'winery tour', 'brewery tour', 'eco tour', 'wildlife tour', 'boat tour', 'adventure tour', 'day trip', 'day tour', 'tourist attraction', 'tourism', 'nature tour', 'cultural experience', 'outdoor experience', 'water activity', 'river cruise', 'seaplane', 'hot air balloon', 'helicopter tour', 'food tour', 'wine tasting', 'cooking class', 'kayak tour', 'snorkel', 'surf school'],
       mobile_bar: ['cocktail', 'mixology', 'mobile bar', 'cocktail catering', 'pre-bottled cocktail', 'premix', 'drinks catering', 'bartender', 'mocktail'],
     };
     
@@ -375,18 +492,27 @@ interface PromptResult {
   competitorName?: string;
 }
 
+interface PromptSearchOutput {
+  results: PromptResult[];
+  rawResults: { prompt: string; results: TavilySearchResult[] }[];
+}
+
 async function runPromptSearches(
   prompts: string[],
   businessName: string,
   website: string,
   competitors: string[],
   originalName?: string
-): Promise<PromptResult[]> {
+): Promise<PromptSearchOutput> {
   const results: PromptResult[] = [];
+  const rawResults: { prompt: string; results: TavilySearchResult[] }[] = [];
   
   for (const prompt of prompts) {
     try {
-      const searchResults = await tavilySearch(prompt);
+      const { results: searchResults, provider } = await searchWithFallback(prompt);
+      
+      // Store raw results for competitor discovery
+      rawResults.push({ prompt, results: searchResults });
       
       // Check if business appears — use resolved name AND original name
       let businessAppeared = checkBusinessAppearance(searchResults, businessName, website);
@@ -414,10 +540,11 @@ async function runPromptSearches(
         businessAppeared: false,
         competitorAppeared: false
       });
+      rawResults.push({ prompt, results: [] });
     }
   }
   
-  return results;
+  return { results, rawResults };
 }
 
 function checkBusinessAppearance(
@@ -528,10 +655,232 @@ function checkCompetitorAppearance(
     // Reject names that are clearly URLs or email addresses
     if (/\.[a-z]{2,}(\/|$)/i.test(rawName)) return { appeared: false };
     
+    // Reject aggregator/platform names (Getyourguide, Viator, etc.)
+    if (!isRealBusiness(rawName)) return { appeared: false };
+
     return { appeared: true, name: rawName };
   }
   
   return { appeared: false };
+}
+
+/**
+ * Competitor Discovery from Search Results
+ * 
+ * After research runs, scan ALL search results for recurring business names.
+ * This discovers competitors that weren't known upfront.
+ * 
+ * How it works:
+ * 1. Collect all raw search results from the 20 prompts
+ * 2. Extract candidate business names from titles + URLs
+ * 3. Filter out the target business, directories, and generic names
+ * 4. Score by frequency of appearance across different prompts
+ * 5. Return top discovered competitors
+ */
+interface DiscoveredCompetitor {
+  name: string;
+  appearances: number; // Number of distinct prompts where they appeared
+  urls: string[]; // Their URLs for verification
+}
+
+// Directory/platform domains that should NEVER be listed as competitors
+const DIRECTORY_DOMAINS = [
+  'mapquest.com', 'google.com', 'maps.google', 'yelp.com', 'tripadvisor.com',
+  'yellowpages.com', 'whitepages.com', 'foursquare.com', 'bbb.org',
+  'wikipedia.org', 'medium.com', 'facebook.com', 'instagram.com',
+  'linkedin.com', 'pinterest.com', 'reddit.com', 'youtube.com',
+  'bing.com', 'apple.com', 'waze.com', 'angi.com', 'homeadvisor.com',
+  'thumbtack.com', 'booking.com', 'airbnb.com', 'expedia.com',
+  'zillow.com', 'trulia.com', 'cars.com', 'autotrader.com', 'edmunds.com',
+  'cargurus.com', 'truecar.com', 'kbb.com', 'whereis.com',
+  'f6s.com', 'crunchbase.com', 'glassdoor.com', 'indeed.com',
+  'timeout.com', 'visitnsw.com', 'sydney.com', 'australia.com',
+  'lovecentralcoast.com', 'nationalparks.nsw.gov.au',
+  'expedia.com.au', 'getyourguide.com', 'hawkesburyriver.com',
+  'googleusercontent.com', 'gstatic.com',
+];
+
+// Generic phrases that aren't business names
+const GENERIC_PHRASES = [
+  'top rated', 'best in', 'nearby', 'local options', 'recommended by',
+  'featured', 'compare', 'vs', 'versus', 'reviews of', 'the best',
+  'local competitors', 'nearby businesses', 'similar companies',
+  'others in the area', 'local options', 'see all', 'view all',
+  'learn more', 'read more', 'click here', 'find out more',
+];
+
+// Aggregator/platform names that should NEVER be listed as competitors
+// These are booking platforms, directories, review sites, and generic listings
+const AGGREGATOR_NAMES = [
+  'getyourguide', 'viator', 'klook', 'tripadvisor', 'airbnb experience',
+  'booking.com', 'expedia', 'hotels.com', 'agoda', 'hostelworld',
+  'what\'s on', 'whats on', 'timeout', 'time out', 'visit ', 'discover ',
+  'things to do', 'book now', 'book online',
+  'justdial', 'indiamart', 'yelp', 'google maps', 'google reviews',
+  'yellow pages', 'white pages', 'bbb', 'better business',
+  'eventbrite', 'meetup', 'stubhub', 'ticketmaster',
+  'wikipedia', 'wikitravel', 'lonely planet', 'rough guides',
+  'trip ', 'tours and ', 'best tours', 'top tours',
+  'car & truck', 'car and truck', 'transporting companies near',
+  'carriers in ', 'near ', 'local ',
+];
+
+/**
+ * Check if a competitor name is a real business (not an aggregator/platform/directory)
+ */
+function isRealBusiness(name: string): boolean {
+  const lower = name.toLowerCase().trim();
+  
+  // Reject if it matches any aggregator pattern
+  if (AGGREGATOR_NAMES.some(a => lower === a || lower.startsWith(a) || lower.endsWith(a))) {
+    return false;
+  }
+  
+  // Reject if it looks like a directory listing ("X near Y", "X in Z")
+  if (/^(car |vehicle |auto ).*(near|in |around )/i.test(lower)) return false;
+  if (/ near .*,/i.test(lower)) return false;
+  if (/ in .*, (on|nsw|vic|qld|ca|ny|tx)/i.test(lower)) return false;
+  
+  // Reject if it's a generic phrase
+  if (GENERIC_PHRASES.some(p => lower.includes(p))) return false;
+  
+  // Reject very short or very long names
+  if (lower.length < 4 || lower.length > 60) return false;
+  
+  // Reject if it's just a location/area name
+  if (/^(the )?(best|top|cheap|affordable|reliable|local) /i.test(lower)) return false;
+  
+  return true;
+}
+
+function extractDomainName(url: string): { name: string; domain: string } | null {
+  try {
+    const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+    const parsed = new URL(fullUrl);
+    const domain = parsed.hostname.replace(/^www\./, '');
+    
+    // Skip directory domains
+    if (DIRECTORY_DOMAINS.some(d => domain.includes(d))) return null;
+    
+    // Extract readable name from domain
+    const parts = domain.split('.')[0];
+    const name = parts
+      .replace(/[-_.]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .trim();
+    
+    if (name.length < 3) return null;
+    
+    return { name, domain };
+  } catch {
+    return null;
+  }
+}
+
+function extractTitleBusiness(title: string): string | null {
+  // Clean up title — remove common suffixes
+  const cleaned = title
+    .replace(/\s*[|–—-]\s*(home|official|reviews|menu|prices|book|book now).*$/i, '')
+    .replace(/\s*\|\s*.*$/g, '') // Remove everything after pipe
+    .replace(/\s*-\s*.*$/g, '') // Remove everything after dash (if long suffix)
+    .trim();
+  
+  if (cleaned.length < 3 || cleaned.length > 80) return null;
+  if (GENERIC_PHRASES.some(p => cleaned.toLowerCase().includes(p))) return null;
+  
+  return cleaned;
+}
+
+function discoverCompetitorsFromResults(
+  allSearchResults: { prompt: string; results: TavilySearchResult[] }[],
+  businessName: string,
+  businessWebsite: string,
+  originalName?: string
+): DiscoveredCompetitor[] {
+  const candidateScores: Map<string, { appearances: number; urls: Set<string>; names: Set<string> }> = new Map();
+  
+  const lowerBizName = businessName.toLowerCase();
+  const lowerOrigName = (originalName || '').toLowerCase();
+  const lowerBizWebsite = businessWebsite.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  
+  // Key business name parts to exclude (e.g. "broken bay" from "Broken Bay Pearl Farm")
+  const bizNameParts = lowerBizName.split(/\s+/).filter(w => w.length >= 4);
+  
+  for (const { prompt, results } of allSearchResults) {
+    // Track which candidates appeared in THIS prompt (avoid double-counting)
+    const promptCandidates = new Set<string>();
+    
+    for (const result of results) {
+      const lowerTitle = result.title.toLowerCase();
+      const lowerUrl = result.url.toLowerCase();
+      const lowerContent = result.content.toLowerCase();
+      
+      // Skip if this is the target business
+      if (lowerTitle.includes(lowerBizName) || lowerUrl.includes(lowerBizWebsite)) continue;
+      if (originalName && lowerTitle.includes(lowerOrigName)) continue;
+      
+      // Skip directory results
+      if (DIRECTORY_DOMAINS.some(d => lowerUrl.includes(d))) continue;
+      
+      // Extract candidate from URL domain
+      const domainInfo = extractDomainName(result.url);
+      if (domainInfo) {
+        // Skip if the domain looks like the target business
+        const lowerDomainName = domainInfo.name.toLowerCase();
+        if (lowerDomainName.includes(lowerBizName.split(' ')[0]) && bizNameParts.length > 1) {
+          // Might be a subdomain or related page — skip if it contains 2+ business name parts
+          const matchCount = bizNameParts.filter(p => lowerDomainName.includes(p)).length;
+          if (matchCount >= 2) continue;
+        }
+        
+        // Use domain as candidate key
+        const key = domainInfo.domain;
+        if (!promptCandidates.has(key)) {
+          promptCandidates.add(key);
+          if (!candidateScores.has(key)) {
+            candidateScores.set(key, { appearances: 0, urls: new Set(), names: new Set() });
+          }
+          const entry = candidateScores.get(key)!;
+          entry.appearances++;
+          entry.urls.add(result.url);
+          // Also track the title as a display name
+          const titleBiz = extractTitleBusiness(result.title);
+          if (titleBiz && titleBiz.length > 3) {
+            entry.names.add(titleBiz);
+          }
+        }
+      }
+    }
+  }
+  
+  // Convert to array and sort by appearances
+  const sorted: DiscoveredCompetitor[] = [];
+  for (const [domain, data] of candidateScores) {
+    // Only consider candidates that appeared in 2+ distinct prompts
+    if (data.appearances < 2) continue;
+    
+    // Pick the best display name: prefer title-based name over domain name
+    const names = Array.from(data.names);
+    let displayName: string;
+    
+    if (names.length > 0) {
+      // Use the most common title name, or the longest one that's still reasonable
+      const nameFreq: Map<string, number> = new Map();
+      for (const n of names) nameFreq.set(n, (nameFreq.get(n) || 0) + 1);
+      displayName = Array.from(nameFreq.entries()).sort((a, b) => b[1] - a[1])[0][0];
+    } else {
+      // Fallback: use domain name with title casing
+      displayName = domain.split('.')[0].replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+    
+    sorted.push({
+      name: displayName,
+      appearances: data.appearances,
+      urls: Array.from(data.urls).slice(0, 3),
+    });
+  }
+  
+  return sorted.sort((a, b) => b.appearances - a.appearances).filter(dc => isRealBusiness(dc.name)).slice(0, 5);
 }
 
 function calculateScores(
@@ -605,7 +954,7 @@ function calculateScores(
   const whyThisMatters = getWhyThisMatters(niche);
 
   // Directory/platform names that AI models mention but aren't real business competitors
-  const NOT_A_COMPETITOR = /^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book)$/i;
+  const NOT_A_COMPETITOR = /^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book|whereis)$/i;
 
   return {
     prompts: results.map(r => r.prompt),
@@ -651,6 +1000,10 @@ function getCompetitorCategories(niche: string): string[] {
       return ["stronger local market content", "clearer neighborhood expertise signals"];
     case "fine_jewelry":
       return ["stronger online presence in diamond and jewelry searches", "clearer brand positioning against major lab-grown diamond retailers"];
+    case "tourism_experience":
+      return ["stronger presence on broad tourism and day-trip queries", "well-established review presence on travel platforms"];
+    case "restaurant":
+      return ["stronger presence on dining and reservation platforms", "better review visibility on food-focused searches"];
     default:
       return ["stronger local online presence", "clearer service information"];
   }
@@ -670,6 +1023,10 @@ function getWhyThisMatters(niche: string): string {
       return "AI can shape the shortlist before someone tries a class, compares studios, or signs up for lessons.";
     case "real_estate":
       return "AI can shape the shortlist before a buyer picks an agent, schedules viewings, or lists their home.";
+    case "tourism_experience":
+      return "AI shapes the shortlist before a visitor plans a day trip, looks for unique experiences, or searches for things to do. If you don't appear, tourists book someone else.";
+    case "restaurant":
+      return "AI shapes the shortlist before someone picks where to eat, checks reviews, or makes a reservation.";
     default:
       return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
   }

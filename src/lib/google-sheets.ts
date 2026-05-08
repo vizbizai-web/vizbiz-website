@@ -34,6 +34,8 @@ const COLUMNS = [
 export type LeadStatus =
   | "new"
   | "researching"
+  | "pending_review"
+  | "approved"
   | "email_drafted"
   | "contacted"
   | "closed_won"

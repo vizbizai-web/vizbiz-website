@@ -266,6 +266,62 @@ const NICHE_STRATEGIES: Record<string, PromptSet> = {
       "cocktail masterclass in {city}",
       "pop up cocktail bar in {city}"
     ]
+  },
+  auto_transport: {
+    niche: "auto_transport",
+    label: "Auto Transport & Car Hauling",
+    avgLeadValue: 500,
+    estimatedMonthlyVolume: 120,
+    prompts: [
+      "best auto transport company in {city}",
+      "car shipping companies in {city}",
+      "best car hauling service in {city}",
+      "vehicle transport near {city}",
+      "how to ship a car from {city}",
+      "{businessName} in {city}",
+      "{businessName} reviews",
+      "{businessName} car shipping",
+      "auto transport companies with best reviews in {city}",
+      "reliable car shipping in {city}",
+      "affordable car transport in {city}",
+      "enclosed car transport in {city}",
+      "open car carrier in {city}",
+      "car delivery service in {city}",
+      "vehicle relocation service in {city}",
+      "car shipping cost from {city}",
+      "auto transport quotes in {city}",
+      "best car movers in {city}",
+      "door to door car shipping in {city}",
+      "vehicle logistics companies in {city}"
+    ]
+  },
+  tourism_experience: {
+    niche: "tourism_experience",
+    label: "Tourism Experience",
+    avgLeadValue: 150,
+    estimatedMonthlyVolume: 80,
+    prompts: [
+      "{businessName} in {city}",
+      "{businessName} tours",
+      "{businessName} reviews",
+      "{businessName} experience",
+      "best tours in {city}",
+      "things to do in {city}",
+      "unique experiences in {city}",
+      "best day trips from {city}",
+      "tourist attractions {city}",
+      "best guided tours {city}",
+      "outdoor activities {city}",
+      "adventure tours {city}",
+      "boat tours {city}",
+      "water activities {city}",
+      "nature tours near {city}",
+      "family friendly tours {city}",
+      "eco tourism {city}",
+      "farm tours near {city}",
+      "food and wine tours {city}",
+      "top rated tours {city}"
+    ]
   }
 };
 
