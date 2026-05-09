@@ -5,7 +5,7 @@
  * Reports are only accessible with a valid token — created when the email is sent.
  * 
  * Token format: base64url(timestamp:hmac(leadId+timestamp))
- * Tokens expire after 30 days.
+ * Tokens expire after 365 days.
  */
 
 const TOKEN_SECRET = process.env.REPORT_TOKEN_SECRET || "vizbiz-report-token-prod-2026";
@@ -52,10 +52,10 @@ export function validateReportToken(leadId: string, token: string): { valid: boo
     const ts = parseInt(timestamp, 36);
     if (isNaN(ts)) return { valid: false, reason: 'Invalid timestamp' };
     
-    // Check expiry (30 days)
+    // Check expiry (365 days — reports should be accessible long-term)
     const age = Date.now() - ts;
-    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-    if (age > thirtyDays) return { valid: false, reason: 'Token expired' };
+    const oneYear = 365 * 24 * 60 * 60 * 1000;
+    if (age > oneYear) return { valid: false, reason: 'Token expired' };
     
     // Verify HMAC
     const crypto = require('crypto');
