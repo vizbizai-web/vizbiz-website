@@ -14,6 +14,14 @@
  *              thank-you page (revenue gap hook)
  */
 
+import { scrapeSite, fetchLlmsTxt } from "./site-scraper";
+import { runSEOAudit, SEOAuditResult } from "./seo-auditor";
+
+export type BusinessProfileWithAudit = BusinessProfile & {
+  seoAudit?: SEOAuditResult;
+  renderMethod?: 'playwright' | 'fetch';
+};
+
 export type BusinessProfile = {
   niche: string;
   nicheLabel: string;
@@ -98,15 +106,7 @@ function calcRevenueGap(niche: string, score: number): { low: number; high: numb
 /**
  * Extract plain text from HTML — strips tags, scripts, styles
  */
-function stripHtml(html: string): string {
-  return html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&[^;]+;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+
 
 /**
  * Keyword-based niche detection fallback
@@ -131,43 +131,29 @@ function detectNicheByKeywords(text: string): string {
  * @param url — The business website URL
  * @returns BusinessProfile — structured, with estimated revenue gap
  */
-export async function preflightScan(url: string): Promise<BusinessProfile> {
+export async function preflightScan(url: string): Promise<BusinessProfileWithAudit> {
   console.info(`[preflight] Scanning ${url}...`);
 
-  let rawText = "";
-  let hasLlmsTxt = false;
-  let hasSchema = false;
+  // -- Stage 1: Scrape site using Playwright (or fetch fallback) --
+  const scraped = await scrapeSite(url);
+  const llmsTxtContent = await fetchLlmsTxt(url);
+  const rawText = scraped.text;
+  const renderMethod = scraped.renderMethod;
 
-  // -- Stage 1: Fetch site content (single pass) --
-  try {
-    // Check llms.txt
-    const llmsUrl = `${url.replace(/\/$/, "")}/llms.txt`;
-    try {
-      const llmsRes = await fetch(llmsUrl);
-      if (llmsRes.ok) {
-        hasLlmsTxt = true;
-        rawText += await llmsRes.text() + "\n";
-      }
-    } catch {
-      // no llms.txt, fine
-    }
+  console.info(`[preflight] Scraped ${url}: ${rawText.length} chars via ${renderMethod} in ${scraped.loadTimeMs}ms`);
 
-    // Main page
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
-    });
+  // -- Stage 2: Run SEO audit on the HTML --
+  let seoAudit: SEOAuditResult | undefined;
+  if (scraped.html) {
+    seoAudit = await runSEOAudit(scraped.html, url, llmsTxtContent);
+    console.info(`[preflight] SEO audit: score=${seoAudit.overallScore}, issues=${seoAudit.issues.length}, schema=${seoAudit.schemaTypes.join(',')}`);
+  }
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    rawText += stripHtml(html);
+  const hasLlmsTxt = llmsTxtContent !== null && llmsTxtContent.length > 0;
+  const hasSchema = seoAudit?.hasSchema || false;
 
-    if (html.includes('<script type="application/ld+json">')) {
-      hasSchema = true;
-    }
-  } catch (error) {
-    console.error(`[preflight] Fetch failed for ${url}:`, error);
+  if (!scraped.html && scraped.error) {
+    console.error(`[preflight] Scrape failed for ${url}: ${scraped.error}`);
     const fallbackEconomic = NICHE_ECONOMICS.unknown;
     return {
       niche: "unknown",
@@ -183,6 +169,8 @@ export async function preflightScan(url: string): Promise<BusinessProfile> {
         high: Math.round(fallbackEconomic.monthlyVolume * fallbackEconomic.avgLeadValue * 1.5),
         currency: "USD",
       },
+      seoAudit,
+      renderMethod,
     };
   }
 
@@ -253,18 +241,24 @@ ${contentSample.substring(0, 8000)}
     contentQuality = rawText.length > 3000 ? "medium" : "low";
   }
 
-  // -- Stage 3: Score and revenue gap --
+  // -- Stage 3: Score using SEO audit data when available --
   let score = 0;
-  if (hasLlmsTxt) score += 40;
-  if (hasSchema) score += 30;
-  if (contentQuality === "high") score += 30;
-  else if (contentQuality === "medium") score += 15;
-  if (rawText.length > 3000) score += 10;
+  if (seoAudit) {
+    // Use the detailed SEO audit scores (more accurate)
+    score = seoAudit.overallScore;
+  } else {
+    // Fallback scoring from basic checks
+    if (hasLlmsTxt) score += 40;
+    if (hasSchema) score += 30;
+    if (contentQuality === "high") score += 30;
+    else if (contentQuality === "medium") score += 15;
+    if (rawText.length > 3000) score += 10;
+  }
 
   const economic = NICHE_ECONOMICS[niche] || NICHE_ECONOMICS.local_business;
   const revenueGap = calcRevenueGap(niche, score);
 
-  console.info(`[preflight] Result: niche=${niche}, score=${score}, revGap=$${revenueGap.low}-$${revenueGap.high}/mo (llm=${llmUsed})`);
+  console.info(`[preflight] Result: niche=${niche}, score=${score}, revGap=$${revenueGap.low}-$${revenueGap.high}/mo (llm=${llmUsed}, render=${renderMethod})`);
 
   return {
     niche,
@@ -276,5 +270,7 @@ ${contentSample.substring(0, 8000)}
     hasSchema,
     aiReadinessScore: score,
     estimatedRevenueGap: revenueGap,
+    seoAudit,
+    renderMethod,
   };
 }
