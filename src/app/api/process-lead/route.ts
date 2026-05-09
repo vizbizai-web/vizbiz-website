@@ -42,24 +42,19 @@ async function sendVladReviewAlert(
     return [...compNames].some(cn => cn.toLowerCase().includes(key));
   });
 
-  let msg = `🔍 RESEARCH READY FOR REVIEW\n\n`;
-  msg += `${businessName} (${city})\n`;
-  msg += `Lead: ${leadId}\n`;
-  msg += `Niche: ${result.niche} ${nicheOk ? '✅' : '❌ GENERIC'}\n`;
-  msg += `Appearances: ${result.appearedCount}/${result.totalPrompts}\n`;
-  msg += `Band: ${result.statusBand}\n\n`;
+  const reportUrl = `https://vizbiz.ai/report/${leadId}`;
+  const mcUrl = `https://vizbiz.ai/mission-control/leads/${leadId}`;
+  const isWeak = result.statusBand === 'Weak';
+  const nicheLabel = nicheOk ? result.niche.replace(/_/g, ' ') : `${result.niche} ⚠️`;
+
+  let msg = `Research done for ${businessName} (${city}).\n\n`;
+  msg += `Niche: ${nicheLabel}\n`;
+  msg += `Appeared: ${result.appearedCount}/${result.totalPrompts} prompts\n`;
+  msg += `Band: ${result.statusBand}\n`;
 
   if (userComps.length > 0) {
-    msg += `User competitors: ${userComps.join(', ')}\n`;
-    msg += `  Found in results: ${userCompsFound.length > 0 ? userCompsFound.join(', ') : 'NONE ⚠️'}\n`;
-  }
-
-  if (junkComps.length > 0) {
-    msg += `\n🗑️ Junk competitors: ${junkComps.join(', ')}\n`;
-  }
-
-  if (brandPrompts.length > 0 && brandAppeared === 0) {
-    msg += `\n⚠️ Zero brand appearances (${brandPrompts.length} brand queries)\n`;
+    msg += `Their competitors: ${userComps.join(', ')}\n`;
+    msg += `  Found in results: ${userCompsFound.length > 0 ? userCompsFound.join(', ') : 'none'}\n`;
   }
 
   const topComps = result.promptResults
@@ -67,13 +62,24 @@ async function sendVladReviewAlert(
     .reduce((acc, p) => { acc[p.competitorName!] = (acc[p.competitorName!] || 0) + 1; return acc; }, {} as Record<string, number>);
   const sorted = Object.entries(topComps).sort((a, b) => b[1] - a[1]).slice(0, 3);
   if (sorted.length > 0) {
-    msg += `\nTop discovered competitors:\n`;
+    msg += `\nTop competitors found:\n`;
     for (const [name, count] of sorted) {
       msg += `  • ${name} (${count}/${result.totalPrompts})\n`;
     }
   }
 
-  msg += `\nReport stays "processing" until approved.`;
+  msg += `\n📋 View report: ${reportUrl}\n`;
+  msg += `📊 Mission Control: ${mcUrl}\n\n`;
+
+  // Vlad's recommendation
+  if (isWeak && nicheOk) {
+    msg += `My take: approve this one. Zero visibility in a clear niche — textbook prospect. I'll draft the outreach email as soon as you say go.`;
+  } else if (!nicheOk) {
+    msg += `⚠️ Niche came back generic — might need a rerun. Check the report first.`;
+  } else {
+    msg += `They're showing up okay. Still worth reaching out with a "protect your lead" angle.`;
+  }
+
   msg += `\n\nReply: /approve ${leadId} | /hold ${leadId} | /rerun ${leadId}`;
 
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
