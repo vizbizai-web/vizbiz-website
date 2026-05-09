@@ -142,7 +142,7 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
   const rawText = scraped.text;
   const renderMethod = scraped.renderMethod;
 
-  console.info(`[preflight] Scraped ${url}: ${rawText.length} chars via ${renderMethod} in ${scraped.loadTimeMs}ms`);
+  console.info(`[preflight] Scraped ${url}: ${rawText.length} chars across ${scraped.pagesScraped || 1} pages via ${renderMethod} in ${scraped.loadTimeMs}ms`);
 
   // -- Stage 2: Run SEO audit on the HTML --
   let seoAudit: SEOAuditResult | undefined;
