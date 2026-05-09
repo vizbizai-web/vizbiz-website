@@ -7,10 +7,11 @@
 
 import { NextResponse } from "next/server";
 import { getLeadsByStatus, getLeadByLeadId, updateLeadResearchResults } from "@/lib/google-sheets";
-import { detectNiche } from "@/lib/niche-detector";
+import { detectNiche, getNicheByName } from "@/lib/niche-detector";
 import { discoverCompetitors } from "@/lib/competitor-discovery";
 import { runResearch } from "@/lib/research-runner";
 import { isJunkCompetitor, JUNK_COMPETITOR_PATTERNS } from "@/lib/junk-filter";
+import { preflightScan } from "@/lib/preflight-engine";
 
 /**
  * Send Vlad a Telegram review alert with research summary
@@ -117,8 +118,42 @@ export async function POST(request: Request) {
 
         await updateLeadResearchResults(lead.leadId, { status: "researching", researchStatus: "running" });
 
-        const nicheConfig = detectNiche(lead.dealershipName, lead.website);
-        console.info(`[process-lead] Detected niche: ${nicheConfig.niche}`);
+        // Extract PreFlight profile from notes (contains LLM-classified niche from website scrape)
+        let preflightProfile: any = undefined;
+        const pfIdx = (lead.notes || '').indexOf('PREFLIGHT:');
+        if (pfIdx >= 0) {
+          try {
+            const rawAfter = lead.notes.slice(pfIdx + 10);
+            const jsonStart = rawAfter.indexOf('{');
+            const jsonEnd = rawAfter.lastIndexOf('}');
+            if (jsonStart >= 0 && jsonEnd > jsonStart) {
+              preflightProfile = JSON.parse(rawAfter.slice(jsonStart, jsonEnd + 1));
+            }
+          } catch { /* ignore */ }
+        }
+
+        // If no preflight data, run a live website scrape + LLM classification
+        if (!preflightProfile && lead.website) {
+          try {
+            console.info(`[process-lead] No preflight data — running live website scan for ${lead.website}`);
+            preflightProfile = await preflightScan(lead.website);
+            console.info(`[process-lead] Live scan: niche=${preflightProfile.niche}, score=${preflightProfile.aiReadinessScore}`);
+          } catch (err) {
+            console.warn(`[process-lead] Live preflight scan failed:`, err);
+          }
+        }
+
+        // Use preflight niche (from website scrape + LLM) if available, otherwise keyword fallback
+        let nicheConfig;
+        if (preflightProfile?.niche && preflightProfile.niche !== 'local_business' && preflightProfile.niche !== 'unknown') {
+          console.info(`[process-lead] Using preflight niche: ${preflightProfile.niche} (LLM-classified from website)`);
+          // Import niche config for prompt templates
+          nicheConfig = getNicheByName(preflightProfile.niche) || detectNiche(lead.dealershipName, lead.website);
+        } else {
+          nicheConfig = detectNiche(lead.dealershipName, lead.website);
+          console.info(`[process-lead] Using keyword niche: ${nicheConfig.niche} (no preflight data)`);
+        }
+        console.info(`[process-lead] Final niche: ${nicheConfig.niche}`);
 
         let competitors: string[] = [];
         if (lead.competitor && lead.competitor.trim() !== "") {
@@ -142,19 +177,6 @@ export async function POST(request: Request) {
           }
         }
 
-        // Extract PreFlight profile from notes
-        let preflightProfile: any = undefined;
-        const pfIdx = (lead.notes || '').indexOf('PREFLIGHT:');
-        if (pfIdx >= 0) {
-          try {
-            const rawAfter = lead.notes.slice(pfIdx + 10);
-            const jsonStart = rawAfter.indexOf('{');
-            const jsonEnd = rawAfter.lastIndexOf('}');
-            if (jsonStart >= 0 && jsonEnd > jsonStart) {
-              preflightProfile = JSON.parse(rawAfter.slice(jsonStart, jsonEnd + 1));
-            }
-          } catch { /* ignore */ }
-        }
 
         const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
         console.info(`[process-lead] Research completed: ${researchResult.appearedCount}/${researchResult.totalPrompts}`);
