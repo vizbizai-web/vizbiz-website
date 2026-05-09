@@ -33,11 +33,42 @@ export const JUNK_COMPETITOR_PATTERNS: string[] = [
   'shopify', 'wordpress', 'squarespace', 'wix',
   // Article/news leak patterns
   'and they', 'but they', 'how to', 'why you', 'what to',
+  // LLM generic category responses — not real business names
+  'jewelry store', 'jeweller', 'jeweler in', 'the best', 'top 10', 'the 10 best',
+  'best wedding', 'top rated', 'in tampa', 'in my area', 'near me',
+  'in florida', 'in london', 'in auckland', 'in your area',
+  'near you', 'around me', 'closest', 'recommended',
+  'list of', 'guide to', 'directory of',
+];
+
+/**
+ * Additional check: competitor names that are just generic category labels
+ * These are common LLM outputs that aren't real businesses
+ */
+const GENERIC_CATEGORY_PATTERNS: RegExp[] = [
+  /^\d+\s+(best|top|finest|leading|great)/i,            // "10 Best Wedding Jewelers..."
+  /^(the )?\d+\s+(best|top|most)/i,                     // "The 10 Best..."
+  /^(best|top|leading|premier)\s+\w+\s+(in|near|around|of)/i, // "Best jewelry store in Tampa"
+  /^(your )?local \w+/i,                                  // "Your local jewelry store"
+  /^\w+ store$/i,                                          // "Jewelry Store" (just the category)
+  /^\w+ store in /i,                                       // "Jewelry Store in Tampa, FL"
+  /^\w+ shop$/i,                                           // "Jewelry Shop"
+  /^\w+ shop in /i,                                        // "Jewelry Shop in..."
+  /^\w+ studio$/i,                                         // generic "Dance Studio" etc
+  /^\w+ service$/i,                                        // "Cleaning Service"
+  /^\w+ near (me|you|\w+ city)/i,                          // "Jewelry near me"
+  /wedding \w+ in \w+/i,                                   // "Wedding jewelers in Tampa"
 ];
 
 export function isJunkCompetitor(name: string): boolean {
   const lower = name.toLowerCase();
-  return JUNK_COMPETITOR_PATTERNS.some(pattern => lower.includes(pattern));
+  // Check pattern list
+  if (JUNK_COMPETITOR_PATTERNS.some(pattern => lower.includes(pattern))) return true;
+  // Check generic category patterns
+  if (GENERIC_CATEGORY_PATTERNS.some(regex => regex.test(name))) return true;
+  // Very short names (< 4 chars) are likely not real businesses
+  if (name.trim().length < 4) return true;
+  return false;
 }
 
 export function filterJunkCompetitors(names: string[]): string[] {

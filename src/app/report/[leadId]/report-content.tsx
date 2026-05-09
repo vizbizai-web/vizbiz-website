@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/lib/use-mobile';
+import { isJunkCompetitor } from '@/lib/junk-filter';
 import {
   BarChart,
   Bar,
@@ -805,13 +806,15 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   useEffect(() => { setMounted(true); }, []);
 
   const totalQ = data.totalPrompts || 20;
-  const compData = data.competitors.map(c => ({
+  const compDataRaw = data.competitors.map(c => ({
     name: c.isYou ? `${data.businessName.split(' ')[0]} (You)` : c.name,
     score: c.score,
     pct: Math.round((c.score / totalQ) * 100),
     isYou: c.isYou,
     isYours: c.isYours,
   }));
+  // Filter out junk/generic competitors (category labels, listicles, etc)
+  const compData = compDataRaw.filter(c => c.isYou || c.isYours || !isJunkCompetitor(c.name));
 
   const maxScore = Math.max(...compData.map(c => c.score));
   const yourScore = compData.find(c => c.isYou)?.score || 0;
@@ -851,9 +854,24 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
 
         {mounted ? (
           <div className="space-y-4">
-            {/* User-entered competitors section */}
+            {/* You (the client) — always shown first, clearly separated */}
+            {compData.filter(c => c.isYou).map((entry, index) => (
+              <ComparisonBar
+                key={entry.name}
+                name={entry.name}
+                score={entry.score}
+                total={totalQ}
+                pct={Math.round((entry.score / totalQ) * 100)}
+                color="#22D3EE"
+                isYou={true}
+                theme={theme}
+                delay={0}
+              />
+            ))}
+
+            {/* Named competitors (user-provided) */}
             {compData.some(c => c.isYours) && (
-              <div className="mb-2">
+              <div className="mt-4">
                 <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: t.textMuted }}>Your competitors</p>
                 {compData.filter(c => c.isYours).map((entry, index) => (
                   <ComparisonBar
@@ -870,26 +888,29 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
                 ))}
               </div>
             )}
-            {/* You + discovered competitors section */}
-            {compData.some(c => !c.isYours) && compData.some(c => c.isYours) && (
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2 mt-4" style={{ color: t.textMuted }}>Others AI recommends instead</p>
+
+            {/* Discovered competitors — only real businesses, not junk */}
+            {compData.filter(c => !c.isYou && !c.isYours).length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: t.textMuted }}>Competitors AI recommends instead of you</p>
+                {compData.filter(c => !c.isYou && !c.isYours).map((entry, index) => {
+                  const barColor = compColors[index % compColors.length];
+                  return (
+                    <ComparisonBar
+                      key={entry.name}
+                      name={entry.name}
+                      score={entry.score}
+                      total={totalQ}
+                      pct={Math.round((entry.score / totalQ) * 100)}
+                      color={barColor}
+                      isYou={false}
+                      theme={theme}
+                      delay={index * 150}
+                    />
+                  );
+                })}
+              </div>
             )}
-            {compData.filter(c => !c.isYours).map((entry, index) => {
-              const barColor = entry.isYou ? '#22D3EE' : compColors[(index - 1) % compColors.length];
-              return (
-                <ComparisonBar
-                  key={entry.name}
-                  name={entry.name}
-                  score={entry.score}
-                  total={totalQ}
-                  pct={Math.round((entry.score / totalQ) * 100)}
-                  color={barColor}
-                  isYou={!!entry.isYou}
-                  theme={theme}
-                  delay={index * 150}
-                />
-              );
-            })}
           </div>
         ) : (
           <div style={{ height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
