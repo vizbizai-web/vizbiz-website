@@ -5,7 +5,6 @@
  * - Google reviews (count + rating)
  * - Instagram followers
  * - Facebook page likes
- * - TikTok followers
  *
  * Uses Tavily search for ALL social data — it returns answer snippets
  * with follower counts, review ratings, and page likes.
@@ -21,7 +20,7 @@ export interface SocialPresence {
   facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
-  tiktok: number | null;
+  
   instagramUrl: string | null;
   facebookUrl: string | null;
 }
@@ -32,7 +31,7 @@ export interface CompetitorSocial {
   facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
-  tiktok: number | null;
+  
 }
 
 export interface SocialAnalysis {
@@ -58,11 +57,10 @@ export async function collectSocialSignals(
   competitorNames: string[],
 ): Promise<SocialAnalysis> {
   // Step 1: Collect business social data via Tavily (parallel)
-  const [google, instagram, facebook, tiktok] = await Promise.all([
+  const [google, instagram, facebook] = await Promise.all([
     tavilySocialSearch(`${businessName} ${city} Google reviews rating number of reviews`),
     tavilySocialSearch(`${businessName} ${city} Instagram followers`),
     tavilySocialSearch(`${businessName} ${city} Facebook page likes`),
-    tavilySocialSearch(`${businessName} ${city} TikTok followers`),
   ]);
 
   const business: SocialPresence = {
@@ -70,12 +68,11 @@ export async function collectSocialSignals(
     facebook: parseFollowerCount(facebook),
     googleReviews: parseReviewCount(google),
     googleRating: parseRating(google),
-    tiktok: parseFollowerCount(tiktok),
     instagramUrl: null,
     facebookUrl: null,
   };
 
-  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, TikTok=${business.tiktok}, Google=${business.googleReviews} reviews (${business.googleRating} stars)`);
+  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, Google=${business.googleReviews} reviews (${business.googleRating} stars)`);
 
   // Step 2: Collect competitor social data (parallel, top 3)
   const competitors: CompetitorSocial[] = await Promise.all(
@@ -90,7 +87,6 @@ export async function collectSocialSignals(
         facebook: null,
         googleReviews: parseReviewCount(g),
         googleRating: parseRating(g),
-        tiktok: null,
       };
     })
   );
