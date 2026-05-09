@@ -916,8 +916,16 @@ function calculateScores(
     serviceVisibility = "Moderate";
   }
   
+  // Filter junk competitors from ALL results before storing
+  for (const r of results) {
+    if (r.competitorName && isJunkCompetitor(r.competitorName.trim())) {
+      r.competitorName = undefined;
+      r.competitorAppeared = false;
+    }
+  }
+
   // Competitor mention — find the most frequently appearing competitor
-  const filteredResults = results.filter(r => r.competitorName && !isJunkCompetitor(r.competitorName.trim()));
+  const filteredResults = results.filter(r => r.competitorName);
   const competitorNameCounts = new Map<string, number>();
   for (const r of filteredResults) {
     if (r.competitorAppeared && r.competitorName) {
