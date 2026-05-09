@@ -10,6 +10,7 @@ import { getLeadsByStatus, getLeadByLeadId, updateLeadResearchResults } from "@/
 import { detectNiche } from "@/lib/niche-detector";
 import { discoverCompetitors } from "@/lib/competitor-discovery";
 import { runResearch } from "@/lib/research-runner";
+import { analyzeTopCompetitors } from "@/lib/competitor-analyzer";
 
 /**
  * Send Vlad a Telegram review alert with research summary
@@ -157,6 +158,20 @@ export async function POST(request: Request) {
 
         const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
         console.info(`[process-lead] Research completed: ${researchResult.appearedCount}/${researchResult.totalPrompts}`);
+
+        // Auto-analyze top competitors discovered during research
+        try {
+          const compAnalysis = await analyzeTopCompetitors(
+            researchResult.promptResults,
+            researchResult.niche,
+            3
+          );
+          if (compAnalysis.length > 0) {
+            console.info(`[process-lead] Competitor analysis: ${compAnalysis.length} profiles generated`);
+          }
+        } catch (compErr) {
+          console.warn(`[process-lead] Competitor analysis failed (non-blocking):`, compErr);
+        }
 
         const researchJson = JSON.stringify({
           businessName: researchResult.resolvedName || lead.dealershipName,
