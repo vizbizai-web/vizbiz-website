@@ -69,7 +69,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
 
 const NICHE_KEYWORDS: Record<string, string[]> = {
   car_dealership: ["dealer", "auto", "cars", "automotive", "honda", "toyota", "ford", "chevrolet", "inventory", "financing", "trade-in", "certified pre-owned", "test drive"],
-  fine_jewelry: ["jewelry", "jeweller", "jeweler", "diamond", "engagement ring", "gold", "platinum", "lab grown", "gemstone", "bridal jewelry", "gem", "stone", "ring", "necklace", "bracelet", "pendant", "silversmith", "goldsmith"],
+  fine_jewelry: ["jewelry store", "jeweller", "jeweler", "diamond", "engagement ring", "lab grown", "gemstone", "bridal jewelry"],
   spray_tanning: ["spray tan", "tanning", "sunless", "bronze", "glow", "airbrush tan"],
   beauty_salon: ["salon", "beauty", "hair", "nails", "facial", "spa", "barber"],
   venue_wedding: ["venue", "wedding", "event", "banquet", "ballroom", "reception"],
@@ -90,7 +90,7 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   marketing_agency: ["marketing agency", "digital marketing", "social media management", "seo services"],
   auto_transport: ["auto transport", "car shipping", "car hauling", "vehicle transport", "vehicle shipping", "auto shipping", "car carrier", "vehicle logistics", "car delivery", "auto logistics", "car mover", "vehicle relocation", "transport group", "logistics group", "enclosed carrier", "car carrier service", "ship my car", "car hauling company"],
   tourism_experience: ["pearl farm", "oyster farm", "aquaculture", "farm tour", "guided tour", "scenic cruise", "cellar door", "winery tour", "brewery tour", "eco tour", "wildlife tour", "boat tour", "adventure tour", "day trip", "day tour", "tourist attraction", "tourism", "nature tour", "cultural experience", "outdoor experience", "water activity", "river cruise", "seaplane", "food tour", "wine tasting", "cooking class", "kayak tour"],
-  artisan_workshop: ["workshop", "studio", "class", "course", "lesson", "artisan", "craft", "maker", "metalwork", "silversmith", "goldsmith", "stone cutting", "lapidary", "jewelry making", "jewelry class", "ring making", "metal working"],
+  artisan_workshop: ["workshop", "studio", "class", "course", "lesson", "artisan", "craft", "maker", "metalwork", "silversmith", "goldsmith", "stone cutting", "lapidary", "jewelry making", "jewelry class", "ring making", "metal working", "metalsmith", "metalsmithing", "sip & silversmith", "sip and silversmith", "upcoming workshops", "book a session", "reserve your spot"],
 };
 
 /**
@@ -271,6 +271,14 @@ ${allSignals}
       contentQuality = result.quality || "low";
       llmUsed = true;
       console.info(`[preflight] LLM result: niche=${niche}, pricing=${pricingInfo ? "found" : "none"}, quality=${contentQuality}`);
+
+      // Post-LLM override: if text contains strong workshop/class signals, override to artisan_workshop
+      const workshopSignals = ["workshop", "workshops", "class", "classes", "course", "metalsmith", "metalsmithing", "silversmith", "sip & silversmith", "ring making", "jewelry making", "book a session", "reserve your spot", "upcoming workshops"];
+      const workshopHits = workshopSignals.filter(s => allSignals.toLowerCase().includes(s)).length;
+      if (workshopHits >= 2 && niche !== "artisan_workshop") {
+        console.info(`[preflight] Workshop override: ${workshopHits} workshop signals found, changing ${niche} → artisan_workshop`);
+        niche = "artisan_workshop";
+      }
     } else {
       const errText = await llmRes.text().catch(() => "");
       console.warn(`[preflight] Ollama API returned ${llmRes.status}: ${errText.substring(0, 200)}`);
