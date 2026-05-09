@@ -47,13 +47,14 @@ interface PipelineData {
   leads: Lead[];
 }
 
-const STATUS_ORDER = ['new', 'researching', 'pending_review', 'approved', 'contacted', 'closed_won', 'closed_lost'];
+const STATUS_ORDER = ['new', 'researching', 'pending_review', 'approved', 'email_drafted', 'contacted', 'closed_won', 'closed_lost'];
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'New',
   researching: 'In Research',
   pending_review: 'Pending Review',
   approved: 'Approved',
+  email_drafted: 'Email Drafted',
   contacted: 'Contacted',
   closed_won: 'Won',
   closed_lost: 'Lost',
@@ -64,7 +65,8 @@ const STATUS_COLORS: Record<string, { bg: string; border: string; text: string; 
   researching: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', bar: 'bg-blue-500' },
   pending_review: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', bar: 'bg-amber-500' },
   approved: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', bar: 'bg-green-500' },
-  contacted: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', bar: 'bg-purple-500' },
+  email_drafted: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', bar: 'bg-purple-500' },
+  contacted: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400', bar: 'bg-violet-500' },
   closed_won: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', bar: 'bg-emerald-500' },
   closed_lost: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', bar: 'bg-red-500' },
 };
@@ -148,7 +150,7 @@ export default function MissionControlDashboard() {
             <StatCard label="Researching" value={stats.researching} color="blue" />
             <StatCard label="Pending Review" value={stats.pending_review} color="amber" />
             <StatCard label="Approved" value={stats.approved} color="green" />
-            <StatCard label="Contacted" value={stats.contacted} color="purple" />
+            <StatCard label="Contacted" value={(stats as any).contacted || 0} color="violet" />
             <StatCard label="Won" value={stats.closed_won} color="emerald" />
           </div>
 

@@ -29,7 +29,8 @@ const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }
   researching: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400' },
   pending_review: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400' },
   approved: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400' },
-  contacted: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
+  email_drafted: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
+  contacted: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400' },
   closed_won: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' },
   closed_lost: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' },
 };
@@ -46,6 +47,7 @@ const STATUS_LABELS: Record<string, string> = {
   researching: 'In Research',
   pending_review: 'Pending Review',
   approved: 'Approved',
+  email_drafted: 'Email Drafted',
   contacted: 'Contacted',
   closed_won: 'Won',
   closed_lost: 'Lost',

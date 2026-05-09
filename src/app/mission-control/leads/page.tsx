@@ -24,13 +24,14 @@ interface Lead {
 }
 
 const COLUMNS = [
-  { id: 'new', label: 'New', color: 'cyan' },
-  { id: 'researching', label: 'Researching', color: 'blue' },
-  { id: 'pending_review', label: 'Pending Review', color: 'amber' },
-  { id: 'approved', label: 'Approved', color: 'green' },
-  { id: 'contacted', label: 'Contacted', color: 'purple' },
-  { id: 'closed_won', label: 'Closed Won', color: 'emerald' },
-  { id: 'closed_lost', label: 'Closed Lost', color: 'red' },
+  { id: 'new', label: 'New', headerClass: 'border-t-2 border-cyan-500', dotClass: 'bg-cyan-500' },
+  { id: 'researching', label: 'Researching', headerClass: 'border-t-2 border-blue-500', dotClass: 'bg-blue-500' },
+  { id: 'pending_review', label: 'Pending Review', headerClass: 'border-t-2 border-amber-500', dotClass: 'bg-amber-500' },
+  { id: 'approved', label: 'Approved', headerClass: 'border-t-2 border-green-500', dotClass: 'bg-green-500' },
+  { id: 'email_drafted', label: 'Email Drafted', headerClass: 'border-t-2 border-purple-500', dotClass: 'bg-purple-500' },
+  { id: 'contacted', label: 'Contacted', headerClass: 'border-t-2 border-violet-500', dotClass: 'bg-violet-500' },
+  { id: 'closed_won', label: 'Closed Won', headerClass: 'border-t-2 border-emerald-500', dotClass: 'bg-emerald-500' },
+  { id: 'closed_lost', label: 'Closed Lost', headerClass: 'border-t-2 border-red-500', dotClass: 'bg-red-500' },
 ];
 
 const RESEARCH_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -95,8 +96,8 @@ export default function PipelinePage() {
         {byColumn.map((col) => (
           <div key={col.id} className="flex-shrink-0 w-80">
             {/* Column Header */}
-            <div className={`flex items-center gap-2 mb-4 pb-3 border-b-2 border-${col.color}-500`}>
-              <span className={`w-2 h-2 rounded-full bg-${col.color}-500`} />
+            <div className={`flex items-center gap-2 mb-4 pb-3 ${col.headerClass}`}>
+              <span className={`w-2 h-2 rounded-full ${col.dotClass}`} />
               <h3 className="font-semibold text-white text-sm">{col.label}</h3>
               <span className="ml-auto px-2 py-0.5 text-xs bg-slate-800 text-slate-400 rounded-full">
                 {col.leads.length}
