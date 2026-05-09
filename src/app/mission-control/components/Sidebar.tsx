@@ -1,32 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '🎯', href: '/mission-control' },
-  { id: 'leads', label: 'Leads', icon: '📋', href: '/mission-control/leads' },
-  { id: 'kanban', label: 'Tasks', icon: '✅', href: '/mission-control/kanban' },
-  { id: 'projects', label: 'Projects', icon: '📁', href: '/mission-control/projects' },
-  { id: 'calendar', label: 'Calendar', icon: '📅', href: '/mission-control/calendar' },
-  { id: 'scores', label: 'Scores', icon: '📊', href: '/mission-control/scores' },
+  { id: 'pipeline', label: 'Pipeline', icon: '📋', href: '/mission-control/leads' },
   { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
   { id: 'memory', label: 'Memory', icon: '🧠', href: '/mission-control/memory' },
-  { id: 'docs', label: 'Docs', icon: '📄', href: '/mission-control/docs' },
-  { id: 'x-strategy', label: 'X Strategy', icon: '🐦', href: '/mission-control/x-strategy' },
-  { id: 'team', label: 'Team', icon: '👥', href: '/mission-control/team' },
   { id: 'settings', label: 'Settings', icon: '⚙️', href: '/mission-control/settings' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await fetch('/mission-control/api/logout', { method: 'POST' });
-    router.push('/mission-control/login');
+    window.location.href = '/mission-control/login';
   };
 
   return (
@@ -49,15 +41,15 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <a
               key={item.id}
               href={item.href}
               className={`
                 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
-                ${isActive 
-                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
+                ${isActive
+                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }
               `}
