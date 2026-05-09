@@ -9,6 +9,7 @@
 import { detectNiche, getNicheByName } from "./niche-detector";
 import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
+import { isJunkCompetitor } from "./junk-filter";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
@@ -916,7 +917,7 @@ function calculateScores(
   }
   
   // Competitor mention — find the most frequently appearing competitor
-  const filteredResults = results.filter(r => r.competitorName && !/^(mapquest|google maps|yelp|tripadvisor|yellow pages|white pages|foursquare|bbb\.org|wikipedia|medium|facebook|instagram|linkedin|pinterest|reddit|youtube|google|bing|apple maps|waze|gasbuddy|angi|homeadvisor|thumbtack|booking\.com|airbnb|expedia|zillow|trulia|cars\.com|autotrader|edmunds|cargurus|truecar|kbb|kelly blue book)$/i.test(r.competitorName.trim()));
+  const filteredResults = results.filter(r => r.competitorName && !isJunkCompetitor(r.competitorName.trim()));
   const competitorNameCounts = new Map<string, number>();
   for (const r of filteredResults) {
     if (r.competitorAppeared && r.competitorName) {
