@@ -10,6 +10,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { isJunkCompetitor } from "./junk-filter";
 
 export interface CompetitorToAnalyze {
   name: string;
@@ -287,16 +288,8 @@ export async function analyzeTopCompetitors(
   }
 
   // Filter out junk competitors
-  const JUNK_PATTERNS = [
-    "bbb", "better business", "yellow page", "yelp", "tripadvisor",
-    "google map", "justdial", "indiamart", "nearby", "local option",
-    "top rated", "best in", "cars.com", "autotrader", "cargurus",
-    "local competitors", "nearby businesses", "similar companies",
-    "local dealerships", "other dealers", "local salons", "local gyms",
-  ];
-
   const filtered = Object.entries(compCounts)
-    .filter(([name]) => !JUNK_PATTERNS.some(j => name.toLowerCase().includes(j)))
+    .filter(([name]) => !isJunkCompetitor(name))
     .sort(([, a], [, b]) => b - a)
     .slice(0, topN);
 

@@ -10,7 +10,7 @@ import { getLeadsByStatus, getLeadByLeadId, updateLeadResearchResults } from "@/
 import { detectNiche } from "@/lib/niche-detector";
 import { discoverCompetitors } from "@/lib/competitor-discovery";
 import { runResearch } from "@/lib/research-runner";
-import { analyzeTopCompetitors } from "@/lib/competitor-analyzer";
+import { isJunkCompetitor, JUNK_COMPETITOR_PATTERNS } from "@/lib/junk-filter";
 
 /**
  * Send Vlad a Telegram review alert with research summary
@@ -25,12 +25,12 @@ async function sendVladReviewAlert(
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) return;
 
-  const JUNK_PATTERNS = ['bbb','better business','yellow page','yelp','tripadvisor','google map','justdial','indiamart','nearby','local option','top rated','best in'];
+  
   const compNames = new Set<string>();
   for (const p of result.promptResults) {
     if (p.competitorName) compNames.add(p.competitorName);
   }
-  const junkComps = [...compNames].filter(c => JUNK_PATTERNS.some(j => c.toLowerCase().includes(j)));
+  const junkComps = [...compNames].filter(c => isJunkCompetitor(c));
   const nicheOk = result.niche !== 'local_business';
   const resolvedName = result.resolvedName || businessName;
   const brandPrompts = result.promptResults.filter(p => p.prompt.toLowerCase().includes(resolvedName.toLowerCase().split(' ')[0]));
@@ -159,19 +159,6 @@ export async function POST(request: Request) {
         const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
         console.info(`[process-lead] Research completed: ${researchResult.appearedCount}/${researchResult.totalPrompts}`);
 
-        // Auto-analyze top competitors discovered during research
-        try {
-          const compAnalysis = await analyzeTopCompetitors(
-            researchResult.promptResults,
-            researchResult.niche,
-            3
-          );
-          if (compAnalysis.length > 0) {
-            console.info(`[process-lead] Competitor analysis: ${compAnalysis.length} profiles generated`);
-          }
-        } catch (compErr) {
-          console.warn(`[process-lead] Competitor analysis failed (non-blocking):`, compErr);
-        }
 
         const researchJson = JSON.stringify({
           businessName: researchResult.resolvedName || lead.dealershipName,

@@ -11,6 +11,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getLeadByLeadId, updateLeadResearchResults, isSheetsConfigured } from "@/lib/google-sheets";
+import { isJunkCompetitor } from "@/lib/junk-filter";
+import { analyzeTopCompetitors } from "@/lib/competitor-analyzer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +45,26 @@ export async function POST(request: NextRequest) {
           status: "approved",
         });
         console.info(`[vlad-review] ✅ Approved ${leadId}: ${lead.dealershipName}`);
+
+        // Trigger deep competitor analysis for approved leads (paid reports)
+        try {
+          const marker = "RESEARCH_DATA:";
+          const rdIdx = existingNotes.indexOf(marker);
+          if (rdIdx >= 0) {
+            const rd = JSON.parse(existingNotes.slice(rdIdx + marker.length));
+            const compResults = await analyzeTopCompetitors(
+              rd.promptResults || [],
+              rd.niche || 'local_business',
+              3
+            );
+            if (compResults.length > 0) {
+              console.info(`[vlad-review] Competitor analysis complete: ${compResults.length} profiles for ${leadId}`);
+            }
+          }
+        } catch (compErr) {
+          console.warn(`[vlad-review] Competitor analysis failed (non-blocking):`, compErr);
+        }
+
         return NextResponse.json({ success: true, action: "approved", leadId });
       }
 
@@ -104,9 +126,9 @@ export async function POST(request: NextRequest) {
 
         // Strip junk competitors from promptResults if requested
         if (patches?.stripJunkCompetitors) {
-          const JUNK = ['bbb','better business','yellow page','yelp','tripadvisor','google map','justdial','indiamart','nearby','local option','top rated','best in','cars.com','autotrader','cargurus'];
+          const JUNK = [/./.source]; // kept for stripJunkCompetitors — actual check uses isJunkCompetitor
           rd.promptResults = rd.promptResults.map((p: any) => {
-            if (p.competitorName && JUNK.some(j => p.competitorName.toLowerCase().includes(j))) {
+            if (p.competitorName && isJunkCompetitor(p.competitorName)) {
               return { ...p, competitorAppeared: false, competitorName: undefined };
             }
             return p;
