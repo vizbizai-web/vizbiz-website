@@ -204,6 +204,10 @@ export async function POST(request: Request) {
           competitorCategories: researchResult.competitorCategories,
           whyThisMatters: researchResult.whyThisMatters,
           processedAt: new Date().toISOString(),
+          socialPresence: researchResult.socialPresence,
+          competitorSocial: researchResult.competitorSocial,
+          socialNarrative: researchResult.socialNarrative,
+          socialVsVisibility: researchResult.socialVsVisibility,
         });
 
         // Save as pending_review — Vlad must approve before report goes live
