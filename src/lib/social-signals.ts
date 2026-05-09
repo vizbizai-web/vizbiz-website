@@ -51,8 +51,25 @@ export async function collectSocialSignals(
 ): Promise<SocialAnalysis> {
   const apiKey = process.env.FIRECRAWL_API_KEY;
 
-  // Step 1: Extract social URLs from website HTML
-  const socialUrls = extractSocialUrls(scrapedHtml || "", website);
+  // Step 1: Get HTML to extract social URLs from
+  let html = scrapedHtml || "";
+  if (!html && apiKey) {
+    try {
+      const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ url: website, formats: ["html"], onlyMainContent: false }),
+        signal: AbortSignal.timeout(10000),
+      });
+      const data = await res.json();
+      html = (data.data?.html || "") as string;
+    } catch {
+      console.warn("[social-signals] Failed to scrape homepage for social links");
+    }
+  }
+
+  // Step 2: Extract social URLs from website HTML
+  const socialUrls = extractSocialUrls(html, website);
 
   // Step 2: Collect business social data in parallel
   const [instagram, facebook, google] = await Promise.all([
