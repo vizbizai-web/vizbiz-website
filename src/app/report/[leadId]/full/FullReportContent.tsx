@@ -17,14 +17,15 @@ interface FullReportProps {
   leadId: string;
   leadData: any;
   researchData: any;
-  aiCaptureData?: any; // From capture-v2 output
+  aiCaptureData?: any;
+  competitorProfiles?: any[];
 }
 
 function formatCurrency(n: number) {
   return '$' + n.toLocaleString();
 }
 
-export default function FullReportContent({ leadId, leadData, researchData, aiCaptureData }: FullReportProps) {
+export default function FullReportContent({ leadId, leadData, researchData, aiCaptureData, competitorProfiles = [] }: FullReportProps) {
   const [mounted, setMounted] = useState(false);
   const [expandedQuery, setExpandedQuery] = useState<number | null>(null);
   useEffect(() => { setMounted(true); }, []);
@@ -333,11 +334,11 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
           </section>
         )}
 
-        {/* === 5. COMPETITOR COMPARISON === */}
+        {/* === 5. COMPETITOR ANALYSIS === */}
         {topCompetitor && (
           <section>
             <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Competitor Analysis</h2>
-            <p className="text-xs text-gray-600 mb-6">How you compare against {topCompetitor[0]} in AI recommendations.</p>
+            <p className="text-xs text-gray-600 mb-6">How you compare against your top competitors in AI recommendations — and what they're doing differently.</p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="rounded-xl p-5 bg-[#25D1F2]/5 border border-[#25D1F2]/20">
@@ -352,12 +353,88 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
               </div>
             </div>
 
+            {/* Deep competitor teardowns */}
+            {Object.entries(competitorFreq).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([compName, compCount], idx) => {
+              const profile = competitorProfiles.find((p: any) => p.name === compName);
+              const compGapQueries = promptResults.filter((q: any) => !q.businessAppeared && q.competitorName === compName);
+              return (
+                <div key={idx} className="mb-6 rounded-xl p-5 bg-white/[0.02] border border-white/5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-white">{compName}</h3>
+                    <span className="text-xs text-amber-400">Appears in {String(compCount)}/{totalPrompts} queries</span>
+                  </div>
+                  
+                  {/* Why AI recommends them */}
+                  <div className="mb-3">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Why AI recommends them over you</div>
+                    {compGapQueries.length > 0 ? (
+                      <div className="space-y-1">
+                        {compGapQueries.slice(0, 5).map((q: any, qi: number) => {
+                          const captureMatch = captureResults.find((r: any) => r.prompt === q.prompt && r.platform === 'search');
+                          return (
+                            <div key={qi} className="flex items-start gap-2 p-2 rounded bg-red-500/5">
+                              <span className="text-red-400 text-xs mt-0.5">✗</span>
+                              <div className="flex-1">
+                                <div className="text-xs text-gray-300">{q.prompt}</div>
+                                {captureMatch?.responseSnippet && (
+                                  <p className="text-[10px] text-gray-500 mt-1">AI said: "{captureMatch.responseSnippet.slice(0, 150)}..."</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">No specific gap queries — this competitor appears in general queries alongside you.</p>
+                    )}
+                  </div>
+
+                  {/* Profile insights if available */}
+                  {profile && (
+                    <>
+                      {profile.whatTheyDo && (
+                        <div className="mb-2">
+                          <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">What they're doing right</div>
+                          <p className="text-xs text-gray-400">{profile.whatTheyDo}</p>
+                        </div>
+                      )}
+                      {profile.whatToSteal && profile.whatToSteal.length > 0 && (
+                        <div className="mb-2">
+                          <div className="text-[10px] text-emerald-400 uppercase tracking-wider mb-1">What to learn from them</div>
+                          <ul className="space-y-1">
+                            {profile.whatToSteal.map((s: string, si: number) => (
+                              <li key={si} className="text-xs text-gray-400 flex items-start gap-2">
+                                <span className="text-emerald-400 mt-0.5">→</span> {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* What to do about it */}
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    <div className="text-[10px] text-[#25D1F2] uppercase tracking-wider mb-1">What to do</div>
+                    <p className="text-xs text-gray-400">
+                      {compGapQueries.length > 2
+                        ? `Create targeted content for ${compGapQueries.length} queries where ${compName} appears instead of you. Focus on pages that directly answer these buyer questions with specific, local details.`
+                        : compGapQueries.length > 0
+                        ? `Build a comparison or "best of" page targeting the query where ${compName} appears instead of you.`
+                        : `Monitor ${compName}'s AI visibility. They appear alongside you in results — stay competitive by keeping your content fresh.`
+                      }
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+
             {/* Specific examples where competitor wins */}
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-3">Where they appear instead of you</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 mt-8">All queries where competitors appear instead of you</div>
             <div className="space-y-2">
               {promptResults
                 .filter((q: any) => !q.businessAppeared && q.competitorAppeared)
-                .slice(0, 5)
+                .slice(0, 8)
                 .map((q: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-white/[0.02]">
                     <span className="text-red-400">✗</span>

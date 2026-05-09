@@ -175,3 +175,7 @@ body {
   .hero-ticker-word-in, .hero-ticker-word-out { animation: none !important; }
   .hero-cursor { animation: none !important; opacity: 1 !important; }
 }
+
+/* Blog carousel - hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
