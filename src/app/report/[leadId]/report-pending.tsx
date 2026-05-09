@@ -39,7 +39,7 @@ export default function ReportPending({
       <header className="site-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/">
-            <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '36px', width: 'auto' }} />
+            <img src="/logo.jpg" alt="VizBiz.ai" style={{ height: '48px', width: 'auto' }} />
           </Link>
         </div>
       </header>
