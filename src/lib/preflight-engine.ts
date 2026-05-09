@@ -19,7 +19,7 @@ import { runSEOAudit, SEOAuditResult } from "./seo-auditor";
 
 export type BusinessProfileWithAudit = BusinessProfile & {
   seoAudit?: SEOAuditResult;
-  renderMethod?: 'playwright' | 'fetch';
+  renderMethod?: 'firecrawl' | 'playwright' | 'fetch';
 };
 
 export type BusinessProfile = {
