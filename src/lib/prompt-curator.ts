@@ -322,6 +322,39 @@ const NICHE_STRATEGIES: Record<string, PromptSet> = {
       "food and wine tours {city}",
       "top rated tours {city}"
     ]
+  },
+  artisan_workshop: {
+    niche: "artisan_workshop",
+    label: "Artisan Workshop & Studio",
+    avgLeadValue: 165,
+    estimatedMonthlyVolume: 90,
+    prompts: [
+      "jewelry making class {city}",
+      "silversmith workshop {city}",
+      "metalsmithing class near me",
+      "ring making workshop {city}",
+      "artisan jewelry workshop {city}",
+      "best craft workshops in {city}",
+      "jewelry classes for beginners {city}",
+      "metalworking class {city}",
+      "stone setting workshop {city}",
+      "hands on jewelry making {city}",
+      "creative workshops {city}",
+      "art classes {city}",
+      "diy jewelry workshop near me",
+      "silversmithing for beginners {city}",
+      "jewelry studio {city}",
+      "date night workshop {city}",
+      "girls night out workshop {city}",
+      "sip and craft {city}",
+      "sip and silversmith {city}",
+      "unique things to do in {city}",
+      "best workshops in {city}",
+      "jewelry making experience {city}",
+      "local artisan classes {city}",
+      "gift workshop {city}",
+      "team building workshop {city}"
+    ]
   }
 };
 
