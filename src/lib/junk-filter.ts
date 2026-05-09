@@ -50,12 +50,12 @@ const GENERIC_CATEGORY_PATTERNS: RegExp[] = [
   /^(the )?\d+\s+(best|top|most)/i,                     // "The 10 Best..."
   /^(best|top|leading|premier)\s+\w+\s+(in|near|around|of)/i, // "Best jewelry store in Tampa"
   /^(your )?local \w+/i,                                  // "Your local jewelry store"
-  /^\w+ store$/i,                                          // "Jewelry Store" (just the category)
-  /^\w+ store in /i,                                       // "Jewelry Store in Tampa, FL"
-  /^\w+ shop$/i,                                           // "Jewelry Shop"
-  /^\w+ shop in /i,                                        // "Jewelry Shop in..."
-  /^\w+ studio$/i,                                         // generic "Dance Studio" etc
-  /^\w+ service$/i,                                        // "Cleaning Service"
+  /^.+ store$/i,                                           // "Jewelry Store" (just the category)
+  /^.+ store in /i,                                        // "Jewelry Store in Tampa, FL"
+  /^.+ shop$/i,                                             // "Jewelry Shop"
+  /^.+ shop in /i,                                          // "Jewelry Shop in..."
+  /^.+ studio$/i,                                           // generic "Dance Studio" etc
+  /^.+ service$/i,                                          // "Cleaning Service"
   /^\w+ near (me|you|\w+ city)/i,                          // "Jewelry near me"
   /wedding \w+ in \w+/i,                                   // "Wedding jewelers in Tampa"
 ];
