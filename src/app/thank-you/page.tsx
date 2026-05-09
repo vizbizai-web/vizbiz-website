@@ -132,7 +132,7 @@ export default async function ThankYouPage({
             </div>
 
             <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>Your full AI visibility report will be emailed to you within 24 hours. We review every report by hand to make sure the analysis is accurate and relevant to your business.</p>
+                <p>Your full AI visibility report is being generated. Our AI analyzes your presence across 20+ real search scenarios and benchmarks you against competitors. You'll receive an email with your interactive report shortly.</p>
               </div>
 
             <div className="glass-card rounded-[2rem] p-6">
