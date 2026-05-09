@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 interface Lead {
@@ -41,37 +41,83 @@ const RESEARCH_COLORS: Record<string, { bg: string; border: string; text: string
   failed: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' },
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  new: 'New',
+  researching: 'In Research',
+  pending_review: 'Pending Review',
+  approved: 'Approved',
+  email_drafted: 'Email Drafted',
+  contacted: 'Contacted',
+  closed_won: 'Won',
+  closed_lost: 'Lost',
+};
+
 function usePipeline() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/pipeline-status');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        setLeads(json.leads || []);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load');
-      } finally {
-        setLoading(false);
-      }
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/pipeline-status');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      setLeads(json.leads || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load');
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, []);
 
-  return { leads, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { leads, loading, error, refetch: fetchData };
+}
+
+function useLeadAction() {
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
+
+  const runAction = async (leadId: string, action: string, data?: any) => {
+    setLoadingId(leadId);
+    setErrorId(null);
+    try {
+      const res = await fetch('/api/lead-actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, action, data }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setLoadingId(null);
+      return true;
+    } catch (err: any) {
+      setErrorId(leadId);
+      setLoadingId(null);
+      return false;
+    }
+  };
+
+  return { runAction, loadingId, errorId };
 }
 
 export default function PipelinePage() {
-  const { leads, loading, error } = usePipeline();
+  const { leads, loading, error, refetch } = usePipeline();
+  const { runAction, loadingId, errorId } = useLeadAction();
 
   const byColumn = COLUMNS.map((col) => ({
     ...col,
     leads: leads.filter((l) => l.status === col.id),
   }));
+
+  const handleAction = async (leadId: string, action: string, data?: any) => {
+    const ok = await runAction(leadId, action, data);
+    if (ok) refetch();
+  };
 
   return (
     <div>
@@ -107,41 +153,123 @@ export default function PipelinePage() {
             {/* Lead Cards */}
             <div className="space-y-3 min-h-[120px]">
               {col.leads.map((lead) => (
-                <Link
+                <div
                   key={lead.leadId}
-                  href={`/mission-control/leads/${lead.leadId}`}
                   className="block bg-[#111118] border border-slate-800/50 rounded-xl p-4 hover:border-slate-600 transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h4 className="text-white font-medium text-sm truncate">
-                      {lead.dealershipName || 'Unknown Dealership'}
-                    </h4>
-                  </div>
+                  <Link href={`/mission-control/leads/${lead.leadId}`}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="text-white font-medium text-sm truncate">
+                        {lead.dealershipName || 'Unknown Dealership'}
+                      </h4>
+                    </div>
 
-                  <div className="space-y-1 mb-3">
-                    {lead.city && (
-                      <p className="text-xs text-slate-500">📍 {lead.city}</p>
-                    )}
-                    <p className="text-xs text-slate-500">⏱ {timeInStage(lead.timestamp)}</p>
-                  </div>
+                    <div className="space-y-1 mb-3">
+                      {lead.city && (
+                        <p className="text-xs text-slate-500">📍 {lead.city}</p>
+                      )}
+                      <p className="text-xs text-slate-500">⏱ {timeInStage(lead.timestamp)}</p>
+                    </div>
 
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {lead.visibilityBand && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
-                        {lead.visibilityBand}
-                      </span>
+                    <div className="flex items-center gap-2 flex-wrap mb-3">
+                      {lead.visibilityBand && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                          {lead.visibilityBand}
+                        </span>
+                      )}
+                      {lead.researchStatus && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                          RESEARCH_COLORS[lead.researchStatus]?.bg || 'bg-slate-500/10'
+                        } ${RESEARCH_COLORS[lead.researchStatus]?.text || 'text-slate-400'} ${
+                          RESEARCH_COLORS[lead.researchStatus]?.border || 'border-slate-500/30'
+                        }`}>
+                          {lead.researchStatus}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-800/50">
+                    {lead.status === 'new' && (
+                      <>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'run_research')}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Run Research'}
+                        </button>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'mark_junk')}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Mark Junk'}
+                        </button>
+                      </>
                     )}
-                    {lead.researchStatus && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                        RESEARCH_COLORS[lead.researchStatus]?.bg || 'bg-slate-500/10'
-                      } ${RESEARCH_COLORS[lead.researchStatus]?.text || 'text-slate-400'} ${
-                        RESEARCH_COLORS[lead.researchStatus]?.border || 'border-slate-500/30'
-                      }`}>
-                        {lead.researchStatus}
-                      </span>
+
+                    {lead.status === 'pending_review' && (
+                      <>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'approve')}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Approve ✓'}
+                        </button>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'hold')}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Hold ⏸'}
+                        </button>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'rerun')}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Rerun ↻'}
+                        </button>
+                      </>
+                    )}
+
+                    {lead.status === 'email_drafted' && (
+                      <>
+                        <Link
+                          href="/mission-control/emails"
+                          className="text-xs px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20 transition-colors inline-block"
+                        >
+                          View Email
+                        </Link>
+                        <button
+                          onClick={() => handleAction(lead.leadId, 'update_status', { status: 'contacted' })}
+                          disabled={loadingId === lead.leadId}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-50 transition-colors"
+                        >
+                          {loadingId === lead.leadId ? '...' : 'Mark Sent'}
+                        </button>
+                      </>
+                    )}
+
+                    {lead.status === 'approved' && (
+                      <Link
+                        href={`/report/${lead.leadId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors inline-block"
+                      >
+                        View Report
+                      </Link>
+                    )}
+
+                    {errorId === lead.leadId && (
+                      <span className="text-xs text-red-400">Error</span>
                     )}
                   </div>
-                </Link>
+                </div>
               ))}
 
               {col.leads.length === 0 && !loading && (

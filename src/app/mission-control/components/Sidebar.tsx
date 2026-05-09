@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '🎯', href: '/mission-control' },
   { id: 'pipeline', label: 'Pipeline', icon: '📋', href: '/mission-control/leads' },
+  { id: 'emails', label: 'Emails', icon: '✉️', href: '/mission-control/emails', badge: 'draftCount' },
+  { id: 'calendar', label: 'Calendar', icon: '📅', href: '/mission-control/calendar' },
   { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
   { id: 'memory', label: 'Memory', icon: '🧠', href: '/mission-control/memory' },
   { id: 'settings', label: 'Settings', icon: '⚙️', href: '/mission-control/settings' },
@@ -14,6 +16,21 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchDrafts() {
+      try {
+        const res = await fetch('/api/email-drafts');
+        if (!res.ok) return;
+        const json = await res.json();
+        setDraftCount(json.total || 0);
+      } catch {
+        setDraftCount(0);
+      }
+    }
+    fetchDrafts();
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -42,6 +59,7 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+          const badgeCount = item.badge === 'draftCount' ? draftCount : 0;
           return (
             <a
               key={item.id}
@@ -56,7 +74,12 @@ export function Sidebar() {
             >
               <span className="text-lg">{item.icon}</span>
               {item.label}
-              {isActive && (
+              {badgeCount > 0 && (
+                <span className="ml-auto px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">
+                  {badgeCount}
+                </span>
+              )}
+              {isActive && !badgeCount && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
               )}
             </a>
