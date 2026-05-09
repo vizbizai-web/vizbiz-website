@@ -68,7 +68,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
 
 const NICHE_KEYWORDS: Record<string, string[]> = {
   car_dealership: ["dealer", "auto", "cars", "automotive", "honda", "toyota", "ford", "chevrolet", "inventory", "financing", "trade-in", "certified pre-owned", "test drive"],
-  fine_jewelry: ["jewelry", "jeweller", "diamond", "engagement ring", "gold", "platinum", "lab grown", "gemstone", "bridal jewelry"],
+  fine_jewelry: ["jewelry", "jeweller", "jeweler", "diamond", "engagement ring", "gold", "platinum", "lab grown", "gemstone", "bridal jewelry", "gem", "stone", "ring", "necklace", "bracelet", "pendant", "silversmith", "goldsmith"],
   spray_tanning: ["spray tan", "tanning", "sunless", "bronze", "glow", "airbrush tan"],
   beauty_salon: ["salon", "beauty", "hair", "nails", "facial", "spa", "barber"],
   venue_wedding: ["venue", "wedding", "event", "banquet", "ballroom", "reception"],
@@ -183,19 +183,38 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
 
   const contentSample = rawText.substring(0, 10000);
 
+  // Build the prompt with BOTH site content AND URL/meta context
+  // This handles JS-rendered sites where fetch returns empty shells
+  const metaTitle = scraped.html?.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() || "";
+  const metaDesc = scraped.html?.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1]?.trim() || "";
+  const metaKeywords = scraped.html?.match(/<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']+)["']/i)?.[1]?.trim() || "";
+  const ogTags = scraped.html?.match(/<meta[^>]+property=["']og:(?:title|description|type)["'][^>]+content=["']([^"']+)["']/gi)?.join(' ') || "";
+
+  // Use ALL available signals: URL, meta tags, page title, AND scraped text
+  const allSignals = [
+    `URL: ${url}`,
+    metaTitle ? `Page Title: ${metaTitle}` : null,
+    metaDesc ? `Meta Description: ${metaDesc}` : null,
+    metaKeywords ? `Meta Keywords: ${metaKeywords}` : null,
+    ogTags ? `OG Tags: ${ogTags}` : null,
+    scraped.title ? `Site Title: ${scraped.title}` : null,
+    contentSample.length > 50 ? `Page Content (${contentSample.length} chars):\n${contentSample.substring(0, 8000)}` : null,
+  ].filter(Boolean).join('\n');
+
   const OLLAMA_API_KEY = "ca4b7a95dec24d5f8b310f94c277196b.4h7qtSbi4UUX8UZeEk_-kGIg";
   const OLLAMA_BASE_URL = "https://ollama.com/api"; // Ollama Cloud API endpoint
 
   try {
-    const prompt = `Analyze this business website content. Return ONLY valid JSON with no markdown formatting, no code blocks.
+    const prompt = `Analyze this business. Return ONLY valid JSON with no markdown formatting, no code blocks.
 
-1. Niche: Pick the single most specific business niche from this list: ${Object.keys(NICHE_KEYWORDS).join(", ")}. Return "local_business" if none fit perfectly.
+Use ALL signals below — the URL domain name often reveals the business type even when page content is thin (e.g. JS-rendered sites). Use your knowledge of common business patterns.
+
+1. Niche: Pick the single most specific business niche from this list: ${Object.keys(NICHE_KEYWORDS).join(", ")}. Return "local_business" ONLY if no other niche fits.
 2. Pricing: Extract any pricing, fees, service costs mentioned. Return the raw text found. If no pricing found, return null.
 3. Value Proposition: In one short sentence, what does this business do? Who do they serve?
 4. Content Quality: "high" if well-written with original content, "medium" if decent but generic, "low" if thin/scraped.
 
-Content:
-${contentSample.substring(0, 8000)}
+${allSignals}
 
 {"niche": "string", "pricing": "string or null", "valueProposition": "string", "quality": "high|medium|low"}`;
 
@@ -208,7 +227,7 @@ ${contentSample.substring(0, 8000)}
       body: JSON.stringify({
         model: "deepseek-v4-flash",
         messages: [
-          { role: "system", content: "You are a business analyst specializing in niche detection. Return ONLY valid JSON. No markdown. No code fences. No explanation." },
+          { role: "system", content: "You are a business analyst specializing in niche detection. You are good at identifying business types from domain names, page titles, meta tags, and partial content. Return ONLY valid JSON. No markdown. No code fences. No explanation." },
           { role: "user", content: prompt }
         ],
         stream: false,
@@ -235,9 +254,11 @@ ${contentSample.substring(0, 8000)}
     console.warn(`[preflight] LLM call failed:`, e instanceof Error ? e.message : e);
   }
 
-  // -- Fallback: keyword detection if LLM didn't run --
+  // -- Fallback: keyword detection on ALL signals (URL + title + content) --
   if (!llmUsed) {
-    niche = detectNicheByKeywords(rawText);
+    // Include URL and title in keyword detection, not just body text
+    const allText = `${url} ${metaTitle} ${metaDesc} ${scraped.title} ${rawText}`;
+    niche = detectNicheByKeywords(allText);
     contentQuality = rawText.length > 3000 ? "medium" : "low";
   }
 
