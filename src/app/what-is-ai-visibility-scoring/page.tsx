@@ -130,19 +130,19 @@ export default function AIVisibilityScoring() {
                 category: "Service Visibility",
                 weight: "20%",
                 description:
-                  "Can customers find your service department, hours, and specialties through AI search?",
+                  "Can customers find your services, specialties, and offerings through AI search?",
               },
               {
-                category: "Inventory & Pricing",
+                category: "Content & Authority",
                 weight: "15%",
                 description:
-                  "Does the AI surface your inventory selection, used car options, or competitive pricing information?",
+                  "Does the AI see you as a trusted authority with quality, helpful content?",
               },
               {
-                category: "Finance & Trade-In",
+                category: "Competitive Position",
                 weight: "10%",
                 description:
-                  "Are your financing options and trade-in programs visible in AI-generated answers?",
+                  "How do you stack up against competitors in AI recommendations?",
               },
             ].map((item) => (
               <div
