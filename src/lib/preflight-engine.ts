@@ -211,7 +211,7 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
 
 Use ALL signals below — the URL domain name often reveals the business type even when page content is thin (e.g. JS-rendered sites). Use your knowledge of common business patterns.
 
-IMPORTANT: Focus on HOW the business makes money, not just WHAT they sell. A jewelry store that sells products is "fine_jewelry". A studio that teaches jewelry-making classes and workshops is "artisan_workshop". A venue that hosts events is "venue_wedding". A restaurant that also offers cooking classes is still "restaurant". The primary revenue model determines the niche.
+IMPORTANT: Focus on HOW the business makes money, not just WHAT they sell. A jewelry store that sells products is "fine_jewelry". A studio that teaches jewelry-making classes, metalsmith sessions, or workshops is "artisan_workshop" — even if they also sell jewelry. A venue that hosts events is "venue_wedding". A restaurant that also offers cooking classes is still "restaurant". If the business offers classes, workshops, courses, or sessions, it is likely "artisan_workshop" or "tourism_experience". The primary revenue model determines the niche.
 
 1. Niche: Pick the single most specific business niche from this list: ${Object.keys(NICHE_KEYWORDS).join(", ")}. Return "local_business" ONLY if no other niche fits.
 2. Pricing: Extract any pricing, fees, service costs mentioned. Return the raw text found. If no pricing found, return null.
