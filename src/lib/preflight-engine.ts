@@ -63,6 +63,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
   marketing_agency: { label: "Marketing Agency", avgLeadValue: 1000, monthlyVolume: 20 },
   local_business: { label: "Local Business", avgLeadValue: 200, monthlyVolume: 60 },
   tourism_experience: { label: "Tourism Experience", avgLeadValue: 150, monthlyVolume: 80 },
+  artisan_workshop: { label: "Artisan Workshop & Studio", avgLeadValue: 200, monthlyVolume: 40 },
   unknown: { label: "Unknown", avgLeadValue: 200, monthlyVolume: 40 },
 };
 
@@ -89,6 +90,7 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   marketing_agency: ["marketing agency", "digital marketing", "social media management", "seo services"],
   auto_transport: ["auto transport", "car shipping", "car hauling", "vehicle transport", "vehicle shipping", "auto shipping", "car carrier", "vehicle logistics", "car delivery", "auto logistics", "car mover", "vehicle relocation", "transport group", "logistics group", "enclosed carrier", "car carrier service", "ship my car", "car hauling company"],
   tourism_experience: ["pearl farm", "oyster farm", "aquaculture", "farm tour", "guided tour", "scenic cruise", "cellar door", "winery tour", "brewery tour", "eco tour", "wildlife tour", "boat tour", "adventure tour", "day trip", "day tour", "tourist attraction", "tourism", "nature tour", "cultural experience", "outdoor experience", "water activity", "river cruise", "seaplane", "food tour", "wine tasting", "cooking class", "kayak tour"],
+  artisan_workshop: ["workshop", "studio", "class", "course", "lesson", "artisan", "craft", "maker", "metalwork", "silversmith", "goldsmith", "stone cutting", "lapidary", "jewelry making", "jewelry class", "ring making", "metal working"],
 };
 
 /**
