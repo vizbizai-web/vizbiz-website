@@ -24,6 +24,10 @@ export type ResearchData = {
   competitorCategories: string[];
   whyThisMatters: string;
   processedAt: string;
+  socialPresence?: { instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null; instagramUrl: string | null; facebookUrl: string | null };
+  competitorSocial?: { name: string; instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null }[];
+  socialNarrative?: string;
+  socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
 };
 
 export type LeadPageData = {

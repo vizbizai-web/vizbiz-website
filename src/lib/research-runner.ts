@@ -10,6 +10,7 @@ import { detectNiche, getNicheByName } from "./niche-detector";
 import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
 import { isJunkCompetitor } from "./junk-filter";
+import { collectSocialSignals } from "./social-signals";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
@@ -157,6 +158,10 @@ export interface ResearchResult {
   valueProposition?: string;
   pricingInfo?: string | null;
   estimatedRevenueGap?: { low: number; high: number; currency: string };
+  socialPresence?: { instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null; instagramUrl: string | null; facebookUrl: string | null };
+  competitorSocial?: { name: string; instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null }[];
+  socialNarrative?: string;
+  socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
 }
 
 export async function runResearch(
@@ -266,7 +271,25 @@ export async function runResearch(
     finalResult.pricingInfo = preflightProfile.pricingInfo;
     finalResult.estimatedRevenueGap = preflightProfile.estimatedRevenueGap;
   }
-  
+
+  // STEP 7: Collect social signals (non-blocking — failures don't halt pipeline)
+  try {
+    const competitorNames = Object.entries(
+      finalResult.promptResults
+        .filter(r => r.competitorName)
+        .reduce((acc, r) => { acc[r.competitorName!] = (acc[r.competitorName!] || 0) + 1; return acc; }, {} as Record<string, number>)
+    ).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
+
+    const socialData = await collectSocialSignals(businessName, city, website, competitorNames);
+    finalResult.socialPresence = socialData.business;
+    finalResult.competitorSocial = socialData.competitors;
+    finalResult.socialNarrative = socialData.narrative;
+    finalResult.socialVsVisibility = socialData.aiVisibilityVsSocial;
+    console.info(`[research-runner] Social signals: IG=${socialData.business.instagram}, FB=${socialData.business.facebook}, Google=${socialData.business.googleReviews} reviews`);
+  } catch (e) {
+    console.warn(`[research-runner] Social signals failed (non-blocking):`, e instanceof Error ? e.message : e);
+  }
+
   return finalResult;
 }
 

@@ -53,7 +53,7 @@ interface Recommendation {
 interface SocialPresence {
   instagram: number | null;
   facebook: number | null;
-  googleReviews: number;
+  googleReviews: number | null;
   overallScore: number;
 }
 
@@ -61,7 +61,7 @@ interface CompetitorSocial {
   name: string;
   instagram: number | null;
   facebook: number | null;
-  googleReviews: number;
+  googleReviews: number | null;
 }
 
 interface LeadData {
@@ -82,6 +82,8 @@ interface LeadData {
   recommendations: Recommendation[];
   socialPresence: SocialPresence;
   competitorSocial: CompetitorSocial[];
+  socialNarrative?: string;
+  socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
 }
 
 type Theme = 'dark' | 'light';
@@ -1095,11 +1097,16 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   if (!hasSocialData && !hasCompetitorSocialData) return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media Presence</h3>
-        <p className="text-sm mb-4" style={{ color: t.textMuted }}>Social signals influence whether AI platforms recommend your business</p>
-        <div className="py-6 text-center">
-          <p className="text-sm" style={{ color: t.textSecondary }}>
-            Your full report includes a detailed social media analysis with follower counts, posting frequency, and competitor comparisons.
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media & AI Visibility</h3>
+        <p className="text-sm mb-4" style={{ color: t.textMuted }}>What social media agencies won't tell you about AI recommendations</p>
+        <div className="py-4">
+          <div className="rounded-2xl p-4 mb-4" style={{ background: theme === 'dark' ? 'rgba(37,209,242,0.08)' : 'rgba(37,209,242,0.06)', borderLeft: '3px solid #25D1F2' }}>
+            <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
+              Social media following is just <strong style={{ color: t.textPrimary }}>one signal</strong> among many that AI platforms use. Businesses with zero social presence regularly outrank competitors with thousands of followers — because AI recommendations are driven by <strong style={{ color: t.textPrimary }}>content quality, structured data, and local authority</strong>, not follower counts.
+            </p>
+          </div>
+          <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
+            Your AI Visibility Score shows how often you actually appear when customers ask AI platforms for recommendations. That's what drives real foot traffic and bookings — not likes.
           </p>
         </div>
       </GlassCard>
@@ -1184,8 +1191,8 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                     <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Google Reviews</td>
                     <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
                     {data.competitorSocial.map((c) => {
-                      const yours = data.socialPresence.googleReviews;
-                      const theirs = c.googleReviews;
+                      const yours = data.socialPresence.googleReviews || 0;
+                      const theirs = c.googleReviews || 0;
                       const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
                       return (
                         <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
@@ -1197,11 +1204,17 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                 </tbody>
               </table>
             </div>
-            {data.socialPresence.instagram != null && data.socialPresence.instagram < (data.competitorSocial[0]?.instagram || 0) && (
-              <p className="text-xs mt-4 p-3 rounded-xl" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                {data.competitorSocial[0].name} has {Math.round((data.competitorSocial[0].instagram || 0) / Math.max(data.socialPresence.instagram || 1, 1))}x your Instagram followers. AI platforms use social following as a trust signal.
+            {/* AI Visibility > Social counter-narrative */}
+            <div className="mt-4 rounded-2xl p-4" style={{ background: theme === 'dark' ? 'rgba(37,209,242,0.08)' : 'rgba(37,209,242,0.06)', borderLeft: '3px solid #25D1F2' }}>
+              <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
+                {data.aviScore === 0
+                  ? <>You have an active presence online, but <strong style={{ color: t.textPrimary }}>AI platforms aren't recommending you</strong>. Social media alone doesn't get you into AI answers. What matters is structured content, schema markup, and being cited by trusted sources — a completely different strategy than growing followers.</>
+                  : data.socialVsVisibility?.socialGapMultiplier
+                    ? <>Your competitor has <strong style={{ color: t.textPrimary }}>{data.socialVsVisibility.socialGapMultiplier}x your reviews</strong> — but that doesn't mean they own AI visibility. Content depth, schema markup, and local authority often matter more than review count alone.</>
+                    : <>Social following is just <strong style={{ color: t.textPrimary }}>one signal</strong> among many. Your AI Visibility Score is what determines whether customers actually find you when they ask AI platforms for recommendations.</>
+                }
               </p>
-            )}
+            </div>
           </div>
         )}
       </GlassCard>
@@ -1713,12 +1726,19 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         { id: 3, title: 'Improve competitive positioning', description: 'Highlight what makes your business unique compared to competitors.', impact: 'Medium' as const },
       ],
       socialPresence: {
-        instagram: null,
-        facebook: null,
-        googleReviews: 0,
+        instagram: researchData.socialPresence?.instagram ?? null,
+        facebook: researchData.socialPresence?.facebook ?? null,
+        googleReviews: researchData.socialPresence?.googleReviews ?? null,
         overallScore: 0,
       },
-      competitorSocial: [],
+      competitorSocial: researchData.competitorSocial?.map(c => ({
+        name: c.name,
+        instagram: c.instagram,
+        facebook: c.facebook,
+        googleReviews: c.googleReviews,
+      })) || [],
+      socialNarrative: researchData.socialNarrative,
+      socialVsVisibility: researchData.socialVsVisibility,
     };
   }
 
