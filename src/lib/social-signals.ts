@@ -233,12 +233,12 @@ async function scrapeGoogleReviews(
     const data = await res.json();
     const answer = (data.answer || "") as string;
 
-    // Extract rating (e.g. "4.8 Google rating" or "4.8 stars" or "rated 4.8")
-    const ratingMatch = answer.match(/(\d+\.?\d*)\s*(?:stars?|★|rating|rated|on Google)/i);
+    // Extract rating (e.g. "4.8 Google rating", "4.5-star", "rated 4.8", "4.8★")
+    const ratingMatch = answer.match(/(\d+\.?\d*)[-\s]*(?:stars?|★|rating|rated|on Google)/i);
     const rating = ratingMatch ? parseFloat(ratingMatch[1]) : null;
 
-    // Extract review count (e.g. "123 reviews")
-    const reviewMatch = answer.match(/(\d[\d,]*)\s*(?:reviews?|Google reviews?)/i);
+    // Extract review count (e.g. "123 reviews", "over 100 reviews")
+    const reviewMatch = answer.match(/(?:over |more than |about )?(\d[\d,]+)\s*reviews?/i);
     const reviewCount = reviewMatch ? parseInt(reviewMatch[1].replace(/,/g, ""), 10) : null;
 
     console.info(`[social-signals] Google reviews for ${businessName}: rating=${rating}, count=${reviewCount}`);
