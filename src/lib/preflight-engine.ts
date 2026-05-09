@@ -204,26 +204,9 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
   ].filter(Boolean).join('\n');
 
   const OLLAMA_API_KEY = "ca4b7a95dec24d5f8b310f94c277196b.4h7qtSbi4UUX8UZeEk_-kGIg";
-  const OLLAMA_BASE_URL = "https://ollama.com/api"; // Ollama Cloud API endpoint
+  const OLLAMA_BASE_URL = "https://ollama.com/v1"; // Ollama Cloud API endpoint
 
   try {
-    // Two-pass: first reason about the business model, then classify
-    const reasoningPrompt = `Look at this business. Answer in 3 short sentences:
-1. Does this business primarily SELL products, or TEACH classes/workshops/sessions?
-2. Main revenue model: selling inventory, running workshops/classes, booking experiences?
-3. Would a customer search "store" or "class/workshop" to find them?
-
-${allSignals.substring(0, 6000)}`;
-
-    let businessModelContext = "";
-    try {
-      const rr = await fetch(`${OLLAMA_BASE_URL}/chat/completions`, {
-        method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OLLAMA_API_KEY}` },
-        body: JSON.stringify({ model: "deepseek-v4-flash", messages: [{ role: "user", content: reasoningPrompt }], stream: false, options: { temperature: 0.1 } }),
-      });
-      if (rr.ok) { const rd = await rr.json(); businessModelContext = rd.choices?.[0]?.message?.content || rd.message?.content || ""; }
-    } catch {}
-
     const prompt = `Analyze this business. Return ONLY valid JSON with no markdown formatting, no code blocks.
 
 Use ALL signals below — the URL domain name often reveals the business type even when page content is thin (e.g. JS-rendered sites). Use your knowledge of common business patterns.
@@ -234,9 +217,6 @@ IMPORTANT: Focus on HOW the business makes money, not just WHAT they sell. A jew
 2. Pricing: Extract any pricing, fees, service costs mentioned. Return the raw text found. If no pricing found, return null.
 3. Value Proposition: In one short sentence, what does this business do? Who do they serve?
 4. Content Quality: "high" if well-written with original content, "medium" if decent but generic, "low" if thin/scraped.
-
-BUSINESS MODEL ANALYSIS:
-${businessModelContext}
 
 WEBSITE CONTENT:
 ${allSignals}
@@ -250,7 +230,7 @@ ${allSignals}
         "Authorization": `Bearer ${OLLAMA_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "deepseek-v4-flash",
+        model: "kimi-k2.6",
         messages: [
           { role: "system", content: "You are a business analyst specializing in niche detection. You are good at identifying business types from domain names, page titles, meta tags, and partial content. Return ONLY valid JSON. No markdown. No code fences. No explanation." },
           { role: "user", content: prompt }
