@@ -42,7 +42,7 @@ async function sendVladReviewAlert(
     return [...compNames].some(cn => cn.toLowerCase().includes(key));
   });
 
-  const reportUrl = `https://vizbiz.ai/report/${leadId}`;
+  const reportUrl = `https://vizbiz.ai/report/${leadId}?token=owner_vlad`;
   const mcUrl = `https://vizbiz.ai/mission-control/leads/${leadId}`;
   const isWeak = result.statusBand === 'Weak';
   const nicheLabel = nicheOk ? result.niche.replace(/_/g, ' ') : `${result.niche} ⚠️`;

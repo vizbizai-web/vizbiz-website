@@ -7,19 +7,19 @@ type PendingStatus = 'not_found' | 'no_token' | 'invalid_token' | 'processing';
 const statusMessages: Record<PendingStatus, { title: string; description: string }> = {
   not_found: {
     title: 'Report Not Found',
-    description: "We couldn't find a report with that ID. If you recently submitted a request, your report may still be generating.",
+    description: "We couldn't find a report with that ID. If you recently submitted a request, your analysis may still be processing.",
   },
   no_token: {
-    title: 'Your Report Is Being Prepared',
-    description: "We review every report by hand to make sure the analysis is accurate and relevant to your business. You'll receive an email with a link to your full report once it's ready.",
+    title: 'Your AI Visibility Report',
+    description: "Our analysis engine is compiling your AI visibility score across 20+ real search queries. You'll receive an email with your interactive report once the analysis is complete.",
   },
   invalid_token: {
     title: 'Report Link Expired',
     description: "This report link has expired or is invalid. Please check your email for the latest link, or request a new one below.",
   },
   processing: {
-    title: 'Your Report Is Being Prepared',
-    description: "We're still running your AI visibility analysis. We review every report before delivery to ensure accuracy. You'll receive an email with your report link shortly.",
+    title: 'Your AI Visibility Report',
+    description: "Our analysis engine is running your AI visibility assessment. The full report will be ready shortly — you'll receive an email with your private link.",
   },
 };
 
@@ -71,15 +71,15 @@ export default function ReportPending({
               <div className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
                 <div className="flex gap-3">
                   <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--neon-cyan)]/10 text-xs font-bold text-[var(--neon-cyan)]">1</div>
-                  <p>We run your AI visibility analysis using 20+ real search queries</p>
+                  <p>Our AI analyzes your visibility across 20+ real search scenarios</p>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--neon-cyan)]/10 text-xs font-bold text-[var(--neon-cyan)]">2</div>
-                  <p>A human reviews the results for accuracy (no auto-generated junk)</p>
+                  <p>The system cross-references competitors, identifies gaps, and scores your presence</p>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[var(--neon-cyan)]/10 text-xs font-bold text-[var(--neon-cyan)]">3</div>
-                  <p>You receive an email with a private link to your full interactive report</p>
+                  <p>You receive an email with your interactive report and personalized recommendations</p>
                 </div>
               </div>
             </div>
