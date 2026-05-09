@@ -552,22 +552,16 @@ function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
   const isMobile = useIsMobile();
   const stats = [
     {
-      label: 'AVI Score',
+      label: 'AI Visibility Score',
       value: data.aviScore,
-      subtext: `${getScoreLabel(data.aviScore)} visibility`,
+      subtext: `${data.promptsAppeared} of ${data.totalPrompts} queries`,
       tint: t.statCardTintCyan,
     },
     {
-      label: 'Prompts Appeared',
-      value: data.promptsAppeared,
-      subtext: `of ${data.totalPrompts} tested`,
-      tint: t.statCardTintGreen,
-    },
-    {
-      label: 'Competitors Ahead',
-      value: data.competitors.filter(c => !c.isYou && c.score > (data.competitors.find(x => x.isYou)?.score || 0)).length,
+      label: 'Competitors Found',
+      value: data.competitors.filter(c => !c.isYou).length,
       subtext: 'in your market',
-      tint: t.statCardTintAmber,
+      tint: t.statCardTintGreen,
     },
     {
       label: 'Profit at Risk',
@@ -1608,11 +1602,11 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
     const contentScore = Math.round(appearanceRate * 70); // Conservative — most businesses score low here
     
     const categories = [
-      { name: 'Brand Discovery', score: Math.max(brandScore, 3), description: 'How often you appear when people search for your business by name' },
-      { name: 'Trust & Reviews', score: Math.max(trustScore, 3), description: 'What AI platforms say about your reputation' },
-      { name: 'Service Visibility', score: Math.max(serviceScore, 3), description: 'Whether you appear for service-related queries' },
-      { name: 'Competitive Position', score: Math.max(Math.min(competitiveScore, 100), 3), description: 'How you stack up against competitors' },
-      { name: 'Content & Authority', score: Math.max(contentScore, 3), description: 'Whether AI tools see you as an authority' },
+      { name: 'Brand Discovery', score: brandScore, description: 'How often you appear when people search for your business by name' },
+      { name: 'Trust & Reviews', score: trustScore, description: 'What AI platforms say about your reputation' },
+      { name: 'Service Visibility', score: serviceScore, description: 'Whether you appear for service-related queries' },
+      { name: 'Competitive Position', score: Math.min(competitiveScore, 100), description: 'How you stack up against competitors' },
+      { name: 'Content & Authority', score: contentScore, description: 'Whether AI tools see you as an authority' },
     ];
     // Find the most frequently mentioned real competitor from prompt results
     const competitorFreq: Record<string, number> = {};
