@@ -1,10 +1,15 @@
 /**
- * Social Signals Module
+ * Social Signals Module v2
  *
  * Collects social media presence data for a business:
- * - Google reviews (count, rating) via Tavily search
- * - Instagram followers via Firecrawl
- * - Facebook page likes via Firecrawl
+ * - Google reviews (count + rating)
+ * - Instagram followers
+ * - Facebook page likes
+ * - TikTok followers
+ *
+ * Uses Tavily search for ALL social data — it returns answer snippets
+ * with follower counts, review ratings, and page likes.
+ * Falls back gracefully if any platform can't be reached.
  *
  * Key insight for reports: social following ≠ AI visibility.
  * A business with zero social presence can still dominate AI recommendations
@@ -16,6 +21,7 @@ export interface SocialPresence {
   facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
+  tiktok: number | null;
   instagramUrl: string | null;
   facebookUrl: string | null;
 }
@@ -26,6 +32,7 @@ export interface CompetitorSocial {
   facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
+  tiktok: number | null;
 }
 
 export interface SocialAnalysis {
@@ -39,6 +46,8 @@ export interface SocialAnalysis {
   };
 }
 
+const TAVILY_TIMEOUT = 10000;
+
 /**
  * Main entry — collect social signals for a business and its competitors
  */
@@ -47,61 +56,46 @@ export async function collectSocialSignals(
   city: string,
   website: string,
   competitorNames: string[],
-  scrapedHtml?: string,
 ): Promise<SocialAnalysis> {
-  const apiKey = process.env.FIRECRAWL_API_KEY;
-
-  // Step 1: Get HTML to extract social URLs from
-  let html = scrapedHtml || "";
-  if (!html && apiKey) {
-    try {
-      const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ url: website, formats: ["html"], onlyMainContent: false }),
-        signal: AbortSignal.timeout(10000),
-      });
-      const data = await res.json();
-      html = (data.data?.html || "") as string;
-    } catch {
-      console.warn("[social-signals] Failed to scrape homepage for social links");
-    }
-  }
-
-  // Step 2: Extract social URLs from website HTML
-  const socialUrls = extractSocialUrls(html, website);
-
-  // Step 2: Collect business social data in parallel
-  const [instagram, facebook, google] = await Promise.all([
-    scrapeInstagramFollowers(socialUrls.instagram, apiKey),
-    scrapeFacebookLikes(socialUrls.facebook, apiKey),
-    scrapeGoogleReviews(businessName, city),
+  // Step 1: Collect business social data via Tavily (parallel)
+  const [google, instagram, facebook, tiktok] = await Promise.all([
+    tavilySocialSearch(`${businessName} ${city} Google reviews rating number of reviews`),
+    tavilySocialSearch(`${businessName} ${city} Instagram followers`),
+    tavilySocialSearch(`${businessName} ${city} Facebook page likes`),
+    tavilySocialSearch(`${businessName} ${city} TikTok followers`),
   ]);
 
   const business: SocialPresence = {
-    instagram: instagram.followers,
-    facebook: facebook.likes,
-    googleReviews: google.reviewCount,
-    googleRating: google.rating,
-    instagramUrl: socialUrls.instagram,
-    facebookUrl: socialUrls.facebook,
+    instagram: parseFollowerCount(instagram),
+    facebook: parseFollowerCount(facebook),
+    googleReviews: parseReviewCount(google),
+    googleRating: parseRating(google),
+    tiktok: parseFollowerCount(tiktok),
+    instagramUrl: null,
+    facebookUrl: null,
   };
 
-  // Step 3: Collect competitor Google reviews (parallel, top 3)
+  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, TikTok=${business.tiktok}, Google=${business.googleReviews} reviews (${business.googleRating} stars)`);
+
+  // Step 2: Collect competitor social data (parallel, top 3)
   const competitors: CompetitorSocial[] = await Promise.all(
     competitorNames.slice(0, 3).map(async (name) => {
-      const compGoogle = await scrapeGoogleReviews(name, city);
+      const [g, ig] = await Promise.all([
+        tavilySocialSearch(`${name} ${city} Google reviews rating number of reviews`),
+        tavilySocialSearch(`${name} ${city} Instagram followers`),
+      ]);
       return {
         name,
-        instagram: null,
+        instagram: parseFollowerCount(ig),
         facebook: null,
-        googleReviews: compGoogle.reviewCount,
-        googleRating: compGoogle.rating,
+        googleReviews: parseReviewCount(g),
+        googleRating: parseRating(g),
+        tiktok: null,
       };
     })
   );
 
-  // Step 4: Generate narrative
+  // Step 3: Generate narrative
   const analysis = analyzeSocialVsVisibility(business, competitors);
 
   return {
@@ -113,153 +107,80 @@ export async function collectSocialSignals(
 }
 
 /**
- * Extract social media URLs from website HTML
+ * Query Tavily for social data — returns the answer text
  */
-function extractSocialUrls(html: string, _baseUrl: string): { instagram: string | null; facebook: string | null } {
-  let instagram: string | null = null;
-  let facebook: string | null = null;
-
-  const hrefRegex = /href=["']([^"']+)["']/gi;
-  let match;
-  while ((match = hrefRegex.exec(html)) !== null) {
-    const url = match[1].toLowerCase();
-    if (url.includes("instagram.com/") && !url.includes("help.instagram")) {
-      instagram = match[1];
-    }
-    if (url.includes("facebook.com/") && !url.includes("help.facebook") && !url.includes("developers.facebook")) {
-      facebook = match[1];
-    }
-  }
-
-  return { instagram, facebook };
-}
-
-/**
- * Scrape Instagram follower count (best effort — IG blocks most scraping)
- */
-async function scrapeInstagramFollowers(
-  url: string | null,
-  apiKey?: string,
-): Promise<{ followers: number | null }> {
-  if (!url || !apiKey) return { followers: null };
+async function tavilySocialSearch(query: string): Promise<string> {
+  const tavilyKey = process.env.TAVILY_API_KEY;
+  if (!tavilyKey) return "";
 
   try {
-    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    const data = await res.json();
-    const md = (data.data?.markdown || "") as string;
-
-    // Instagram shows "X followers" in various formats
-    const patterns = [
-      /(\d[\d,.]*)\s*(?:followers?|Followers)/i,
-      /(\d[\d,.]*)\s*[kKmM]\s*(?:followers?|Followers)/i,
-      /Followers\s*[,.]?\s*(\d[\d,.]*)/i,
-    ];
-
-    for (const pattern of patterns) {
-      const m = md.match(pattern);
-      if (m) return { followers: parseSocialNumber(m[1]) };
-    }
-
-    return { followers: null };
-  } catch {
-    return { followers: null };
-  }
-}
-
-/**
- * Scrape Facebook page likes (best effort)
- */
-async function scrapeFacebookLikes(
-  url: string | null,
-  apiKey?: string,
-): Promise<{ likes: number | null }> {
-  if (!url || !apiKey) return { likes: null };
-
-  try {
-    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    const data = await res.json();
-    const md = (data.data?.markdown || "") as string;
-
-    const patterns = [
-      /(\d[\d,.]*)\s*(?:likes?|Likes)/i,
-      /(\d[\d,.]*)\s*[kKmM]\s*(?:likes?)/i,
-    ];
-
-    for (const pattern of patterns) {
-      const m = md.match(pattern);
-      if (m) return { likes: parseSocialNumber(m[1]) };
-    }
-
-    return { likes: null };
-  } catch {
-    return { likes: null };
-  }
-}
-
-/**
- * Scrape Google review count and rating via Tavily search
- */
-async function scrapeGoogleReviews(
-  businessName: string,
-  city: string,
-): Promise<{ reviewCount: number | null; rating: number | null }> {
-  try {
-    const tavilyKey = process.env.TAVILY_API_KEY;
-    if (!tavilyKey) return { reviewCount: null, rating: null };
-
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tavilyKey}` },
       body: JSON.stringify({
-        query: `${businessName} ${city} Google reviews rating`,
-        max_results: 3,
+        query,
+        max_results: 2,
         include_answer: true,
       }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(TAVILY_TIMEOUT),
     });
 
     const data = await res.json();
-    const answer = (data.answer || "") as string;
-
-    // Extract rating (e.g. "4.8 Google rating", "4.5-star", "rated 4.8", "4.8★")
-    const ratingMatch = answer.match(/(\d+\.?\d*)[-\s]*(?:stars?|★|rating|rated|on Google)/i);
-    const rating = ratingMatch ? parseFloat(ratingMatch[1]) : null;
-
-    // Extract review count (e.g. "123 reviews", "over 100 reviews")
-    const reviewMatch = answer.match(/(?:over |more than |about )?(\d[\d,]+)\s*reviews?/i);
-    const reviewCount = reviewMatch ? parseInt(reviewMatch[1].replace(/,/g, ""), 10) : null;
-
-    console.info(`[social-signals] Google reviews for ${businessName}: rating=${rating}, count=${reviewCount}`);
-    return { reviewCount, rating };
+    return (data.answer || "") as string;
   } catch (e) {
-    console.warn(`[social-signals] Google reviews failed for ${businessName}:`, e instanceof Error ? e.message : e);
-    return { reviewCount: null, rating: null };
+    console.warn(`[social-signals] Tavily failed for "${query}":`, e instanceof Error ? e.message : e);
+    return "";
   }
 }
 
 /**
- * Parse social media numbers ("1,234" → 1234, "1.2K" → 1200, "3.4M" → 3400000)
+ * Extract follower count from Tavily answer text
+ * Handles: "222 followers", "over 3,100 followers", "1.2 million", "865 followers"
  */
-function parseSocialNumber(str: string): number {
-  const cleaned = str.replace(/,/g, "");
-  const lower = cleaned.toLowerCase();
+function parseFollowerCount(text: string): number | null {
+  if (!text) return null;
 
-  if (lower.includes("k")) return Math.round(parseFloat(lower.replace("k", "")) * 1000);
-  if (lower.includes("m")) return Math.round(parseFloat(lower.replace("m", "")) * 1000000);
+  // "1.2 million followers" or "1.2M followers"
+  const millionMatch = text.match(/(\d+\.?\d*)\s*(?:million|M)\s*(?:followers?|subscribers?|likes?)/i);
+  if (millionMatch) {
+    return Math.round(parseFloat(millionMatch[1]) * 1000000);
+  }
 
-  return parseInt(cleaned, 10) || 0;
+  // "3,100 followers" or "over 3,100 followers" or "865 followers"
+  const countMatch = text.match(/(?:over |more than |about |around )?(\d[\d,]+)\s*(?:followers?|subscribers?|likes?)/i);
+  if (countMatch) {
+    return parseInt(countMatch[1].replace(/,/g, ""), 10);
+  }
+
+  // "1.2K followers"
+  const kMatch = text.match(/(\d+\.?\d*)\s*[kK]\s*(?:followers?|subscribers?|likes?)/i);
+  if (kMatch) {
+    return Math.round(parseFloat(kMatch[1]) * 1000);
+  }
+
+  return null;
+}
+
+/**
+ * Extract review count from Tavily answer text
+ * Handles: "123 reviews", "over 100 reviews", "4.5-star rating with 82 reviews"
+ */
+function parseReviewCount(text: string): number | null {
+  if (!text) return null;
+
+  const match = text.match(/(?:over |more than |about |with )?(\d[\d,]+)\s*reviews?/i);
+  return match ? parseInt(match[1].replace(/,/g, ""), 10) : null;
+}
+
+/**
+ * Extract rating from Tavily answer text
+ * Handles: "4.5-star rating", "rated 4.8", "4.7 stars"
+ */
+function parseRating(text: string): number | null {
+  if (!text) return null;
+
+  const match = text.match(/(\d+\.?\d*)[-\s]*(?:stars?|★|rating|rated)/i);
+  return match ? parseFloat(match[1]) : null;
 }
 
 /**
@@ -270,6 +191,7 @@ function analyzeSocialVsVisibility(
   competitors: CompetitorSocial[],
 ): { narrative: string; meta: SocialAnalysis["aiVisibilityVsSocial"] } {
   let socialGapMultiplier: number | null = null;
+
   for (const comp of competitors) {
     if (business.googleReviews && comp.googleReviews) {
       const gap = comp.googleReviews / Math.max(business.googleReviews, 1);
@@ -277,16 +199,27 @@ function analyzeSocialVsVisibility(
     }
   }
 
-  const lowSocialStrongVisibility = `Most agencies will tell you to grow your social following. But look at your data — AI platforms are recommending you based on your content quality, local signals, and online reputation, not your follower count. Social media is one signal among many, and it's not the strongest one for AI visibility.`;
+  const parts: string[] = [];
 
-  const competitorGapNarrative = socialGapMultiplier
-    ? ` Your top competitor has ${socialGapMultiplier}x your Google reviews — but that doesn't mean they own AI visibility. Review count is one signal; content depth, schema markup, and local authority often matter more.`
-    : "";
+  // Main narrative: social ≠ AI visibility
+  parts.push(
+    "Most agencies will tell you to grow your social following. But look at your data — " +
+    "AI platforms like ChatGPT and Google AI Overviews recommend businesses based on content quality, " +
+    "structured data, and local authority signals — not follower counts. " +
+    "Social media is one signal among many, and it's rarely the strongest one for AI visibility."
+  );
 
-  const narrative = lowSocialStrongVisibility + competitorGapNarrative;
+  // Competitor gap narrative
+  if (socialGapMultiplier) {
+    parts.push(
+      `Your top competitor has ${socialGapMultiplier}x your Google reviews — ` +
+      "but that doesn't mean they own AI visibility. Review count is one signal; " +
+      "content depth, schema markup, and local authority often matter more."
+    );
+  }
 
   return {
-    narrative,
+    narrative: parts.join(" "),
     meta: {
       hasStrongVisibilityLowSocial: false,
       hasWeakVisibilityHighSocial: false,

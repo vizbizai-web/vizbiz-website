@@ -55,6 +55,7 @@ interface SocialPresence {
   facebook: number | null;
   googleReviews: number | null;
   overallScore: number;
+  tiktok?: number | null;
 }
 
 interface CompetitorSocial {
@@ -62,6 +63,7 @@ interface CompetitorSocial {
   instagram: number | null;
   facebook: number | null;
   googleReviews: number | null;
+  tiktok?: number | null;
 }
 
 interface LeadData {
@@ -1081,6 +1083,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   const platforms = [
     { label: 'Instagram', value: data.socialPresence.instagram, icon: 'instagram' },
     { label: 'Facebook', value: data.socialPresence.facebook, icon: 'facebook' },
+    { label: 'TikTok', value: data.socialPresence.tiktok ?? null, icon: 'tiktok' },
     { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: 'google' },
   ];
 
@@ -1088,10 +1091,11 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
     name: c.name,
     instagram: c.instagram || 0,
     facebook: c.facebook || 0,
+    tiktok: c.tiktok || 0,
     googleReviews: c.googleReviews,
   }));
 
-  const hasSocialData = data.socialPresence.instagram || data.socialPresence.facebook || data.socialPresence.googleReviews;
+  const hasSocialData = data.socialPresence.instagram || data.socialPresence.facebook || data.socialPresence.googleReviews || data.socialPresence.tiktok;
   const hasCompetitorSocialData = data.competitorSocial && data.competitorSocial.length > 0;
 
   if (!hasSocialData && !hasCompetitorSocialData) return (
@@ -1730,12 +1734,14 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         facebook: researchData.socialPresence?.facebook ?? null,
         googleReviews: researchData.socialPresence?.googleReviews ?? null,
         overallScore: 0,
+        tiktok: researchData.socialPresence?.tiktok ?? null,
       },
       competitorSocial: researchData.competitorSocial?.map(c => ({
         name: c.name,
         instagram: c.instagram,
         facebook: c.facebook,
         googleReviews: c.googleReviews,
+        tiktok: c.tiktok ?? null,
       })) || [],
       socialNarrative: researchData.socialNarrative,
       socialVsVisibility: researchData.socialVsVisibility,
