@@ -10,6 +10,8 @@ export const JUNK_COMPETITOR_PATTERNS: string[] = [
   'bbb', 'better business', 'yellow page', 'yelp', 'tripadvisor', 'google map',
   'justdial', 'indiamart', 'foursquare', 'angi', 'angies list', 'homeadvisor',
   'thumbtack', 'houzz', 'porch',
+  // Navigation/UI elements
+  'home', 'about us', 'contact us', 'gallery', 'products', 'services page',
   // Generic local terms
   'nearby', 'local option', 'top rated', 'best in', 'local competitors',
   'nearby businesses', 'similar companies', 'local dealerships', 'other dealers',
@@ -56,6 +58,9 @@ const GENERIC_CATEGORY_PATTERNS: RegExp[] = [
   /^.+ shop in /i,                                          // "Jewelry Shop in..."
   /^.+ studio$/i,                                           // generic "Dance Studio" etc
   /^.+ service$/i,                                          // "Cleaning Service"
+  /^.+ center in .+\d{5}$/i,                                // "Garden Center in Prince George, VA, 23875"
+  /^.+ (orders|deliver|order)$/i,                             // "Plant and Tree Orders"
+  /^home$/i,                                                  // Nav element parsed as competitor
   /^\w+ near (me|you|\w+ city)/i,                          // "Jewelry near me"
   /wedding \w+ in \w+/i,                                   // "Wedding jewelers in Tampa"
 ];
