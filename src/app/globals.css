@@ -179,3 +179,23 @@ body {
 /* Blog carousel - hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* BackgroundGradientAnimation keyframes */
+@keyframes gradient {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(10%, -10%) rotate(5deg) scale(1.1); }
+  50% { transform: translate(-5%, 15%) rotate(-3deg) scale(0.95); }
+  75% { transform: translate(8%, -5%) rotate(2deg) scale(1.05); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+.animate-gradient {
+  animation: gradient 15s ease infinite;
+  animation-fill-mode: forwards;
+}
+
+/* Safari compatibility for background animation */
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .animate-gradient {
+    animation-duration: 20s;
+  }
+}
