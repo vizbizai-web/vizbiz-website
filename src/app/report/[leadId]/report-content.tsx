@@ -1279,56 +1279,55 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
 
             {/* Desktop: table */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: '0 4px' }}>
-                <thead>
-                  <tr>
-                    <th className="text-left pb-2 text-xs font-medium" style={{ color: t.textMuted }}>Platform</th>
-                    <th className="text-right pb-2 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]} (You)</th>
+                <thead className="text-center sm:text-right">
+                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
+                    <th className="text-left pb-3 text-xs font-medium" style={{ color: t.textMuted }}>Platform</th>
+                    <th className="text-center sm:text-right pb-3 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]} (You)</th>
                     {data.competitorSocial.map((c, i) => (
-                      <th key={c.name} className="text-right pb-2 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
-                        {c.name.length > 15 ? c.name.slice(0, 15) + '\u2026' : c.name}
+                      <th key={c.name} className="text-center sm:text-right pb-3 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
+                        {c.name.length > 12 ? c.name.slice(0, 12) + '\u2026' : c.name}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Instagram</td>
-                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
+                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
+                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Instagram</td>
+                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
                     {data.competitorSocial.map((c) => {
                       const yours = data.socialPresence.instagram || 0;
                       const theirs = c.instagram || 0;
                       const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
                       return (
-                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
                           {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
                         </td>
                       );
                     })}
                   </tr>
-                  <tr>
-                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Facebook</td>
-                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
+                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
+                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Facebook</td>
+                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
                     {data.competitorSocial.map((c) => {
                       const yours = data.socialPresence.facebook || 0;
                       const theirs = c.facebook || 0;
                       const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
                       return (
-                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
                           {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
                         </td>
                       );
                     })}
                   </tr>
                   <tr>
-                    <td className="py-2 pr-4" style={{ color: t.textSecondary }}>Google Reviews</td>
-                    <td className="text-right py-2 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
+                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Google Reviews</td>
+                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
                     {data.competitorSocial.map((c) => {
                       const yours = data.socialPresence.googleReviews || 0;
                       const theirs = c.googleReviews || 0;
                       const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
                       return (
-                        <td key={c.name} className="text-right py-2 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
                           {theirs}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
                         </td>
                       );
