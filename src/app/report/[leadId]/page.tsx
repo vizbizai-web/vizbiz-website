@@ -102,28 +102,22 @@ export default async function ReportPage({
     return <ReportPending leadId={leadId} status="not_found" />;
   }
 
-  // Gate 2: Valid token required (owner_ tokens bypass HMAC check)
-  if (!token) {
-    return <ReportPending leadId={leadId} status="no_token" businessName={leadData.businessName} />;
-  }
+  // Gate 2: Token required only for unapproved leads (pending_review, researching, etc)
+  // Approved+ leads are accessible WITHOUT a token — prevents dead links to clients
+  const isApproved = ['approved', 'email_drafted', 'contacted', 'closed_won'].includes(leadData.status);
+  const researchComplete = leadData.researchStatus === 'complete';
 
-  if (!token.startsWith('owner_')) {
-    const tokenResult = validateReportToken(leadId, token);
-    if (!tokenResult.valid) {
-      console.warn(`[report] Invalid token for ${leadId}: ${tokenResult.reason}`);
-      return <ReportPending leadId={leadId} status="invalid_token" businessName={leadData.businessName} />;
+  if (!isApproved || !researchComplete) {
+    // Not yet approved or still researching — require a valid token (staff/internal access)
+    if (!token) {
+      return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
     }
-  }
-
-  // Gate 3: Lead must have completed research
-  if (leadData.researchStatus !== 'complete') {
-    return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
-  }
-
-  // Gate 4: Lead must be approved by Vlad (status must not be pending_review)
-  // Owner bypass: token starting with 'owner_' can see report at any stage
-  if (leadData.status === 'pending_review' && !token.startsWith('owner_')) {
-    return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
+    if (!token.startsWith('owner_')) {
+      const tokenResult = validateReportToken(leadId, token);
+      if (!tokenResult.valid) {
+        return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
+      }
+    }
   }
 
   // All gates passed — show the full report
