@@ -934,9 +934,8 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
   const appearanceRate = data.totalPrompts > 0 ? data.promptsAppeared / data.totalPrompts : 0;
   const missedRate = 1 - appearanceRate;
 
-  // Smart defaults based on what we know
-  const defaultLeadValue = data.profitAtRisk.low > 0 ? data.profitAtRisk.low : 200;
-  const [leadValue, setLeadValue] = useState(defaultLeadValue);
+  // Smart defaults — $200 lead value is realistic for most local businesses
+  const [leadValue, setLeadValue] = useState(200);
   const [closeRate, setCloseRate] = useState(40);
   const [monthlyVisitors, setMonthlyVisitors] = useState(500);
 
