@@ -1952,14 +1952,14 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         gradientBackgroundStart="rgb(2, 9, 31)"
         gradientBackgroundEnd="rgb(8, 14, 28)"
         firstColor="34, 211, 238"
-        secondColor="6, 182, 212"
-        thirdColor="37, 209, 242"
-        fourthColor="20, 150, 200"
-        fifthColor="16, 120, 180"
+        secondColor="255, 100, 100"
+        thirdColor="100, 220, 255"
+        fourthColor="255, 180, 50"
+        fifthColor="200, 50, 200"
         pointerColor="37, 209, 242"
-        size="60%"
-        blendingValue="soft-light"
-        containerClassName="fixed inset-0 z-0"
+        size="80%"
+        blendingValue="hard-light"
+        containerClassName="fixed inset-0 z-50"
       />
       <div className="relative z-10 min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
         {/* Subtle background pattern */}
