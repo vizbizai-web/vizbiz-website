@@ -662,7 +662,7 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
   return (
     <FadeIn>
       <GlassCard className="max-w-4xl mx-auto p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Score Breakdown</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>Score Breakdown</h3>
         <p className="text-xs sm:text-sm mb-6 sm:mb-8" style={{ color: t.textMuted }}>
           Each score is 0–100 based on how often {data.businessName} appeared in real buyer-intent queries. Above 60 = strong (AI recommends you regularly). 35–60 = moderate. Below 35 = weak (AI rarely mentions you).
         </p>
@@ -702,7 +702,7 @@ function VisibilityRadar({ data, theme }: { data: LeadData; theme: Theme }) {
   return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Visibility Radar</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>Visibility Radar</h3>
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
           A visual map of your strengths and gaps. Bigger area = more visible. Categories where the shape pulls in are where AI platforms are least likely to recommend you.
         </p>
@@ -824,7 +824,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>How You Compare</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>How You Compare</h3>
         <p className="text-xs sm:text-sm mb-2" style={{ color: t.textMuted }}>
           How often {data.businessName} appears in AI answers vs competitors in {data.location}
         </p>
@@ -1066,7 +1066,7 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
       <div className={isMobile ? 'space-y-6' : 'grid grid-cols-2 gap-6 lg:gap-8'}>
         {/* Visible */}
         <div>
-          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>
+          <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>
             Where You Appear
           </h3>
           <p className="text-xs sm:text-sm mb-3" style={{ color: t.textMuted }}>
@@ -1096,7 +1096,7 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
 
         {/* Invisible */}
         <div>
-          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>
+          <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>
             Where You're Invisible
           </h3>
           <p className="text-xs sm:text-sm mb-3" style={{ color: t.textMuted }}>
@@ -1156,7 +1156,7 @@ function Recommendations({ data, theme }: { data: LeadData; theme: Theme }) {
   return (
     <FadeIn>
       <div>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Priority Actions</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>Priority Actions</h3>
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
           What to fix first, ranked by impact and effort
         </p>
@@ -1197,7 +1197,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   if (!hasSocialData && !hasCompetitorSocialData) return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media & AI Visibility</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>Social Media & AI Visibility</h3>
         <p className="text-sm mb-4" style={{ color: t.textMuted }}>What social media agencies won't tell you about AI recommendations</p>
         <div className="py-4">
           <div className="rounded-2xl p-4 mb-4" style={{ background: theme === 'dark' ? 'rgba(37,209,242,0.08)' : 'rgba(37,209,242,0.06)', borderLeft: '3px solid #25D1F2' }}>
@@ -1216,7 +1216,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   return (
     <FadeIn>
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Social Media Presence</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>Social Media Presence</h3>
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
           How you compare on social platforms
         </p>
@@ -1234,7 +1234,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                   <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
                 )}
               </div>
-              <p className="text-lg sm:text-xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>
+              <p className="text-xl sm:text-2xl font-bold tabular-nums" style={{ color: t.textPrimary }}>
                 {p.value ? p.value.toLocaleString() : '—'}
               </p>
               <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>{p.label}</p>
@@ -1277,61 +1277,52 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
               ))}
             </div>
 
-            {/* Desktop: table */}
+            {/* Desktop: table — use table-fixed for even column widths */}
             <div className="hidden sm:block overflow-x-auto">
-                <thead className="text-center sm:text-right">
+              <table className="w-full table-fixed">
+                <colgroup>
+                  <col className="w-[70px]" />
+                  <col className="w-[80px]" />
+                  {data.competitorSocial.map(() => <col key={crypto.randomUUID?.() ?? Math.random().toString()} className="w-[80px]" />)}
+                </colgroup>
+                <thead className="text-center">
                   <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
                     <th className="text-left pb-3 text-xs font-medium" style={{ color: t.textMuted }}>Platform</th>
-                    <th className="text-center sm:text-right pb-3 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]} (You)</th>
+                    <th className="pb-3 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]}</th>
                     {data.competitorSocial.map((c, i) => (
-                      <th key={c.name} className="text-center sm:text-right pb-3 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
-                        {c.name.length > 12 ? c.name.slice(0, 12) + '\u2026' : c.name}
+                      <th key={c.name} className="pb-3 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
+                        {c.name.length > 10 ? c.name.slice(0, 10) + '\u2026' : c.name}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
-                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Instagram</td>
-                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
-                    {data.competitorSocial.map((c) => {
-                      const yours = data.socialPresence.instagram || 0;
-                      const theirs = c.instagram || 0;
-                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
-                      return (
-                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
-                          {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
-                        </td>
-                      );
-                    })}
+                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Instagram</td>
+                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
+                    {data.competitorSocial.map((c) => (
+                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.instagram || 0) > (data.socialPresence.instagram || 0) * 2 ? '#EF4444' : t.textSecondary }}>
+                        {(c.instagram || 0).toLocaleString()}
+                      </td>
+                    ))}
                   </tr>
                   <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
-                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Facebook</td>
-                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
-                    {data.competitorSocial.map((c) => {
-                      const yours = data.socialPresence.facebook || 0;
-                      const theirs = c.facebook || 0;
-                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
-                      return (
-                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
-                          {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
-                        </td>
-                      );
-                    })}
+                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Facebook</td>
+                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
+                    {data.competitorSocial.map((c) => (
+                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.facebook || 0) > (data.socialPresence.facebook || 0) * 2 ? '#EF4444' : t.textSecondary }}>
+                        {(c.facebook || 0).toLocaleString()}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
-                    <td className="py-3 pr-4 text-left" style={{ color: t.textSecondary }}>Google Reviews</td>
-                    <td className="text-center sm:text-right py-3 font-semibold tabular-nums" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
-                    {data.competitorSocial.map((c) => {
-                      const yours = data.socialPresence.googleReviews || 0;
-                      const theirs = c.googleReviews || 0;
-                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
-                      return (
-                        <td key={c.name} className="text-center sm:text-right py-3 tabular-nums" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
-                          {theirs}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
-                        </td>
-                      );
-                    })}
+                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Reviews</td>
+                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
+                    {data.competitorSocial.map((c) => (
+                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.googleReviews || 0) > (data.socialPresence.googleReviews || 0) * 2 ? '#EF4444' : t.textSecondary }}>
+                        {c.googleReviews}
+                      </td>
+                    ))}
                   </tr>
                 </tbody>
               </table>
@@ -1398,7 +1389,7 @@ function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
       <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
         <div className="text-center mb-6">
           <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#22D3EE' }}>Free Preview</p>
-          <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>This is a summary. Your full report goes deeper.</h3>
+          <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2" style={{ color: t.textPrimary }}>This is a summary. Your full report goes deeper.</h3>
           <p className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
             The complete audit includes everything below — plus ongoing monitoring so you never lose visibility again.
           </p>
@@ -1544,7 +1535,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
   return (
     <FadeIn>
       <div className="max-w-4xl mx-auto py-8 sm:py-12">
-        <h3 className="text-lg sm:text-xl font-semibold text-center mb-1" style={{ color: t.textPrimary }}>Ready to Fix This?</h3>
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center mb-2" style={{ color: t.textPrimary }}>Ready to Fix This?</h3>
         <p className="text-xs sm:text-sm text-center mb-6 sm:mb-8" style={{ color: t.textMuted }}>
           Choose the plan that fits your business
         </p>
@@ -1643,16 +1634,17 @@ function BottomCTA({ theme }: { theme: Theme }) {
           Book a free 15-minute audit review call. No pressure, no obligation.
         </p>
         <a
-            href="https://calendly.com/vizbiz-ai/15min"
+          href="https://calendly.com/vizbiz-ai/15min"
+          className="inline-block px-8 py-3.5 text-base font-semibold rounded-xl border transition-all"
           style={{
             borderColor: t.ctaOutlineBorder,
             color: t.ctaOutlineText,
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLElement).style.background = t.ctaOutlineHover;
+            (e.currentTarget as HTMLElement).style.background = t.ctaOutlineHover;
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLElement).style.background = 'transparent';
+            (e.currentTarget as HTMLElement).style.background = 'transparent';
           }}
         >
           Book a Free Call
@@ -1691,6 +1683,29 @@ function ReportFooter({ theme }: { theme: Theme }) {
         </FadeIn>
       </div>
     </footer>
+  );
+}
+
+/* ── Section Label (narrative arc) ───────────── */
+function SectionLabel({ phase, label, sublabel, theme }: { phase: number; label: string; sublabel: string; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  return (
+    <div className="flex items-center gap-4 sm:gap-5 pt-2">
+      <span
+        className="text-xs sm:text-sm font-bold tabular-nums rounded-full px-3 py-1 flex-shrink-0"
+        style={{
+          background: 'linear-gradient(135deg, #22D3EE, #06B6D4)',
+          color: '#02091F',
+        }}
+      >
+        {phase}
+      </span>
+      <div>
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold" style={{ color: t.textPrimary }}>{label}</h2>
+        <p className="text-xs sm:text-sm mt-0.5" style={{ color: t.textMuted }}>{sublabel}</p>
+      </div>
+      <div className="flex-1 hidden sm:block h-px" style={{ background: t.borderSubtle }} />
+    </div>
   );
 }
 
@@ -1956,16 +1971,35 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
     <div className="min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
       <StickyHeader data={data} theme={theme} onToggle={toggle} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-8 sm:space-y-10 lg:space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-16 sm:space-y-20 lg:space-y-24">
+        {/* ─── Phase 1: The Hook ─── */}
+        <SectionLabel phase={1} label="The Hook" sublabel="Your AI Visibility at a Glance" theme={theme} />
         <StatsRow data={data} theme={theme} />
         <HeroScore data={data} theme={theme} />
+
+        {/* ─── Phase 2: The Shock ─── */}
+        <SectionLabel phase={2} label="The Shock" sublabel="What Poor AI Visibility Costs You Every Month" theme={theme} />
+        <RevenueLeakCalculator data={data} theme={theme} />
+
+        {/* ─── Phase 3: The Proof ─── */}
+        <SectionLabel phase={3} label="The Proof" sublabel="How You Stack Up Against the Competition" theme={theme} />
+        <CompetitorComparison data={data} theme={theme} />
+        <QueryLists data={data} theme={theme} />
+
+        {/* ─── Phase 4: The Diagnosis ─── */}
+        <SectionLabel phase={4} label="The Diagnosis" sublabel="Where You're Strong and Where You're Not" theme={theme} />
         <CategoryScores data={data} theme={theme} />
         <VisibilityRadar data={data} theme={theme} />
-        <CompetitorComparison data={data} theme={theme} />
-        <RevenueLeakCalculator data={data} theme={theme} />
-        <QueryLists data={data} theme={theme} />
+
+        {/* ─── Phase 5: The Solution ─── */}
+        <SectionLabel phase={5} label="The Solution" sublabel="Your Prioritized Action Plan" theme={theme} />
         <Recommendations data={data} theme={theme} />
+
+        {/* ─── Phase 6: The Context ─── */}
+        <SectionLabel phase={6} label="The Context" sublabel="Social Presence & AI Visibility" theme={theme} />
         <SocialMedia data={data} theme={theme} />
+
+        {/* ─── Phase 7: Next Steps ─── */}
         <BlurredReportPreview theme={theme} />
         <FullReportTeaser data={data} theme={theme} />
         <SocialProofStrip data={data} theme={theme} />
