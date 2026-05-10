@@ -149,12 +149,21 @@ export async function POST(request: Request) {
           }
         }
 
-        // Use preflight niche (from website scrape + LLM) if available, otherwise keyword fallback
+        // Use preflight niche (from website scrape + LLM) if available
+        // IMPORTANT: Trust the LLM classification even if niche isn't in our database.
+        // Generate dynamic prompts from the niche name instead of discarding it.
         let nicheConfig;
         if (preflightProfile?.niche && preflightProfile.niche !== 'local_business' && preflightProfile.niche !== 'unknown') {
           console.info(`[process-lead] Using preflight niche: ${preflightProfile.niche} (LLM-classified from website)`);
-          // Import niche config for prompt templates
-          nicheConfig = getNicheByName(preflightProfile.niche) || detectNiche(lead.dealershipName, lead.website);
+          const knownConfig = getNicheByName(preflightProfile.niche);
+          if (knownConfig) {
+            nicheConfig = knownConfig;
+          } else {
+            // Niche not in our database — generate dynamic config from the LLM classification
+            const { generateDynamicNicheConfig } = await import('@/lib/niche-detector');
+            nicheConfig = generateDynamicNicheConfig(preflightProfile.niche, preflightProfile.nicheLabel);
+            console.info(`[process-lead] Generated dynamic niche config for: ${preflightProfile.niche}`);
+          }
         } else {
           nicheConfig = detectNiche(lead.dealershipName, lead.website);
           console.info(`[process-lead] Using keyword niche: ${nicheConfig.niche} (no preflight data)`);

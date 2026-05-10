@@ -359,7 +359,39 @@ const NICHE_STRATEGIES: Record<string, PromptSet> = {
 };
 
 export function getPromptSetForNiche(niche: string): PromptSet {
-  return NICHE_STRATEGIES[niche] || NICHE_STRATEGIES.local_business;
+  if (NICHE_STRATEGIES[niche]) return NICHE_STRATEGIES[niche];
+  
+  // Unknown niche — generate dynamic strategy from the niche name
+  // so we NEVER fall back to generic local_business when we know the real niche
+  const label = niche.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return {
+    niche,
+    label,
+    prompts: [
+      `best {label} in {city}`,
+      `top rated {label} in {city}`,
+      `{label} near me in {city}`,
+      `{label} with good reviews in {city}`,
+      `best place for {label} in {city}`,
+      `affordable {label} in {city}`,
+      `{label} services in {city}`,
+      `{label} recommendations in {city}`,
+      `where to find {label} in {city}`,
+      `{label} open on weekends in {city}`,
+      `professional {label} in {city}`,
+      `{label} for beginners in {city}`,
+      `trusted {label} in {city}`,
+      `{label} deals in {city}`,
+      `{label} pricing in {city}`,
+      `{label} appointments in {city}`,
+      `{label} walk-in in {city}`,
+      `{label} for families in {city}`,
+      `{label} consultation in {city}`,
+      `{label} booking in {city}`,
+    ].map(p => p.replace(/\{label\}/g, label).replace(/\{city\}/g, '{city}')),
+    avgLeadValue: 150,
+    estimatedMonthlyVolume: 60,
+  };
 }
 
 export function calculateRevenueLoss(
