@@ -526,7 +526,7 @@ function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme;
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 48 : 64} height={isMobile ? 48 : 64} className="rounded-lg" />
+          <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 56 : 80} height={isMobile ? 56 : 80} className="rounded-lg" />
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-lg font-semibold" style={{ color: t.textPrimary }}>
               VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
@@ -578,7 +578,7 @@ function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
 
   return (
     <FadeIn>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -1956,30 +1956,28 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-16 sm:space-y-20 lg:space-y-24">
         {/* ─── Phase 1: The Hook ─── */}
-        <SectionLabel phase={1} label="The Hook" sublabel="Your AI Visibility at a Glance" theme={theme} />
+      {/* Your AI Visibility at a Glance */}
+        <div className="text-center mb-4">
+          <p className="text-[10px] sm:text-xs uppercase tracking-widest" style={{ color: t.textMuted }}>Report Overview</p>
+        </div>
         <StatsRow data={data} theme={theme} />
         <HeroScore data={data} theme={theme} />
 
-        {/* ─── Phase 2: The Shock ─── */}
-        <SectionLabel phase={2} label="The Shock" sublabel="What Poor AI Visibility Costs You Every Month" theme={theme} />
+        {/* Revenue Impact */}
         <RevenueLeakCalculator data={data} theme={theme} />
 
-        {/* ─── Phase 3: The Proof ─── */}
-        <SectionLabel phase={3} label="The Proof" sublabel="How You Stack Up Against the Competition" theme={theme} />
+        {/* Competitor & Query Analysis */}
         <CompetitorComparison data={data} theme={theme} />
         <QueryLists data={data} theme={theme} />
 
-        {/* ─── Phase 4: The Diagnosis ─── */}
-        <SectionLabel phase={4} label="The Diagnosis" sublabel="Where You're Strong and Where You're Not" theme={theme} />
+        {/* Category & Radar Analysis */}
         <CategoryScores data={data} theme={theme} />
         <VisibilityRadar data={data} theme={theme} />
 
-        {/* ─── Phase 5: The Solution ─── */}
-        <SectionLabel phase={5} label="The Solution" sublabel="Your Prioritized Action Plan" theme={theme} />
+        {/* Recommendation Plan */}
         <Recommendations data={data} theme={theme} />
 
-        {/* ─── Phase 6: The Context ─── */}
-        <SectionLabel phase={6} label="The Context" sublabel="Social Presence & AI Visibility" theme={theme} />
+        {/* Social Context */}
         <SocialMedia data={data} theme={theme} />
 
         {/* ─── Phase 7: Next Steps ─── */}
