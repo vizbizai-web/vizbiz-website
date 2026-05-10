@@ -1957,9 +1957,9 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         fourthColor="20, 150, 200"
         fifthColor="16, 120, 180"
         pointerColor="37, 209, 242"
-        size="80%"
-        blendingValue="soft-light"
-        containerClassName="fixed inset-0 z-0"
+        size="40%"
+        blendingValue="lighten"
+        containerClassName="fixed inset-0 z-0 opacity-40"
       />
       <div className="relative z-10 min-h-screen" style={{ background: 'transparent', color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
         {/* Subtle background pattern */}
