@@ -244,6 +244,9 @@ export default function HomeContent() {
           <div className="mx-auto grid max-w-[88rem] gap-12 overflow-hidden px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.22fr)_minmax(420px,0.78fr)] lg:gap-14 lg:px-10 lg:py-24 xl:gap-16">
             {/* Left: copy */}
             <div className="flex min-w-0 flex-col justify-center">
+              {/* SEO H1 — rendered for crawlers, visually hidden if JS renders dynamic H1 */}
+              <h1 className="sr-only">VizBiz — AI Visibility Reports for Car Dealerships and Local Businesses</h1>
+
               <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/30 bg-white/5 px-4 py-2 text-sm text-cyan-100 backdrop-blur">
                 <span className="h-2 w-2 rounded-full bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.85)]" />
                 AI visibility reports for local businesses
@@ -251,7 +254,7 @@ export default function HomeContent() {
 
               <h1 className="max-w-full font-sans text-[clamp(2.1rem,9.5vw,5.125rem)] font-semibold leading-[1.06] tracking-[-0.03em] sm:text-[clamp(3rem,6vw,5.125rem)]">
                 <span className="block sm:whitespace-nowrap">Be the business</span>
-                <span className="block sm:whitespace-nowrap">AI cites <span className="hero-cursor" aria-hidden="true" /></span>
+                <span className="block sm:whitespace-nowrap">AI recommends <span className="hero-cursor" aria-hidden="true" /></span>
                 <Ticker />
               </h1>
 
