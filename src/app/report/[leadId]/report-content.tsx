@@ -23,6 +23,7 @@ import {
 } from 'recharts';
 
 import type { LeadPageData, ResearchData } from './page';
+import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
 
 /* ── Types ────────────────────────────────────── */
 interface Category {
@@ -1946,18 +1947,32 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
   }
 
   return (
-    <div className="min-h-screen relative" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
-      {/* Subtle background pattern */}
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, ${t.textPrimary} 1px, transparent 0)`,
-          backgroundSize: '32px 32px',
-        }}
+    <>
+      <BackgroundGradientAnimation
+        gradientBackgroundStart="rgb(2, 9, 31)"
+        gradientBackgroundEnd="rgb(8, 14, 28)"
+        firstColor="34, 211, 238"
+        secondColor="6, 182, 212"
+        thirdColor="37, 209, 242"
+        fourthColor="20, 150, 200"
+        fifthColor="16, 120, 180"
+        pointerColor="37, 209, 242"
+        size="60%"
+        blendingValue="soft-light"
+        containerClassName="fixed inset-0 z-0"
       />
-      <StickyHeader data={data} theme={theme} onToggle={toggle} />
+      <div className="relative z-10 min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
+        {/* Subtle background pattern */}
+        <div
+          className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, ${t.textPrimary} 1px, transparent 0)`,
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <StickyHeader data={data} theme={theme} onToggle={toggle} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-16 sm:space-y-20 lg:space-y-24">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-16 sm:space-y-20 lg:space-y-24">
         {/* ─── Phase 1: The Hook ─── */}
       {/* Your AI Visibility at a Glance */}
         <div className="text-center mb-4">
@@ -1993,5 +2008,6 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
       <ReportFooter theme={theme} />
     </div>
+    </>
   );
 }
