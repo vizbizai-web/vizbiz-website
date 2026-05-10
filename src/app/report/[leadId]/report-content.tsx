@@ -934,13 +934,15 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
   const appearanceRate = data.totalPrompts > 0 ? data.promptsAppeared / data.totalPrompts : 0;
   const missedRate = 1 - appearanceRate;
 
-  const [leadValue, setLeadValue] = useState(data.profitAtRisk.high > 0 ? Math.round(data.profitAtRisk.high / 5) : 300);
+  // Smart defaults based on what we know
+  const defaultLeadValue = data.profitAtRisk.low > 0 ? data.profitAtRisk.low : 200;
+  const [leadValue, setLeadValue] = useState(defaultLeadValue);
   const [closeRate, setCloseRate] = useState(40);
   const [monthlyVisitors, setMonthlyVisitors] = useState(500);
 
-  // Revenue leak = missed leads × lead value × close rate
-  // Missed leads = visitors × missed appearance rate (proxy for lost AI-driven traffic)
-  const estimatedMissedLeads = Math.round(monthlyVisitors * missedRate * 0.3); // 30% of missed traffic goes to competitors
+  // Conservative estimate: only a fraction of missed AI traffic converts to lost leads
+  const aiTrafficFraction = 0.15; // 15% of their web traffic comes via AI-influenced discovery
+  const estimatedMissedLeads = Math.max(1, Math.round(monthlyVisitors * missedRate * aiTrafficFraction));
   const revenueLeak = Math.round(estimatedMissedLeads * leadValue * (closeRate / 100));
 
   return (
