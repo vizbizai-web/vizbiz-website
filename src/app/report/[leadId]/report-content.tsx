@@ -1277,55 +1277,32 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
               ))}
             </div>
 
-            {/* Desktop: table — use table-fixed for even column widths */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full table-fixed">
-                <colgroup>
-                  <col className="w-[70px]" />
-                  <col className="w-[80px]" />
-                  {data.competitorSocial.map(() => <col key={crypto.randomUUID?.() ?? Math.random().toString()} className="w-[80px]" />)}
-                </colgroup>
-                <thead className="text-center">
-                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
-                    <th className="text-left pb-3 text-xs font-medium" style={{ color: t.textMuted }}>Platform</th>
-                    <th className="pb-3 text-xs font-medium" style={{ color: '#22D3EE' }}>{data.businessName.split(' ')[0]}</th>
-                    {data.competitorSocial.map((c, i) => (
-                      <th key={c.name} className="pb-3 text-xs font-medium" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>
-                        {c.name.length > 10 ? c.name.slice(0, 10) + '\u2026' : c.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
-                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Instagram</td>
-                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{(data.socialPresence.instagram || 0).toLocaleString()}</td>
-                    {data.competitorSocial.map((c) => (
-                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.instagram || 0) > (data.socialPresence.instagram || 0) * 2 ? '#EF4444' : t.textSecondary }}>
-                        {(c.instagram || 0).toLocaleString()}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b" style={{ borderColor: t.borderSubtle }}>
-                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Facebook</td>
-                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{(data.socialPresence.facebook || 0).toLocaleString()}</td>
-                    {data.competitorSocial.map((c) => (
-                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.facebook || 0) > (data.socialPresence.facebook || 0) * 2 ? '#EF4444' : t.textSecondary }}>
-                        {(c.facebook || 0).toLocaleString()}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="py-3 pr-3 text-left text-xs" style={{ color: t.textSecondary }}>Reviews</td>
-                    <td className="py-3 font-semibold tabular-nums text-sm" style={{ color: t.textPrimary }}>{data.socialPresence.googleReviews}</td>
-                    {data.competitorSocial.map((c) => (
-                      <td key={c.name} className="py-3 tabular-nums text-sm" style={{ color: (c.googleReviews || 0) > (data.socialPresence.googleReviews || 0) * 2 ? '#EF4444' : t.textSecondary }}>
-                        {c.googleReviews}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+            {/* Desktop: centered comparison cards — one per platform */}
+            <div className="hidden sm:block space-y-4">
+              {([
+                { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
+                { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
+                { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
+              ] as const).map((platform) => (
+                <div key={platform.label} className="grid grid-cols-[70px_repeat(4,1fr)] gap-0 py-2" style={{ borderBottom: `1px solid ${t.borderSubtle}` }}>
+                  <div className="text-xs font-medium self-center" style={{ color: t.textMuted }}>{platform.label}</div>
+                  {/* You badge */}
+                  <div className="text-center">
+                    <div className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{platform.yours ? platform.yours.toLocaleString() : '—'}</div>
+                    <div className="text-[9px] uppercase tracking-wider" style={{ color: '#22D3EE' }}>You</div>
+                  </div>
+                  {/* Competitors */}
+                  {data.competitorSocial.map((c, i) => {
+                    const val = platform.getTheirs(c) || 0;
+                    return (
+                      <div key={c.name} className="text-center">
+                        <div className="text-sm tabular-nums" style={{ color: val > 2 * (platform.yours || 1) ? '#EF4444' : t.textSecondary }}>{val.toLocaleString() || '—'}</div>
+                        <div className="text-[9px] truncate max-w-[100px] mx-auto" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>{c.name.split(' ').slice(0, 2).join(' ')}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
 
             {/* AI Visibility > Social counter-narrative */}
