@@ -927,22 +927,110 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
 }
 
 /* ── Profit at Risk ──────────────────────────── */
-function ProfitAtRisk({ data, theme }: { data: LeadData; theme: Theme }) {
+function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
+  const isMobile = useIsMobile();
+
+  const appearanceRate = data.totalPrompts > 0 ? data.promptsAppeared / data.totalPrompts : 0;
+  const missedRate = 1 - appearanceRate;
+
+  const [leadValue, setLeadValue] = useState(data.profitAtRisk.high > 0 ? Math.round(data.profitAtRisk.high / 5) : 300);
+  const [closeRate, setCloseRate] = useState(40);
+  const [monthlyVisitors, setMonthlyVisitors] = useState(500);
+
+  // Revenue leak = missed leads × lead value × close rate
+  // Missed leads = visitors × missed appearance rate (proxy for lost AI-driven traffic)
+  const estimatedMissedLeads = Math.round(monthlyVisitors * missedRate * 0.3); // 30% of missed traffic goes to competitors
+  const revenueLeak = Math.round(estimatedMissedLeads * leadValue * (closeRate / 100));
 
   return (
     <FadeIn>
-      <div className="max-w-2xl mx-auto text-center py-10 sm:py-14">
-        <p className="text-[10px] sm:text-xs uppercase tracking-widest mb-3" style={{ color: t.textMuted }}>
-          Estimated Profit at Risk
-        </p>
-        <p className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight" style={{ color: t.profitRiskText }}>
-          {formatCurrency(data.profitAtRisk.low, data.currencySymbol)} – {formatCurrency(data.profitAtRisk.high, data.currencySymbol)}
-        </p>
-        <p className="text-sm mt-3 max-w-md mx-auto" style={{ color: t.textSecondary }}>
-          Monthly revenue currently going to competitors who rank higher in AI-driven searches
-        </p>
-      </div>
+      <GlassCard className="p-5 sm:p-6 lg:p-8" theme={theme}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+            <p className="text-[10px] sm:text-xs uppercase tracking-widest mb-3" style={{ color: t.textMuted }}>
+              Estimated Revenue Leak
+            </p>
+            <p className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight" style={{ color: t.profitRiskText }}>
+              {formatCurrency(revenueLeak, data.currencySymbol)}<span className="text-lg sm:text-xl">/mo</span>
+            </p>
+            <p className="text-sm mt-2" style={{ color: t.textSecondary }}>
+              {estimatedMissedLeads} potential leads lost to competitors who appear in AI recommendations
+            </p>
+          </div>
+
+          {/* Sliders */}
+          <div className="space-y-5 sm:space-y-6">
+            <div>
+              <div className="flex justify-between items-baseline mb-2">
+                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Average Lead Value</label>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{formatCurrency(leadValue, data.currencySymbol)}</span>
+              </div>
+              <input
+                type="range" min={50} max={5000} step={50}
+                value={leadValue}
+                onChange={e => setLeadValue(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #22D3EE ${((leadValue - 50) / 4950) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((leadValue - 50) / 4950) * 100}%)`,
+                  accentColor: '#22D3EE',
+                }}
+              />
+              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
+                <span>$50</span><span>$5,000</span>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-baseline mb-2">
+                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Close Rate</label>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{closeRate}%</span>
+              </div>
+              <input
+                type="range" min={5} max={100} step={5}
+                value={closeRate}
+                onChange={e => setCloseRate(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #22D3EE ${((closeRate - 5) / 95) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((closeRate - 5) / 95) * 100}%)`,
+                  accentColor: '#22D3EE',
+                }}
+              />
+              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
+                <span>5%</span><span>100%</span>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-baseline mb-2">
+                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Monthly Website Visitors</label>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{monthlyVisitors.toLocaleString()}</span>
+              </div>
+              <input
+                type="range" min={50} max={10000} step={50}
+                value={monthlyVisitors}
+                onChange={e => setMonthlyVisitors(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #22D3EE ${((monthlyVisitors - 50) / 9950) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((monthlyVisitors - 50) / 9950) * 100}%)`,
+                  accentColor: '#22D3EE',
+                }}
+              />
+              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
+                <span>50</span><span>10,000</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 sm:mt-6 text-center rounded-xl p-3 sm:p-4" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
+            <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
+              Based on your AI visibility score of <strong style={{ color: t.textPrimary }}>{data.aviScore}/100</strong>,
+              you're missing <strong style={{ color: '#EF4444' }}>{Math.round(missedRate * 100)}%</strong> of AI-driven recommendations.
+              That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.
+            </p>
+          </div>
+        </div>
+      </GlassCard>
     </FadeIn>
   );
 }
@@ -1043,32 +1131,41 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
 function Recommendations({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
 
+  const quickWins = data.recommendations.filter(r => r.impact === 'High');
+  const strategic = data.recommendations.filter(r => r.impact !== 'High');
+
+  const PriorityGroup = ({ title, subtitle, items, accent }: { title: string; subtitle: string; items: Recommendation[]; accent: string }) => (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />
+        <h4 className="text-sm font-semibold" style={{ color: t.textPrimary }}>{title}</h4>
+        <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: `${accent}15`, color: accent, border: `1px solid ${accent}30` }}>{subtitle}</span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {items.map((rec) => (
+          <GlassCard key={rec.id} className="p-4" theme={theme}>
+            <h5 className="text-sm font-semibold mb-2" style={{ color: t.textPrimary }}>{rec.title}</h5>
+            <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>{rec.description}</p>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <FadeIn>
       <div>
-        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Recommendations</h3>
+        <h3 className="text-lg sm:text-xl font-semibold mb-1" style={{ color: t.textPrimary }}>Priority Actions</h3>
         <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: t.textMuted }}>
-          Priority actions to improve your AI visibility
+          What to fix first, ranked by impact and effort
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {data.recommendations.map((rec, i) => (
-            <GlassCard key={rec.id} className="p-4 sm:p-5" theme={theme}>
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                  style={{
-                    background: `${getImpactColor(rec.impact)}15`,
-                    color: getImpactColor(rec.impact),
-                    border: `1px solid ${getImpactColor(rec.impact)}30`,
-                  }}
-                >
-                  {rec.impact} Impact
-                </span>
-              </div>
-              <h4 className="text-sm font-semibold mb-2" style={{ color: t.textPrimary }}>{rec.title}</h4>
-              <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>{rec.description}</p>
-            </GlassCard>
-          ))}
+        <div className="space-y-6">
+          {quickWins.length > 0 && (
+            <PriorityGroup title="Quick Wins" subtitle="High Impact · Low Effort" items={quickWins} accent="#22C55E" />
+          )}
+          {strategic.length > 0 && (
+            <PriorityGroup title="Strategic Projects" subtitle="Medium Impact · Bigger Lift" items={strategic} accent="#F59E0B" />
+          )}
         </div>
       </div>
     </FadeIn>
@@ -1865,7 +1962,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         <CategoryScores data={data} theme={theme} />
         <VisibilityRadar data={data} theme={theme} />
         <CompetitorComparison data={data} theme={theme} />
-        <ProfitAtRisk data={data} theme={theme} />
+        <RevenueLeakCalculator data={data} theme={theme} />
         <QueryLists data={data} theme={theme} />
         <Recommendations data={data} theme={theme} />
         <SocialMedia data={data} theme={theme} />
