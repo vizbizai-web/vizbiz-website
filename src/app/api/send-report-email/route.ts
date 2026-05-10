@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { buildReportUrl } from '@/lib/report-token';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
       competitorName, competitorScore, niche,
     } = body;
 
-    const reportUrl = `https://vizbiz.ai/report/${leadId}`;
+    const reportUrl = buildReportUrl(leadId);
     const scoreColor = statusBand === 'Strong' ? '#22C55E' : statusBand === 'Moderate' ? '#F59E0B' : '#EF4444';
     const invisibleCount = totalPrompts - appearedCount;
 

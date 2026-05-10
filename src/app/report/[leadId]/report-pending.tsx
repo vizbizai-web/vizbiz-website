@@ -10,8 +10,8 @@ const statusMessages: Record<PendingStatus, { title: string; description: string
     description: "We couldn't find a report with that ID. If you recently submitted a request, your analysis may still be processing.",
   },
   no_token: {
-    title: 'Your AI Visibility Report',
-    description: "Our analysis engine is compiling your AI visibility score across 20+ real search queries. You'll receive an email with your interactive report once the analysis is complete.",
+    title: 'AI Visibility Report',
+    description: "This report requires a private access link. If you received an email from us, click the button in that email to view your report.",
   },
   invalid_token: {
     title: 'Report Link Expired',
