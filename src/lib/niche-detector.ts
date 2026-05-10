@@ -497,3 +497,48 @@ export function detectNiche(businessName: string, website: string, scrapedConten
 export function getNicheByName(nicheName: string): NicheConfig | null {
   return NICHES.find(n => n.niche === nicheName) || null;
 }
+
+/**
+ * Generate a dynamic niche config for niches not in our database.
+ * Uses the niche name + business description to build reasonable prompts.
+ * This ensures we NEVER throw away an LLM-classified niche just because
+ * we don't have a pre-built config for it.
+ */
+export function generateDynamicNicheConfig(nicheName: string, nicheLabel?: string): NicheConfig {
+  // Human-readable label: "plant_shop" → "Plant Shop"
+  const label = nicheLabel || nicheName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  
+  return {
+    niche: nicheName,
+    keywords: [nicheName.replace(/_/g, ' ')],
+    promptTemplates: [
+      `best ${label} in {city}`,
+      `top rated ${label} in {city}`,
+      `${label} near me in {city}`,
+      `${label} with good reviews in {city}`,
+      `${label} open on weekends in {city}`,
+      `best place for ${label} in {city}`,
+      `affordable ${label} in {city}`,
+      `${label} services in {city}`,
+      `${label} recommendations in {city}`,
+      `where to find ${label} in {city}`,
+      `${label} pricing in {city}`,
+      `${label} for beginners in {city}`,
+      `professional ${label} in {city}`,
+      `${label} deals in {city}`,
+      `${label} appointments in {city}`,
+      `${label} consultation in {city}`,
+      `${label} booking in {city}`,
+      `${label} walk-in in {city}`,
+      `best ${label} for families in {city}`,
+      `trusted ${label} in {city}`,
+    ],
+    competitorSearchQueries: [
+      `${label} in {city}`,
+      `best ${label} {city}`,
+      `${label} near me {city}`,
+      `top rated ${label} {city}`,
+      `${label} alternatives {city}`,
+    ],
+  };
+}

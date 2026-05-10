@@ -6,7 +6,7 @@
  * in the results.
  */
 
-import { detectNiche, getNicheByName } from "./niche-detector";
+import { detectNiche, getNicheByName, generateDynamicNicheConfig } from "./niche-detector";
 import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
 import { isJunkCompetitor } from "./junk-filter";
@@ -188,11 +188,17 @@ export async function runResearch(
   
   if (preflightProfile) {
     console.info(`[research-runner] Using PreFlight profile: niche=${preflightProfile.niche}, prop="${preflightProfile.valueProposition.substring(0, 80)}"`);
+    // Trust the LLM-classified niche even if not in our database
+    const knownNicheConfig = getNicheByName(preflightProfile.niche);
+    const dynamicConfig = knownNicheConfig ? null : generateDynamicNicheConfig(preflightProfile.niche);
+    if (dynamicConfig) {
+      console.info(`[research-runner] Generated dynamic niche config for unknown niche: ${preflightProfile.niche}`);
+    }
     websiteInsight = {
       services: preflightProfile.valueProposition ? [preflightProfile.valueProposition] : [],
       keywords: [preflightProfile.niche],
       niche: preflightProfile.niche,
-      nicheConfig: getNicheByName(preflightProfile.niche) || null,
+      nicheConfig: knownNicheConfig || dynamicConfig,
     };
     finalNiche = preflightProfile.niche;
   } else {
