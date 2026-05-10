@@ -358,8 +358,10 @@ export async function getAllLeads(): Promise<LeadRow[]> {
 
   if (!data.values) return [];
 
-  // Skip header row
-  return data.values.slice(1).map((row) => ({
+  // Skip header row and ghost rows (no lead_id = not a real lead)
+  return data.values.slice(1)
+    .filter((row) => row[16] && row[16].trim().length > 0)
+    .map((row) => ({
     timestamp: row[0] || "",
     dealershipName: row[1] || "",
     website: row[2] || "",
