@@ -527,12 +527,7 @@ function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
         <div className="flex items-center gap-2 sm:gap-3">
           <Image src="/logo.jpg" alt="VizBiz" width={isMobile ? 56 : 80} height={isMobile ? 56 : 80} className="rounded-lg" />
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-lg font-semibold" style={{ color: t.textPrimary }}>
-              VizBiz<span style={{ color: '#25D1F2' }}>.ai</span>
-            </span>
-            <span className="text-xs" style={{ color: t.textMuted }}>AI Visibility Report</span>
-          </div>
+          <span className="hidden sm:inline text-xs" style={{ color: t.textMuted }}>AI Visibility Report</span>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
           <ThemeToggle theme={theme} onToggle={onToggle} />
