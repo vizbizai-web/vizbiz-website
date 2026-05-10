@@ -180,22 +180,54 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* BackgroundGradientAnimation keyframes */
-@keyframes gradient {
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-  25% { transform: translate(10%, -10%) rotate(5deg) scale(1.1); }
-  50% { transform: translate(-5%, 15%) rotate(-3deg) scale(0.95); }
-  75% { transform: translate(8%, -5%) rotate(2deg) scale(1.05); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+/* BackgroundGradientAnimation keyframes — 5 blobs, distinct paths */
+@keyframes first {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-30%, -20%) scale(1.1); }
+  50% { transform: translate(20%, 30%) scale(0.9); }
+  75% { transform: translate(-10%, -40%) scale(1.05); }
+  100% { transform: translate(0, 0) scale(1); }
 }
-.animate-gradient {
-  animation: gradient 15s ease infinite;
-  animation-fill-mode: forwards;
+@keyframes second {
+  0% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(20%, -30%) scale(1.05); }
+  40% { transform: translate(-40%, 10%) scale(0.95); }
+  60% { transform: translate(30%, 20%) scale(1.02); }
+  80% { transform: translate(-10%, -20%) scale(0.98); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes third {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(40%, -10%) scale(0.9); }
+  50% { transform: translate(-20%, 20%) scale(1.15); }
+  75% { transform: translate(10%, -30%) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes fourth {
+  0% { transform: translate(0, 0) scale(1); }
+  30% { transform: translate(-50%, 10%) scale(1.1); }
+  60% { transform: translate(30%, -40%) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes fifth {
+  0% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(20%, 30%) scale(0.95); }
+  40% { transform: translate(-30%, -20%) scale(1.05); }
+  60% { transform: translate(10%, 40%) scale(0.9); }
+  80% { transform: translate(-20%, -10%) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
-/* Safari compatibility for background animation */
+.animate-first { animation: first 30s ease-in-out infinite; }
+.animate-second { animation: second 25s ease-in-out infinite; }
+.animate-third { animation: third 35s ease-in-out infinite; }
+.animate-fourth { animation: fourth 20s ease-in-out infinite; }
+.animate-fifth { animation: fifth 40s ease-in-out infinite; }
+
 @supports (-webkit-backdrop-filter: blur(1px)) {
-  .animate-gradient {
-    animation-duration: 20s;
-  }
+  .animate-first { animation-duration: 35s; }
+  .animate-second { animation-duration: 30s; }
+  .animate-third { animation-duration: 40s; }
+  .animate-fourth { animation-duration: 25s; }
+  .animate-fifth { animation-duration: 45s; }
 }
