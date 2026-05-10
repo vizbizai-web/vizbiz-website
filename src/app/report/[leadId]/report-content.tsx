@@ -883,28 +883,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
               </div>
             )}
 
-            {/* Discovered competitors — only real businesses, not junk */}
-            {compData.filter(c => !c.isYou && !c.isYours).length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: t.textMuted }}>Competitors AI recommends instead of you</p>
-                {compData.filter(c => !c.isYou && !c.isYours).map((entry, index) => {
-                  const barColor = compColors[index % compColors.length];
-                  return (
-                    <ComparisonBar
-                      key={entry.name}
-                      name={entry.name}
-                      score={entry.score}
-                      total={totalQ}
-                      pct={Math.round((entry.score / totalQ) * 100)}
-                      color={barColor}
-                      isYou={false}
-                      theme={theme}
-                      delay={index * 150}
-                    />
-                  );
-                })}
-              </div>
-            )}
+            {/* "Competitors AI recommends instead of you" — removed per Alex (too many junk competitor errors) */}
           </div>
         ) : (
           <div style={{ height: chartH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -912,9 +891,9 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
           </div>
         )}
 
-        {yourScore < maxScore && (
+        {maxScore > yourScore && yourScore > 0 && (
           <p className="text-xs mt-4 p-3 rounded-xl" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
-            Your top competitor appeared {maxScore - yourScore} more times than you in AI recommendations. When a buyer asks ChatGPT for a recommendation, they're getting your competitor's name instead of yours.
+            {compData.some(c => c.isYours && c.score > 0) ? `Your competitor appeared ${maxScore - yourScore} more times than you in AI recommendations. When a buyer asks ChatGPT for a recommendation, they're getting your competitor's name instead of yours.` : `You appeared in only ${yourScore} out of ${totalQ} AI recommendations. There's significant room to improve your AI visibility.`}
           </p>
         )}
       </GlassCard>
