@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "2026 AI Visibility Benchmark Report for Car Dealerships | VizBiz",
   description:
-    "Original research from 168 data points across 84 AI prompts and 11 visibility categories. See where dealerships stand — and why most are invisible to AI search.",
+    "Original research from 168 data points across 84 AI prompts. 84% of dealerships score below passing on AI visibility. Average: 11/100. See the full benchmark.",
   openGraph: {
     title: "2026 AI Visibility Benchmark Report for Car Dealerships",
     description:
