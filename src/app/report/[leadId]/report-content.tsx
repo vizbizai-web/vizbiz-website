@@ -1157,7 +1157,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
     { label: 'Instagram', value: data.socialPresence.instagram, icon: 'instagram' },
     { label: 'Facebook', value: data.socialPresence.facebook, icon: 'facebook' },
     { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: 'google' },
-  ];
+  ].filter(p => p.value !== null && p.value !== undefined);
 
   const socialCompData = data.competitorSocial.map(c => ({
     name: c.name,
@@ -1232,7 +1232,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                 { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
                 { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
                 { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
-              ] as const).map((platform) => (
+              ] as const).filter(p => p.yours !== null && p.yours !== undefined).map((platform) => (
                 <div key={platform.label} className="rounded-xl p-3" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
                   <p className="text-xs font-medium mb-2" style={{ color: t.textMuted }}>{platform.label}</p>
                   <div className="flex items-baseline gap-2 mb-2">
@@ -1264,7 +1264,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                 { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
                 { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
                 { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
-              ] as const).map((platform) => (
+              ] as const).filter(p => p.yours !== null && p.yours !== undefined).map((platform) => (
                 <div key={platform.label} style={{ display: 'grid', gridTemplateColumns: '70px repeat(4, 1fr)', gap: 0, borderBottom: `1px solid ${t.borderSubtle}`, paddingBottom: '8px', paddingTop: '8px' }}>
                   <div className="text-xs font-medium self-center" style={{ color: t.textMuted }}>{platform.label}</div>
                   {/* You badge */}
