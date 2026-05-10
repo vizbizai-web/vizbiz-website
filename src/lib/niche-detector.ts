@@ -407,6 +407,45 @@ const NICHES: NicheConfig[] = [
       "James Allen diamonds online jewelry",
       "jewelry brands similar to Brilliant Earth Vrai"
     ]
+  },
+  {
+    niche: "plant_shop",
+    keywords: [
+      "plant shop", "plant care", "plant sitting", "houseplant", "house plant",
+      "indoor plant", "plant rental", "repotting", "greenhouse", "nursery",
+      "garden center", "plant store", "plant delivery", "plant maintenance",
+      "botanical", "plant nursery", "succulent", "tropical plant", "plant service",
+      "potting", "plant babysitting", "plant consultant", "fleurish"
+    ],
+    promptTemplates: [
+      "best plant shop in {city}",
+      "where to buy indoor plants in {city}",
+      "plant store near me in {city}",
+      "best place for houseplants in {city}",
+      "plant care service in {city}",
+      "plant sitting service in {city}",
+      "plant nursery in {city}",
+      "best greenhouse in {city}",
+      "where to buy succulents in {city}",
+      "tropical plants for sale in {city}",
+      "plant delivery in {city}",
+      "plant repotting service in {city}",
+      "best garden center in {city}",
+      "indoor plant rental in {city}",
+      "plant store with good reviews in {city}",
+      "plant shop open on weekends in {city}",
+      "rare plants for sale in {city}",
+      "pet friendly plants in {city}",
+      "plant maintenance service in {city}",
+      "best plant store for beginners in {city}"
+    ],
+    competitorSearchQueries: [
+      "plant shops in {city}",
+      "best plant stores {city}",
+      "indoor plant shop {city}",
+      "plant nursery near me {city}",
+      "houseplant store {city}"
+    ]
   }
 ];
 

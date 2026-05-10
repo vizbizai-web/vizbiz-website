@@ -245,7 +245,7 @@ export default function HomeContent() {
             {/* Left: copy */}
             <div className="flex min-w-0 flex-col justify-center">
               {/* SEO H1 — rendered for crawlers, visually hidden if JS renders dynamic H1 */}
-              <h1 className="sr-only">VizBiz — AI Visibility Reports for Car Dealerships and Local Businesses</h1>
+              <h1 className="sr-only">VizBiz — AI Visibility Reports for Local Businesses</h1>
 
               <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/30 bg-white/5 px-4 py-2 text-sm text-cyan-100 backdrop-blur">
                 <span className="h-2 w-2 rounded-full bg-[#22D3EE] shadow-[0_0_20px_rgba(34,211,238,0.85)]" />

@@ -61,6 +61,7 @@ const NICHE_ECONOMICS: Record<string, { label: string; avgLeadValue: number; mon
   landscaping: { label: "Landscaping", avgLeadValue: 500, monthlyVolume: 30 },
   it_services: { label: "IT Services", avgLeadValue: 500, monthlyVolume: 30 },
   marketing_agency: { label: "Marketing Agency", avgLeadValue: 1000, monthlyVolume: 20 },
+  plant_shop: { label: "Plant Shop & Plant Care", avgLeadValue: 120, monthlyVolume: 80 },
   local_business: { label: "Local Business", avgLeadValue: 200, monthlyVolume: 60 },
   tourism_experience: { label: "Tourism Experience", avgLeadValue: 150, monthlyVolume: 80 },
   artisan_workshop: { label: "Artisan Workshop & Studio", avgLeadValue: 200, monthlyVolume: 40 },
@@ -91,6 +92,7 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   auto_transport: ["auto transport", "car shipping", "car hauling", "vehicle transport", "vehicle shipping", "auto shipping", "car carrier", "vehicle logistics", "car delivery", "auto logistics", "car mover", "vehicle relocation", "transport group", "logistics group", "enclosed carrier", "car carrier service", "ship my car", "car hauling company"],
   tourism_experience: ["pearl farm", "oyster farm", "aquaculture", "farm tour", "guided tour", "scenic cruise", "cellar door", "winery tour", "brewery tour", "eco tour", "wildlife tour", "boat tour", "adventure tour", "day trip", "day tour", "tourist attraction", "tourism", "nature tour", "cultural experience", "outdoor experience", "water activity", "river cruise", "seaplane", "food tour", "wine tasting", "cooking class", "kayak tour"],
   artisan_workshop: ["workshop", "studio", "class", "course", "lesson", "artisan", "craft", "maker", "metalwork", "silversmith", "goldsmith", "stone cutting", "lapidary", "jewelry making", "jewelry class", "ring making", "metal working", "metalsmith", "metalsmithing", "sip & silversmith", "sip and silversmith", "upcoming workshops", "book a session", "reserve your spot"],
+  plant_shop: ["plant shop", "plant care", "plant sitting", "houseplant", "house plant", "indoor plant", "plant rental", "repotting", "greenhouse", "nursery", "garden center", "plant store", "plant delivery", "plant maintenance", "botanical", "plant nursery", "succulent", "tropical plant", "plant service", "potting"],
 };
 
 /**

@@ -3,13 +3,13 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "2026 AI Visibility Benchmark Report for Car Dealerships | VizBiz",
+  title: "2026 AI Visibility Benchmark Report for Local Businesses | VizBiz",
   description:
-    "Original research from 168 data points across 84 AI prompts. 84% of dealerships score below passing on AI visibility. Average: 11/100. See the full benchmark.",
+    "Original research from 168 data points across 84 AI prompts. 84% of local businesses score below passing on AI visibility. Average: 11/100. See the full benchmark.",
   openGraph: {
-    title: "2026 AI Visibility Benchmark Report for Car Dealerships",
+    title: "2026 AI Visibility Benchmark Report for Local Businesses",
     description:
-      "Original research: 84% of dealerships score below passing on AI visibility. Average score: 11/100. Data from 168 search results across 11 categories.",
+      "Original research: 84% of local businesses score below passing on AI visibility. Average score: 11/100. Data from 168 search results across 11 categories.",
     url: "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
   },
   alternates: {
@@ -26,7 +26,7 @@ const categoryData = [
   { name: "6-Voice / Casual", score: 0, max: 36, points: 0, count: 12, note: "Zero presence in conversational, natural language queries" },
   { name: "7-Review & Reputation", score: 0, max: 30, points: 0, count: 10, note: "Review signals not translating to AI citations" },
   { name: "8-Negative / Objection", score: 13, max: 30, points: 4, count: 10, note: "Appears when legitimacy is questioned — not a positive signal" },
-  { name: "9-Inventory & Marketplace", score: 0, max: 36, points: 0, count: 12, note: "AI never connects inventory listings to dealership recommendations" },
+  { name: "9-Inventory & Marketplace", score: 0, max: 36, points: 0, count: 12, note: "AI never connects inventory listings to local business recommendations" },
   { name: "10-Digital Experience", score: 0, max: 24, points: 0, count: 8, note: "No recognition of online retail, chat, or digital tools" },
   { name: "11-Cross-OEM Competitors", score: 0, max: 72, points: 0, count: 24, note: "Loses all cross-brand comparison queries to aggregators" },
 ];
@@ -40,22 +40,22 @@ const keyFindings = [
   {
     stat: "84%",
     label: "Below Passing Threshold",
-    detail: "84% of dealership websites score below 60/100 on AI visibility benchmarks. The average score is just 11 out of 100.",
+    detail: "84% of local business websites score below 60/100 on AI visibility benchmarks. The average score is just 11 out of 100.",
   },
   {
     stat: "3.6%",
     label: "Highest Category Score",
-    detail: "Competitor comparison queries scored highest at 17%, but this only occurs when the dealership name is explicitly in the prompt. True organic discovery sits at 3% or zero.",
+    detail: "Competitor comparison queries scored highest at 17%, but this only occurs when the local business name is explicitly in the prompt. True organic discovery sits at 3% or zero.",
   },
   {
     stat: "5–6",
     label: "Dealers Per Query",
-    detail: "AI systems recommend only 5–6 dealerships per buyer-intent query. The field compresses dramatically — most dealers never get mentioned.",
+    detail: "AI systems recommend only 5–6 local businesses per buyer-intent query. The field compresses dramatically — most dealers never get mentioned.",
   },
   {
     stat: "30%",
     label: "Buyers Using AI",
-    detail: "Nearly 30% of car buyers now use AI (ChatGPT, Gemini, Perplexity) to research vehicles before visiting a dealership. AI-sourced traffic converts at 4.4× the rate of organic traffic.",
+    detail: "Nearly 30% of buyers now use AI (ChatGPT, Gemini, Perplexity) to research purchases before visiting a local business. AI-sourced traffic converts at 4.4× the rate of organic traffic.",
   },
   {
     stat: "0",
@@ -68,7 +68,7 @@ const methodologySteps = [
   {
     step: "01",
     title: "Prompt Design",
-    body: "84 buyer-intent prompts across 11 categories, covering the full dealership buyer journey — from general discovery to specific objections. Each prompt mirrors real questions shoppers ask AI.",
+    body: "84 buyer-intent prompts across 11 categories, covering the full local business buyer journey — from general discovery to specific objections. Each prompt mirrors real questions shoppers ask AI.",
   },
   {
     step: "02",
@@ -94,8 +94,8 @@ const methodologySteps = [
 
 const actionableInsights = [
   {
-    title: "Why most dealerships fail",
-    body: "The average dealership scores 11/100 because AI systems cannot confidently identify, verify, or recommend them. Entity data is inconsistent, content is thin, and reviews lack specificity. AI defaults to safer, better-known alternatives.",
+    title: "Why most local businesses fail",
+    body: "The average local business scores 11/100 because AI systems cannot confidently identify, verify, or recommend them. Entity data is inconsistent, content is thin, and reviews lack specificity. AI defaults to safer, better-known alternatives.",
   },
   {
     title: "Fastest fix: entity consistency",
@@ -111,16 +111,16 @@ const actionableInsights = [
   },
   {
     title: "ROI of improvement",
-    body: "AI-sourced traffic converts at 4.4× organic traffic. A dealership moving from invisible (0%) to mentioned (even 10–20% of queries) captures buyers at the decision stage — before they visit competitors.",
+    body: "AI-sourced traffic converts at 4.4× organic traffic. A local business moving from invisible (0%) to mentioned (even 10–20% of queries) captures buyers at the decision stage — before they visit competitors.",
   },
 ];
 
 const citeStats = [
-  "Average dealership AI visibility score: 11/100",
-  "84% of dealerships score below 60 (passing threshold)",
-  "30% of car buyers now use AI for vehicle research",
+  "Average local business AI visibility score: 11/100",
+  "84% of local businesses score below 60 (passing threshold)",
+  "30% of buyers now use AI for purchase research",
   "AI-sourced traffic converts at 4.4× the rate of organic traffic",
-  "Only 5–6 dealerships appear per AI buyer-intent query",
+  "Only 5–6 local businesses appear per AI buyer-intent query",
   "Highest visibility category: competitor comparison at 17%",
   "Zero visibility categories: service, reviews, inventory, digital experience, Ontario-specific, voice/casual, cross-OEM",
   "All VizBiz mentions in May 2026 audit were name collisions with unrelated 'VizBiz Solutions' CRM company",
@@ -136,8 +136,8 @@ export default function BenchmarkReportPage() {
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "2026 AI Visibility Benchmark Report for Car Dealerships",
-    "description": "Original research from 168 data points across 84 AI prompts and 11 visibility categories. See where dealerships stand — and why most are invisible to AI search.",
+    "headline": "2026 AI Visibility Benchmark Report for Car Local businesses",
+    "description": "Original research from 168 data points across 84 AI prompts and 11 visibility categories. See where local businesses stand — and why most are invisible to AI search.",
     "datePublished": "2026-05-01",
     "dateModified": "2026-05-01",
     "author": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
@@ -145,13 +145,13 @@ export default function BenchmarkReportPage() {
     "mainEntityOfPage": "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
     "wordCount": 2500,
     "articleSection": "Original Research",
-    "keywords": "AI visibility, car dealership, benchmark report, GEO, AEO, ChatGPT recommendations, AI search, automotive retail",
+    "keywords": "AI visibility, local business, benchmark report, GEO, AEO, ChatGPT recommendations, AI search, small business",
   };
 
   const datasetJsonLd = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    "name": "2026 AI Visibility Benchmark for Car Dealerships",
+    "name": "2026 AI Visibility Benchmark for Car Local businesses",
     "description": "Anonymized aggregate data from 84 AI prompts across 11 visibility categories, run on Brave Search and Tavily platforms in May 2026.",
     "creator": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
     "datePublished": "2026-05-01",
@@ -164,7 +164,7 @@ export default function BenchmarkReportPage() {
     "variableMeasured": "AI Visibility Index score (0–100)",
     "measurementMethod": "84 buyer-intent prompts across 11 categories × 2 platforms (Brave Search + Tavily)",
     "temporalCoverage": "2026-05-01",
-    "spatialCoverage": "North American automotive retail market",
+    "spatialCoverage": "North American local business market",
   };
 
   return (
@@ -179,11 +179,11 @@ export default function BenchmarkReportPage() {
           <div className="mx-auto max-w-4xl">
             <div className="section-kicker">Original Research — May 2026</div>
             <h1 className="display-font mt-6 text-[2.8rem] font-semibold leading-[0.96] tracking-[-0.05em] sm:text-[4rem]">
-              2026 AI Visibility Benchmark Report for Car Dealerships
+              2026 AI Visibility Benchmark Report for Car Local businesses
             </h1>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               Original research from 84 AI prompts across 11 visibility categories. 
-              See where dealerships stand — and why most are invisible to the AI systems 
+              See where local businesses stand — and why most are invisible to the AI systems 
               their buyers now rely on.
             </p>
             <div className="mt-8 flex flex-wrap gap-4 text-sm text-[var(--text-secondary)]">
@@ -196,11 +196,11 @@ export default function BenchmarkReportPage() {
             <div className="mt-10 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Findings at a Glance</h2>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
-                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">Average dealership AVI score: 2.4/100</strong> — based on 168 data points across 84 prompts × 2 platforms</span></li>
-                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">84% score below 60</strong> (passing threshold). Most dealerships are functionally invisible.</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">Average local business AVI score: 2.4/100</strong> — based on 168 data points across 84 prompts × 2 platforms</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">84% score below 60</strong> (passing threshold). Most local businesses are functionally invisible.</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">Zero genuine mentions</strong> of vizbiz.ai — all 6 "hits" were name collisions with an unrelated CRM company</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">7 of 11 categories scored zero</strong>: service, reviews, inventory, digital experience, Ontario-specific, voice/casual, cross-OEM</span></li>
-                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">AI-sourced traffic converts at 4.4×</strong> organic — but only 5–6 dealerships appear per query</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span><strong className="text-white">AI-sourced traffic converts at 4.4×</strong> organic — but only 5–6 local businesses appear per query</span></li>
               </ul>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function BenchmarkReportPage() {
         <section className="section-shell border-t border-white/6 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-4xl">
             <h2 className="display-font text-[2.1rem] font-semibold tracking-[-0.04em] sm:text-[2.8rem]">
-              What This Means for Dealerships
+              What This Means for Local businesses
             </h2>
             <div className="mt-10 space-y-5">
               {actionableInsights.map((item) => (
@@ -333,7 +333,7 @@ export default function BenchmarkReportPage() {
             </p>
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-6 sm:p-8">
               <p className="text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
-                VizBiz. (2026). <em>2026 AI Visibility Benchmark Report for Car Dealerships</em>. 
+                VizBiz. (2026). <em>2026 AI Visibility Benchmark Report for Car Local businesses</em>. 
                 Retrieved from https://vizbiz.ai/ai-visibility-benchmark-report-2026
               </p>
             </div>
@@ -371,7 +371,7 @@ export default function BenchmarkReportPage() {
             <div className="cta-shell rounded-[2rem] px-6 py-10 sm:px-10 sm:py-12">
               <div className="section-kicker">Free AI Visibility Audit</div>
               <h2 className="display-font mt-5 text-[2.2rem] font-semibold tracking-[-0.05em] sm:text-[3rem]">
-                Find Out Where Your Dealership Stands
+                Find Out Where Your Local business Stands
               </h2>
               <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
                 Get the same 84-prompt audit that produced this benchmark. See your score, 
@@ -392,7 +392,7 @@ export default function BenchmarkReportPage() {
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Sources & References</h3>
             <ul className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
               <li>VizBiz Primary Research: 84-prompt dogfood audit (Brave Search + Tavily), May 1, 2026</li>
-              <li>DealershipGuy: "84% of dealership websites invisible to AI search," January 2026</li>
+              <li>Local businessGuy: "84% of local business websites invisible to AI search," January 2026</li>
               <li>Ekho: "2026 AI Vehicle Research Study — 30% of buyers use AI, 4.4× conversion rate," February 2026</li>
               <li>Metricus: "Automotive AI Visibility Data — 5–6 dealers per query," April 2026</li>
               <li>Arcalea AEO Industry Index: "62 brands tracked across AI platforms," March 2026</li>
