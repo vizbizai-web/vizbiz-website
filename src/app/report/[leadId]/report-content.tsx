@@ -1221,11 +1221,13 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
           How you compare on social platforms
         </p>
 
-        {/* Client Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6 sm:mb-8">
-          {platforms.map((p) => (
-            <div key={p.label} className="text-center p-3 rounded-2xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-              <div className="text-xl mb-1 flex items-center justify-center">
+        {/* Client Stats — logo cards */}
+        <div className="mb-2">
+          <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>Your Profiles</p>
+          <div className="grid grid-cols-3 gap-3">
+            {platforms.map((p) => (
+              <div key={p.label} className="text-center p-3 sm:p-4 rounded-2xl" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)' }}>
+                <div className="text-xl mb-1 flex items-center justify-center">
                 {p.icon === 'instagram' ? (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#E1306C' }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><circle cx="12" cy="12" r="5.5" /><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" /></svg>
                 ) : p.icon === 'facebook' ? (
@@ -1241,10 +1243,14 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
             </div>
           ))}
         </div>
+        </div>
 
-        {/* Comparison — stacked cards on mobile, table on desktop */}
+        <div className="my-4 sm:my-5 border-t" style={{ borderColor: t.borderSubtle }} />
+
+        {/* Comparison — stacked cards on mobile, grid on desktop */}
         {data.competitorSocial.length > 0 && (
-          <div className="mt-6 sm:mt-8">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>Competitor Comparison</p>
             {/* Mobile: stacked per-platform cards */}
             <div className="flex flex-col gap-3 sm:hidden">
               {([
@@ -1284,7 +1290,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                 { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
                 { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
               ] as const).map((platform) => (
-                <div key={platform.label} className="grid grid-cols-[70px_repeat(4,1fr)] gap-0 py-2" style={{ borderBottom: `1px solid ${t.borderSubtle}` }}>
+                <div key={platform.label} style={{ display: 'grid', gridTemplateColumns: '70px repeat(4, 1fr)', gap: 0, borderBottom: `1px solid ${t.borderSubtle}`, paddingBottom: '8px', paddingTop: '8px' }}>
                   <div className="text-xs font-medium self-center" style={{ color: t.textMuted }}>{platform.label}</div>
                   {/* You badge */}
                   <div className="text-center">
