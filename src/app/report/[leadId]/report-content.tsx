@@ -1144,10 +1144,43 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
           ))}
         </div>
 
-        {/* Comparison Table */}
+        {/* Comparison — stacked cards on mobile, table on desktop */}
         {data.competitorSocial.length > 0 && (
           <div className="mt-6 sm:mt-8">
-            <div className="overflow-x-auto">
+            {/* Mobile: stacked per-platform cards */}
+            <div className="flex flex-col gap-3 sm:hidden">
+              {([
+                { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
+                { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
+                { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
+              ] as const).map((platform) => (
+                <div key={platform.label} className="rounded-xl p-3" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                  <p className="text-xs font-medium mb-2" style={{ color: t.textMuted }}>{platform.label}</p>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-lg font-semibold tabular-nums" style={{ color: t.textPrimary }}>{platform.yours ? platform.yours.toLocaleString() : '—'}</span>
+                    <span className="text-[10px]" style={{ color: '#22D3EE' }}>You</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {data.competitorSocial.map((c, i) => {
+                      const theirs = platform.getTheirs(c) || 0;
+                      const yours = platform.yours || 0;
+                      const ratio = yours > 0 ? Math.round(theirs / yours) : 0;
+                      return (
+                        <div key={c.name} className="flex items-baseline justify-between text-xs">
+                          <span className="truncate mr-2" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>{c.name}</span>
+                          <span className="tabular-nums flex-shrink-0" style={{ color: ratio > 2 ? '#EF4444' : ratio > 1 ? '#F59E0B' : t.textSecondary }}>
+                            {theirs.toLocaleString()}{ratio > 1 && <span className="text-[10px] ml-1">({ratio}x)</span>}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: '0 4px' }}>
                 <thead>
                   <tr>
@@ -1206,6 +1239,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                 </tbody>
               </table>
             </div>
+
             {/* AI Visibility > Social counter-narrative */}
             <div className="mt-4 rounded-2xl p-4" style={{ background: theme === 'dark' ? 'rgba(37,209,242,0.08)' : 'rgba(37,209,242,0.06)', borderLeft: '3px solid #25D1F2' }}>
               <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
