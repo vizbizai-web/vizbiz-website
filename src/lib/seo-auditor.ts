@@ -23,6 +23,13 @@ export interface SEOAuditResult {
   imagesWithoutAlt: number;
   totalImages: number;
 
+  // Contact Friction
+  hasPhone: boolean;
+  hasEmail: boolean;
+  hasBooking: boolean;
+  hasAddress: boolean;
+  contactFrictionScore: number;
+
   // Technical
   isHttps: boolean;
   hasViewport: boolean;
@@ -45,6 +52,10 @@ export interface SEOAuditResult {
   contentQuality: "high" | "medium" | "low";
   hasInternalLinks: boolean;
   hasExternalLinks: boolean;
+
+  // Trust Signal Proximity
+  trustSignalsNearCTA: boolean;
+  trustProximityScore: number;
 
   // Scores
   overallScore: number; // 0-100
@@ -120,6 +131,27 @@ export async function runSEOAudit(
   if (imagesWithoutAlt > 5) {
     issues.push({ category: "warning", area: "On-Page", message: `${imagesWithoutAlt} images missing alt text`, fixEffort: "medium" });
   }
+
+  // --- Contact Friction Checks ---
+  const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const bookingKeywords = /book(?:ing)?\s*(?:now|online|appointment|call|a\s+visit)/i;
+  const addressKeywords = /address|location|visit\s+us|find\s+us/i;
+
+  const hasPhone = phoneRegex.test(html);
+  const hasEmail = emailRegex.test(html);
+  const hasBooking = bookingKeywords.test(html);
+  const hasAddress = addressKeywords.test(html);
+
+  let contactFrictionScore = 0;
+  if (hasPhone) contactFrictionScore += 25;
+  if (hasEmail) contactFrictionScore += 25;
+  if (hasBooking) contactFrictionScore += 25;
+  if (hasAddress) contactFrictionScore += 25;
+
+  if (!hasPhone) issues.push({ category: "critical", area: "Contact", message: "No phone number found — high lead friction", fixEffort: "low" });
+  if (!hasEmail) issues.push({ category: "warning", area: "Contact", message: "No email address found", fixEffort: "low" });
+  if (!hasBooking) issues.push({ category: "opportunity", area: "Contact", message: "No explicit 'Book Appointment' CTA found", fixEffort: "medium" });
 
   // --- Technical checks ---
   const isHttps = url.startsWith("https://");
