@@ -159,10 +159,10 @@ function getThemeStyles(theme: Theme) {
     };
   }
   return {
-    bgPage: '#060a14',
-    bgBase: '#0c1124',
-    bgCard: '#151d3a',
-    bgFooter: '#040712',
+    bgPage: '#090d1c',
+    bgBase: '#0e1428',
+    bgCard: '#182042',
+    bgFooter: '#060a14',
     textPrimary: '#F0F4FF',
     textSecondary: '#B0BAD4',
     textMuted: '#5D6680',
@@ -1334,8 +1334,8 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
       <div
         className="py-5 px-5 sm:px-8 rounded-2xl text-center sm:text-left"
         style={{
-          background: theme === 'dark' ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.03)',
-          border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}`,
+          background: theme === 'dark' ? 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06))' : 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04))',
+          border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.2)'}`,
         }}
       >
         <p className="text-sm sm:text-base font-medium mb-1" style={{ color: t.textPrimary }}>
@@ -1946,7 +1946,15 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
   }
 
   return (
-    <div className="min-h-screen" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
+    <div className="min-h-screen relative" style={{ background: t.bgPage, color: t.textPrimary, fontFamily: 'Poppins, Inter, sans-serif' }}>
+      {/* Subtle background pattern */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, ${t.textPrimary} 1px, transparent 0)`,
+          backgroundSize: '32px 32px',
+        }}
+      />
       <StickyHeader data={data} theme={theme} onToggle={toggle} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 space-y-16 sm:space-y-20 lg:space-y-24">
