@@ -41,8 +41,8 @@ export default function PricingPage() {
             <div className="bg-[#111118] border border-cyan-500/20 rounded-2xl p-8 hover:border-cyan-500/40 transition-colors">
               <div className="text-sm text-cyan-400 font-medium mb-2 uppercase tracking-wider">Fix</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold">$299</span>
-                <span className="text-gray-400">/mo</span>
+                <span className="text-4xl font-bold">$88</span>
+                <span className="text-gray-400">one-time</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-3 text-gray-300">
@@ -58,8 +58,8 @@ export default function PricingPage() {
                   Monthly re-audit included
                 </li>
               </ul>
-              <a href="mailto:alex@vizbiz.ai" className="block w-full text-center bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium hover:bg-[#06B6D4] transition-colors">
-                Get Started →
+              <a href="https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002" className="block w-full text-center bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium hover:bg-[#06B6D4] transition-colors">
+                Get the Fix — $88 →
               </a>
             </div>
             
@@ -70,7 +70,7 @@ export default function PricingPage() {
               </div>
               <div className="text-sm text-cyan-400 font-medium mb-2 uppercase tracking-wider">Fix + Monitor</div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold">$499</span>
+                <span className="text-4xl font-bold">$188</span>
                 <span className="text-gray-400">/mo</span>
               </div>
               <ul className="space-y-3 mb-8">
@@ -91,8 +91,8 @@ export default function PricingPage() {
                   Priority support
                 </li>
               </ul>
-              <a href="mailto:alex@vizbiz.ai" className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
-                Get Started →
+              <a href="https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003" className="block w-full text-center bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                Fix + Monitor — $188/mo →
               </a>
             </div>
           </div>
@@ -154,8 +154,8 @@ export default function PricingPage() {
           <p className="text-xl text-gray-300 mb-8">
             Stop losing customers to competitors who appear in AI recommendations.
           </p>
-          <a href="mailto:alex@vizbiz.ai" className="inline-block bg-[#25D1F2] text-[#02091F] px-8 py-4 rounded-lg text-lg font-medium hover:bg-[#06B6D4] transition-colors">
-            Get Started Today →
+          <a href="https://vizbiz.ai" className="inline-block bg-[#25D1F2] text-[#02091F] px-8 py-4 rounded-lg text-lg font-medium hover:bg-[#06B6D4] transition-colors">
+            Get Your Free Report →
           </a>
         </div>
       </div>
