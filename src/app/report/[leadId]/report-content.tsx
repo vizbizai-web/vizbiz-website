@@ -931,7 +931,10 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
               {formatCurrency(revenueLeak, data.currencySymbol)}<span className="text-lg sm:text-xl">/mo</span>
             </p>
             <p className="text-sm mt-2" style={{ color: t.textSecondary }}>
-              {estimatedMissedLeads} potential leads lost to competitors who appear in AI recommendations
+              {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
+                ? `${estimatedMissedLeads} potential leads lost to competitors who appear in AI recommendations`
+                : `${estimatedMissedLeads} potential leads missed — your business isn't appearing in AI recommendations where buyers are looking`
+              }
             </p>
           </div>
 
@@ -1002,7 +1005,10 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
             <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
               Based on your AI visibility score of <strong style={{ color: t.textPrimary }}>{data.aviScore}/100</strong>,
               you're missing <strong style={{ color: '#EF4444' }}>{Math.round(missedRate * 100)}%</strong> of AI-driven recommendations.
-              That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.
+              {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
+                ? <> That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.</>
+                : <> That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> in missed revenue — buyers can't find you.</>
+              }
             </p>
           </div>
         </div>
@@ -1319,12 +1325,18 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
         }}
       >
         <p className="text-sm sm:text-base font-medium mb-1" style={{ color: t.textPrimary }}>
-          Every day you wait, more buyers find your competitors instead of you.
+          {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
+            ? 'Every day you wait, more buyers find your competitors instead of you.'
+            : 'Every day you wait, buyers are asking AI for recommendations — and your business isn't showing up.'
+          }
         </p>
         <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
           {leader
             ? `${leader.name} is already being recommended by ChatGPT, Gemini, and Perplexity when buyers ask for suggestions. Your full report includes a step-by-step fix plan to close that gap.`
-            : 'Your competitors are already being recommended by ChatGPT, Gemini, and Perplexity. The full report includes a prioritized fix plan to close the gap.'}
+            : data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
+              ? 'Your competitors are already being recommended by ChatGPT, Gemini, and Perplexity. The full report includes a prioritized fix plan to close the gap.'
+              : 'Right now, AI platforms don't have enough signals to recommend your business. The full report includes a step-by-step fix plan to change that.'
+          }
         </p>
       </div>
     </FadeIn>
