@@ -451,7 +451,7 @@ export default function HomeContent() {
                     </li>
                   ))}
                 </ul>
-                <a href="#free-mini-report" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#0F172A] px-6 py-3.5 font-semibold text-white transition hover:bg-[#020617]">Get Started</a>
+                <a href="https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#0F172A] px-6 py-3.5 font-semibold text-white transition hover:bg-[#020617]">Get the Fix — $88</a>
               </div>
 
               {/* Fix + Monitor */}
@@ -469,7 +469,7 @@ export default function HomeContent() {
                     </li>
                   ))}
                 </ul>
-                <a href="#free-mini-report" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.01]">Get Started</a>
+                <a href="https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.01]">Fix + Monitor — $188/mo</a>
               </div>
             </div>
 
