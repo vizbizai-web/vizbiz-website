@@ -1327,7 +1327,7 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
         <p className="text-sm sm:text-base font-medium mb-1" style={{ color: t.textPrimary }}>
           {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
             ? 'Every day you wait, more buyers find your competitors instead of you.'
-            : 'Every day you wait, buyers are asking AI for recommendations — and your business isn't showing up.'
+            : 'Every day you wait, buyers are asking AI for recommendations — and your business isn\'t showing up.'
           }
         </p>
         <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
