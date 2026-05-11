@@ -14,6 +14,13 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "geo-is-the-new-playbook-car-dealerships",
+    title: "Why GEO Is the New Playbook for Car Dealerships in 2026",
+    description:
+      "a16z just called GEO the successor to SEO. Here's what that means for car dealerships — and why 84% of Ontario dealers are already behind.",
+    date: "2026-05-11",
+  },
+  {
     slug: "90-day-ai-visibility-playbook-car-dealerships",
     title: "90-Day AI Visibility Playbook for Car Dealerships",
     description:
