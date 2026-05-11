@@ -1542,7 +1542,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                 ))}
               </ul>
               <a
-                href={plan.name === 'Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/eVq8wQ4QvdUG4Xaevu24001'}
+                href={plan.name === 'Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003'}
                 className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
                 style={plan.highlighted
                   ? {
