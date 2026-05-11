@@ -550,6 +550,14 @@ function StickyHeader({ data, theme, onToggle }: { data: LeadData; theme: Theme;
 function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
   const isMobile = useIsMobile();
+
+  // Scale revenue-at-risk by miss rate (same formula as RevenueImpact card)
+  const totalPrompts = data.totalPrompts || 20;
+  const promptsAppeared = data.promptsAppeared ?? 0;
+  const missedRate = totalPrompts > 0 ? (totalPrompts - promptsAppeared) / totalPrompts : 0;
+  const revLow = Math.round((data.profitAtRisk?.low || 1500) * missedRate);
+  const revHigh = Math.round((data.profitAtRisk?.high || 6000) * missedRate);
+
   const stats = [
     {
       label: 'AI Visibility Score',
@@ -564,17 +572,18 @@ function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
       tint: t.statCardTintGreen,
     },
     {
-      label: 'Profit at Risk',
-      value: data.profitAtRisk.high,
+      label: 'Revenue at Risk',
+      value: revLow,
+      valueHigh: revHigh,
       prefix: data.currencySymbol,
-      subtext: 'monthly revenue',
+      subtext: 'per month',
       tint: t.statCardTintRed,
     },
   ];
 
   return (
     <FadeIn>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+      <div className="max-w-2xl mx-auto grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -582,18 +591,22 @@ function StatsRow({ data, theme }: { data: LeadData; theme: Theme }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: i * 0.08 }}
-            className="rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5"
+            className="rounded-2xl sm:rounded-3xl p-5 sm:p-6 text-center flex flex-col items-center justify-center"
             style={{
               background: `${t.glassBg}`,
               border: `1px solid ${t.glassBorder}`,
               boxShadow: isMobile ? 'none' : t.shadow,
             }}
           >
-            <p className="text-[10px] sm:text-xs uppercase tracking-widest" style={{ color: t.textMuted }}>{stat.label}</p>
-            <p className="text-2xl sm:text-3xl lg:text-4xl font-semibold mt-1 tabular-nums" style={{ color: t.textPrimary }}>
-              <CountUp value={stat.value} prefix={stat.prefix || ''} />
+            <p className="text-[10px] sm:text-xs uppercase tracking-wider mb-2" style={{ color: t.textMuted }}>{stat.label}</p>
+            <p className="text-base sm:text-lg lg:text-xl font-semibold tabular-nums leading-snug" style={{ color: t.textPrimary }}>
+              {stat.valueHigh != null ? (
+                <>{formatCurrency(stat.value, stat.prefix)}&ndash;{formatCurrency(stat.valueHigh, '')}</>
+              ) : (
+                <CountUp value={stat.value} prefix={stat.prefix || ''} />
+              )}
             </p>
-            <p className="text-[10px] sm:text-xs mt-1 hidden sm:block" style={{ color: t.textMuted }}>{stat.subtext}</p>
+            <p className="text-[10px] sm:text-xs mt-2" style={{ color: t.textMuted }}>{stat.subtext}</p>
           </motion.div>
         ))}
       </div>
