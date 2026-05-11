@@ -441,8 +441,8 @@ export default function HomeContent() {
               <div className="rounded-[2rem] border border-slate-200 bg-white/80 p-8 shadow-lg">
                 <div className="text-sm font-semibold uppercase tracking-wider text-[#06B6D4]">Fix</div>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-[#0F172A]">$299</span>
-                  <span className="text-slate-500">/mo</span>
+                  <span className="text-4xl font-bold text-[#0F172A]">$88</span>
+                  <span className="text-slate-500">one-time</span>
                 </div>
                 <ul className="mt-6 space-y-3">
                   {['Full AI visibility audit (80+ queries)', 'We implement every fix for you', 'Monthly re-audit included'].map((f) => (
@@ -459,7 +459,7 @@ export default function HomeContent() {
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#020617]">Most Popular</div>
                 <div className="text-sm font-semibold uppercase tracking-wider text-[#06B6D4]">Fix + Monitor</div>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-[#0F172A]">$499</span>
+                  <span className="text-4xl font-bold text-[#0F172A]">$188</span>
                   <span className="text-slate-500">/mo</span>
                 </div>
                 <ul className="mt-6 space-y-3">
