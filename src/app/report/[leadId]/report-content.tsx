@@ -904,20 +904,18 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
 /* ── Profit at Risk ──────────────────────────── */
 function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
-  const isMobile = useIsMobile();
 
   const appearanceRate = data.totalPrompts > 0 ? data.promptsAppeared / data.totalPrompts : 0;
   const missedRate = 1 - appearanceRate;
+  const missedPct = Math.round(missedRate * 100);
 
-  // Smart defaults — $200 lead value is realistic for most local businesses
-  const [leadValue, setLeadValue] = useState(200);
-  const [closeRate, setCloseRate] = useState(40);
-  const [monthlyVisitors, setMonthlyVisitors] = useState(500);
+  // Niche-aware revenue estimate (from profitAtRisk ranges)
+  const low = data.profitAtRisk?.low || 1500;
+  const high = data.profitAtRisk?.high || 6000;
+  const revenueLeak = Math.round(low * missedRate);
+  const revenueLeakHigh = Math.round(high * missedRate);
 
-  // Conservative estimate: only a fraction of missed AI traffic converts to lost leads
-  const aiTrafficFraction = 0.15; // 15% of their web traffic comes via AI-influenced discovery
-  const estimatedMissedLeads = Math.max(1, Math.round(monthlyVisitors * missedRate * aiTrafficFraction));
-  const revenueLeak = Math.round(estimatedMissedLeads * leadValue * (closeRate / 100));
+  const hasCompetitors = data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0);
 
   return (
     <FadeIn>
@@ -925,89 +923,24 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6 sm:mb-8">
             <p className="text-[10px] sm:text-xs uppercase tracking-widest mb-3" style={{ color: t.textMuted }}>
-              Estimated Revenue Leak
+              Estimated Revenue at Risk
             </p>
             <p className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight" style={{ color: t.profitRiskText }}>
-              {formatCurrency(revenueLeak, data.currencySymbol)}<span className="text-lg sm:text-xl">/mo</span>
+              {formatCurrency(revenueLeak, data.currencySymbol)}<span className="text-lg sm:text-xl">&ndash;{formatCurrency(revenueLeakHigh, data.currencySymbol)}</span><span className="text-lg sm:text-xl">/mo</span>
             </p>
             <p className="text-sm mt-2" style={{ color: t.textSecondary }}>
-              {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
-                ? `${estimatedMissedLeads} potential leads lost to competitors who appear in AI recommendations`
-                : `${estimatedMissedLeads} potential leads missed — your business isn\'t appearing in AI recommendations where buyers are looking`
+              {hasCompetitors
+                ? `Based on your ${missedPct}% miss rate, that\'s revenue going to competitors who appear in AI recommendations`
+                : `Your business is invisible in ${missedPct}% of AI-driven searches \u2014 that\'s real buyer traffic you\'re not capturing`
               }
             </p>
           </div>
 
-          {/* Sliders */}
-          <div className="space-y-5 sm:space-y-6">
-            <div>
-              <div className="flex justify-between items-baseline mb-2">
-                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Average Lead Value</label>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{formatCurrency(leadValue, data.currencySymbol)}</span>
-              </div>
-              <input
-                type="range" min={50} max={5000} step={50}
-                value={leadValue}
-                onChange={e => setLeadValue(Number(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #22D3EE ${((leadValue - 50) / 4950) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((leadValue - 50) / 4950) * 100}%)`,
-                  accentColor: '#22D3EE',
-                }}
-              />
-              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
-                <span>$50</span><span>$5,000</span>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-baseline mb-2">
-                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Close Rate</label>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{closeRate}%</span>
-              </div>
-              <input
-                type="range" min={5} max={100} step={5}
-                value={closeRate}
-                onChange={e => setCloseRate(Number(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #22D3EE ${((closeRate - 5) / 95) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((closeRate - 5) / 95) * 100}%)`,
-                  accentColor: '#22D3EE',
-                }}
-              />
-              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
-                <span>5%</span><span>100%</span>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-baseline mb-2">
-                <label className="text-xs sm:text-sm font-medium" style={{ color: t.textSecondary }}>Monthly Website Visitors</label>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: t.textPrimary }}>{monthlyVisitors.toLocaleString()}</span>
-              </div>
-              <input
-                type="range" min={50} max={10000} step={50}
-                value={monthlyVisitors}
-                onChange={e => setMonthlyVisitors(Number(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #22D3EE ${((monthlyVisitors - 50) / 9950) * 100}%, ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} ${((monthlyVisitors - 50) / 9950) * 100}%)`,
-                  accentColor: '#22D3EE',
-                }}
-              />
-              <div className="flex justify-between text-[10px] mt-1" style={{ color: t.textMuted }}>
-                <span>50</span><span>10,000</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 sm:mt-6 text-center rounded-xl p-3 sm:p-4" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
+          <div className="text-center rounded-xl p-3 sm:p-4" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
             <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
-              Based on your AI visibility score of <strong style={{ color: t.textPrimary }}>{data.aviScore}/100</strong>,
-              you\'re missing <strong style={{ color: '#EF4444' }}>{Math.round(missedRate * 100)}%</strong> of AI-driven recommendations.
-              {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
-                ? <> That\'s <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.</>
-                : <> That\'s <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> in missed revenue — buyers can\'t find you.</>
+              {hasCompetitors
+                ? <>You appeared in only <strong style={{ color: t.textPrimary }}>{data.promptsAppeared}/{data.totalPrompts}</strong> AI recommendation scenarios. <strong style={{ color: '#EF4444' }}>{missedPct}%</strong> of the time, AI is sending buyers to your competitors instead.</>
+                : <>You appeared in only <strong style={{ color: t.textPrimary }}>{data.promptsAppeared}/{data.totalPrompts}</strong> AI recommendation scenarios. <strong style={{ color: '#EF4444' }}>{missedPct}%</strong> of the time, AI doesn\'t mention your business at all.</>
               }
             </p>
           </div>
