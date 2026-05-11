@@ -1452,7 +1452,7 @@ function BlurredReportPreview({ theme }: { theme: Theme }) {
             <p className="text-xs mt-1" style={{ color: t.textMuted }}>The complete audit includes 84 queries, competitor analysis, and a fix plan</p>
           </div>
           <a
-            href="https://buy.stripe.com/5kQbJ2beTcQCexKdrq24000"
+            href="https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002"
             className="px-6 py-2.5 text-sm font-semibold rounded-xl transition-all"
             style={{
               background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
@@ -1476,14 +1476,14 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
   const plans = [
     {
       name: 'Fix',
-      price: 299,
+      price: 88,
       description: 'Full audit + one-time fix',
       features: ['Full AI visibility audit (84 queries)', 'Content optimization for AI platforms', 'Local listing cleanup & schema markup', 'Competitor gap analysis', '30-day email support'],
       highlighted: false,
     },
     {
       name: 'Fix + Monitor',
-      price: 499,
+      price: 188,
       description: 'Full fix + we keep you visible every month',
       features: ['Everything in the Fix plan', 'Monthly re-audit across 84 queries', 'Score tracking dashboard — watch your AVI climb', 'Competitor movement alerts', 'Ongoing content & listing optimization', 'Dedicated support channel'],
       highlighted: true,
@@ -1542,7 +1542,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                 ))}
               </ul>
               <a
-                href={plan.name === 'Fix' ? 'https://buy.stripe.com/5kQbJ2beTcQCexKdrq24000' : 'https://buy.stripe.com/eVq8wQ4QvdUG4Xaevu24001'}
+                href={plan.name === 'Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/eVq8wQ4QvdUG4Xaevu24001'}
                 className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
                 style={plan.highlighted
                   ? {
@@ -1567,7 +1567,7 @@ function PricingCards({ data, theme }: { data: LeadData; theme: Theme }) {
                   }
                 }}
               >
-                {plan.name === 'Fix' ? 'Get the Full Audit — $299' : 'Fix + Monitor — $499/mo'}
+                {plan.name === 'Fix' ? 'Get the Full Audit — $88' : 'Fix + Monitor — $188/mo'}
               </a>
             </div>
           ))}
