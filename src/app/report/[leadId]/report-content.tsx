@@ -933,7 +933,7 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
             <p className="text-sm mt-2" style={{ color: t.textSecondary }}>
               {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
                 ? `${estimatedMissedLeads} potential leads lost to competitors who appear in AI recommendations`
-                : `${estimatedMissedLeads} potential leads missed — your business isn't appearing in AI recommendations where buyers are looking`
+                : `${estimatedMissedLeads} potential leads missed — your business isn\'t appearing in AI recommendations where buyers are looking`
               }
             </p>
           </div>
@@ -1004,10 +1004,10 @@ function RevenueLeakCalculator({ data, theme }: { data: LeadData; theme: Theme }
           <div className="mt-5 sm:mt-6 text-center rounded-xl p-3 sm:p-4" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
             <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
               Based on your AI visibility score of <strong style={{ color: t.textPrimary }}>{data.aviScore}/100</strong>,
-              you're missing <strong style={{ color: '#EF4444' }}>{Math.round(missedRate * 100)}%</strong> of AI-driven recommendations.
+              you\'re missing <strong style={{ color: '#EF4444' }}>{Math.round(missedRate * 100)}%</strong> of AI-driven recommendations.
               {data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
-                ? <> That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.</>
-                : <> That's <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> in missed revenue — buyers can't find you.</>
+                ? <> That\'s <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> going to competitors.</>
+                : <> That\'s <strong style={{ color: '#EF4444' }}>{formatCurrency(revenueLeak, data.currencySymbol)}/month</strong> in missed revenue — buyers can\'t find you.</>
               }
             </p>
           </div>
@@ -1187,7 +1187,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
             </p>
           </div>
           <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
-            Your AI Visibility Score shows how often you actually appear when customers ask AI platforms for recommendations. That's what drives real foot traffic and bookings — not likes.
+            Your AI Visibility Score shows how often you actually appear when customers ask AI platforms for recommendations. That\'s what drives real foot traffic and bookings — not likes.
           </p>
         </div>
       </GlassCard>
@@ -1335,7 +1335,7 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
             ? `${leader.name} is already being recommended by ChatGPT, Gemini, and Perplexity when buyers ask for suggestions. Your full report includes a step-by-step fix plan to close that gap.`
             : data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0)
               ? 'Your competitors are already being recommended by ChatGPT, Gemini, and Perplexity. The full report includes a prioritized fix plan to close the gap.'
-              : 'Right now, AI platforms don't have enough signals to recommend your business. The full report includes a step-by-step fix plan to change that.'
+              : 'Right now, AI platforms don\'t have enough signals to recommend your business. The full report includes a step-by-step fix plan to change that.'
           }
         </p>
       </div>
