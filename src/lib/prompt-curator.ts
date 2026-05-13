@@ -323,6 +323,34 @@ const NICHE_STRATEGIES: Record<string, PromptSet> = {
       "top rated tours {city}"
     ]
   },
+  home_fragrance: {
+    niche: "home_fragrance",
+    label: "Home Fragrance",
+    avgLeadValue: 120,
+    estimatedMonthlyVolume: 80,
+    prompts: [
+      "best home fragrance in {city}",
+      "best candles and diffusers in {city}",
+      "luxury home fragrance brands in {city}",
+      "best reed diffuser in {city}",
+      "premium scented candles in {city}",
+      "home fragrance store in {city}",
+      "best room spray in {city}",
+      "refillable candles in {city}",
+      "best wax melts in {city}",
+      "natural home fragrance in {city}",
+      "best home scent brand in {city}",
+      "where to buy luxury candles in {city}",
+      "best smelling candles in {city}",
+      "home fragrance gifts in {city}",
+      "best candle shop in {city}",
+      "soy candles in {city}",
+      "hand poured candles in {city}",
+      "best home fragrance subscription in {city}",
+      "body and home fragrance in {city}",
+      "best fragrance diffuser in {city}"
+    ]
+  },
   artisan_workshop: {
     niche: "artisan_workshop",
     label: "Artisan Workshop & Studio",
@@ -363,32 +391,35 @@ export function getPromptSetForNiche(niche: string): PromptSet {
   
   // Unknown niche — generate dynamic strategy from the niche name
   // so we NEVER fall back to generic local_business when we know the real niche
+  // IMPORTANT: use niche-category prompts, NOT {businessName}, to avoid false positives
+  // (e.g., "RAAD in New Zealand" matching "RaD Car Hire")
   const label = niche.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const singular = label.replace(/s$/, '').toLowerCase(); // e.g., "home fragrance"
   return {
     niche,
     label,
     prompts: [
-      `best {label} in {city}`,
-      `top rated {label} in {city}`,
-      `{label} near me in {city}`,
-      `{label} with good reviews in {city}`,
-      `best place for {label} in {city}`,
-      `affordable {label} in {city}`,
-      `{label} services in {city}`,
-      `{label} recommendations in {city}`,
-      `where to find {label} in {city}`,
-      `{label} open on weekends in {city}`,
-      `professional {label} in {city}`,
-      `{label} for beginners in {city}`,
-      `trusted {label} in {city}`,
-      `{label} deals in {city}`,
-      `{label} pricing in {city}`,
-      `{label} appointments in {city}`,
-      `{label} walk-in in {city}`,
-      `{label} for families in {city}`,
-      `{label} consultation in {city}`,
-      `{label} booking in {city}`,
-    ].map(p => p.replace(/\{label\}/g, label).replace(/\{city\}/g, '{city}')),
+      `best ${singular} in {city}`,
+      `top rated ${singular} in {city}`,
+      `${singular} near me in {city}`,
+      `${singular} with good reviews in {city}`,
+      `best place for ${singular} in {city}`,
+      `affordable ${singular} in {city}`,
+      `${singular} services in {city}`,
+      `${singular} recommendations in {city}`,
+      `where to find ${singular} in {city}`,
+      `${singular} open on weekends in {city}`,
+      `professional ${singular} in {city}`,
+      `${singular} for beginners in {city}`,
+      `trusted ${singular} in {city}`,
+      `${singular} deals in {city}`,
+      `${singular} pricing in {city}`,
+      `${singular} appointments in {city}`,
+      `${singular} walk-in in {city}`,
+      `${singular} for families in {city}`,
+      `${singular} consultation in {city}`,
+      `${singular} booking in {city}`,
+    ],
     avgLeadValue: 150,
     estimatedMonthlyVolume: 60,
   };

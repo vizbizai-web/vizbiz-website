@@ -354,6 +354,7 @@ async function scanWebsite(website: string): Promise<{
       fine_jewelry: ['jewelry', 'diamond', 'engagement ring', 'wedding band', 'fine jewelry', 'lab grown', 'lab-grown', '14k gold', '18k gold', 'gemstone', 'necklace', 'bracelet', 'earring', 'pendant', 'jewelry store', 'gold jewelry', 'custom jewelry', 'bespoke'],
       tourism_experience: ['pearl farm', 'oyster farm', 'aquaculture', 'farm tour', 'guided tour', 'scenic cruise', 'cellar door', 'winery tour', 'brewery tour', 'eco tour', 'wildlife tour', 'boat tour', 'adventure tour', 'day trip', 'day tour', 'tourist attraction', 'tourism', 'nature tour', 'cultural experience', 'outdoor experience', 'water activity', 'river cruise', 'seaplane', 'hot air balloon', 'helicopter tour', 'food tour', 'wine tasting', 'cooking class', 'kayak tour', 'snorkel', 'surf school'],
       mobile_bar: ['cocktail', 'mixology', 'mobile bar', 'cocktail catering', 'pre-bottled cocktail', 'premix', 'drinks catering', 'bartender', 'mocktail'],
+      home_fragrance: ['home fragrance', 'scented candle', 'reed diffuser', 'room spray', 'wax melt', 'soy candle', 'hand poured', 'fragrance refill', 'candle shop', 'body fragrance', 'home scent', 'diffuser blend'],
     };
     
     // Score each niche by how many of its signals appear in the website text
@@ -590,18 +591,18 @@ function checkBusinessAppearance(
     const lowerUrl = result.url.toLowerCase();
     const lowerContent = result.content.toLowerCase();
     
-    // Check if business name appears in title, URL, or content
-    if (lowerTitle.includes(lowerBusinessName) ||
-        lowerUrl.includes(lowerBusinessName) ||
-        lowerContent.includes(lowerBusinessName)) {
-      return true;
-    }
-    
-    // Check if website appears in URL or content
-    if (lowerUrl.includes(lowerWebsite) ||
-        lowerContent.includes(lowerWebsite)) {
-      return true;
-    }
+      // Check if business name appears in title, URL, or content
+      if (lowerTitle.includes(lowerBusinessName) ||
+          lowerUrl.includes(lowerBusinessName) ||
+          lowerContent.includes(lowerBusinessName)) {
+        return true;
+      }
+      
+      // Check if website appears in URL or content
+      if (lowerUrl.includes(lowerWebsite) ||
+          lowerContent.includes(lowerWebsite)) {
+        return true;
+      }
   }
   
   return false;
@@ -1042,6 +1043,10 @@ function getCompetitorCategories(niche: string): string[] {
       return ["stronger presence on broad tourism and day-trip queries", "well-established review presence on travel platforms"];
     case "restaurant":
       return ["stronger presence on dining and reservation platforms", "better review visibility on food-focused searches"];
+    case "home_fragrance":
+      return ["stronger online presence in home scent and candle searches", "clearer brand positioning against established fragrance brands"];
+    case "auto_transport":
+      return ["stronger local online presence", "clearer service information"];
     default:
       return ["stronger local online presence", "clearer service information"];
   }
@@ -1065,6 +1070,10 @@ function getWhyThisMatters(niche: string): string {
       return "AI shapes the shortlist before a visitor plans a day trip, looks for unique experiences, or searches for things to do. If you don't appear, tourists book someone else.";
     case "restaurant":
       return "AI shapes the shortlist before someone picks where to eat, checks reviews, or makes a reservation.";
+    case "home_fragrance":
+      return "AI shapes the shortlist before someone buys candles, diffusers, or home scent products online. If you don't appear, customers buy from brands that do.";
+    case "auto_transport":
+      return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
     default:
       return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
   }
