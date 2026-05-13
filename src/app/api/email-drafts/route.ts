@@ -3,7 +3,7 @@ import { getAllLeads } from "@/lib/google-sheets";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-export const dynamic = "force-dynamic";
+
 
 // GET /api/email-drafts — list all email drafts for leads
 export async function GET() {

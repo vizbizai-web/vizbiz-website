@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+
 
 // GET /api/cron-status — list all cron jobs and their health
 // This reads from the OpenClaw gateway (only works on the server side)

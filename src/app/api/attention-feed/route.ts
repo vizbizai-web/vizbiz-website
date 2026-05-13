@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllLeads } from "@/lib/google-sheets";
 
-export const dynamic = "force-dynamic";
+
 
 // GET /api/attention-feed — things that need Alex's attention
 export async function GET() {

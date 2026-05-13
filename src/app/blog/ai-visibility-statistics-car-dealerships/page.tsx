@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: '35+ AI Visibility Statistics Every Car Dealership Needs to Know in 2026',

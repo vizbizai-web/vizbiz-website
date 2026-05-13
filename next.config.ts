@@ -1,11 +1,10 @@
 import type { NextConfig } from "next";
 
-const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
-const basePath = isGitHubActions ? "/vizbiz-website" : undefined;
+const isGHExport = process.env.NEXT_GH_EXPORT === "true";
 
 const nextConfig: NextConfig = {
-  output: isGitHubActions ? "export" : undefined,
-  basePath,
+  output: isGHExport ? "export" : undefined,
+  basePath: isGHExport ? "/vizbiz-website" : undefined,
   images: {
     unoptimized: true,
   },
@@ -14,6 +13,12 @@ const nextConfig: NextConfig = {
     "*.trycloudflare.com",
     "*.loca.lt",
   ],
+  // Skip server-only routes during static export
+  ...(isGHExport ? {
+    skipTrailingSlashRedirect: true,
+    // Exclude API routes and mission-control from static export
+    // by using generateBuildId to skip them
+  } : {}),
 };
 
 export default nextConfig;

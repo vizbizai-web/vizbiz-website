@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Why Your Car Dealership Isn\'t Showing Up in ChatGPT (And How to Fix It)',

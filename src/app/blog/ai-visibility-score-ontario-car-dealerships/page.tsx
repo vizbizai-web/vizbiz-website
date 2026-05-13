@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'We Scored 50 Ontario Dealerships on AI Visibility — The Results Were Brutal',

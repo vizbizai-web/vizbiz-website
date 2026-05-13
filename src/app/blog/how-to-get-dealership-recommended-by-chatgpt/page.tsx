@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'How to Get Your Car Dealership Recommended by ChatGPT in 2026',

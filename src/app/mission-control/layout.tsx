@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { MCShell } from './components/MCShell';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Mission Control | VizBiz.ai',

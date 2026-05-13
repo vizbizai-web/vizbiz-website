@@ -9,7 +9,7 @@ import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { isJunkCompetitor } from "@/lib/junk-filter";
 
-export const dynamic = "force-dynamic";
+
 export const revalidate = 0;
 
 function parseResearchData(notes: string) {

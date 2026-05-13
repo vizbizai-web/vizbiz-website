@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
