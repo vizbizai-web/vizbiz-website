@@ -27,10 +27,13 @@ jobs:
 
       - run: npm ci
 
-      - name: Build static export
+      - name: Generate static export
         run: npx next build
         env:
-          NEXT_PUBLIC_BASE_PATH: /vizbiz-website
+          NEXT_GH_EXPORT: "1"
+
+      - name: Add .nojekyll
+        run: touch out/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

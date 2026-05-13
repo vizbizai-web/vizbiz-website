@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'AI Visibility Audit: What It Measures and Why Your Dealership Needs One',

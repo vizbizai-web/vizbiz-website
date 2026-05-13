@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'What Is AI Visibility for Car Dealerships? (The Complete Guide)',

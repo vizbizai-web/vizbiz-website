@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide',

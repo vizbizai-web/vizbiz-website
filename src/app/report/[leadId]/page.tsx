@@ -3,7 +3,6 @@ import { validateReportToken } from '@/lib/report-token';
 import ReportContent from './report-content';
 import ReportPending from './report-pending';
 
-export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export type ResearchData = {

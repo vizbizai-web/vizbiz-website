@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "VizBiz Insights | AI Visibility for Car Dealerships",

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAllLeads, updateLeadResearchResults } from "@/lib/google-sheets";
 import type { LeadRow } from "@/lib/google-sheets";
 
-export const dynamic = "force-dynamic";
+
 
 // GET /api/lead-actions — list all leads with their available actions
 export async function GET() {
