@@ -257,6 +257,11 @@ function buildNicheConfig(data: {
       services: ['cocktail bar hire', 'wedding bar', 'event bartending', 'mixology classes'],
       keywords: ['bar', 'cocktail', 'bartender', 'event'],
     },
+    home_fragrance: {
+      productType: 'home fragrance brand',
+      services: ['scented candles', 'reed diffusers', 'room sprays', 'wax melts', 'fragrance refills'],
+      keywords: ['candle', 'diffuser', 'fragrance', 'scent', 'home', 'candle'],
+    },
     local_business: {
       productType: 'local business',
       services: ['general services', 'consultations', 'bookings'],

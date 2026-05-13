@@ -24,26 +24,19 @@ interface Lead {
 }
 
 const COLUMNS = [
-  { id: 'new', label: 'New', headerClass: 'border-t-2 border-cyan-500', dotClass: 'bg-cyan-500' },
-  { id: 'researching', label: 'Researching', headerClass: 'border-t-2 border-blue-500', dotClass: 'bg-blue-500' },
-  { id: 'pending_review', label: 'Pending Review', headerClass: 'border-t-2 border-amber-500', dotClass: 'bg-amber-500' },
-  { id: 'approved', label: 'Approved', headerClass: 'border-t-2 border-green-500', dotClass: 'bg-green-500' },
-  { id: 'email_drafted', label: 'Email Drafted', headerClass: 'border-t-2 border-purple-500', dotClass: 'bg-purple-500' },
-  { id: 'contacted', label: 'Contacted', headerClass: 'border-t-2 border-violet-500', dotClass: 'bg-violet-500' },
-  { id: 'closed_won', label: 'Closed Won', headerClass: 'border-t-2 border-emerald-500', dotClass: 'bg-emerald-500' },
-  { id: 'closed_lost', label: 'Closed Lost', headerClass: 'border-t-2 border-red-500', dotClass: 'bg-red-500' },
+  { id: 'new', label: 'New', color: '#22D3EE' },
+  { id: 'researching', label: 'Researching', color: '#3B82F6' },
+  { id: 'pending_review', label: 'Review', color: '#F59E0B' },
+  { id: 'approved', label: 'Approved', color: '#22C55E' },
+  { id: 'email_drafted', label: 'Email Drafted', color: '#A855F7' },
+  { id: 'contacted', label: 'Contacted', color: '#8B5CF6' },
+  { id: 'closed_won', label: 'Won', color: '#10B981' },
+  { id: 'closed_lost', label: 'Lost', color: '#EF4444' },
 ];
-
-const RESEARCH_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  pending: { bg: 'bg-slate-500/10', border: 'border-slate-500/30', text: 'text-slate-400' },
-  running: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400' },
-  complete: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' },
-  failed: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' },
-};
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'New',
-  researching: 'In Research',
+  researching: 'Researching',
   pending_review: 'Pending Review',
   approved: 'Approved',
   email_drafted: 'Email Drafted',
@@ -51,6 +44,20 @@ const STATUS_LABELS: Record<string, string> = {
   closed_won: 'Won',
   closed_lost: 'Lost',
 };
+
+function getNiche(notes: string): string {
+  if (!notes) return '';
+  const m = notes.match(/"niche":"([^"]+)"/);
+  return m ? m[1].replace(/_/g, ' ') : '';
+}
+
+function getScore(notes: string): { appeared: number; total: number } | null {
+  if (!notes) return null;
+  const m = notes.match(/"appearedCount":(\d+)/);
+  const t = notes.match(/"totalPrompts":(\d+)/);
+  if (m && t) return { appeared: parseInt(m[1]), total: parseInt(t[1]) };
+  return null;
+}
 
 function usePipeline() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -72,20 +79,19 @@ function usePipeline() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
+  useEffect(() => { fetchData(); }, [fetchData]);
   return { leads, loading, error, refetch: fetchData };
 }
 
 function useLeadAction() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const [successId, setSuccessId] = useState<string | null>(null);
 
   const runAction = async (leadId: string, action: string, data?: any) => {
     setLoadingId(leadId);
     setErrorId(null);
+    setSuccessId(null);
     try {
       const res = await fetch('/api/lead-actions', {
         method: 'POST',
@@ -93,21 +99,23 @@ function useLeadAction() {
         body: JSON.stringify({ leadId, action, data }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setLoadingId(null);
+      setSuccessId(leadId);
+      setTimeout(() => setSuccessId(null), 2000);
       return true;
-    } catch (err: any) {
+    } catch {
       setErrorId(leadId);
-      setLoadingId(null);
       return false;
+    } finally {
+      setLoadingId(null);
     }
   };
 
-  return { runAction, loadingId, errorId };
+  return { runAction, loadingId, errorId, successId };
 }
 
 export default function PipelinePage() {
   const { leads, loading, error, refetch } = usePipeline();
-  const { runAction, loadingId, errorId } = useLeadAction();
+  const { runAction, loadingId, errorId, successId } = useLeadAction();
 
   const byColumn = COLUMNS.map((col) => ({
     ...col,
@@ -121,159 +129,126 @@ export default function PipelinePage() {
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
           <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Pipeline</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Lead Pipeline</h1>
+          <h1 className="mt-2 text-4xl font-bold text-white">Lead Pipeline</h1>
           <p className="text-slate-400 mt-1">{leads.length} total leads</p>
         </div>
-        {loading && <span className="text-slate-500 text-sm">Loading...</span>}
+        {loading && <span className="text-slate-500 text-sm">Syncing...</span>}
       </div>
 
       {error && (
-        <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
-          Error: {error}
-        </div>
+        <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-sm">{error}</div>
       )}
 
       {/* Kanban Board */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex flex-col md:flex-row md:gap-3 gap-2 md:overflow-x-auto pb-4">
         {byColumn.map((col) => (
-          <div key={col.id} className="flex-shrink-0 w-80">
+          <div key={col.id} className="md:flex-shrink-0 md:w-72 w-full">
             {/* Column Header */}
-            <div className={`flex items-center gap-2 mb-4 pb-3 ${col.headerClass}`}>
-              <span className={`w-2 h-2 rounded-full ${col.dotClass}`} />
+            <div className="flex items-center gap-2 mb-3 pb-2 border-t-2" style={{ borderColor: col.color }}>
               <h3 className="font-semibold text-white text-sm">{col.label}</h3>
-              <span className="ml-auto px-2 py-0.5 text-xs bg-slate-800 text-slate-400 rounded-full">
+              <span className="ml-auto px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-500 rounded-full font-medium">
                 {col.leads.length}
               </span>
             </div>
 
             {/* Lead Cards */}
-            <div className="space-y-3 min-h-[120px]">
-              {col.leads.map((lead) => (
-                <div
-                  key={lead.leadId}
-                  className="block bg-[#111118] border border-slate-800/50 rounded-xl p-4 hover:border-slate-600 transition-colors"
-                >
-                  <Link href={`/mission-control/leads/${lead.leadId}`}>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className="text-white font-medium text-sm truncate">
-                        {lead.dealershipName || 'Unknown Dealership'}
-                      </h4>
-                    </div>
+            <div className="space-y-2 min-h-[100px]">
+              {col.leads.map((lead) => {
+                const score = getScore(lead.notes);
+                const niche = getNiche(lead.notes);
+                const isLoading = loadingId === lead.leadId;
+                const isSuccess = successId === lead.leadId;
+                const isError = errorId === lead.leadId;
 
-                    <div className="space-y-1 mb-3">
-                      {lead.city && (
-                        <p className="text-xs text-slate-500">📍 {lead.city}</p>
+                return (
+                  <div key={lead.leadId} className="glass-card border-0 rounded-xl p-4 hover:border-slate-700/50 transition-all">
+                    {/* Card header */}
+                    <Link href={`/mission-control/leads/${lead.leadId}`}>
+                      <div className="flex items-start gap-3 mb-2">
+                        {/* Score circle */}
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{
+                          background: score && score.appeared / score.total > 0.3 ? 'rgba(34,197,94,0.1)' : score && score.appeared / score.total > 0.1 ? 'rgba(245,158,11,0.1)' : score ? 'rgba(239,68,68,0.1)' : 'rgba(71,85,105,0.1)',
+                          color: score && score.appeared / score.total > 0.3 ? '#22C55E' : score && score.appeared / score.total > 0.1 ? '#F59E0B' : score ? '#EF4444' : '#475569',
+                        }}>
+                          {score ? `${score.appeared}/${score.total}` : '—'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-semibold text-base truncate">{lead.dealershipName || 'Unknown Business'}</h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-sm text-slate-400">{lead.city || 'No location'}</span>
+                            {niche && <span className="text-xs text-slate-400">• {niche}</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex items-center gap-1.5 mb-3">
+                        {lead.visibilityBand && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-slate-800/50 text-slate-300">{lead.visibilityBand}</span>
+                        )}
+                        {niche && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-slate-800/50 text-slate-300">{niche}</span>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/30">
+                      {lead.status === 'new' && (
+                        <>
+                          <ActionBtn label="Research" color="#22D3EE" loading={isLoading} onClick={() => handleAction(lead.leadId, 'run_research')} />
+                          <ActionBtn label="Junk" color="#EF4444" loading={isLoading} onClick={() => handleAction(lead.leadId, 'mark_junk')} />
+                        </>
                       )}
-                      <p className="text-xs text-slate-500">⏱ {timeInStage(lead.timestamp)}</p>
-                    </div>
 
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      {lead.visibilityBand && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
-                          {lead.visibilityBand}
-                        </span>
+                      {lead.status === 'pending_review' && (
+                        <>
+                          <ActionBtn label="✓ Free Report" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve', { reportType: 'free' })} />
+                          <ActionBtn label="✓ Paid Report" color="#25D1F2" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve', { reportType: 'paid' })} />
+                          <ActionBtn label="Rerun" color="#3B82F6" loading={isLoading} onClick={() => handleAction(lead.leadId, 'rerun')} />
+                          <ActionBtn label="Hold" color="#F59E0B" loading={isLoading} onClick={() => handleAction(lead.leadId, 'hold')} />
+                        </>
                       )}
-                      {lead.researchStatus && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                          RESEARCH_COLORS[lead.researchStatus]?.bg || 'bg-slate-500/10'
-                        } ${RESEARCH_COLORS[lead.researchStatus]?.text || 'text-slate-400'} ${
-                          RESEARCH_COLORS[lead.researchStatus]?.border || 'border-slate-500/30'
-                        }`}>
-                          {lead.researchStatus}
-                        </span>
+
+                      {lead.status === 'approved' && (
+                        <>
+                          <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                            View Report
+                          </Link>
+                          <ActionBtn label="Draft Email" color="#A855F7" loading={isLoading} onClick={() => handleAction(lead.leadId, 'draft_email')} />
+                        </>
                       )}
+
+                      {lead.status === 'email_drafted' && (
+                        <>
+                          <Link href="/mission-control/emails" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(168, 85, 247, 0.08)', color: '#A855F7', borderColor: 'rgba(168, 85, 247, 0.2)' }}>
+                            View Email
+                          </Link>
+                          <ActionBtn label="Approve Email" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve_email')} />
+                          <ActionBtn label="Mark Sent" color="#8B5CF6" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'contacted' })} />
+                        </>
+                      )}
+
+                      {lead.status === 'contacted' && (
+                        <>
+                          <ActionBtn label="Follow Up" color="#F59E0B" loading={isLoading} onClick={() => handleAction(lead.leadId, 'follow_up')} />
+                          <ActionBtn label="Won 🎉" color="#10B981" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'closed_won' })} />
+                          <ActionBtn label="Lost" color="#EF4444" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'closed_lost' })} />
+                        </>
+                      )}
+
+                      {isSuccess && <span className="text-[10px] text-emerald-400 px-1">✓ Done</span>}
+                      {isError && <span className="text-[10px] text-red-400 px-1">Error</span>}
                     </div>
-                  </Link>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-800/50">
-                    {lead.status === 'new' && (
-                      <>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'run_research')}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Run Research'}
-                        </button>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'mark_junk')}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Mark Junk'}
-                        </button>
-                      </>
-                    )}
-
-                    {lead.status === 'pending_review' && (
-                      <>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'approve')}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Approve ✓'}
-                        </button>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'hold')}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Hold ⏸'}
-                        </button>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'rerun')}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Rerun ↻'}
-                        </button>
-                      </>
-                    )}
-
-                    {lead.status === 'email_drafted' && (
-                      <>
-                        <Link
-                          href="/mission-control/emails"
-                          className="text-xs px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20 transition-colors inline-block"
-                        >
-                          View Email
-                        </Link>
-                        <button
-                          onClick={() => handleAction(lead.leadId, 'update_status', { status: 'contacted' })}
-                          disabled={loadingId === lead.leadId}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-50 transition-colors"
-                        >
-                          {loadingId === lead.leadId ? '...' : 'Mark Sent'}
-                        </button>
-                      </>
-                    )}
-
-                    {lead.status === 'approved' && (
-                      <Link
-                        href={`/report/${lead.leadId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors inline-block"
-                      >
-                        View Report
-                      </Link>
-                    )}
-
-                    {errorId === lead.leadId && (
-                      <span className="text-xs text-red-400">Error</span>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {col.leads.length === 0 && !loading && (
-                <div className="text-center py-6 text-slate-600 text-sm">No leads</div>
+                <div className="text-center py-6 text-slate-700 text-xs">Empty</div>
               )}
             </div>
           </div>
@@ -283,14 +258,15 @@ export default function PipelinePage() {
   );
 }
 
-function timeInStage(timestamp: string): string {
-  if (!timestamp) return '—';
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (days > 0) return `${days}d in stage`;
-  if (hours > 0) return `${hours}h in stage`;
-  return 'Just added';
+function ActionBtn({ label, color, loading, onClick }: { label: string; color: string; loading: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="text-sm px-3 py-2 rounded-lg border transition-colors disabled:opacity-40"
+      style={{ background: `${color}10`, color, borderColor: `${color}30` }}
+    >
+      {loading ? '...' : label}
+    </button>
+  );
 }

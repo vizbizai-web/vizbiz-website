@@ -3,31 +3,106 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
-interface Draft {
-  leadId: string;
+interface Lead {
+  timestamp: string;
   dealershipName: string;
-  email: string;
-  contactName: string;
-  city: string;
   website: string;
+  city: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  competitor: string;
+  snapshotAppeared: string;
+  visibilityBand: string;
+  serviceVisibility: string;
   status: string;
-  subject: string;
-  body: string;
-  templateName: string;
+  researchStatus: string;
+  emailSentAt: string;
+  notes: string;
+  source: string;
+  leadId: string;
 }
 
-function useEmailDrafts() {
-  const [drafts, setDrafts] = useState<Draft[]>([]);
+type DraftStatus = 'generated' | 'approved' | 'sent';
+
+interface EmailDraft {
+  lead: Lead;
+  research: any;
+  subject: string;
+  body: string;
+  status: DraftStatus;
+}
+
+function parseResearch(notes: string): any | null {
+  if (!notes) return null;
+  try {
+    if (notes.includes('RESEARCH_DATA:')) {
+      const match = notes.match(/RESEARCH_DATA:\s*(\{[\s\S]*\})/);
+      if (match) return JSON.parse(match[1]);
+    }
+  } catch {}
+  return null;
+}
+
+function generateDraft(lead: Lead, research: any): { subject: string; body: string } {
+  const name = lead.contactName || lead.dealershipName;
+  const biz = lead.dealershipName;
+  const city = lead.city;
+  const score = research?.appearedCount || 0;
+  const total = research?.totalPrompts || 20;
+  const competitor = research?.competitorMention || 'competitors in your area';
+  const why = research?.whyThisMatters || 'AI platforms like ChatGPT are shaping purchase decisions before people even visit your website.';
+  const niche = (research?.niche || 'business').replace(/_/g, ' ');
+
+  const subject = `Your ${niche} business in ${city} — AI visibility report`;
+  const body = `Hi${name ? ` ${name}` : ''},
+
+I ran an AI visibility check on ${biz} and wanted to share what I found.
+
+Out of ${total} buyer-intent queries related to ${niche} in ${city}, ${biz} appeared in ${score}. Meanwhile, ${competitor} showed up consistently.
+
+${why}
+
+I built a free report that breaks down exactly where you're visible, where you're not, and what to fix. No pitch — just the data.
+
+You can view it here: https://vizbiz.ai/report/${lead.leadId}
+
+If you want to talk through what it means, reply here. Happy to walk through it.
+
+— Alex
+VizBiz.ai`;
+
+  return { subject, body };
+}
+
+function useDrafts() {
+  const [drafts, setEmailDrafts] = useState<EmailDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/email-drafts');
+      const res = await fetch('/api/pipeline-status');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setDrafts(json.drafts || []);
+      const leads: Lead[] = json.leads || [];
+
+      // Generate drafts for leads that are email_drafted or approved
+      const draftable = leads.filter(l => l.status === 'email_drafted' || l.status === 'approved');
+      const generated: EmailDraft[] = draftable.map(lead => {
+        const research = parseResearch(lead.notes);
+        const { subject, body } = generateDraft(lead, research);
+        return {
+          lead,
+          research,
+          subject,
+          body,
+          status: lead.status === 'approved' ? 'generated' as DraftStatus : 'generated' as DraftStatus,
+        };
+      });
+
+      setEmailDrafts(generated);
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load');
@@ -36,246 +111,181 @@ function useEmailDrafts() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
+  useEffect(() => { fetchData(); }, [fetchData]);
   return { drafts, loading, error, refetch: fetchData };
 }
 
-function useLeadAction() {
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [errorId, setErrorId] = useState<string | null>(null);
-
-  const runAction = async (leadId: string, action: string, data?: any) => {
-    setLoadingId(leadId);
-    setErrorId(null);
-    try {
-      const res = await fetch('/api/lead-actions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId, action, data }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setLoadingId(null);
-      return true;
-    } catch (err: any) {
-      setErrorId(leadId);
-      setLoadingId(null);
-      return false;
-    }
-  };
-
-  return { runAction, loadingId, errorId };
-}
-
 export default function EmailsPage() {
-  const { drafts, loading, error, refetch } = useEmailDrafts();
-  const { runAction, loadingId, errorId } = useLeadAction();
-
+  const { drafts, loading, error, refetch } = useDrafts();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState('');
+  const [editSubject, setEditSubject] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [search, setSearch] = useState('');
+  const [filterTab, setFilterTab] = useState<'all' | 'generated' | 'approved' | 'sent'>('all');
 
-  const filtered = drafts.filter((d) => {
-    const matchStatus = filterStatus === 'all' || d.status === filterStatus;
-    const matchSearch =
-      search === '' ||
-      d.dealershipName?.toLowerCase().includes(search.toLowerCase()) ||
-      d.contactName?.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
-  });
-
-  const handleApprove = async (draft: Draft) => {
-    const ok = await runAction(draft.leadId, 'update_status', { status: 'contacted' });
-    if (ok) {
-      setConfirmId(null);
-      refetch();
-    }
+  const filtered = drafts.filter(d => filterTab === 'all' || d.status === filterTab);
+  const counts = {
+    all: drafts.length,
+    generated: drafts.filter(d => d.status === 'generated').length,
+    approved: drafts.filter(d => d.status === 'approved').length,
+    sent: drafts.filter(d => d.status === 'sent').length,
   };
 
-  const handleReject = async (draft: Draft) => {
-    const ok = await runAction(draft.leadId, 'update_status', { status: 'approved' });
-    if (ok) refetch();
+  const handleApprove = async (draft: EmailDraft) => {
+    const res = await fetch('/api/lead-actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: draft.lead.leadId, action: 'approve_email', data: { subject: draft.subject, body: draft.body } }),
+    });
+    if (res.ok) { setConfirmId(null); refetch(); }
   };
 
-  const handleEditSave = (draft: Draft) => {
-    // TODO: Wire to real save endpoint when available
-    console.log('Save edit', draft.leadId, editBody);
-    setEditingId(null);
+  const handleMarkSent = async (draft: EmailDraft) => {
+    const res = await fetch('/api/lead-actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: draft.lead.leadId, action: 'update_status', data: { status: 'contacted' } }),
+    });
+    if (res.ok) refetch();
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Emails</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Email Hub</h1>
-          <p className="text-slate-400 mt-1">
-            {drafts.length} draft{drafts.length !== 1 ? 's' : ''} ready for review
-          </p>
-        </div>
-        {loading && <span className="text-slate-500 text-sm">Loading...</span>}
+      <div>
+        <p className="text-sm text-slate-300 uppercase tracking-widest font-semibold">Emails</p>
+        <h1 className="mt-2 text-3xl font-bold text-white">Email Hub</h1>
+        <p className="text-slate-400 mt-1">{drafts.length} draft{drafts.length !== 1 ? 's' : ''} generated from pipeline</p>
       </div>
 
-      {error && (
-        <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-          Error: {error}
-        </div>
-      )}
+      {loading && <div className="text-slate-500 text-sm">Generating drafts...</div>}
+      {error && <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm">{error}</div>}
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          placeholder="Search leads..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-[#111118] border border-slate-800/50 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-slate-600"
-        />
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-[#111118] border border-slate-800/50 text-white text-sm focus:outline-none focus:border-slate-600"
-        >
-          <option value="all">All Statuses</option>
-          <option value="email_drafted">Drafted</option>
-          <option value="contacted">Contacted</option>
-          <option value="approved">Approved</option>
-        </select>
+      {/* Tabs */}
+      <div className="flex gap-1 bg-[#0A0B14] rounded-lg border border-slate-800/40 p-1 w-fit">
+        {(['all', 'generated', 'approved', 'sent'] as const).map(tab => (
+          <button key={tab} onClick={() => setFilterTab(tab)}
+            className={`text-sm px-4 py-2 rounded-md transition-colors ${filterTab === tab ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+            {tab === 'all' ? 'All' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {counts[tab] > 0 && <span className="ml-1.5 text-slate-600">({counts[tab]})</span>}
+          </button>
+        ))}
       </div>
 
-      {/* Drafts List */}
-      <div className="space-y-4">
+      {/* Draft Cards */}
+      <div className="space-y-3">
         {filtered.length === 0 && !loading && (
-          <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-8 text-center">
-            <p className="text-slate-400">No drafts match your filters</p>
+          <div className="glass-card border-0 rounded-xl p-8 text-center">
+            <p className="text-slate-500 text-sm">{filterTab === 'all' ? 'No drafts yet — approve leads to generate emails' : `No ${filterTab} emails`}</p>
           </div>
         )}
 
         {filtered.map((draft) => {
-          const isExpanded = expandedId === draft.leadId;
-          const isEditing = editingId === draft.leadId;
-          const isLoading = loadingId === draft.leadId;
-          const isError = errorId === draft.leadId;
+          const isExpanded = expandedId === draft.lead.leadId;
+          const isEditing = editingId === draft.lead.leadId;
+          const score = draft.research?.appearedCount || 0;
+          const total = draft.research?.totalPrompts || 20;
+          const niche = (draft.research?.niche || '').replace(/_/g, ' ');
 
           return (
-            <div
-              key={draft.leadId}
-              className="bg-[#111118] border border-slate-800/50 rounded-xl p-5 hover:border-slate-600 transition-colors"
-            >
-              {/* Header row */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <Link
-                    href={`/mission-control/leads/${draft.leadId}`}
-                    className="text-white font-medium text-sm hover:text-blue-400 transition-colors"
-                  >
-                    {draft.dealershipName || 'Unknown Dealership'}
-                  </Link>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {draft.contactName} • {draft.email} • {draft.city}
-                  </p>
+            <div key={draft.lead.leadId} className="glass-card border-0 rounded-xl overflow-hidden">
+              {/* Card header */}
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{
+                      background: score / total > 0.3 ? 'rgba(34,197,94,0.1)' : score / total > 0.1 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                      color: score / total > 0.3 ? '#22C55E' : score / total > 0.1 ? '#F59E0B' : '#EF4444',
+                    }}>
+                      {score}/{total}
+                    </div>
+                    <div>
+                      <Link href={`/mission-control/leads/${draft.lead.leadId}`} className="text-white font-semibold text-base hover:text-slate-300 transition-colors">
+                        {draft.lead.dealershipName || 'Unknown Business'}
+                      </Link>
+                      <p className="text-[11px] text-slate-600">{draft.lead.contactName || 'No contact'} • {draft.lead.email || 'No email'} • {draft.lead.city || 'No city'}{niche ? ` • ${niche}` : ''}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{
+                    background: draft.status === 'sent' ? 'rgba(16,185,129,0.1)' : draft.status === 'approved' ? 'rgba(34,197,94,0.1)' : 'rgba(168,85,247,0.1)',
+                    color: draft.status === 'sent' ? '#10B981' : draft.status === 'approved' ? '#22C55E' : '#A855F7',
+                  }}>
+                    {draft.status}
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 whitespace-nowrap">
-                  {draft.status}
-                </span>
+
+                {/* Subject */}
+                <p className="text-base text-white font-semibold">{editingId === draft.lead.leadId ? editSubject : draft.subject}</p>
+
+                {/* Preview */}
+                {!isExpanded && !isEditing && (
+                  <p className="text-sm text-slate-400 mt-1 line-clamp-2">{draft.body}</p>
+                )}
               </div>
-
-              {/* Subject */}
-              <p className="text-sm text-slate-300 mt-3 font-medium">{draft.subject || 'No subject'}</p>
-
-              {/* Preview */}
-              {!isEditing && (
-                <p className="text-sm text-slate-500 mt-1 line-clamp-3">
-                  {draft.body?.split('\n').slice(0, 3).join('\n') || 'No body'}
-                </p>
-              )}
 
               {/* Expanded body */}
               {isExpanded && !isEditing && (
-                <div className="mt-3 bg-slate-900/50 rounded-lg p-4">
-                  <pre className="text-sm text-slate-300 whitespace-pre-wrap font-sans">{draft.body}</pre>
+                <div className="px-5 pb-4">
+                  <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-800/20">
+                    <pre className="text-base text-white whitespace-pre-wrap font-sans">{draft.body}</pre>
+                  </div>
                 </div>
               )}
 
               {/* Inline editor */}
               {isEditing && (
-                <div className="mt-3">
+                <div className="px-5 pb-4 space-y-3">
+                  <input
+                    type="text"
+                    value={editSubject}
+                    onChange={(e) => setEditSubject(e.target.value)}
+                    className="w-full bg-slate-900/30 border border-slate-800/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-slate-600"
+                    placeholder="Subject line"
+                  />
                   <textarea
-                    className="w-full h-48 bg-slate-900/50 border border-slate-800/50 rounded-lg p-3 text-sm text-slate-300 focus:outline-none focus:border-slate-600 font-sans resize-y"
                     value={editBody}
                     onChange={(e) => setEditBody(e.target.value)}
+                    className="w-full h-64 bg-slate-900/30 border border-slate-800/30 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-slate-600 font-sans resize-y"
                   />
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => handleEditSave(draft)}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => { setEditingId(null); }} className="text-sm px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Save</button>
+                    <button onClick={() => setEditingId(null)} className="text-sm px-4 py-2 rounded-lg bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                   </div>
                 </div>
               )}
 
               {/* Actions */}
-              <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-800/50">
-                <button
-                  onClick={() => {
-                    if (isExpanded) {
-                      setExpandedId(null);
-                    } else {
-                      setExpandedId(draft.leadId);
-                      setEditingId(null);
-                    }
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition-colors"
-                >
-                  {isExpanded ? 'Collapse' : 'Expand'}
+              <div className="px-5 py-3 border-t border-slate-800/30 flex flex-wrap items-center gap-2">
+                <button onClick={() => { setExpandedId(isExpanded ? null : draft.lead.leadId); setEditingId(null); }}
+                  className="text-sm px-4 py-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-slate-300 transition-colors">
+                  {isExpanded ? 'Collapse' : 'Preview'}
+                </button>
+                <button onClick={() => {
+                  if (isEditing) { setEditingId(null); }
+                  else { setEditingId(draft.lead.leadId); setEditBody(draft.body); setEditSubject(draft.subject); setExpandedId(null); }
+                }} className="text-sm px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors">
+                  Edit
                 </button>
 
-                <button
-                  onClick={() => {
-                    if (isEditing) {
-                      setEditingId(null);
-                    } else {
-                      setEditingId(draft.leadId);
-                      setEditBody(draft.body || '');
-                      setExpandedId(null);
-                    }
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors"
-                >
-                  {isEditing ? 'Close Editor' : 'Edit'}
-                </button>
+                {draft.status === 'generated' && (
+                  <button onClick={() => setConfirmId(draft.lead.leadId)}
+                    className="text-sm px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">
+                    Approve → Drafts
+                  </button>
+                )}
+                {draft.status === 'approved' && (
+                  <button onClick={() => handleMarkSent(draft)}
+                    className="text-sm px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/30 hover:bg-violet-500/20 transition-colors">
+                    Mark Sent
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setConfirmId(draft.leadId)}
-                  disabled={isLoading}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-50 transition-colors"
-                >
-                  {isLoading ? '...' : 'Approve for Sending'}
-                </button>
-
-                <button
-                  onClick={() => handleReject(draft)}
-                  disabled={isLoading}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
-                >
-                  Reject
-                </button>
-
-                {isError && <span className="text-xs text-red-400">Error</span>}
+                <a href={`mailto:${draft.lead.email}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}
+                  className="text-sm px-4 py-2 rounded-lg transition-colors ml-auto"
+                  style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', border: '1px solid rgba(37, 209, 242, 0.2)' }}>
+                  Open in Mail App
+                </a>
               </div>
             </div>
           );
@@ -283,39 +293,32 @@ export default function EmailsPage() {
       </div>
 
       {/* Confirm Modal */}
-      {confirmId && (
-        (() => {
-          const draft = drafts.find((d) => d.leadId === confirmId);
-          if (!draft) return null;
-          return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-              <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6 max-w-md w-full mx-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Approve for Sending</h3>
-                <p className="text-slate-400 text-sm mb-4">
-                  Send this email to {draft.contactName} at {draft.email}?
-                </p>
-                <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4">
-                  Email will be sent after Alex&apos;s final approval.
-                </p>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => setConfirmId(null)}
-                    className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => handleApprove(draft)}
-                    className="px-4 py-2 rounded-lg text-sm bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors"
-                  >
-                    Confirm
-                  </button>
-                </div>
+      {confirmId && (() => {
+        const draft = drafts.find(d => d.lead.leadId === confirmId);
+        if (!draft) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="glass-card border-0 rounded-xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Approve Email</h3>
+              <p className="text-slate-400 text-sm mb-3">
+                Move this email to the approved drafts folder for {draft.lead.dealershipName}?
+              </p>
+              <div className="bg-slate-900/30 rounded-lg p-3 mb-4 border border-slate-800/20">
+                <p className="text-sm text-slate-300">To: {draft.lead.email}</p>
+                <p className="text-sm text-slate-300 mt-1">Subject: {draft.subject}</p>
+              </div>
+              <p className="text-[10px] text-amber-400/80 mb-4">⚠️ Email will NOT be sent. It moves to the Approved folder for final review.</p>
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => setConfirmId(null)} className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                <button onClick={() => handleApprove(draft)}
+                  className="px-4 py-2 rounded-lg text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">
+                  Approve
+                </button>
               </div>
             </div>
-          );
-        })()
-      )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

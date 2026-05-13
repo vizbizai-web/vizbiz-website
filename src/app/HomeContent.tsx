@@ -17,6 +17,34 @@ const tickerWords = [
   'insurance brokers.', 'nutritionists.', 'therapists.', 'your business.',
 ];
 
+/* ─── ZIP/POSTAL TICKER ─── */
+const zipWords = ['zip code', 'postal code'];
+
+function ZipTicker() {
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<'in' | 'out'>('in');
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setPhase('out');
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % zipWords.length);
+        setPhase('in');
+      }, 260);
+    }, 1150);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <span
+      className={`inline-block align-bottom transition-all duration-200 ${phase === 'in' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}
+      style={{ color: '#06B6D4', fontWeight: 600, display: 'inline-block', width: '6em', textAlign: 'center' }}
+    >
+      {zipWords[idx]}
+    </span>
+  );
+}
+
 /* ─── SECTION OBSERVER ─── */
 function useActiveSection(sectionIds: string[]) {
   const [active, setActive] = useState('');
@@ -369,7 +397,7 @@ export default function HomeContent() {
             <div className="max-w-3xl">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">From score to fix list</p>
               <h2 className="mt-4 font-serif text-4xl leading-tight text-[#0F172A] sm:text-5xl">A mini report should do more than give you a number.</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-600">The free report gives you the first useful read: where AI sees you, where it prefers a competitor, and which trust signals are missing. The paid report goes deeper and turns that into work we can actually ship.</p>
+              <p className="mt-5 text-base leading-8 text-slate-600 sm:text-lg">The free report gives you the first useful read: where AI sees you, where it prefers a competitor, and which trust signals are missing. The paid report turns that into a step-by-step fix plan — so you can own your <ZipTicker /> in AI search before your competitors figure it out.</p>
             </div>
 
             <div className="mt-12 grid gap-8 lg:grid-cols-2">
