@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const isGHExport = process.env.NEXT_GH_EXPORT === "true";
+const isGHExport = process.env.NEXT_GH_EXPORT === "1" || process.env.NEXT_GH_EXPORT === "true";
 
 const nextConfig: NextConfig = {
   output: isGHExport ? "export" : undefined,
