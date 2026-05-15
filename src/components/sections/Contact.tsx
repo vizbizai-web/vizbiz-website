@@ -7,7 +7,7 @@ export default function Contact() {
   const [formState, setFormState] = useState({
     name: "",
     email: "",
-    dealership: "",
+    business: "",
     phone: "",
     message: "",
   });
@@ -79,16 +79,16 @@ export default function Contact() {
                     <label htmlFor="email" className="mb-2 block text-sm font-medium text-white/74">
                       Email Address *
                     </label>
-                    <input type="email" id="email" name="email" required value={formState.email} onChange={handleChange} className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="john@dealership.com" />
+                    <input type="email" id="email" name="email" required value={formState.email} onChange={handleChange} className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="you@yourbusiness.com" />
                   </div>
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
                   <div>
-                    <label htmlFor="dealership" className="mb-2 block text-sm font-medium text-white/74">
-                      Dealership Name *
+                    <label htmlFor="business" className="mb-2 block text-sm font-medium text-white/74">
+                      Business Name *
                     </label>
-                    <input type="text" id="dealership" name="dealership" required value={formState.dealership} onChange={handleChange} className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="Oakville Honda" />
+                    <input type="text" id="business" name="business" required value={formState.business} onChange={handleChange} className="w-full rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="Oakville Dental" />
                   </div>
                   <div>
                     <label htmlFor="phone" className="mb-2 block text-sm font-medium text-white/74">
@@ -102,7 +102,7 @@ export default function Contact() {
                   <label htmlFor="message" className="mb-2 block text-sm font-medium text-white/74">
                     Message (Optional)
                   </label>
-                  <textarea id="message" name="message" rows={4} value={formState.message} onChange={handleChange} className="w-full resize-none rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="Tell us about your dealership and any specific concerns..." />
+                  <textarea id="message" name="message" rows={4} value={formState.message} onChange={handleChange} className="w-full resize-none rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition-all placeholder:text-white/30 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/12" placeholder="Tell us about your business and any specific concerns..." />
                 </div>
 
                 <button type="submit" className="premium-button inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-xl px-8 py-3.5 font-bold text-white">
@@ -174,7 +174,7 @@ export default function Contact() {
               <div>
                 <p className="font-semibold text-white">We respond within 24 hours</p>
                 <p className="mt-1 text-sm text-white/64">
-                  Usually much faster. We know you&apos;re busy running a dealership.
+                  Usually much faster. We know you&apos;re busy running your business.
                 </p>
               </div>
             </div>

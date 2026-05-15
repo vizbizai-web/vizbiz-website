@@ -9,7 +9,7 @@ const plans = [
   {
     name: "Starter",
     price: "$497",
-    description: "Best if you want a clear baseline on where your dealership stands now.",
+    description: "Best if you want a clear baseline on where your business stands now.",
     features: ["Full audit", "20 prompts", "3 competitors", "PDF report"],
     featured: false,
     helper: "Good for a first look",
@@ -17,7 +17,7 @@ const plans = [
   {
     name: "Standard",
     price: "$997",
-    description: "Best fit for most dealerships that want a fuller competitive picture.",
+    description: "Best fit for most businesses that want a fuller competitive picture.",
     features: [
       "Full audit",
       "25 prompts",
@@ -26,7 +26,7 @@ const plans = [
       "30-minute walkthrough call",
     ],
     featured: true,
-    helper: "Best fit for most dealerships",
+    helper: "Best fit for most businesses",
   },
   {
     name: "Premium",

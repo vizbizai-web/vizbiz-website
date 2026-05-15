@@ -500,44 +500,54 @@ export function getNicheByName(nicheName: string): NicheConfig | null {
 
 /**
  * Generate a dynamic niche config for niches not in our database.
- * Uses the niche name + business description to build reasonable prompts.
- * This ensures we NEVER throw away an LLM-classified niche just because
- * we don't have a pre-built config for it.
+ * v2: Uses enriched business data from preflight for better prompts + competitor queries.
  */
-export function generateDynamicNicheConfig(nicheName: string, nicheLabel?: string): NicheConfig {
-  // Human-readable label: "plant_shop" → "Plant Shop"
-  const label = nicheLabel || nicheName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  
+export function generateDynamicNicheConfig(
+  nicheName: string,
+  businessType?: string,
+  targetAudience?: string,
+  searchLanguage?: string,
+): NicheConfig {
+  // Use businessType (specific) over nicheName (generic)
+  const label = businessType || nicheName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const audience = targetAudience || label;
+
+  // Build prompts that are specific to this business type + audience
+  // If we know the search language, we can't translate here but we can
+  // make the English prompts much more specific
+  const audienceKeywords = audience.toLowerCase().split(/[,.\s]+/).filter(w => w.length > 3 && !['with','that','this','their','them','they','from','near','also','have','been','were','will','would','could','should','about','other','into','over','only','than','most','some','such'].includes(w));
+  const specificityPhrase = audienceKeywords.slice(0, 3).join(' ');
+
   return {
     niche: nicheName,
-    keywords: [nicheName.replace(/_/g, ' ')],
+    keywords: [nicheName.replace(/_/g, ' '), ...(businessType ? [businessType.toLowerCase()] : [])],
     promptTemplates: [
       `best ${label} in {city}`,
       `top rated ${label} in {city}`,
-      `${label} near me in {city}`,
+      `${specificityPhrase} in {city}`,
       `${label} with good reviews in {city}`,
       `${label} open on weekends in {city}`,
-      `best place for ${label} in {city}`,
+      `best place for ${specificityPhrase} in {city}`,
       `affordable ${label} in {city}`,
       `${label} services in {city}`,
       `${label} recommendations in {city}`,
       `where to find ${label} in {city}`,
       `${label} pricing in {city}`,
-      `${label} for beginners in {city}`,
       `professional ${label} in {city}`,
       `${label} deals in {city}`,
       `${label} appointments in {city}`,
       `${label} consultation in {city}`,
       `${label} booking in {city}`,
       `${label} walk-in in {city}`,
-      `best ${label} for families in {city}`,
+      `best ${specificityPhrase} for families in {city}`,
       `trusted ${label} in {city}`,
+      `${label} for ${audienceKeywords[0] || 'businesses'} in {city}`,
     ],
     competitorSearchQueries: [
       `${label} in {city}`,
       `best ${label} {city}`,
+      `${specificityPhrase} {city}`,
       `${label} near me {city}`,
-      `top rated ${label} {city}`,
       `${label} alternatives {city}`,
     ],
   };

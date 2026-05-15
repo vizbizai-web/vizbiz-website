@@ -439,6 +439,64 @@ export async function getLeadByLeadId(leadId: string): Promise<LeadRow | null> {
 }
 
 /**
+ * Generic update for a lead by leadId.
+ * Keys in `updates` can be any LeadRow field name.
+ * Maps field names to column letters and does a batch update.
+ */
+const FIELD_TO_COLUMN: Record<string, string> = {
+  timestamp: "A",
+  dealershipName: "B",
+  website: "C",
+  city: "D",
+  contactName: "E",
+  email: "F",
+  phone: "G",
+  competitor: "H",
+  snapshotAppeared: "I",
+  visibilityBand: "J",
+  serviceVisibility: "K",
+  status: "L",
+  researchStatus: "M",
+  emailSentAt: "N",
+  notes: "O",
+  source: "P",
+  leadId: "Q",
+};
+
+export async function updateLead(leadId: string, updates: Record<string, string>): Promise<boolean> {
+  // Find the row
+  const data = await sheetsFetch<{ values: string[][] }>(`/values/${getSheetRange()}`);
+  if (!data.values) throw new Error("No data found in CRM sheet");
+
+  const rowIndex = data.values.findIndex((row) => row[16] === leadId);
+  if (rowIndex === -1) throw new Error(`Lead ${leadId} not found in sheet`);
+
+  const sheetRow = rowIndex + 1;
+  const sheetName = getSheetName();
+  const cells: { range: string; values: string[][] }[] = [];
+
+  for (const [field, value] of Object.entries(updates)) {
+    const col = FIELD_TO_COLUMN[field];
+    if (col) {
+      cells.push({ range: `${sheetName}!${col}${sheetRow}`, values: [[value]] });
+    }
+  }
+
+  if (cells.length === 0) return true;
+
+  await sheetsFetch(`/values:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      data: cells,
+      valueInputOption: "USER_ENTERED",
+    }),
+  });
+
+  console.info("[sheets] lead updated", { leadId, fields: Object.keys(updates), row: sheetRow });
+  return true;
+}
+
+/**
  * Check if Google Sheets CRM is configured
  */
 export function isSheetsConfigured(): boolean {

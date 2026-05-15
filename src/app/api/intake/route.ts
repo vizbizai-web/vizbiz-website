@@ -16,6 +16,13 @@ type IntakePayload = {
   source: string;
   originalCta?: string;
   originalPage?: string;
+  // Attribution
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  referrer?: string;
 };
 
 const requiredFields = [
@@ -59,6 +66,12 @@ export async function POST(request: Request) {
     source: payload.source?.trim() || "snapshot funnel",
     originalCta: payload.originalCta?.trim() || undefined,
     originalPage: payload.originalPage?.trim() || undefined,
+    utmSource: payload.utm_source?.trim() || undefined,
+    utmMedium: payload.utm_medium?.trim() || undefined,
+    utmCampaign: payload.utm_campaign?.trim() || undefined,
+    utmTerm: payload.utm_term?.trim() || undefined,
+    utmContent: payload.utm_content?.trim() || undefined,
+    referrer: payload.referrer?.trim() || undefined,
   };
 
   // Generate mini snapshot (now returns honest messaging instead of fake scores)
@@ -79,7 +92,15 @@ export async function POST(request: Request) {
   const aiReport = isSheetsConfigured() ? await preflightScan(cleanPayload.websiteUrl) : { 
     niche: "local_business", nicheLabel: "Local Business", pricingInfo: null, valueProposition: "",
     contentQuality: "low" as const, hasLlmsTxt: false, hasSchema: false, 
-    aiReadinessScore: 0, estimatedRevenueGap: { low: 0, high: 0, currency: "USD" }
+    aiReadinessScore: 0, estimatedRevenueGap: { low: 0, high: 0, currency: "USD" },
+    businessType: "", targetAudience: "", services: [] as string[], siteLanguage: "English",
+    searchLanguage: "English", market: "", searchLangCode: "en",
+    suggestedSearchQueries: [] as string[], competitorSearchQueries: [] as string[],
+    socialLinks: { instagram: null, facebook: null, linkedin: null, twitter: null, tiktok: null, youtube: null },
+    contactInfo: { emails: [] as string[], phones: [] as string[], address: null },
+    schemaOrg: { types: [] as string[], name: null, aggregateRating: null, sameAs: [] as string[] },
+    openGraph: { title: null, description: null, image: null },
+    googleBusiness: { url: null, placeId: null },
   };
   
   const revGap = aiReport.estimatedRevenueGap;
@@ -105,7 +126,7 @@ export async function POST(request: Request) {
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}. AI-Niche: ${aiReport.niche}. AI-Score: ${aiReport.aiReadinessScore} (LLMS:${aiReport.hasLlmsTxt}, Schema:${aiReport.hasSchema}). PREFLIGHT:${JSON.stringify({ niche: aiReport.niche, valueProposition: aiReport.valueProposition, pricingInfo: aiReport.pricingInfo, estimatedRevenueGap: aiReport.estimatedRevenueGap, aiReadinessScore: aiReport.aiReadinessScore })}`,
+        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}. AI-Niche: ${aiReport.niche}. AI-Score: ${aiReport.aiReadinessScore} (LLMS:${aiReport.hasLlmsTxt}, Schema:${aiReport.hasSchema}). PREFLIGHT:${JSON.stringify({ niche: aiReport.niche, valueProposition: aiReport.valueProposition, pricingInfo: aiReport.pricingInfo, estimatedRevenueGap: aiReport.estimatedRevenueGap, aiReadinessScore: aiReport.aiReadinessScore, businessType: aiReport.businessType, targetAudience: aiReport.targetAudience, services: aiReport.services, siteLanguage: aiReport.siteLanguage, searchLanguage: aiReport.searchLanguage, market: aiReport.market, searchLangCode: aiReport.searchLangCode, suggestedSearchQueries: aiReport.suggestedSearchQueries, competitorSearchQueries: aiReport.competitorSearchQueries, socialLinks: aiReport.socialLinks, contactInfo: aiReport.contactInfo, schemaOrg: aiReport.schemaOrg, openGraph: aiReport.openGraph, googleBusiness: aiReport.googleBusiness })}`,
         source: cleanPayload.source,
       });
       sheetsOk = true;

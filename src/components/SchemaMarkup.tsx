@@ -8,7 +8,7 @@ export default function SchemaMarkup() {
     "alternateName": "VizBiz AI Visibility Solutions",
     "url": "https://vizbiz.ai",
     "logo": "https://vizbiz.ai/logo.jpg",
-    "description": "VizBiz is an AI visibility intelligence company for car dealerships. We help dealers understand, improve, and track how they appear in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search experiences.",
+    "description": "VizBiz is an AI visibility intelligence company for local businesses. We help businesses understand, improve, and track how they appear in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search experiences.",
     "foundingDate": "2025",
     "founders": [
       {
@@ -37,11 +37,11 @@ export default function SchemaMarkup() {
       "Generative Engine Optimization",
       "ChatGPT Optimization",
       "Google AI Overviews",
-      "Car Dealership Marketing",
+      "Local Business Marketing",
       "Local SEO",
       "Schema Markup"
     ],
-    "serviceType": "AI Visibility Intelligence for Car Dealerships",
+    "serviceType": "AI Visibility Intelligence for Local Businesses",
     "areaServed": {
       "@type": "Country",
       "name": "Canada"
@@ -52,7 +52,7 @@ export default function SchemaMarkup() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "VizBiz.ai",
-    "description": "AI visibility intelligence for car dealerships, including audit, measurement, and optimization work.",
+    "description": "AI visibility intelligence for local businesses, including audit, measurement, and optimization work.",
     "url": "https://vizbiz.ai",
     "telephone": "+1-XXX-XXX-XXXX",
     "email": "hello@vizbiz.ai",
@@ -86,7 +86,7 @@ export default function SchemaMarkup() {
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "serviceType": "AI Visibility Intelligence for Car Dealerships",
+    "serviceType": "AI Visibility Intelligence for Local Businesses",
     "provider": {
       "@type": "Organization",
       "name": "VizBiz.ai",
@@ -104,16 +104,16 @@ export default function SchemaMarkup() {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "AI Visibility Audit for Car Dealerships",
-            "description": "A dealership-focused AI visibility assessment showing how your business appears across ChatGPT, Google AI Overviews, Gemini, and Perplexity, where competitors are winning, and what to improve next."
+            "name": "AI Visibility Audit for Local Businesses",
+            "description": "An AI visibility assessment showing how your business appears across ChatGPT, Google AI Overviews, Gemini, and Perplexity, where competitors are winning, and what to improve next."
           }
         },
         {
           "@type": "Offer",
           "itemOffered": {
             "@type": "Service",
-            "name": "AI Visibility Optimization for Car Dealerships",
-            "description": "Ongoing improvement work to strengthen the entity, content, trust, and technical signals that influence how AI systems recommend dealerships."
+            "name": "AI Visibility Optimization for Local Businesses",
+            "description": "Ongoing improvement work to strengthen the entity, content, trust, and technical signals that influence how AI systems recommend your business."
           }
         }
       ]
@@ -129,7 +129,7 @@ export default function SchemaMarkup() {
         "name": "What is an AI visibility audit?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "An AI visibility audit is a comprehensive analysis of how visible your dealership is across AI platforms like ChatGPT, Google AI Overviews, and Perplexity. It measures your presence, authority, sentiment, content, and technical factors that influence AI recommendations."
+          "text": "An AI visibility audit is a comprehensive analysis of how visible your business is across AI platforms like ChatGPT, Google AI Overviews, and Perplexity. It measures your presence, authority, sentiment, content, and technical factors that influence AI recommendations."
         }
       },
       {
@@ -137,7 +137,7 @@ export default function SchemaMarkup() {
         "name": "What is the AVI Score?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The AVI Score (AI Visibility Index) is VizBiz's scoring framework for measuring how visible a dealership is across AI-driven search. It is designed to show where a dealership appears, where it does not, and which visibility factors need work next."
+          "text": "The AVI Score (AI Visibility Index) is VizBiz's scoring framework for measuring how visible a business is across AI-driven search. It is designed to show where a business appears, where it does not, and which visibility factors need work next."
         }
       },
       {
@@ -166,12 +166,12 @@ export default function SchemaMarkup() {
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "url": "https://vizbiz.ai",
-    "description": "VizBiz is the AI visibility intelligence platform for car dealerships. Audit, measure, and improve how your dealership appears in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search. Includes proprietary AVI scoring, competitor gap analysis, and actionable improvement recommendations.",
+    "description": "VizBiz is the AI visibility intelligence platform for local businesses. Audit, measure, and improve how your business appears in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search. Includes proprietary AVI scoring, competitor gap analysis, and actionable improvement recommendations.",
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "CAD",
-      "description": "Free AI visibility snapshot for car dealerships"
+      "description": "Free AI visibility snapshot for local businesses"
     },
     "featureList": [
       "AI Visibility Index (AVI) scoring",
@@ -183,9 +183,9 @@ export default function SchemaMarkup() {
     ],
     "audience": {
       "@type": "Audience",
-      "audienceType": "Car Dealerships, Automotive Retailers"
+      "audienceType": "Local Businesses"
     },
-    "keywords": "AI visibility, car dealership AI, ChatGPT dealership, AI SEO, generative engine optimization, AI visibility audit, AVI score, dealership AI visibility"
+    "keywords": "AI visibility, local business AI, ChatGPT business, AI SEO, generative engine optimization, AI visibility audit, AVI score, local business AI visibility"
   };
 
   const websiteSchema = {

@@ -21,6 +21,10 @@ type LeadAlert = {
   appeared: string;
   band: string;
   sheetsOk: boolean;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  referrer?: string;
 };
 
 export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
@@ -51,6 +55,8 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
     lead.sheetsOk ? "✅ Captured in Sheets CRM" : "⚠️ Sheets not configured — lead NOT stored",
     "",
     `ID: ${lead.leadId || "N/A"}`,
+    lead.utmSource ? `🔗 Source: ${lead.utmSource}${lead.utmMedium ? ` / ${lead.utmMedium}` : ""}${lead.utmCampaign ? ` / ${lead.utmCampaign}` : ""}` : "",
+    lead.referrer ? `↩️ Referrer: ${lead.referrer.substring(0, 80)}` : "",
   ].join("\n");
 
   await fetch(
@@ -67,6 +73,12 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
   );
 
   // -- 2. DM alert (Vlad talking to Alex with context and next steps) --
+  // Sent ONLY when lead is confirmed in Sheets (sheetsOk=true)
+  if (!lead.sheetsOk) {
+    console.warn("[telegram-alert] Skipping DM alert — lead not stored in Sheets", { dealership: lead.dealershipName });
+    return;
+  }
+
   const dmMessage = isWeak
     ? [
         `Alex. New lead just came in — this one needs help.`,
@@ -74,7 +86,7 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
         `${lead.dealershipName} in ${lead.city}.`,
         `${emoji} They're barely showing up in AI search (${lead.appeared}). That's exactly our sweet spot — they can see the problem, and we can show them the fix.`,
         "",
-        `Pipeline is running now. I'll have research ready for review in ~2 minutes.`,
+        `Pipeline is running. I'll flag it when research is ready for review.`,
         "",
         `What you should know:`,
         `• Contact: ${lead.contactName} (${lead.email})`,
@@ -108,4 +120,107 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
   );
 
   console.info("[telegram-alert] lead alerts sent", { dealership: lead.dealershipName });
+}
+
+/**
+ * Secondary alert — report is live and outreach email is ready
+ *
+ * Fires when Vlad approves a lead and the report + email are ready to go.
+ * Sent to Alex's DM only (the group already got the research-done alert).
+ */
+type ReportReadyAlert = {
+  leadId: string;
+  dealershipName: string;
+  contactName: string;
+  email: string;
+  city: string;
+  reportUrl: string;
+  appearedCount: number;
+  totalPrompts: number;
+  statusBand: string;
+};
+
+export async function sendReportReadyTelegram(alert: ReportReadyAlert): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN) return;
+
+  const msg = [
+    `✅ Report ready — ${alert.dealershipName}`,
+    "",
+    `Free report is live: ${alert.reportUrl}`,
+    `Appeared: ${alert.appearedCount}/${alert.totalPrompts} prompts (${alert.statusBand})`,
+    "",
+    `Outreach email to ${alert.contactName} (${alert.email}) is drafted and waiting for your approval.`,
+    "",
+    `Say "send" and it goes. Or tweak it first — your call.`,
+  ].join("\n");
+
+  await fetch(
+    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ALEX_DM,
+        text: msg,
+      }),
+    },
+  );
+
+  console.info("[telegram-alert] report-ready alert sent", { dealership: alert.dealershipName, leadId: alert.leadId });
+}
+
+/**
+ * Pipeline alert — sends to Alex's DM with pipeline stage updates
+ */
+export async function sendPipelineAlert(message: string): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("[telegram-alert] TELEGRAM_BOT_TOKEN not configured");
+    return;
+  }
+
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: ALEX_DM,
+      text: message,
+    }),
+  });
+
+  console.info("[telegram-alert] pipeline alert sent");
+}
+
+/**
+ * Revenue alert — for CTA clicks, payments, abandoned checkouts
+ */
+export async function sendRevenueAlert(message: string): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("[telegram-alert] TELEGRAM_BOT_TOKEN not configured");
+    return;
+  }
+
+  // Revenue topic in group + DM
+  const REVENUE_TOPIC_ID = 5;
+
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: VLAD_HQ_GROUP,
+      message_thread_id: REVENUE_TOPIC_ID,
+      text: message,
+    }),
+  });
+
+  // Also DM Alex
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: ALEX_DM,
+      text: message,
+    }),
+  });
+
+  console.info("[telegram-alert] revenue alert sent");
 }

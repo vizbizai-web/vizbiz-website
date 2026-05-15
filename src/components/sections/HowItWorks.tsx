@@ -8,8 +8,8 @@ const steps = [
   {
     number: "01",
     icon: Send,
-    title: "Enter dealership info",
-    detail: "Share your dealership name, market, and website. It takes about 30 seconds.",
+    title: "Enter your business info",
+    detail: "Share your business name, market, and website. It takes about 30 seconds.",
   },
   {
     number: "02",

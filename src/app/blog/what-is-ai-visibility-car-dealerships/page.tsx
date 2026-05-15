@@ -1,26 +1,26 @@
 
 export const metadata = {
-  title: 'What Is AI Visibility for Car Dealerships? (The Complete Guide)',
-  description: 'AI visibility is the new SEO — but most dealership owners have never heard of it. This guide explains what it is, why it matters right now, and how to check your score for free.',
+  title: 'What Is AI Visibility? (The Complete Guide)',
+  description: 'AI visibility is the new SEO — but most business owners have never heard of it. This guide explains what it is, why it matters right now, and how to check your score for free.',
   openGraph: {
-    title: 'What Is AI Visibility for Car Dealerships? (The Complete Guide)',
-    description: 'AI visibility is the new SEO — but most dealership owners have never heard of it. Learn what it is, why it matters, and how to check your score for free.',
+    title: 'What Is AI Visibility? (The Complete Guide)',
+    description: 'AI visibility is the new SEO — but most business owners have never heard of it. Learn what it is, why it matters, and how to check your score for free.',
   },
   alternates: {
     canonical: "https://vizbiz.ai/blog/what-is-ai-visibility-car-dealerships",
   },
 };
 
-export default function WhatIsAIVisibilityDealerships() {
+export default function WhatIsAIVisibility() {
   return (
     <main style={{ backgroundColor: '#02091F', minHeight: '100vh', color: '#e2e8f0' }}>
       {/* Hero */}
       <section style={{ padding: '80px 24px 60px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2.4rem', fontWeight: 800, lineHeight: 1.2, marginBottom: 20, color: '#fff' }}>
-          What Is AI Visibility for Car Dealerships?
+          What Is AI Visibility?
         </h1>
         <p style={{ fontSize: '1.15rem', color: '#94a3b8', maxWidth: 660, margin: '0 auto' }}>
-          SEO made your dealership visible on Google for 20 years. AI visibility is what's going to make you visible — or invisible — to the next generation of car buyers. Most dealers haven't heard of it. That's the opportunity.
+          SEO made your business visible on Google for 20 years. AI visibility is what's going to make you visible — or invisible — to the next generation of customers. Most local businesses haven't heard of it. That's the opportunity.
         </p>
       </section>
 
@@ -30,14 +30,14 @@ export default function WhatIsAIVisibilityDealerships() {
           The Short Version
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
-          AI visibility (sometimes called <strong style={{ color: '#fff' }}>AI discoverability</strong> or <strong style={{ color: '#fff' }}>generative engine optimization</strong>) is how often and how prominently an AI system — ChatGPT, Google AI Overviews, Gemini, Perplexity — recommends your dealership when a buyer asks for help finding a car, a service, or a trade-in.
+          AI visibility (sometimes called <strong style={{ color: '#fff' }}>AI discoverability</strong> or <strong style={{ color: '#fff' }}>generative engine optimization</strong>) is how often and how prominently an AI system — ChatGPT, Google AI Overviews, Gemini, Perplexity — recommends your business when someone asks for help finding a product, service, or provider.
         </p>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
-          Think of it like this: when Google Maps recommends a coffee shop, that coffee shop gets foot traffic. When ChatGPT recommends a dealership to someone looking to buy a car, that dealership gets a lead — without that buyer ever clicking a website.
+          Think of it like this: when Google Maps recommends a coffee shop, that coffee shop gets foot traffic. When ChatGPT recommends a dentist to someone looking for a family practice, that dentist gets a new patient — without that person ever clicking a website.
         </p>
         <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 28, marginTop: 24 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, margin: 0 }}>
-            <strong style={{ color: '#fff' }}>In plain English:</strong> AI visibility is whether AI systems know your dealership exists, trust that you exist, and recommend you to the right buyers. That's it. That's the whole game.
+            <strong style={{ color: '#fff' }}>In plain English:</strong> AI visibility is whether AI systems know your business exists, trust that you exist, and recommend you to the right customers. That's it. That's the whole game.
           </p>
         </div>
       </section>
@@ -54,15 +54,15 @@ export default function WhatIsAIVisibilityDealerships() {
           {[
             {
               title: 'AI search has gone mainstream',
-              body: 'ChatGPT has 200+ million weekly users. Google AI Overviews now appear for the majority of search queries. Gemini is embedded in Android phones. Perplexity is used by millions for research-mode searches. Buyers aren\'t just Googling anymore — they\'re asking AI.',
+              body: 'ChatGPT has 200+ million weekly users. Google AI Overviews now appear for the majority of search queries. Gemini is embedded in Android phones. Perplexity is used by millions for research-mode searches. People aren\'t just Googling anymore — they\'re asking AI.',
             },
             {
               title: 'Traditional SEO is losing ground',
-              body: 'Google AI Overviews have caused a documented 61% drop in click-through rates for organic search results. Buyers read the AI summary and never click through to a website. The old playbook — rank #1 on Google — is worth less than it was two years ago.',
+              body: 'Google AI Overviews have caused a documented 61% drop in click-through rates for organic search results. People read the AI summary and never click through to a website. The old playbook — rank #1 on Google — is worth less than it was two years ago.',
             },
             {
-              title: 'AI recommendations are largely invisible to most dealers',
-              body: 'BrightEdge found that 83.3% of AI-generated answers come from just the top 10 sources. Most dealerships aren\'t in any of those sources. And 91% of local businesses are essentially invisible to AI systems right now. That\'s not a small problem — it\'s a massive opportunity for the dealers who move first.',
+              title: 'AI recommendations are largely invisible to most businesses',
+              body: 'BrightEdge found that 83.3% of AI-generated answers come from just the top 10 sources. Most local businesses aren\'t in any of those sources. And 91% of local businesses are essentially invisible to AI systems right now. That\'s not a small problem — it\'s a massive opportunity for the businesses that move first.',
             },
           ].map((item) => (
             <div key={item.title} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
@@ -76,7 +76,7 @@ export default function WhatIsAIVisibilityDealerships() {
       {/* How AI Decides */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
-          How AI Decides Which Dealership to Recommend
+          How AI Decides Which Business to Recommend
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
           Unlike Google (which ranks pages by keywords and backlinks), AI recommendation systems work more like a well-read friend giving advice. They synthesize information from across the internet to form a picture of your business — and they recommend the ones that look most trustworthy, most relevant, and most cited.
@@ -87,11 +87,11 @@ export default function WhatIsAIVisibilityDealerships() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
             { signal: 'Google Business Profile completeness', detail: 'Hours, address, photos, categories — all parsed and weighted' },
-            { signal: 'Reviews across multiple platforms', detail: 'Google, DealerRater, Cars.com, Edmunds, Yelp — volume, recency, and sentiment' },
-            { signal: 'Website content and structure', detail: 'Make/model pages, FAQs, service descriptions, blog content' },
-            { signal: 'Third-party directory presence', detail: 'Consistent NAP (name, address, phone) across Cars.com, Kelley Blue Book, and others' },
-            { signal: 'Structured data / schema markup', detail: 'AI reads schema to understand your business type, services, and inventory' },
-            { signal: 'Citations from authoritative sources', detail: 'Local news mentions, industry directories, Wikipedia-style references' },
+            { signal: 'Reviews across multiple platforms', detail: 'Google, Yelp, Facebook, industry-specific sites — volume, recency, and sentiment' },
+            { signal: 'Website content and structure', detail: 'Service pages, FAQs, team descriptions, blog content' },
+            { signal: 'Third-party directory presence', detail: 'Consistent NAP (name, address, phone) across industry directories and listings' },
+            { signal: 'Structured data / schema markup', detail: 'AI reads schema to understand your business type, services, and location' },
+            { signal: 'Citations from authoritative sources', detail: 'Local news mentions, industry directories, professional associations' },
           ].map((item) => (
             <div key={item.signal} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ minWidth: 8, height: 8, borderRadius: '50%', background: '#25D1F2', marginTop: 8, flexShrink: 0 }} />
@@ -104,33 +104,33 @@ export default function WhatIsAIVisibilityDealerships() {
         </div>
       </section>
 
-      {/* Dealership Examples */}
+      {/* Real-World Examples */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
           What This Looks Like in Practice
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 24 }}>
-          Here are three real scenarios where AI visibility — or lack of it — directly affects a dealership:
+          Here are three real scenarios where AI visibility — or lack of it — directly affects a local business:
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {[
             {
-              context: 'The Inventory Search',
-              scenario: 'A buyer asks ChatGPT: "What dealerships near Toronto have the best selection of used Honda CR-Vs under $30,000?"',
-              withGoodAVI: 'The AI confidently recommends a specific dealership — with address, hours, and a note about their trade-in program — because it found well-structured inventory pages, strong reviews, and consistent citations across multiple platforms.',
-              withPoorAVI: 'The AI either recommends a different dealership entirely, or says "I don\'t have enough information about dealerships in that area." The buyer moves on to the dealer that showed up.',
+              context: 'The Service Search',
+              scenario: 'A homeowner asks ChatGPT: "What plumbers near me have the best reviews for emergency calls?"',
+              withGoodAVI: 'The AI confidently recommends a specific plumbing company — with address, hours, and a note about their 24/7 availability — because it found well-structured service pages, strong reviews, and consistent citations across multiple platforms.',
+              withPoorAVI: 'The AI either recommends a different company entirely, or says "I don\'t have enough information about plumbers in that area." The homeowner calls the company that showed up.',
             },
             {
-              context: 'The Service Department',
-              scenario: 'A buyer asks Perplexity: "Where\'s the best place to get a 2021 Mazda CX-5 transmission serviced in Mississauga?"',
-              withGoodAVI: 'The AI cites the dealership\'s service page, mentions their certified technicians, notes they use OEM parts, and links to their booking tool.',
-              withPoorAVI: 'The AI suggests an independent mechanic or says it can\'t find a specific recommendation. The service department loses a customer who was already in their area.',
+              context: 'The Professional Search',
+              scenario: 'A parent asks Perplexity: "Where\'s the best pediatric dentist in Austin for a child\'s first visit?"',
+              withGoodAVI: 'The AI cites the practice\'s website, mentions their child-friendly office, notes they accept most insurance plans, and links to their booking page.',
+              withPoorAVI: 'The AI suggests a different practice or says it can\'t find a specific recommendation. The practice loses a family that was already looking in their area.',
             },
             {
-              context: 'The Trade-In Question',
-              scenario: 'A Gemini user asks: "What\'s my 2018 Honda Civic worth at a dealership in Oakville?"',
-              withGoodAVI: 'The AI names a local dealership and links to their trade-in valuation tool, with a caveat that they offer competitive valuations.',
-              withPoorAVI: 'No dealership is mentioned. The buyer uses a standalone valuation site and shows up to your lot already anchored to a number — instead of walking in through the service lane first.',
+              context: 'The Comparison Question',
+              scenario: 'A Gemini user asks: "What law firms in Chicago specialize in small business formation?"',
+              withGoodAVI: 'The AI names a local firm and links to their practice area page, noting their flat-fee packages for LLC formation.',
+              withPoorAVI: 'No local firm is mentioned. The user goes with a national online service instead of walking into a local office.',
             },
           ].map((item) => (
             <div key={item.context} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 28 }}>
@@ -155,7 +155,7 @@ export default function WhatIsAIVisibilityDealerships() {
           Traditional SEO vs. AI Visibility: What's the Difference?
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 24 }}>
-          If you've been doing SEO for your dealership, you have a head start — but it's not the same game. Here's where they diverge:
+          If you've been doing SEO for your business, you have a head start — but it's not the same game. Here's where they diverge:
         </p>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
@@ -172,7 +172,7 @@ export default function WhatIsAIVisibilityDealerships() {
                 ['How you win', 'Keywords, backlinks, page speed, technical setup', 'Trust signals, citations, review volume, content depth'],
                 ['Where you appear', 'Google, Bing, Yahoo', 'ChatGPT, Gemini, Perplexity, Google AI Overviews'],
                 ['What AI reads', 'Your website text and metadata', 'Your website + GBP + reviews + directories + schema'],
-                ['Traffic model', 'Click-through from search results', 'Direct recommendation before the buyer searches Google'],
+                ['Traffic model', 'Click-through from search results', 'Direct recommendation before the customer searches Google'],
                 ['Measured by', 'Rankings, CTR, organic sessions', 'Recommendation rate across AI platforms'],
                 ['How fast it changes', 'Weeks to months', 'AI model updates can shift overnight'],
               ].map((row) => (
@@ -186,7 +186,7 @@ export default function WhatIsAIVisibilityDealerships() {
           </table>
         </div>
         <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 20, fontSize: '0.9rem' }}>
-          The critical insight: <strong style={{ color: '#94a3b8' }}>you can rank #1 on Google and still have zero AI visibility.</strong> Our audit of 50 Ontario dealerships found that Google search ranking had almost no correlation with AI recommendation rate. Traditional SEO is a necessary foundation — but it's no longer sufficient on its own.
+          The critical insight: <strong style={{ color: '#94a3b8' }}>you can rank #1 on Google and still have zero AI visibility.</strong> Our audits found that Google search ranking had almost no correlation with AI recommendation rate. Traditional SEO is a necessary foundation — but it's no longer sufficient on its own.
         </p>
       </section>
 
@@ -200,7 +200,7 @@ export default function WhatIsAIVisibilityDealerships() {
             { stat: '61%', label: 'Drop in organic CTR caused by Google AI Overviews' },
             { stat: '91%', label: 'Of local businesses essentially invisible to AI systems today' },
             { stat: '83.3%', label: 'Of AI answers come from just the top 10 sources (BrightEdge)' },
-            { stat: '11/100', label: 'Average AI Visibility Score of 50 Ontario dealerships audited' },
+            { stat: '11/100', label: 'Average AI Visibility Score across businesses audited' },
           ].map((item) => (
             <div key={item.stat} style={{ background: 'rgba(37,209,242,0.05)', border: '1px solid rgba(37,209,242,0.12)', borderRadius: 16, padding: 24, textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: '#25D1F2', marginBottom: 8 }}>{item.stat}</div>
@@ -209,7 +209,7 @@ export default function WhatIsAIVisibilityDealerships() {
           ))}
         </div>
         <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 24, fontSize: '0.9rem' }}>
-          These numbers aren't reasons to panic — they're reasons to act. Most dealerships haven't optimized for AI. The ones that do in the next 12 months will have an advantage that compounds over time, just like the dealers who invested in SEO in 2005.
+          These numbers aren't reasons to panic — they're reasons to act. Most local businesses haven't optimized for AI. The ones that do in the next 12 months will have an advantage that compounds over time, just like the businesses that invested in SEO early.
         </p>
       </section>
 
@@ -219,15 +219,15 @@ export default function WhatIsAIVisibilityDealerships() {
           What Determines Your AI Visibility Score
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 20 }}>
-          Your AVI score — measured across 84 buyer-intent prompts on ChatGPT, Gemini, and Perplexity — is calculated across five weighted categories:
+          Your AVI score — measured across dozens of customer-intent prompts on ChatGPT, Gemini, and Perplexity — is calculated across five weighted categories:
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
-            { pct: '30%', name: 'Dealer Discovery', desc: 'How easily buyers can find your dealership when searching for a car' },
-            { pct: '25%', name: 'Trust & Reviews', desc: 'Your reputation across Google, DealerRater, Cars.com, and Edmunds' },
-            { pct: '20%', name: 'Service Visibility', desc: 'Whether AI knows and cites your service and parts department' },
-            { pct: '15%', name: 'Inventory Presence', desc: 'How your vehicles appear in make/model specific searches' },
-            { pct: '10%', name: 'Finance Presence', desc: 'How clearly your financing options and programs are understood by AI' },
+            { pct: '30%', name: 'Business Discovery', desc: 'How easily customers can find your business when searching for your services' },
+            { pct: '25%', name: 'Trust & Reviews', desc: 'Your reputation across Google, Yelp, Facebook, and industry-specific platforms' },
+            { pct: '20%', name: 'Service Visibility', desc: 'Whether AI knows and cites your specific services and specialties' },
+            { pct: '15%', name: 'Offerings Presence', desc: 'How your products or services appear in specific searches' },
+            { pct: '10%', name: 'Pricing & Payment Presence', desc: 'How clearly your pricing options and payment methods are understood by AI' },
           ].map((item) => (
             <div key={item.name} style={{ display: 'flex', gap: 20, alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 18 }}>
               <div style={{ minWidth: 48, textAlign: 'center' }}>
@@ -248,7 +248,7 @@ export default function WhatIsAIVisibilityDealerships() {
           What's Your AI Visibility Score?
         </h2>
         <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: 32 }}>
-          Run a free AVI check for your dealership. You'll see exactly where you appear — and where you don't — across ChatGPT, Gemini, and Perplexity. No credit card. Takes 2 minutes.
+          Run a free AVI check for your business. You'll see exactly where you appear — and where you don't — across ChatGPT, Gemini, and Perplexity. No credit card. Takes 2 minutes.
         </p>
         <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Run Your Free AVI Check →

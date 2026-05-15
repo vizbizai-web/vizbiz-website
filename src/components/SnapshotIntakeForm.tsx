@@ -6,7 +6,7 @@ import { useState } from "react";
 const inputClassName = "input-shell mt-2";
 const labelClassName = "block text-sm font-medium text-[var(--text-primary)]";
 
-const WEBSITE_ERROR = "Please enter a valid website (e.g. dealershipname.com)";
+const WEBSITE_ERROR = "Please enter a valid website (e.g. yourbusiness.com)";
 
 function normalizeWebsiteUrl(value: string) {
   const trimmed = value.trim();
@@ -111,9 +111,9 @@ export default function SnapshotIntakeForm({
 
       <div>
         <label htmlFor="dealershipName" className={labelClassName}>
-          Dealership Name
+          Business Name
         </label>
-        <input id="dealershipName" name="dealershipName" type="text" required className={inputClassName} placeholder="Oakville Honda" />
+        <input id="dealershipName" name="dealershipName" type="text" required className={inputClassName} placeholder="Oakville Dental" />
       </div>
 
       <div>
@@ -128,7 +128,7 @@ export default function SnapshotIntakeForm({
           autoComplete="url"
           required
           className={inputClassName}
-          placeholder="dealershipname.com"
+          placeholder="yourbusiness.com"
           onBlur={handleWebsiteBlur}
           onInput={handleWebsiteInput}
           onInvalid={(event) => {
@@ -156,7 +156,7 @@ export default function SnapshotIntakeForm({
           name="competitor"
           type="text"
           className={inputClassName}
-          placeholder="ToyotaTown, Downtown Honda, City Kia"
+          placeholder="Competitor A, Competitor B, Competitor C"
         />
       </div>
 
@@ -171,7 +171,7 @@ export default function SnapshotIntakeForm({
         <label htmlFor="email" className={labelClassName}>
           Email
         </label>
-        <input id="email" name="email" type="email" required className={inputClassName} placeholder="alex@dealership.com" />
+        <input id="email" name="email" type="email" required className={inputClassName} placeholder="name@yourbusiness.com" />
       </div>
 
       <button

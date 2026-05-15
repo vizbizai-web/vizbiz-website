@@ -185,11 +185,28 @@ function IntakeForm() {
     payload.append('originalCta', 'Show my score preview + prepare email report');
     payload.append('originalPage', '/');
 
+    // Attribution: capture UTM params + referrer from URL
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      for (const [key, val] of urlParams.entries()) {
+        if (key.startsWith('utm_')) payload.append(key, val);
+      }
+      if (document.referrer) payload.append('referrer', document.referrer);
+    } catch {}
+
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/intake', { method: 'POST', body: payload });
-      if (res.redirected) { window.location.href = res.url; }
-      else { window.location.href = '/thank-you?submitted=1'; }
+      const res = await fetch('/api/pipeline/intake', { method: 'POST', body: payload });
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.leadId) { window.location.href = `/thank-you?submitted=1&leadId=${data.leadId}`; }
+        else { window.location.href = '/thank-you?submitted=1'; }
+      } else {
+        // Fallback to old intake if new pipeline fails
+        const fallbackRes = await fetch('/api/intake', { method: 'POST', body: payload });
+        if (fallbackRes.redirected) { window.location.href = fallbackRes.url; }
+        else { window.location.href = '/thank-you?submitted=1'; }
+      }
     } catch { setIsSubmitting(false); }
   }
 
@@ -479,7 +496,7 @@ export default function HomeContent() {
                     </li>
                   ))}
                 </ul>
-                <a href="https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#0F172A] px-6 py-3.5 font-semibold text-white transition hover:bg-[#020617]">Get the Fix — $88</a>
+                <a href="#" onClick={async (e: any) => { e.preventDefault(); try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: 'homepage', tier: 'fix' }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002'; } }} className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#0F172A] px-6 py-3.5 font-semibold text-white transition hover:bg-[#020617]">Get the Fix — $88</a>
               </div>
 
               {/* Fix + Monitor */}
@@ -497,7 +514,7 @@ export default function HomeContent() {
                     </li>
                   ))}
                 </ul>
-                <a href="https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003" className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.01]">Fix + Monitor — $188/mo</a>
+                <a href="#" onClick={async (e: any) => { e.preventDefault(); try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: 'homepage', tier: 'fix_and_monitor' }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = 'https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003'; } }} className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-3.5 font-bold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.01]">Fix + Monitor — $188/mo</a>
               </div>
             </div>
 

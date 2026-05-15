@@ -1,10 +1,10 @@
 
 export const metadata = {
-  title: 'Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide',
-  description: 'The complete guide to GEO for car dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
+  title: 'Generative Engine Optimization (GEO) for Local Businesses: The Complete Guide',
+  description: 'The complete guide to GEO for local businesses — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
   openGraph: {
-    title: 'Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide',
-    description: 'The complete guide to GEO for car dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
+    title: 'Generative Engine Optimization (GEO) for Local Businesses: The Complete Guide',
+    description: 'The complete guide to GEO for local businesses — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
   },
   alternates: {
     canonical: "https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships",
@@ -15,8 +15,8 @@ export default function GEOGuide() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: 'Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide',
-    description: 'The complete guide to GEO for car dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
+    headline: 'Generative Engine Optimization (GEO) for Local Businesses: The Complete Guide',
+    description: 'The complete guide to GEO for local businesses — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
     author: { '@type': 'Organization', name: 'VizBiz' },
     publisher: { '@type': 'Organization', name: 'VizBiz', url: 'https://vizbiz.ai' },
     datePublished: '2026-04-20',
@@ -30,10 +30,10 @@ export default function GEOGuide() {
       {/* Hero */}
       <section style={{ padding: '80px 24px 50px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2.4rem', fontWeight: 800, lineHeight: 1.2, marginBottom: 20, color: '#fff' }}>
-          Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide
+          Generative Engine Optimization (GEO) for Local Businesses: The Complete Guide
         </h1>
         <p style={{ fontSize: '1.1rem', color: '#94a3b8', maxWidth: 660, margin: '0 auto' }}>
-          67% of automotive searches now trigger an AI-generated answer. GEO is how you get your dealership into those answers. Here's the complete playbook.
+          67% of local business searches now trigger an AI-generated answer. GEO is how you get your business into those answers. Here's the complete playbook.
         </p>
       </section>
 
@@ -42,10 +42,10 @@ export default function GEOGuide() {
         <div style={{ background: 'rgba(37,209,242,0.08)', border: '1px solid rgba(37,209,242,0.2)', borderRadius: 18, padding: 28 }}>
           <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#25D1F2', marginBottom: 16 }}>Key Takeaways</h2>
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>GEO (Generative Engine Optimization) focuses on getting your dealership cited by AI models — not just ranking on search pages.</li>
-            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Four AI engines matter most for dealerships: ChatGPT, Google Gemini, Google AI Overviews, and Perplexity.</li>
+            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>GEO (Generative Engine Optimization) focuses on getting your business cited by AI models — not just ranking on search pages.</li>
+            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Four AI engines matter most for local businesses: ChatGPT, Google Gemini, Google AI Overviews, and Perplexity.</li>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Traditional SEO fundamentals still matter, but GEO adds new requirements: structured data, entity consistency, multi-platform reviews, and citation diversity.</li>
-            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Most dealerships haven't started GEO yet — early movers gain a compounding advantage.</li>
+            <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}>Most local businesses haven't started GEO yet — early movers gain a compounding advantage.</li>
           </ul>
         </div>
       </section>
@@ -60,10 +60,10 @@ export default function GEOGuide() {
             Traditional SEO optimizes for search engine results pages — blue links, map packs, featured snippets. You rank #1, you get clicks. The model is straightforward: keywords, backlinks, technical health.
           </p>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
-            GEO optimizes for AI-generated answers. Instead of trying to rank a page, you're trying to get your dealership <em>cited</em> when an AI model answers a question. The AI doesn't show ten blue links — it generates a natural language response that names specific businesses. If you're not named, you're not considered.
+            GEO optimizes for AI-generated answers. Instead of trying to rank a page, you're trying to get your business <em>cited</em> when an AI model answers a question. The AI doesn't show ten blue links — it generates a natural language response that names specific businesses. If you're not named, you're not considered.
           </p>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, margin: 0 }}>
-            The key difference: SEO rewards pages. GEO rewards entities — your dealership as a real-world business with reviews, citations, content, and consistent signals across the web.
+            The key difference: SEO rewards pages. GEO rewards entities — your business as a real-world company with reviews, citations, content, and consistent signals across the web.
           </p>
         </div>
       </section>
@@ -71,14 +71,14 @@ export default function GEOGuide() {
       {/* 4 AI Engines */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
-          The 4 AI Engines That Matter for Dealerships
+          The 4 AI Engines That Matter for Local Businesses
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
           {[
-            { name: 'ChatGPT', desc: '200M+ weekly users. Pulls from web content, reviews, and business listings. Best for long-tail recommendation queries like "best used car dealer for Honda in Oakville."', signal: 'Reviews, GBP, content depth' },
+            { name: 'ChatGPT', desc: '200M+ weekly users. Pulls from web content, reviews, and business listings. Best for long-tail recommendation queries like "best family dentist in Oakville" or "reliable plumber near me."', signal: 'Reviews, GBP, content depth' },
             { name: 'Google Gemini', desc: 'Integrated into Google Search. Powers AI Overviews for billions of queries. The fastest-growing AI answer engine for local business queries.', signal: 'GBP, schema, E-E-A-T signals' },
-            { name: 'Google AI Overviews', desc: 'Appears at the top of Google search results for 67% of automotive queries. Cites 3–5 sources per answer. If you\'re cited, you capture attention before any traditional result.', signal: 'Content quality, authority, freshness' },
-            { name: 'Perplexity', desc: 'Fastest-growing AI search engine. Cites sources explicitly — your dealership name appears as a clickable reference. High-intent users who are actively researching.', signal: 'Citations, structured data, web presence' },
+            { name: 'Google AI Overviews', desc: 'Appears at the top of Google search results for 67% of local queries. Cites 3–5 sources per answer. If you\'re cited, you capture attention before any traditional result.', signal: 'Content quality, authority, freshness' },
+            { name: 'Perplexity', desc: 'Fastest-growing AI search engine. Cites sources explicitly — your business name appears as a clickable reference. High-intent users who are actively researching.', signal: 'Citations, structured data, web presence' },
           ].map((engine) => (
             <div key={engine.name} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#25D1F2', marginBottom: 10 }}>{engine.name}</h3>
@@ -123,15 +123,15 @@ export default function GEOGuide() {
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {[
-            { num: '1', title: 'Add LocalBusiness + AutomotiveDealer schema', body: 'JSON-LD format on every page. Include NAP, hours, makes, services, geocoordinates. This is table stakes — 42% of dealerships don\'t have it.' },
+            { num: '1', title: 'Add LocalBusiness + niche schema', body: 'JSON-LD format on every page. Include NAP, hours, services, geocoordinates. Use the right type — Dentist, Attorney, AutoRepair, Plumbing, Restaurant, etc. This is table stakes — 42% of businesses don\'t have it.' },
             { num: '2', title: 'Complete every Google Business Profile field', body: 'Every. Single. One. Description, categories, attributes, photos, services, products. 94% of AI recommendations factor in GBP completeness.' },
-            { num: '3', title: 'Build make/model landing pages', body: 'One page per brand you carry: "Toyota Dealer in [City]", "Honda Service Center [City]". Include inventory highlights, why-buy-here content, and local context.' },
-            { num: '4', title: 'Create a comprehensive FAQ page', body: 'Answer the 20 questions your customers ask most. Financing, trade-ins, warranties, service intervals. Use natural language — write how people actually ask.' },
-            { num: '5', title: 'Diversify reviews across 4+ platforms', body: 'Google, Cars.com, DealerRater, Yelp, Facebook. Dealerships on 5+ review platforms are 2.8× more likely to appear in AI answers.' },
-            { num: '6', title: 'Publish monthly blog content', body: 'Answer real buyer questions. "Best time to buy a used SUV", "What to check before leasing". 3.7× more AI citations for consistent publishers.' },
+            { num: '3', title: 'Build service-specific landing pages', body: 'One page per core service: "Teeth Whitening in [City]", "Emergency Plumbing Repair [City]", "Brake Service [City]". Include details, FAQs, and local context.' },
+            { num: '4', title: 'Create a comprehensive FAQ page', body: 'Answer the 20 questions your customers ask most. Pricing, process, what to expect, insurance, guarantees. Use natural language — write how people actually ask.' },
+            { num: '5', title: 'Diversify reviews across 4+ platforms', body: 'Google, Yelp, Facebook, Healthgrades, Avvo, Angi — whichever platforms matter for your industry. Businesses on 5+ review platforms are 2.8× more likely to appear in AI answers.' },
+            { num: '6', title: 'Publish monthly blog content', body: 'Answer real customer questions. "Best time to replace your roof", "What to expect at your first dental cleaning". 3.7× more AI citations for consistent publishers.' },
             { num: '7', title: 'Ensure NAP consistency everywhere', body: 'Your name, address, and phone number must be identical across your website, GBP, social media, review sites, and directories. Even minor variations hurt.' },
-            { num: '8', title: 'Claim profiles on every automotive platform', body: 'Cars.com, Edmunds, DealerRater, manufacturer dealer locators. Each is a citation AI models can reference.' },
-            { num: '9', title: 'Add a detailed services page', body: 'List every service: oil changes, brake repair, tire rotation, financing, trade-ins, collision center. AI models need this content to recommend you for specific queries.' },
+            { num: '8', title: 'Claim profiles on every industry platform', body: 'Healthgrades for healthcare, Avvo for legal, Angi for home services, Yelp for restaurants. Each is a citation AI models can reference.' },
+            { num: '9', title: 'Add a detailed services page', body: 'List every service you offer. AI models need this content to recommend you for specific queries. Don\'t bury your services in vague copy.' },
             { num: '10', title: 'Monitor your AI visibility monthly', body: 'Run AI visibility audits to track which engines are citing you and which aren\'t. Measure against competitors. What gets measured gets improved.' },
           ].map((item) => (
             <div key={item.num} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 24 }}>
@@ -152,7 +152,7 @@ export default function GEOGuide() {
         </h2>
         <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 20, padding: 32 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
-            VizBiz's AI Visibility Index (AVI) measures your dealership's presence across AI engines using a 0–100 score based on five pillars:
+            VizBiz's AI Visibility Index (AVI) measures your business's presence across AI engines using a 0–100 score based on five pillars:
           </p>
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ color: '#cbd5e1', lineHeight: 1.6 }}><strong style={{ color: '#e2e8f0' }}>AI Presence</strong> — Are you cited in AI-generated answers for relevant queries?</li>
@@ -174,7 +174,7 @@ export default function GEOGuide() {
             Start With Your AI Visibility Audit
           </h2>
           <p style={{ color: '#94a3b8', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
-            Find out where your dealership stands across ChatGPT, Gemini, Google AI Overviews, and Perplexity — and get a prioritized fix list.
+            Find out where your business stands across ChatGPT, Gemini, Google AI Overviews, and Perplexity — and get a prioritized fix list.
           </p>
           <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
             Get Your AI Visibility Audit →

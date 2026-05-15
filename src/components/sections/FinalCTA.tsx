@@ -23,7 +23,7 @@ export default function FinalCTA() {
           <div className="instrument-badge max-w-full">Free score first. Full audit when you want more depth.</div>
 
           <h2 className="display-font mt-5 text-[2.45rem] font-bold leading-[0.92] tracking-[-0.05em] text-white sm:text-[3rem] lg:text-[4rem]">
-            Find out whether AI is recommending your dealership — or leaving you out.
+            Find out whether AI is recommending your business — or leaving you out.
           </h2>
 
           <p className="mx-auto mt-5 max-w-3xl text-[1.02rem] leading-7 text-white/74 sm:text-[1.12rem] sm:leading-8 lg:text-[1.22rem]">

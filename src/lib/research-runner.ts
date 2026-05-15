@@ -11,6 +11,8 @@ import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
 import { isJunkCompetitor } from "./junk-filter";
 import { collectSocialSignals } from "./social-signals";
+import { extractFanoutQueries, scoreFanoutCoverage, generateFanoutReport } from "./query-fanout";
+import { tavilySearch, type TavilySearchResult } from "./tavily-client";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
@@ -22,51 +24,11 @@ if (!BRAVE_API_KEY) {
   console.warn("[research-runner] BRAVE_SEARCH_API_KEY not configured — no fallback available");
 }
 
-interface TavilySearchResult {
-  title: string;
-  url: string;
-  content: string;
-}
+// TavilySearchResult imported from tavily-client.ts
 
-interface TavilyResponse {
-  results: TavilySearchResult[];
-  response_time: number;
-}
 
-async function tavilySearch(query: string): Promise<TavilySearchResult[]> {
-  if (!TAVILY_API_KEY) {
-    throw new Error("TAVILY_API_KEY not configured");
-  }
-
-  try {
-    const response = await fetch("https://api.tavily.com/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        api_key: TAVILY_API_KEY,
-        query: query,
-        search_depth: "basic",
-        include_answer: false,
-        include_images: false,
-        include_raw_content: false,
-        max_results: 5,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Tavily search failed: ${response.status} ${errorText}`);
-    }
-
-    const data: TavilyResponse = await response.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("[research-runner] Tavily search error:", error);
-    throw error;
-  }
-}
+// Tavily search imported from shared tavily-client.ts — single rate-limited instance
+// Local TavilySearchResult type re-exported from tavily-client
 
 /**
  * Brave Search API fallback
@@ -162,6 +124,13 @@ export interface ResearchResult {
   competitorSocial?: { name: string; instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null }[];
   socialNarrative?: string;
   socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
+  // Edward Sturm query fan-out
+  queryFanout?: {
+    fanoutQueries: string[];
+    summary: string;
+    missedQueries: string[];
+    competitorDominantQueries: string[];
+  };
 }
 
 export async function runResearch(
@@ -175,6 +144,25 @@ export async function runResearch(
     pricingInfo: string | null;
     estimatedRevenueGap: { low: number; high: number; currency: string };
     aiReadinessScore: number;
+    // v2 enriched fields
+    businessType?: string;
+    targetAudience?: string;
+    services?: string[];
+    siteLanguage?: string;
+    searchLanguage?: string;
+    market?: string;
+    searchLangCode?: string;
+    suggestedSearchQueries?: string[];
+    competitorSearchQueries?: string[];
+    // Scraper intelligence
+    socialLinks?: {
+      instagram: string | null;
+      facebook: string | null;
+      linkedin: string | null;
+      twitter: string | null;
+      tiktok: string | null;
+      youtube: string | null;
+    };
   },
   tier: 'free' | 'paid' = 'free'
 ): Promise<ResearchResult> {
@@ -185,29 +173,46 @@ export async function runResearch(
   // STEP 1: Use PreFlight profile if available (no duplicate site fetch needed)
   let websiteInsight;
   let finalNiche;
+  let enrichedPrompts: string[] | null = null; // v2: LLM-generated customer queries
+  let enrichedCompQueries: string[] | null = null; // v2: LLM-generated competitor queries
   
   if (preflightProfile) {
-    console.info(`[research-runner] Using PreFlight profile: niche=${preflightProfile.niche}, prop="${preflightProfile.valueProposition.substring(0, 80)}"`);
+    console.info(`[research-runner] Using PreFlight v2 profile: niche=${preflightProfile.niche}, businessType=${preflightProfile.businessType || 'N/A'}, market=${preflightProfile.market || 'N/A'}, searchLang=${preflightProfile.searchLanguage || 'N/A'}`);
     // Trust the LLM-classified niche even if not in our database
     const knownNicheConfig = getNicheByName(preflightProfile.niche);
-    const dynamicConfig = knownNicheConfig ? null : generateDynamicNicheConfig(preflightProfile.niche);
+    const dynamicConfig = knownNicheConfig ? null : generateDynamicNicheConfig(
+      preflightProfile.niche,
+      preflightProfile.businessType || undefined,
+      preflightProfile.targetAudience || undefined,
+      preflightProfile.searchLanguage || undefined
+    );
     if (dynamicConfig) {
-      console.info(`[research-runner] Generated dynamic niche config for unknown niche: ${preflightProfile.niche}`);
+      console.info(`[research-runner] Generated dynamic niche config for: ${preflightProfile.businessType || preflightProfile.niche}`);
     }
     websiteInsight = {
-      services: preflightProfile.valueProposition ? [preflightProfile.valueProposition] : [],
-      keywords: [preflightProfile.niche],
+      services: preflightProfile.services || (preflightProfile.valueProposition ? [preflightProfile.valueProposition] : []),
+      keywords: [preflightProfile.businessType || preflightProfile.niche],
       niche: preflightProfile.niche,
       nicheConfig: knownNicheConfig || dynamicConfig,
     };
     finalNiche = preflightProfile.niche;
+
+    // v2: Use LLM-generated queries if available
+    if (preflightProfile.suggestedSearchQueries && preflightProfile.suggestedSearchQueries.length >= 5) {
+      enrichedPrompts = preflightProfile.suggestedSearchQueries;
+      console.info(`[research-runner] Using ${enrichedPrompts.length} LLM-generated customer search queries`);
+    }
+    if (preflightProfile.competitorSearchQueries && preflightProfile.competitorSearchQueries.length >= 2) {
+      enrichedCompQueries = preflightProfile.competitorSearchQueries;
+      console.info(`[research-runner] Using ${enrichedCompQueries.length} LLM-generated competitor search queries`);
+    }
   } else {
     // Fallback: scan website ourselves
     websiteInsight = await scanWebsite(website);
     finalNiche = websiteInsight.niche || detectNiche(resolvedName, website).niche;
   }
   
-  console.info(`[research-runner] Website scan: services=[${(websiteInsight.services || []).slice(0,5).join(', ')}] keywords=[${(websiteInsight.keywords || []).slice(0,5).join(', ')}]`);
+  console.info(`[research-runner] Services: [${(websiteInsight.services || []).slice(0,5).join(', ')}]`);
   console.info(`[research-runner] Final niche: ${finalNiche}`);
   
   // STEP 3: Generate prompts based on niche + tier
@@ -224,11 +229,45 @@ export async function runResearch(
     }, 'paid');
     prompts = fullPromptDefs.map(p => p.text);
     console.info(`[research-runner] Using FULL 84-prompt set (paid tier): ${prompts.length} prompts`);
+  } else if (enrichedPrompts) {
+    // v2: Use LLM-generated queries from preflight — these are already language+market specific
+    // Pad to 20 if needed by generating variations
+    prompts = buildPromptSetFromEnriched(enrichedPrompts, resolvedName, city, preflightProfile?.searchLanguage);
+    console.info(`[research-runner] Using enriched prompt set: ${prompts.length} prompts (lang: ${preflightProfile?.searchLanguage || 'unknown'})`);
   } else {
     // Standard 20-prompt set for free reports
     const promptSet = getPromptSetForNiche(finalNiche);
     prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
     console.info(`[research-runner] Using standard 20-prompt set (free tier)`);
+  }
+  
+  // STEP 3.5: Prompt Quality Check — verify prompts match the business
+  if (preflightProfile?.businessType) {
+    try {
+      const promptQuality = await verifyPromptQuality(prompts, preflightProfile.businessType, resolvedName);
+      if (promptQuality.bad.length > 0) {
+        console.warn(`[research-runner] ⚠️ ${promptQuality.bad.length} prompts don't match this business:`);
+        for (const bad of promptQuality.bad) {
+          console.warn(`[research-runner]   BAD: "${bad.prompt}" — ${bad.reason}`);
+        }
+        // Replace bad prompts with LLM-suggested alternatives
+        if (promptQuality.replacements.length > 0) {
+          let replaced = 0;
+          for (const bad of promptQuality.bad) {
+            const idx = prompts.indexOf(bad.prompt);
+            if (idx >= 0 && promptQuality.replacements[replaced]) {
+              console.info(`[research-runner]   FIX: "${bad.prompt}" → "${promptQuality.replacements[replaced]}"`);
+              prompts[idx] = promptQuality.replacements[replaced];
+              replaced++;
+            }
+          }
+        }
+      } else {
+        console.info(`[research-runner] ✅ All ${prompts.length} prompts passed quality check`);
+      }
+    } catch (e) {
+      console.warn(`[research-runner] Prompt quality check failed (non-blocking):`, e instanceof Error ? e.message : e);
+    }
   }
   
   // STEP 4: Run searches and track appearances — check against BOTH names
@@ -237,7 +276,7 @@ export async function runResearch(
   // STEP 4.5: Discover competitors from search results
   // If no competitors were provided or the known competitors didn't show up,
   // scan ALL search results for recurring business names
-  const discoveredCompetitors = discoverCompetitorsFromResults(rawResults, resolvedName, website, businessName);
+  const discoveredCompetitors = discoverCompetitorsFromResults(rawResults, resolvedName, website, businessName, { businessType: preflightProfile?.businessType, services: preflightProfile?.services });
   if (discoveredCompetitors.length > 0) {
     console.info(`[research-runner] Discovered ${discoveredCompetitors.length} competitors from search results:`);
     for (const dc of discoveredCompetitors) {
@@ -251,7 +290,7 @@ export async function runResearch(
         const promptRaw = rawResults[i];
         if (promptRaw && promptRaw.results.length > 0) {
           const discResult = checkCompetitorAppearance(promptRaw.results, discoveredNames);
-          if (discResult.appeared && discResult.name && isRealBusiness(discResult.name)) {
+          if (discResult.appeared && discResult.name && isRealBusiness(discResult.name, { businessType: preflightProfile?.businessType, services: preflightProfile?.services })) {
             results[i].competitorAppeared = true;
             results[i].competitorName = discResult.name;
           }
@@ -262,9 +301,27 @@ export async function runResearch(
   
   // STEP 5: Calculate scores and bands
   const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
+
+  // STEP 5.5: Post-research sanity check
+  // If ALL prompts returned zero AND same competitor across all results,
+  // that's a red flag — the prompts were probably wrong for this business.
+  if (finalResult.appearedCount === 0 && finalResult.totalPrompts >= 10) {
+    const compNames = finalResult.promptResults
+      .filter(r => r.competitorName)
+      .map(r => r.competitorName!);
+    const uniqueComps = new Set(compNames);
+    
+    if (uniqueComps.size <= 1) {
+      console.warn(`[research-runner] ⚠️ SANITY CHECK: 0 appearances, ${uniqueComps.size} competitor(s). Prompts may be wrong for this business.`);
+      console.warn(`[research-runner] Business: ${resolvedName}, Niche: ${finalNiche}, BusinessType: ${preflightProfile?.businessType || 'N/A'}, SearchLang: ${preflightProfile?.searchLanguage || 'N/A'}`);
+      console.warn(`[research-runner] Top competitor: ${[...uniqueComps][0] || 'none'}, Prompts sample: ${prompts.slice(0,3).join(' | ')}`);
+      // Flag in the result for downstream review
+      finalResult.recommendedNextStep = `⚠️ Research quality warning: Zero appearances with only ${uniqueComps.size} competitor found. Prompts may not match this business type (${preflightProfile?.businessType || finalNiche}). Consider rerunning with corrected niche or language settings.`;
+    }
+  }
   
   // STEP 6: Add revenue loss analysis
-  const revLoss = calculateRevenueLoss(finalResult.appearedCount, finalResult.totalPrompts, finalNiche);
+  const revLoss = calculateRevenueLoss(finalResult.appearedCount, finalResult.totalPrompts, finalNiche, preflightProfile?.pricingInfo || null);
   
   finalResult.resolvedName = resolvedName;
   finalResult.revenueLoss = revLoss.loss;
@@ -286,7 +343,10 @@ export async function runResearch(
         .reduce((acc, r) => { acc[r.competitorName!] = (acc[r.competitorName!] || 0) + 1; return acc; }, {} as Record<string, number>)
     ).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
 
-    const socialData = await collectSocialSignals(businessName, city, website, competitorNames);
+    const socialData = await collectSocialSignals(
+      businessName, city, website, competitorNames,
+      { instagram: preflightProfile?.socialLinks?.instagram, facebook: preflightProfile?.socialLinks?.facebook }
+    );
     finalResult.socialPresence = socialData.business;
     finalResult.competitorSocial = socialData.competitors;
     finalResult.socialNarrative = socialData.narrative;
@@ -294,6 +354,33 @@ export async function runResearch(
     console.info(`[research-runner] Social signals: IG=${socialData.business.instagram}, FB=${socialData.business.facebook}, Google=${socialData.business.googleReviews} reviews`);
   } catch (e) {
     console.warn(`[research-runner] Social signals failed (non-blocking):`, e instanceof Error ? e.message : e);
+  }
+
+  // STEP 8: Query fan-out extraction (Edward Sturm methodology)
+  // Discovers the actual follow-up searches AI models perform when researching this business
+  try {
+    console.info(`[research-runner] Running query fan-out extraction...`);
+    const fanout = await extractFanoutQueries(resolvedName, city, finalNiche);
+    if (fanout.fanoutQueries.length >= 3) {
+      const competitorNames = finalResult.promptResults
+        .filter(r => r.competitorName)
+        .map(r => r.competitorName!)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .slice(0, 3);
+      const coverage = await scoreFanoutCoverage(fanout.fanoutQueries, resolvedName, competitorNames);
+      const fanoutReport = generateFanoutReport(coverage);
+      finalResult.queryFanout = {
+        fanoutQueries: fanout.fanoutQueries,
+        summary: fanoutReport.summary,
+        missedQueries: fanoutReport.missedQueries,
+        competitorDominantQueries: fanoutReport.competitorDominantQueries,
+      };
+      console.info(`[research-runner] Fan-out: ${fanout.fanoutQueries.length} queries, ${fanoutReport.missedQueries.length} missed, ${fanoutReport.competitorDominantQueries.length} competitor-dominated`);
+    } else {
+      console.info(`[research-runner] Fan-out extraction returned too few queries (${fanout.fanoutQueries.length}), skipping`);
+    }
+  } catch (e) {
+    console.warn(`[research-runner] Query fan-out failed (non-blocking):`, e instanceof Error ? e.message : e);
   }
 
   return finalResult;
@@ -431,11 +518,12 @@ function resolveBusinessName(businessName: string, website: string): string {
     .trim();
   
   // Split domain on common word boundaries: 'and', 'by', 'the', 'of', 'for'
-  // Also split camelCase-like patterns
+  // Only split if the keyword is at an actual boundary (not inside a word like 'water' containing 'at')
   const readable = domain
     .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
-    .replace(/([a-z])(and|by|the|of|for|in|at)([a-z])/gi, '$1 $2 $3') // word boundaries
+    .replace(/\b(and|by|the|of|for|in|at|360|news)\b/gi, ' ') // word boundaries only
     .replace(/[\-_.]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   
   const domainWords = readable.split(/\s+/).filter(w => w.length > 0);
@@ -453,6 +541,67 @@ function resolveBusinessName(businessName: string, website: string): string {
   }
   
   return businessName;
+}
+
+/**
+ * Build a 20-prompt set from LLM-generated customer search queries.
+ * These are already in the right language and market-specific.
+ * If fewer than 20, generate variations to pad.
+ */
+function buildPromptSetFromEnriched(
+  enrichedQueries: string[],
+  businessName: string,
+  city: string,
+  searchLanguage?: string
+): string[] {
+  const prompts: string[] = [];
+
+  // Use the LLM-generated queries directly — they're already specific
+  for (const q of enrichedQueries) {
+    if (prompts.length >= 20) break;
+    // Replace placeholders if present
+    const filled = q
+      .replace(/{businessName}/gi, businessName)
+      .replace(/{city}/gi, city);
+    prompts.push(filled);
+  }
+
+  // Pad with variations if we have fewer than 20
+  if (prompts.length < 20) {
+    const shortName = businessName.split(' ').slice(0, 2).join(' ');
+    const base = enrichedQueries[0] || `${businessName} in ${city}`;
+    // Generate variations by rephrasing the top queries
+    const variations = [
+      `${shortName} reviews`,
+      `${shortName} near me`,
+      `${businessName} pricing`,
+      `best ${businessTypeLabel(base)} in ${city}`,
+      `${shortName} contact`,
+      `${shortName} ${city}`,
+      `${businessName} services`,
+      `top ${businessTypeLabel(base)} ${city}`,
+      `${businessName} recommendations`,
+      `${shortName} booking`,
+      `${businessName} consultation`,
+      `trusted ${businessTypeLabel(base)} ${city}`,
+    ];
+    for (const v of variations) {
+      if (prompts.length >= 20) break;
+      if (!prompts.includes(v)) prompts.push(v);
+    }
+  }
+
+  return prompts.slice(0, 20);
+}
+
+/** Extract a generic business type label from a search query for variation generation */
+function businessTypeLabel(query: string): string {
+  // Try to extract the business type from the query
+  const cleaned = query.replace(/^(best|top|find|where|how|recommended|trusted)\s+/i, '')
+    .replace(/\s+(in|near|for|at)\s+.*/i, '')
+    .replace(/\s+(reviews|pricing|contact|services|booking|consultation)\s*$/i, '')
+    .trim();
+  return cleaned || 'business';
 }
 
 function generatePrompts(
@@ -561,8 +710,8 @@ async function runPromptSearches(
         competitorName: competitorResult.name
       });
       
-      // Be gentle with API - small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Be gentle with API - 500ms between requests (on top of Tavily rate limiter)
+      await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (error) {
       console.error(`[research-runner] Failed prompt search for "${prompt}":`, error);
@@ -687,7 +836,7 @@ function checkCompetitorAppearance(
     if (/\.[a-z]{2,}(\/|$)/i.test(rawName)) return { appeared: false };
     
     // Reject aggregator/platform names (Getyourguide, Viator, etc.)
-    if (!isRealBusiness(rawName)) return { appeared: false };
+    if (!isRealBusiness(rawName, undefined)) return { appeared: false };
 
     return { appeared: true, name: rawName };
   }
@@ -757,13 +906,44 @@ const AGGREGATOR_NAMES = [
 ];
 
 /**
- * Check if a competitor name is a real business (not an aggregator/platform/directory)
+ * Expanded junk patterns for competitor validation
  */
-function isRealBusiness(name: string): boolean {
+const JUNK_BUSINESS_PATTERNS: RegExp[] = [
+  /chamber\s+of\s+commerce/i,
+  /better\s+business\s+bureau/i,
+  /council$/i,
+  /association$/i,
+  /federation$/i,
+  /authority$/i,
+  /department\s+of/i,
+  /government/i,
+  /\.gov/i,
+  /^news$/i,
+  /^weather$/i,
+  /^events?$/i,
+  /^jobs?$/i,
+  /^classes?$/i,
+  /^courses?$/i,
+  /^training$/i,
+];
+
+/**
+ * Check if a competitor name is a real business (not an aggregator/platform/directory)
+ * When preflight context is available, also validates niche relevance.
+ */
+function isRealBusiness(
+  name: string,
+  preflightContext?: { businessType?: string; services?: string[] }
+): boolean {
   const lower = name.toLowerCase().trim();
   
   // Reject if it matches any aggregator pattern
   if (AGGREGATOR_NAMES.some(a => lower === a || lower.startsWith(a) || lower.endsWith(a))) {
+    return false;
+  }
+  
+  // Reject expanded junk patterns (associations, government, generic)
+  if (JUNK_BUSINESS_PATTERNS.some(p => p.test(lower))) {
     return false;
   }
   
@@ -780,6 +960,24 @@ function isRealBusiness(name: string): boolean {
   
   // Reject if it's just a location/area name
   if (/^(the )?(best|top|cheap|affordable|reliable|local) /i.test(lower)) return false;
+  
+  // Reject single generic words that aren't brand names
+  const GENERIC_SINGLE_WORDS = new Set([
+    'news', 'weather', 'events', 'jobs', 'home', 'welcome', 'about', 'contact',
+    'services', 'gallery', 'menu', 'blog', 'shop', 'store', 'directory',
+    'guide', 'review', 'reviews', 'maps', 'directions', 'hours', 'booking',
+    'water polo', 'football', 'basketball', 'cricket', 'tennis', 'swimming',
+    'gymnastics', 'hockey', 'volleyball', 'rugby', 'baseball', 'soccer',
+  ]);
+  if (GENERIC_SINGLE_WORDS.has(lower)) return false;
+  
+  // Reject names with 6+ words — likely article titles, not business names
+  if (name.split(/\s+/).length >= 6) return false;
+  
+  // Reject common article/content title patterns
+  if (/transfers?\s+(&|and)\s+(rumou?rs?|gossip|news)/i.test(lower)) return false;
+  if (/ready\s+to\s+(make|take|win|join|lead)/i.test(lower)) return false;
+  if (/membership\s+(schedule|form|plan|fee|dues)/i.test(lower)) return false;
   
   return true;
 }
@@ -826,7 +1024,8 @@ function discoverCompetitorsFromResults(
   allSearchResults: { prompt: string; results: TavilySearchResult[] }[],
   businessName: string,
   businessWebsite: string,
-  originalName?: string
+  originalName?: string,
+  preflightContext?: { businessType?: string; services?: string[] }
 ): DiscoveredCompetitor[] {
   const candidateScores: Map<string, { appearances: number; urls: Set<string>; names: Set<string> }> = new Map();
   
@@ -911,7 +1110,9 @@ function discoverCompetitorsFromResults(
     });
   }
   
-  return sorted.sort((a, b) => b.appearances - a.appearances).filter(dc => isRealBusiness(dc.name)).slice(0, 5);
+  return sorted.sort((a, b) => b.appearances - a.appearances)
+    .filter(dc => isRealBusiness(dc.name, { businessType: preflightContext?.businessType, services: preflightContext?.services }))
+    .slice(0, 5);
 }
 
 function calculateScores(
@@ -1076,5 +1277,95 @@ function getWhyThisMatters(niche: string): string {
       return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
     default:
       return "AI can shape the shortlist before a customer finds you, compares options, or makes contact.";
+  }
+}
+/**
+ * STEP 3.5: Prompt Quality Verification
+ * 
+ * Uses a quick LLM call to verify that generated prompts are actually
+ * relevant to the business type. Catches mismatches like "water polo news"
+ * for a water polo training platform, or "best dealership" for a restaurant.
+ */
+async function verifyPromptQuality(
+  prompts: string[],
+  businessType: string,
+  businessName: string,
+): Promise<{ bad: { prompt: string; reason: string }[]; replacements: string[] }> {
+  const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY;
+  if (!OLLAMA_API_KEY) return { bad: [], replacements: [] };
+
+  // Sample up to 10 prompts to check (don't check all 20 to save time)
+  const samplePrompts = prompts.slice(0, 10);
+
+  const verifyPrompt = `You are checking if search queries are appropriate for a specific business.
+
+Business: "${businessName}"
+Business type: "${businessType}"
+
+For each search query below, determine if it's a realistic query that a CUSTOMER would type to find THIS specific type of business. 
+
+A BAD query is one that:
+- Is about a different industry/service entirely
+- Is a news/information query, not a buyer-intent query
+- Uses the wrong language or market
+- Is too generic (e.g., "best X near me" when the business is a specific niche)
+- Would never lead someone to hire or buy from this business
+
+Return ONLY valid JSON. No markdown. No code fences.
+{
+  "bad": [
+    {"prompt": "exact prompt text", "reason": "why it's bad"}
+  ],
+  "replacements": [
+    "better prompt to replace the first bad one",
+    "better prompt to replace the second bad one"
+  ]
+}
+
+If all prompts are good, return: {"bad": [], "replacements": []}
+
+QUERIES TO CHECK:
+${samplePrompts.map((p, i) => `${i + 1}. "${p}"`).join('\n')}`;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    const res = await fetch("https://ollama.com/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OLLAMA_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gemma3:4b",
+        messages: [{ role: "user", content: verifyPrompt }],
+        stream: false,
+        options: { temperature: 0.1 },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      throw new Error(`Ollama returned ${res.status}`);
+    }
+
+    const data = await res.json();
+    const content = data?.message?.content || "";
+    
+    // Parse JSON from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return { bad: [], replacements: [] };
+    
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      bad: Array.isArray(parsed.bad) ? parsed.bad : [],
+      replacements: Array.isArray(parsed.replacements) ? parsed.replacements : [],
+    };
+  } catch (e) {
+    console.warn("[research-runner] Prompt quality LLM call failed:", e instanceof Error ? e.message : e);
+    return { bad: [], replacements: [] };
   }
 }

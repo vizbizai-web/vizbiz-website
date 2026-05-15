@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getLeadByLeadId, updateLeadResearchResults, isSheetsConfigured } from "@/lib/google-sheets";
 import { isJunkCompetitor } from "@/lib/junk-filter";
 import { analyzeTopCompetitors } from "@/lib/competitor-analyzer";
+import { sendReportReadyTelegram } from "@/lib/telegram-alerts";
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,6 +64,37 @@ export async function POST(request: NextRequest) {
           }
         } catch (compErr) {
           console.warn(`[vlad-review] Competitor analysis failed (non-blocking):`, compErr);
+        }
+
+        // Send secondary alert to Alex: report is live + email is ready
+        try {
+          const marker = "RESEARCH_DATA:";
+          const rdIdx = existingNotes.indexOf(marker);
+          let appearedCount = 0;
+          let totalPrompts = 0;
+          let statusBand = "Unknown";
+          if (rdIdx >= 0) {
+            try {
+              const rd = JSON.parse(existingNotes.slice(rdIdx + marker.length));
+              appearedCount = rd.appearedCount || 0;
+              totalPrompts = rd.totalPrompts || 0;
+              statusBand = rd.statusBand || "Unknown";
+            } catch {}
+          }
+          const reportUrl = `https://vizbiz.ai/report/${leadId}`;
+          await sendReportReadyTelegram({
+            leadId,
+            dealershipName: lead.dealershipName,
+            contactName: lead.contactName || "there",
+            email: lead.email,
+            city: lead.city,
+            reportUrl,
+            appearedCount,
+            totalPrompts,
+            statusBand,
+          });
+        } catch (alertErr) {
+          console.warn(`[vlad-review] Report-ready alert failed (non-blocking):`, alertErr);
         }
 
         return NextResponse.json({ success: true, action: "approved", leadId });

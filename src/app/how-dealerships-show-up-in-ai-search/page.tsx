@@ -3,55 +3,55 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "How Dealerships Show Up in AI Search | VizBiz",
+  title: "How Local Businesses Show Up in AI Search | VizBiz",
   description:
-    "Learn how AI systems choose which dealerships to mention, which signals shape visibility, and what automotive retailers can improve first.",
+    "Learn how AI systems choose which local businesses to mention, which signals shape visibility, and what you can improve first.",
   alternates: {
     canonical: "https://vizbiz.ai/how-dealerships-show-up-in-ai-search",
   },
 };
 
 const introSignals = [
-  "best dealership near me",
-  "where should I buy a used SUV",
-  "best place to service my car",
+  "best plumber near me",
+  "where should I get my roof fixed",
+  "best family dentist in my area",
 ];
 
 const aiSelectionSignals = [
   {
-    title: "Inventory clarity",
-    body: "Inventory pages, vehicle detail pages, pricing, and categories need to be structured in a way AI systems can interpret.",
+    title: "Service clarity",
+    body: "Service pages, pricing, specialties, and categories need to be structured in a way AI systems can interpret.",
   },
   {
     title: "Review and trust signals",
-    body: "Dealers with stronger review quality, recency, and trust language are more likely to be surfaced in recommendation-style prompts.",
+    body: "Businesses with stronger review quality, recency, and trust language are more likely to be surfaced in recommendation-style prompts.",
   },
   {
-    title: "Service and offer explanation",
-    body: "Financing, warranties, service, and ownership benefits need to be clearly explained, not buried in thin pages.",
+    title: "Offer and specialty explanation",
+    body: "Services, guarantees, warranties, and unique benefits need to be clearly explained, not buried in thin pages.",
   },
   {
     title: "FAQ and answer-style content",
-    body: "AI systems reward sites that answer real buyer questions in a clear and structured way.",
+    body: "AI systems reward sites that answer real customer questions in a clear and structured way.",
   },
   {
     title: "Entity consistency",
-    body: "Business name, location, make identity, and core facts need to be consistent across the web.",
+    body: "Business name, location, service categories, and core facts need to be consistent across the web.",
   },
 ];
 
 const weakSignals = [
-  "generic dealership content with little explanation",
-  "inventory that is hard to crawl or interpret",
-  "thin service and financing pages",
+  "generic website content with little explanation",
+  "services that are hard to crawl or interpret",
+  "thin pages for key offerings",
   "inconsistent reviews and trust signals",
-  "missing FAQ coverage for buyer-intent questions",
+  "missing FAQ coverage for customer-intent questions",
 ];
 
 const improvementActions = [
   {
-    title: "Make inventory easier to interpret",
-    body: "Use cleaner inventory structure, clear model-level organization, readable titles, and current price/availability signals.",
+    title: "Make services easier to interpret",
+    body: "Use cleaner page structure, clear service-level organization, readable descriptions, and current pricing/availability signals.",
   },
   {
     title: "Strengthen review and trust signals",
@@ -59,42 +59,42 @@ const improvementActions = [
   },
   {
     title: "Explain services and offers clearly",
-    body: "Service, financing, warranty, and ownership pages should explain what the dealership offers in plain buyer language.",
+    body: "Service, pricing, guarantee, and specialty pages should explain what the business offers in plain customer language.",
   },
   {
     title: "Publish stronger FAQ coverage",
-    body: "Answer the real questions buyers ask about price, service, reliability, financing, and vehicle choice.",
+    body: "Answer the real questions customers ask about pricing, process, reliability, and how to choose.",
   },
   {
     title: "Improve consistency across the web",
-    body: "Keep dealership identity, location, and offer details consistent across the website and external platforms.",
+    body: "Keep business identity, location, and service details consistent across the website and external platforms.",
   },
 ];
 
 const faqItems = [
   {
-    question: "How do dealerships show up in AI search?",
+    question: "How do local businesses show up in AI search?",
     answer:
-      "Dealerships show up when AI systems can clearly understand inventory, trust signals, services, FAQ content, and local relevance.",
+      "Local businesses show up when AI systems can clearly understand services, trust signals, content, and local relevance.",
   },
   {
-    question: "What signals matter most for dealership AI visibility?",
+    question: "What signals matter most for business AI visibility?",
     answer:
-      "Inventory clarity, review quality, service explanations, FAQ coverage, and entity consistency are some of the strongest signals.",
+      "Service clarity, review quality, content explanations, FAQ coverage, and entity consistency are some of the strongest signals.",
   },
   {
-    question: "Why do some dealers get recommended and others do not?",
+    question: "Why do some businesses get recommended and others do not?",
     answer:
-      "AI systems tend to surface dealerships with stronger structured information, clearer trust signals, and better answer coverage for buyer-intent questions.",
+      "AI systems tend to surface businesses with stronger structured information, clearer trust signals, and better answer coverage for customer-intent questions.",
   },
   {
-    question: "What can a dealership do to improve AI visibility?",
+    question: "What can a local business do to improve AI visibility?",
     answer:
-      "Improve inventory structure, review signals, service and offer content, FAQ coverage, and consistency across platforms.",
+      "Improve service page structure, review signals, content and FAQ coverage, and consistency across platforms.",
   },
 ];
 
-export default function HowDealershipsShowUpInAiSearchPage() {
+export default function HowLocalBusinessesShowUpInAiSearchPage() {
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <SiteHeader ctaLabel="Get My Snapshot" />
@@ -103,12 +103,12 @@ export default function HowDealershipsShowUpInAiSearchPage() {
         <div className="mx-auto max-w-4xl">
           <div className="section-kicker">AI search guide</div>
           <h1 className="display-font mt-6 text-[2.8rem] font-semibold leading-[0.96] tracking-[-0.05em] sm:text-[4rem]">
-            How Automotive Retailers Show Up in AI Search
+            How Local Businesses Show Up in AI Search
           </h1>
 
           <div className="glass-card mt-10 rounded-[2rem] p-6 sm:p-8">
             <p className="text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              AI systems do not choose which dealerships to mention by accident.
+              AI systems do not choose which businesses to mention by accident.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               When someone asks:
@@ -117,15 +117,15 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               {introSignals.map((prompt) => (
                 <li key={prompt} className="flex items-start gap-3">
                   <span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />
-                  <span>“{prompt}”</span>
+                  <span>"{prompt}"</span>
                 </li>
               ))}
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              AI tools look for signals that help them decide which dealerships are credible, relevant, and useful to mention.
+              AI tools look for signals that help them decide which businesses are credible, relevant, and useful to mention.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>. For the commercial deliverable, see the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>.
+              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for local businesses</Link>. For the commercial deliverable, see the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for local businesses</Link>.
             </p>
           </div>
         </div>
@@ -135,13 +135,13 @@ export default function HowDealershipsShowUpInAiSearchPage() {
         <div className="mx-auto max-w-4xl space-y-12">
           <div className="glass-card rounded-[2rem] p-6 sm:p-8">
             <h2 className="display-font text-[2rem] font-semibold tracking-[-0.04em] sm:text-[2.6rem]">
-              How AI Systems Choose Which Dealerships to Mention
+              How AI Systems Choose Which Businesses to Mention
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               AI systems pull from patterns, not just keywords.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              They are more likely to mention dealerships when the underlying signals are clear, structured, and easy to trust.
+              They are more likely to mention businesses when the underlying signals are clear, structured, and easy to trust.
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {aiSelectionSignals.map((item) => (
@@ -155,10 +155,10 @@ export default function HowDealershipsShowUpInAiSearchPage() {
 
           <div className="glass-card rounded-[2rem] p-6 sm:p-8">
             <h2 className="display-font text-[2rem] font-semibold tracking-[-0.04em] sm:text-[2.6rem]">
-              Why Some Dealerships Earn More Visibility Than Others
+              Why Some Businesses Earn More Visibility Than Others
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Most dealerships are not held back by one single issue.
+              Most businesses are not held back by one single issue.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               More often, visibility lags because several weaker signals add up over time.
@@ -175,7 +175,7 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               ))}
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              When those signals are weaker, AI systems have less confidence recommending the dealership consistently.
+              When those signals are weaker, AI systems have less confidence recommending the business consistently.
             </p>
           </div>
 
@@ -187,24 +187,21 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               The signals that matter most are the ones that help AI understand three things:
             </p>
             <ul className="mt-5 space-y-3 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />what the dealership offers</li>
+              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />what the business offers</li>
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />why it can be trusted</li>
-              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />how relevant it is to the local buyer’s question</li>
+              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />how relevant it is to the local customer's question</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              That is why inventory structure, reviews, FAQ coverage, service explanations, and entity consistency matter so much.
+              That is why service pages, reviews, FAQ coverage, content depth, and entity consistency matter so much.
             </p>
           </div>
 
           <div className="glass-card rounded-[2rem] p-6 sm:p-8">
             <h2 className="display-font text-[2rem] font-semibold tracking-[-0.04em] sm:text-[2.6rem]">
-              What Dealerships Can Do to Improve Visibility
+              What Local Businesses Can Do to Improve Visibility
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Dealerships improve AI visibility when they make their information easier to interpret, easier to trust, and easier to connect to local buyer intent.
-            </p>
-            <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If affordability and used inventory are a major issue, see <Link href="/cheap-used-car-near-me-ai-visibility-for-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">cheap used car near me: AI visibility for dealerships</Link> for that specific visibility problem.
+              Businesses improve AI visibility when they make their information easier to interpret, easier to trust, and easier to connect to local customer intent.
             </p>
             <div className="mt-6 space-y-5">
               {improvementActions.map((item) => (
@@ -226,7 +223,7 @@ export default function HowDealershipsShowUpInAiSearchPage() {
               Get Your AI Visibility Snapshot
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              See how your dealership appears in AI-driven search, where competitors are being surfaced instead, and what to fix first.
+              See how your business appears in AI-driven search, where competitors are being surfaced instead, and what to fix first.
             </p>
             <div className="mt-8">
               <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">

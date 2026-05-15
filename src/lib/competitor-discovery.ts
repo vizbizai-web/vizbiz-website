@@ -1,168 +1,193 @@
 /**
- * Competitor Auto-Discovery Module
- * 
- * When no competitors are provided in the lead, this module uses Tavily
- * search to find relevant competitors based on the detected niche and location.
+ * Competitor Auto-Discovery Module v2
+ *
+ * Uses preflight intelligence (LLM-generated competitor search queries,
+ * business type, market) to find REAL competitors — not directories,
+ * not generic listings, not article titles.
  */
 
-import { detectNiche } from "./niche-detector";
+import { tavilySearch, type TavilySearchResult } from "./tavily-client";
 
-const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+/**
+ * Expanded junk filter — directories, associations, generic terms, platforms.
+ */
+const JUNK_PATTERNS: RegExp[] = [
+  // Directories and listing platforms
+  /chamber\s+of\s+commerce/i,
+  /better\s+business\s+bureau/i,
+  /bbb\s*(accredited|rating)/i,
+  /yellow\s*pages/i,
+  /white\s*pages/i,
+  /yelp/i,
+  /tripadvisor/i,
+  /foursquare/i,
+  /google\s*(maps|reviews|business)/i,
+  /bing\s*(maps|places)/i,
+  /facebook/i,
+  /instagram/i,
+  /twitter/i,
+  /linkedin/i,
+  /pinterest/i,
+  /youtube/i,
+  /reddit/i,
+  /glassdoor/i,
+  /indeed/i,
+  /crunchbase/i,
+  /wikipedia/i,
+  /wik(i|ipedia)/i,
+  /homeadvisor/i,
+  /thumbtack/i,
+  /angi(e)?(\s*list)?/i,
+  /booking\.com/i,
+  /airbnb/i,
+  /expedia/i,
+  /hotels?\.com/i,
+  /zillow/i,
+  /trulia/i,
+  /realtor\.com/i,
+  /cars?\.com/i,
+  /autotrader/i,
+  /cargurus/i,
+  /truecar/i,
+  /edmunds/i,
+  /kbb/i,
+  /kelly\s*blue\s*book/i,
+  /justdial/i,
+  /sulekha/i,
+  /gumtree/i,
+  /craigslist/i,
+  /classified/i,
+  /directory/i,
+  /f\d+s/i,
+  /trustpilot/i,
+  /sitejabber/i,
+  /consumeraffairs/i,
 
-if (!TAVILY_API_KEY) {
-  console.warn("[competitor-discovery] TAVILY_API_KEY not configured");
-}
+  // Generic / non-business terms
+  /^(top|best|#?\d+|near|find|about|home|welcome|news|blog|article|guide|review|how\s+to|what\s+is|why|list)/i,
+  /^(and|but|the|this|how|why|what|when|where|which|these|those|everything|all|your)\s/i,
+  /near\s+me$/i,
+  /in\s+\d{4}$/i,  // "Best X in 2026"
+  /^the\s+\d+/i,   // "The 10 Best..."
+  /^\d+\s+(best|top|great)/i,
+  /\d+\s*(best|top|great|amazing)/i,
+  /^(best|top)\s+\d+/i,
+  /compare|comparison|vs\.?|versus/i,
+  /rating|review|ranking/i,
+];
 
-interface TavilySearchResult {
-  title: string;
-  url: string;
-  content: string;
-}
+const JUNK_EXACT: Set<string> = new Set([
+  "news", "local news", "daily news", "bbc", "cnn", "reuters", "the guardian",
+  "local competitors", "nearby businesses", "similar companies",
+  "home", "welcome", "about", "contact", "services", "gallery",
+]);
 
-interface TavilyResponse {
-  results: TavilySearchResult[];
-  response_time: number;
-}
+/** Domains to skip during URL verification (directories, not businesses) */
+const DIRECTORY_DOMAINS_VERIFY = [
+  'google.com', 'maps.google', 'yelp.com', 'tripadvisor.com',
+  'yellowpages.com', 'whitepages.com', 'foursquare.com', 'bbb.org',
+  'wikipedia.org', 'facebook.com', 'instagram.com', 'linkedin.com',
+  'pinterest.com', 'reddit.com', 'youtube.com', 'bing.com',
+  'angi.com', 'homeadvisor.com', 'thumbtack.com', 'booking.com',
+  'airbnb.com', 'expedia.com', 'zillow.com', 'trustpilot.com',
+  'crunchbase.com', 'glassdoor.com', 'indeed.com', 'f6s.com',
+  'medium.com', 'eventbrite.com', 'meetup.com',
+];
 
-async function tavilySearch(query: string): Promise<TavilySearchResult[]> {
-  if (!TAVILY_API_KEY) {
-    throw new Error("TAVILY_API_KEY not configured");
+/**
+ * Check if a name looks like a real business and not a directory/generic term.
+ */
+function isRealBusinessName(name: string, businessType: string, city: string): boolean {
+  const lower = name.toLowerCase().trim();
+
+  // Too short or too long
+  if (lower.length < 3 || lower.length > 70) return false;
+
+  // Exact junk matches
+  if (JUNK_EXACT.has(lower)) return false;
+
+  // Pattern junk matches
+  for (const pattern of JUNK_PATTERNS) {
+    if (pattern.test(lower)) return false;
   }
 
-  try {
-    const response = await fetch("https://api.tavily.com/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        api_key: TAVILY_API_KEY,
-        query: query,
-        search_depth: "basic",
-        include_answer: false,
-        include_images: false,
-        include_raw_content: false,
-        max_results: 5,
-      }),
-    });
+  // Single-word names under 4 chars are rarely businesses
+  if (!lower.includes(" ") && lower.length <= 3) return false;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Tavily search failed: ${response.status} ${errorText}`);
-    }
+  // All-caps acronyms with numbers (F6S, 3M is ok though)
+  if (/^[A-Z]{1,5}\d+[A-Z0-9]*$/i.test(name) && name.length < 8) return false;
 
-    const data: TavilyResponse = await response.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("[competitor-discovery] Tavily search error:", error);
-    throw error;
-  }
-}
+  // Ends with TLD
+  if (/\.(com|net|org|io|co\.uk|ca|au)$/i.test(name)) return false;
 
-export async function discoverCompetitors(
-  businessName: string,
-  website: string,
-  city: string,
-  providedCompetitor?: string
-): Promise<string[]> {
-  // If competitor is already provided, use it
-  if (providedCompetitor && providedCompetitor.trim() !== "") {
-    return [providedCompetitor.trim()];
-  }
-
-  // Detect the niche to determine search queries
-  const nicheConfig = detectNiche(businessName, website);
-  
-  // Generate search queries based on niche
-  const searchQueries = nicheConfig.competitorSearchQueries.map(query => 
-    query.replace("{niche}", nicheConfig.niche.replace("_", " ")).replace("{city}", city)
+  // Looks like a sentence, not a name (contains 5+ common English words)
+  const words = lower.split(/\s+/);
+  const commonWords = words.filter(w =>
+    /^(the|a|an|and|or|but|in|on|at|to|for|of|with|by|from|is|are|was|it|that|this|your|our|their|can|how|what|when|where|why|who|which|do|does|will|would|should|could|has|have|had|been|not|no|all|some|any|more|most|other|new|old|good|great|best|top|free|get|find|see|know|make|take|use|work|help|need|want|like|just|only|also|still|even|well|very|much|many)$/i.test(w)
   );
+  if (commonWords.length >= 5) return false;
 
-  // Run searches and extract business names
-  const competitors: string[] = [];
-  
-  for (const query of searchQueries.slice(0, 3)) { // Limit to 3 searches
-    try {
-      const results = await tavilySearch(query);
-      
-      // Extract business names from search results
-      for (const result of results) {
-        // Parse business names from titles and URLs
-        const businessNameMatch = extractBusinessNameFromResult(result, businessName);
-        if (businessNameMatch && !competitors.includes(businessNameMatch)) {
-          competitors.push(businessNameMatch);
-          if (competitors.length >= 3) break; // We only need top 3
-        }
-      }
-      
-      if (competitors.length >= 3) break;
-    } catch (error) {
-      console.error(`[competitor-discovery] Search failed for query "${query}":`, error);
-      continue; // Try next query
-    }
-  }
-
-  // Clean up — filter out directory/junk names from the final list
-  const cleanedCompetitors = competitors.filter(c => {
-    // Reject short acronym-style names with digits (F6S, F8, 3D, etc.)
-    if (/^[A-Z0-9]{2,5}$/i.test(c) && c.toLowerCase() !== c.toUpperCase()) return false;
-    // Reject single-word names shorter than 4 chars that aren't clear brand names
-    if (!c.includes(' ') && c.length <= 3) return false;
-    // Reject obvious junk
-    if (/^f\d+s?$/i.test(c)) return false;
-    if (/^(top|best|near|find|about|home|wikipedia|wiki|shop|store|list|page|homepage)$/i.test(c)) return false;
-    // Reject generic platform names that aren't real businesses
-    if (/^(medium|blog|homepage|facebook|instagram|twitter|linkedin|pinterest|youtube|github|reddit|mapquest|yelp|tripadvisor|yellowpages|whitepages|foursquare|bbb|angies?\s*list|homeadvisor|thumbtack|booking\.com|airbnb|expedia|hotels?\.com|zillow|trulia|realtor\.com|cars?\.com|autotrader|edmunds|kelly\s*blue\s*book|kbb|cargurus|truecar)$/i.test(c)) return false;
-    // Reject article-style titles that leak through (e.g., "and They're Not All AI Startups")
-    if (c.length > 12 && /^(and|but|the|this|how|why|what|when|where|which|these|those)/i.test(c)) return false;
-    return true;
-  });
-
-  // If we couldn't find any competitors, return a generic fallback
-  if (cleanedCompetitors.length === 0) {
-    return ["local competitors", "nearby businesses", "similar companies"];
-  }
-
-  return cleanedCompetitors.slice(0, 3); // Return top 3
+  return true;
 }
 
-function extractBusinessNameFromResult(result: TavilySearchResult, originalBusinessName: string): string | null {
+/**
+ * Validate that a competitor is actually in a related business.
+ * Uses the search result content (snippet) to check for niche overlap.
+ */
+function isPlausibleCompetitor(
+  candidateName: string,
+  businessType: string,
+  services: string[],
+  resultSnippet: string
+): boolean {
+  if (!businessType && services.length === 0) return true; // Can't validate without data, allow
+
+  const lowerSnippet = resultSnippet.toLowerCase();
+  const lowerCandidate = candidateName.toLowerCase();
+
+  // Check if any services overlap with the snippet content
+  const serviceWords = services
+    .flatMap(s => s.toLowerCase().split(/\s+/))
+    .filter(w => w.length > 3); // Skip short words
+
+  const snippetServiceMatches = serviceWords.filter(w => lowerSnippet.includes(w)).length;
+
+  // If we find at least 2 service keywords in the snippet about this candidate,
+  // it's likely a real competitor
+  if (snippetServiceMatches >= 2) return true;
+
+  // If business type keywords appear near the candidate name
+  const bizTypeWords = businessType.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const bizTypeMatches = bizTypeWords.filter(w => lowerSnippet.includes(w) || lowerCandidate.includes(w)).length;
+
+  if (bizTypeMatches >= 1) return true;
+
+  // If we can't confirm overlap, reject — safer to have fewer real competitors
+  // than garbage ones
+  return false;
+}
+
+/**
+ * Extract a business name from a search result.
+ * Tries multiple strategies: pipe-separated titles, URL hostnames, clean titles.
+ */
+function extractBusinessNameFromResult(
+  result: TavilySearchResult,
+  originalBusinessName: string
+): { name: string; snippet: string } | null {
   // Skip if this is the original business
   if (result.title.toLowerCase().includes(originalBusinessName.toLowerCase())) {
     return null;
   }
 
   const title = result.title;
-  const url = result.url;
-  
-  // Strategy 1: Extract business name from URL path segments
-  // e.g., "trabertgoldsmiths.com/collections/lab-grown-diamond" → "Trabert Goldsmiths"
-  // e.g., "vrai.com/showrooms/san-francisco" → "VRAI"
-  // e.g., "padisgems.com/collections/engagement-rings" → "Padis Jewelry"
-  let urlnName = null;
-  try {
-    const urlPath = new URL(url).hostname.replace('www.', '').split('.')[0];
-    // Convert kebab-case to Title Case
-    urlnName = urlPath
-      .split(/[-_]/)
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-    
-    // Skip URL-based names that are obviously not brand names (generic words)
-    const genericUrlWords = ['google', 'yelp', 'facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'yelpcdn', 'f6s', 'crunchbase', 'glassdoor', 'angel', 'indeed', 'wikipedia', 'wiki', 'mapquest', 'tripadvisor', 'yellowpages', 'whitepages', 'foursquare', 'bbb', 'booking', 'airbnb', 'expedia', 'zillow', 'trulia', 'realtor', 'cars', 'autotrader', 'edmunds', 'cargurus', 'truecar', 'homeadvisor', 'thumbtack', 'angi'];
-    if (genericUrlWords.some(w => urlnName!.toLowerCase().includes(w))) {
-      urlnName = null;
-    }
-  } catch { urlnName = null; }
-  
-  // Strategy 2: Try to find business name at the end of pipe/dash-separated title
-  // "Engagement Rings San Francisco | Natural & Lab Diamonds | Yadav Jewelry" → "Yadav Jewelry"
-  // "Lab Grown - Engagement Rings in San Francisco - Padis Jewelry" → "Padis Jewelry"
-  const parts = title.split(/\s*[-–—|]\s*/).filter(p => p.trim().length > 0);
-  let pipedName = null;
-  
+  const snippet = result.content || "";
+
+  // Strategy 1: Pipe/dash separated title — last part is often the business name
+  const parts = title.split(/\s*[-–—|·•]\s*/).filter(p => p.trim().length > 0);
+  let pipedName: string | null = null;
+
   if (parts.length >= 2) {
-    // Try the last part first — often contains the actual business name
     for (let i = parts.length - 1; i >= 0; i--) {
       const candidate = parts[i].trim()
         .replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '')
@@ -170,50 +195,193 @@ function extractBusinessNameFromResult(result: TavilySearchResult, originalBusin
         .replace(/\s*\d\.\d+\s*★?\s*/, '')
         .replace(/^(A|An|The)\s+/i, "")
         .trim();
-      
-      // Check if this looks like a business name (not a directory, not generic)
-      if (candidate.length >= 3 && 
-          !/^(best|top|top rated|#\d+|\d+\.)/i.test(candidate) &&
-          !/^\d/.test(candidate)) {
+
+      if (candidate.length >= 3 && !/^(best|top|#\d+|\d+\.)/i.test(candidate) && !/^\d/.test(candidate)) {
         pipedName = candidate;
         break;
       }
     }
   }
-  
-  // Strategy 3: Fallback to full title with filters (old approach but improved)
-  let cleanedName = null;
-  if (!pipedName) {
-    cleanedName = title
-      .split(/\s*[-–—|]\s*/)[0]
-      .replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '')
-      .replace(/\s*\(\d+\s*reviews?\)\s*/i, '')
-      .replace(/\s+[-–—]+\s+Yelp$/i, '')
-      .replace(/\s+[-–—]+\s+Google Reviews$/i, '')
-      .replace(/^(Best |Top |Top Rated |#\d+ |\d+\.\s)/i, '')
-      .replace(/^(A |An |The )/i, '')
-      .trim();
-  }
-  
-  // Choose the best strategy result
-  let finalName = pipedName || cleanedName || urlnName;
-  
-  // Prefer actual name from pipe/end over URL-derived
-  if (pipedName && pipedName.length >= 3 && !/^\d/.test(pipedName)) {
-    finalName = pipedName;
-  } else if (urlnName && !pipedName && urlnName.length >= 3) {
-    finalName = urlnName;
-  }
-  
+
+  // Strategy 2: URL hostname → brand name
+  let urlName: string | null = null;
+  try {
+    const hostname = new URL(result.url).hostname.replace("www.", "").split(".")[0];
+    urlName = hostname.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+    // Skip generic hostnames
+    const genericHosts = ["google", "yelp", "facebook", "instagram", "twitter", "linkedin",
+      "pinterest", "youtube", "reddit", "wikipedia", "mapquest", "tripadvisor", "yellowpages",
+      "foursquare", "bbb", "booking", "airbnb", "expedia", "zillow", "trulia", "realtor",
+      "cars", "autotrader", "cargurus", "truecar", "homeadvisor", "thumbtack", "angi",
+      "trustpilot", "sitejabber", "glassdoor", "indeed", "crunchbase", "medium", "google"];
+    if (genericHosts.some(h => urlName!.toLowerCase().includes(h))) urlName = null;
+  } catch { urlName = null; }
+
+  // Strategy 3: Cleaned first part of title
+  let cleanName: string | null = null;
+  const firstPart = title.split(/\s*[-–—|·•]\s*/)[0];
+  cleanName = firstPart
+    .replace(/\s+in\s+[A-Z][a-zA-Z\s]+,?\s*[A-Z]{0,2}$/, '')
+    .replace(/\s*\(\d+\s*reviews?\)\s*/i, '')
+    .replace(/\s+[-–—]+\s+(Yelp|Google Reviews)$/i, '')
+    .replace(/^(Best |Top |Top Rated |#\d+ |\d+\.\s)/i, '')
+    .replace(/^(A |An |The )/i, '')
+    .trim();
+
+  // Pick best: prefer piped (most reliable), then URL, then clean
+  const finalName = pipedName || urlName || cleanName;
+
   if (!finalName || finalName.length < 3 || finalName.length > 60) return null;
-  if (/^(best|top|find|near|about|home|welcome)/i.test(finalName)) return null;
-  if (/\.(com|net|org|io)$/i.test(finalName)) return null;
-  if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|directory|near me|yelp/i.test(finalName)) return null;
+  if (/\.(com|net|org|io|ca|co\.uk|au)$/i.test(finalName)) return null;
+  if (/top \d+|\d+ best|best \d+|top rated|companies? in|businesses? in|places? in|list of|near me/i.test(finalName)) return null;
   if (/^\d/.test(finalName)) return null;
-  
-  // Reject names that look like short codes, acronyms, or directories (F6S, YC, SEO, F8, API-2, etc.)
-  if (/^[A-Z]{1,5}\d+[A-Z0-9]*$/i.test(finalName) && finalName.length < 8) return null;
   if (/^[A-Z]{1,3}\d*$/i.test(finalName) && finalName.length < 6) return null;
-  
-  return finalName;
+
+  return { name: finalName, snippet };
+}
+
+/**
+ * Main entry: Discover real competitors using preflight intelligence.
+ *
+ * @param businessName - The business being audited
+ * @param website - Their website URL
+ * @param city - Their city/market
+ * @param providedCompetitor - Optional manually-provided competitor
+ * @param preflightData - Preflight intelligence (competitorSearchQueries, businessType, services, market)
+ */
+export async function discoverCompetitors(
+  businessName: string,
+  website: string,
+  city: string,
+  providedCompetitor?: string,
+  preflightData?: {
+    competitorSearchQueries?: string[];
+    businessType?: string;
+    services?: string[];
+    market?: string;
+  }
+): Promise<string[]> {
+  // If competitor is already provided, use it (but validate it)
+  if (providedCompetitor && providedCompetitor.trim() !== "") {
+    const trimmed = providedCompetitor.trim();
+    if (isRealBusinessName(trimmed, preflightData?.businessType || "", city)) {
+      return [trimmed];
+    }
+    // If the provided competitor is junk, continue to discovery
+    console.info(`[competitor-discovery] Provided competitor "${trimmed}" looks invalid, running discovery`);
+  }
+
+  // Build search queries — prefer preflight LLM-generated queries
+  let searchQueries: string[];
+
+  if (preflightData?.competitorSearchQueries && preflightData.competitorSearchQueries.length >= 2) {
+    // Use the LLM-generated queries from preflight
+    searchQueries = preflightData.competitorSearchQueries;
+    console.info(`[competitor-discovery] Using ${searchQueries.length} preflight competitor queries`);
+  } else {
+    // Fallback: build queries from business type + city
+    const bizType = preflightData?.businessType || businessName;
+    searchQueries = [
+      `${bizType} in ${city}`,
+      `best ${bizType} near ${city}`,
+      `${bizType} ${city} competitors alternatives`,
+    ];
+    console.info(`[competitor-discovery] Using fallback queries from businessType: ${bizType}`);
+  }
+
+  const candidates: { name: string; snippet: string; appearances: number }[] = [];
+
+  for (const query of searchQueries.slice(0, 4)) {
+    try {
+      const results = await tavilySearch(query);
+
+      for (const result of results) {
+        const extracted = extractBusinessNameFromResult(result, businessName);
+        if (!extracted) continue;
+
+        const existing = candidates.find(c => c.name.toLowerCase() === extracted.name.toLowerCase());
+        if (existing) {
+          existing.appearances++;
+        } else {
+          candidates.push({ name: extracted.name, snippet: extracted.snippet, appearances: 1 });
+        }
+      }
+    } catch (error) {
+      console.error(`[competitor-discovery] Search failed for "${query}":`, error);
+      continue;
+    }
+  }
+
+  // Validate and rank candidates
+  const businessType = preflightData?.businessType || "";
+  const services = preflightData?.services || [];
+
+  const validatedCompetitors = candidates
+    .filter(c => {
+      // Must pass the junk filter
+      if (!isRealBusinessName(c.name, businessType, city)) {
+        console.info(`[competitor-discovery] Rejected (junk filter): "${c.name}"`);
+        return false;
+      }
+      // Must be a plausible competitor (same niche)
+      if (!isPlausibleCompetitor(c.name, businessType, services, c.snippet)) {
+        console.info(`[competitor-discovery] Rejected (niche mismatch): "${c.name}"`);
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.appearances - a.appearances) // Rank by how many queries mentioned them
+    .map(c => c.name);
+
+  if (validatedCompetitors.length === 0) {
+    console.info(`[competitor-discovery] No validated competitors found for ${businessName} (${businessType}) in ${city}`);
+    // Return empty array instead of fake generic competitors — the report handles this
+    return [];
+  }
+
+  // Final step: verify top candidates have real websites (URL verification)
+  const verifiedCompetitors: string[] = [];
+  for (const name of validatedCompetitors) {
+    if (verifiedCompetitors.length >= 3) break;
+
+    // Find the URL associated with this candidate
+    const candidateData = candidates.find(c => c.name === name);
+    const candidateUrl = candidateData?.snippet ? null : null; // We don't store URLs directly
+
+    // Quick verification: search for the business name + city to confirm it has a web presence
+    try {
+      const verifyResults = await tavilySearch(`"${name}" ${city}`);
+      if (verifyResults.length > 0) {
+        // Check that at least one result is about this specific business (not a directory)
+        const hasOwnSite = verifyResults.some(r => {
+          const lowerTitle = r.title.toLowerCase();
+          const lowerName = name.toLowerCase().split(' ').slice(0, 2).join(' '); // First 2 words
+          return lowerTitle.includes(lowerName) &&
+                 !DIRECTORY_DOMAINS_VERIFY.some(d => r.url.toLowerCase().includes(d));
+        });
+        if (hasOwnSite) {
+          verifiedCompetitors.push(name);
+          console.info(`[competitor-discovery] ✅ Verified: "${name}" has real web presence`);
+        } else {
+          console.info(`[competitor-discovery] ❌ Unverified: "${name}" — no independent web presence found`);
+        }
+      } else {
+        // No results at all — might be a false extraction
+        console.info(`[competitor-discovery] ⚠️ No verification results for "${name}" — keeping anyway (low confidence)`);
+        verifiedCompetitors.push(name);
+      }
+    } catch {
+      // Verification failed — keep the competitor (don't block on verification errors)
+      verifiedCompetitors.push(name);
+    }
+  }
+
+  if (verifiedCompetitors.length === 0) {
+    console.info(`[competitor-discovery] All candidates failed URL verification for ${businessName}`);
+    return [];
+  }
+
+  console.info(`[competitor-discovery] Final verified competitors: ${verifiedCompetitors.join(", ")}`);
+  return verifiedCompetitors.slice(0, 3);
 }

@@ -18,7 +18,7 @@ const reasons = [
   {
     icon: TrendingUp,
     title: "Competitors can win share before you know",
-    description: "If a rival dealership is the name AI recommends first, they get researched first — and often visited first.",
+    description: "If a competitor is the name AI recommends first, they get researched first — and often visited first.",
   },
 ];
 
@@ -37,7 +37,7 @@ export default function WhyUs() {
         <AnimateIn className="max-w-3xl">
           <div className="section-kicker">Why now</div>
           <h2 className="mt-6 text-[2.2rem] font-semibold tracking-[-0.02em] text-white sm:text-[2.5rem] lg:text-[3rem]">
-            Why Dealerships Buy This Now
+            Why Businesses Buy This Now
           </h2>
           <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/72 sm:text-[1.18rem] sm:leading-9">
             This is not about chasing a trend. It&apos;s about seeing a visibility layer that already
@@ -63,10 +63,10 @@ export default function WhyUs() {
 
         <AnimateIn className="mt-8 rounded-[1.8rem] border border-white/8 bg-white/[0.05] p-5 shadow-[0_24px_70px_rgba(2,8,23,0.28)] backdrop-blur-xl sm:mt-10 sm:p-7">
           <p className="max-w-4xl text-base leading-7 text-white/84 sm:text-lg sm:leading-8">
-            You already pay for visibility on Google, Cars.com, and AutoTrader. AI is now another layer.
+            You already pay for visibility on Google, social media, and listing sites. AI is now another layer.
           </p>
           <p className="mt-3 text-sm leading-6 text-white/60 sm:text-base sm:leading-7">
-            If you can&apos;t see how that layer treats your store, you can&apos;t manage it early.
+            If you can&apos;t see how that layer treats your business, you can&apos;t manage it early.
           </p>
         </AnimateIn>
       </div>

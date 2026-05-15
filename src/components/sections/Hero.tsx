@@ -43,7 +43,7 @@ export default function Hero() {
           <div className="max-w-3xl text-left">
             <AnimateIn stagger className="space-y-0">
               <div className="section-kicker max-w-full">
-                <span className="min-w-0 break-words">AI-assisted, expert-reviewed audit for car dealerships</span>
+                <span className="min-w-0 break-words">AI-assisted, expert-reviewed audit for local businesses</span>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2.5 sm:gap-3">
@@ -58,12 +58,12 @@ export default function Hero() {
               </div>
 
               <h1 className="display-font mt-6 max-w-4xl text-[3rem] font-black uppercase leading-[0.88] tracking-[-0.06em] text-white sm:text-[4.15rem] lg:text-[5.1rem]">
-                Is AI Recommending <span className="text-accent-gradient">Your Dealership?</span>
+                Is AI Recommending <span className="text-accent-gradient">Your Business?</span>
               </h1>
 
               <p className="mt-5 max-w-2xl text-[1rem] leading-7 text-white/70 sm:text-[1.12rem] sm:leading-8 lg:text-[1.18rem]">
-                VizBiz shows how visible your dealership is when buyers ask ChatGPT, Gemini,
-                Perplexity, and other AI tools who to trust, where to shop, and which dealer to
+                VizBiz shows how visible your business is when buyers ask ChatGPT, Gemini,
+                Perplexity, and other AI tools who to trust, where to go, and which business to
                 choose.
               </p>
 
