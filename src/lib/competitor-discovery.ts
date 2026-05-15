@@ -10,6 +10,7 @@
  */
 
 import { tavilySearch, type TavilySearchResult } from "./tavily-client";
+import { placesNearbySearch, geocodeAddress, isPlacesConfigured, type PlaceResult } from "./places-client";
 
 /* ───────────────────────────────
    1. CONSTANTS & PATTERNS
@@ -448,11 +449,29 @@ async function discoverLocalCompetitors(
   city: string,
   niche: string,
   services: string[],
-  preflightQueries?: string[]
+  preflightQueries?: string[],
+  address?: string
 ): Promise<string[]> {
   const candidates: Map<string, { name: string; snippet: string; appearances: number }> = new Map();
 
-  // Build search queries
+  // ── PRIMARY: Google Places API (if configured) ──
+  if (isPlacesConfigured()) {
+    console.info(`[competitor-discovery] LOCAL mode: Using Google Places API as primary source`);
+    const placesResults = await discoverLocalViaPlaces(niche, city, address, businessName);
+
+    if (placesResults.length >= 2) {
+      console.info(`[competitor-discovery] Places API returned ${placesResults.length} validated competitors`);
+      return placesResults;
+    }
+
+    // If Places returned < 2, log and fall through to Tavily
+    console.info(`[competitor-discovery] Places API returned only ${placesResults.length} competitors, supplementing with Tavily`);
+    for (const name of placesResults) {
+      candidates.set(name.toLowerCase(), { name, snippet: `Places API result in ${city}`, appearances: 10 });
+    }
+  }
+
+  // ── FALLBACK: Tavily search ──
   const queries: string[] = preflightQueries && preflightQueries.length >= 2
     ? preflightQueries.slice(0, 4)
     : [
@@ -461,7 +480,7 @@ async function discoverLocalCompetitors(
         `"${niche}" ${city} alternatives`,
       ];
 
-  console.info(`[competitor-discovery] LOCAL mode: ${queries.length} queries for ${niche} in ${city}`);
+  console.info(`[competitor-discovery] LOCAL mode: ${queries.length} Tavily queries for ${niche} in ${city}`);
 
   for (const query of queries) {
     try {
@@ -523,6 +542,67 @@ async function discoverLocalCompetitors(
   }
 
   return verified;
+}
+
+/* ───────────────────────────────
+   4b. PLACES API LOCAL DISCOVERY
+   ─────────────────────────────── */
+
+async function discoverLocalViaPlaces(
+  niche: string,
+  city: string,
+  address: string | undefined,
+  businessName: string
+): Promise<string[]> {
+  // Geocode the business address or city
+  const geoQuery = address || city;
+  const coords = await geocodeAddress(geoQuery);
+
+  if (!coords) {
+    console.info(`[competitor-discovery] Could not geocode "${geoQuery}", skipping Places search`);
+    return [];
+  }
+
+  console.info(`[competitor-discovery] Geocoded ${geoQuery} → ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
+
+  // Search for nearby businesses in the same niche
+  const places = await placesNearbySearch(niche, coords, 15000, 10); // 15km radius
+
+  // Filter out the target business itself and validate
+  const lowerBizName = businessName.toLowerCase();
+  const competitors: string[] = [];
+
+  for (const place of places) {
+    const placeName = place.displayName?.text;
+    if (!placeName) continue;
+
+    // Skip if this is the target business (exact or partial match on first 2 words)
+    if (placeName.toLowerCase() === lowerBizName) continue;
+    const bizWords = lowerBizName.split(/\s+/).filter(w => w.length > 3);
+    const placeLower = placeName.toLowerCase();
+    if (bizWords.length >= 2 && bizWords.every(w => placeLower.includes(w))) continue;
+
+    // Validate: must have a real address in the area (not just a phone number)
+    if (!place.formattedAddress) continue;
+
+    // Validate: not a service/course/directory
+    const v = validateCompetitor(placeName, {
+      businessType: niche,
+      market: "local",
+      city,
+    });
+    if (!v.valid) {
+      console.info(`[competitor-discovery] Places candidate "${placeName}" rejected: ${v.reason}`);
+      continue;
+    }
+
+    competitors.push(placeName);
+    console.info(`[competitor-discovery] ✅ Places verified: "${placeName}" (${place.formattedAddress}, ${place.userRatingCount || 0} reviews)`);
+
+    if (competitors.length >= 3) break;
+  }
+
+  return competitors;
 }
 
 /* ───────────────────────────────
@@ -710,7 +790,7 @@ export async function discoverCompetitors(
   const preflightQueries = preflightData?.competitorSearchQueries;
 
   const competitors = isLocalMode
-    ? await discoverLocalCompetitors(businessName, city, niche, services, preflightQueries)
+    ? await discoverLocalCompetitors(businessName, city, niche, services, preflightQueries, address)
     : await discoverOnlineCompetitors(businessName, city, niche, services, preflightQueries);
 
   if (competitors.length === 0) {
