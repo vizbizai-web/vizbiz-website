@@ -1,9 +1,9 @@
 
 export const metadata = {
-  title: 'AI Visibility Audit: What It Measures and Why Your Dealership Needs One',
+  title: 'AI Visibility Audit: What It Measures and Why Your Business Needs One',
   description: 'A real AI visibility audit doesn\'t just give you a score — it tells you exactly why AI recommends your competitors instead of you. Here\'s what the methodology actually measures.',
   openGraph: {
-    title: 'AI Visibility Audit: What It Measures and Why Your Dealership Needs One',
+    title: 'AI Visibility Audit: What It Measures and Why Your Business Needs One',
     description: 'A real AI visibility audit tells you exactly why AI recommends your competitors instead of you. Here\'s what the methodology actually measures.',
   },
   alternates: {
@@ -17,10 +17,10 @@ export default function AIVisibilityAuditGuide() {
       {/* Hero */}
       <section style={{ padding: '80px 24px 60px', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
         <h1 style={{ fontSize: '2.4rem', fontWeight: 800, lineHeight: 1.2, marginBottom: 20, color: '#fff' }}>
-          AI Visibility Audit: What It Measures and Why Your Dealership Needs One
+          AI Visibility Audit: What It Measures and Why Your Business Needs One
         </h1>
         <p style={{ fontSize: '1.15rem', color: '#94a3b8', maxWidth: 660, margin: '0 auto' }}>
-          A score of 34 out of 100 doesn't tell you what to fix. A real audit does. Here's exactly what VizBiz measures, how the methodology works, and what your dealership's results actually mean.
+          A score of 34 out of 100 doesn't tell you what to fix. A real audit does. Here's exactly what VizBiz measures, how the methodology works, and what your results actually mean.
         </p>
       </section>
 
@@ -30,18 +30,18 @@ export default function AIVisibilityAuditGuide() {
           What an AI Visibility Audit Actually Is
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
-          Most dealers have never been "audited" for AI visibility — because most audits don't exist yet. The few that do fall into two categories:
+          Most businesses have never been "audited" for AI visibility — because most audits don't exist yet. The few that do fall into two categories:
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
           {[
             {
               label: 'Surface-level audits',
-              desc: 'These check whether your dealership name appears in ChatGPT when you ask a direct question. Useful, but binary — it tells you if you exist, not why you\'re invisible or how to fix it.',
+              desc: 'These check whether your business name appears in ChatGPT when you ask a direct question. Useful, but binary — it tells you if you exist, not why you\'re invisible or how to fix it.',
               color: '#ef4444',
             },
             {
               label: 'Real methodology audits',
-              desc: 'These test your dealership across dozens of buyer-intent queries, measure your recommendation rate versus competitors, score specific categories (discovery, trust, inventory, service, finance), and identify exact gaps. This is what VizBiz does.',
+              desc: 'These test your business across dozens of customer-intent queries, measure your recommendation rate versus competitors, score specific categories (discovery, trust, services, specialties, pricing), and identify exact gaps. This is what VizBiz does.',
               color: '#10b981',
             },
           ].map((item) => (
@@ -73,13 +73,13 @@ export default function AIVisibilityAuditGuide() {
           {[
             {
               pct: '30%',
-              name: 'Dealer Discovery',
-              what: 'How easily a buyer can find your dealership when searching for a car in your market.',
-              how: 'Queried across ChatGPT, Gemini, and Perplexity for make/model/location combinations that should return your dealership. Measures whether you appear in the first 3 recommendations and how often.',
+              name: 'Business Discovery',
+              what: 'How easily a customer can find your business when searching for your services in your market.',
+              how: 'Queried across ChatGPT, Gemini, and Perplexity for service/location combinations that should return your business. Measures whether you appear in the first 3 recommendations and how often.',
               examples: [
-                '"Used Toyota dealership near Brampton"',
-                '"Best new Honda dealer in Hamilton"',
-                '"Where to buy a used SUV in Mississauga"',
+                '"Emergency plumber near downtown Austin"',
+                '"Best family dentist in Naperville"',
+                '"Affordable roof repair in Denver"',
               ],
               weightNote: 'Highest weight because discovery is the first gate — if AI can\'t find you in relevant searches, nothing else matters.',
             },
@@ -87,49 +87,49 @@ export default function AIVisibilityAuditGuide() {
               pct: '25%',
               name: 'Trust & Reviews',
               what: 'Your reputation as AI systems understand it across the web.',
-              how: 'Scans for your dealership on Google, DealerRater, Cars.com, Edmunds, Yelp, and Facebook. Factors in review volume, recency, average rating, response rate, and sentiment.',
+              how: 'Scans for your business on Google, Yelp, Facebook, and industry-specific platforms. Factors in review volume, recency, average rating, response rate, and sentiment.',
               examples: [
-                '"Reputable car dealership in Burlington"',
-                '"Honda dealer with best customer reviews in Ontario"',
-                '"Honest used car dealer Toronto area"',
+                '"Reputable mechanic in Portland"',
+                '"Dentist with best patient reviews in Scottsdale"',
+                '"Most trusted real estate agent in Austin"',
               ],
-              weightNote: 'AI trusts consensus. A dealership with 300 reviews across 4 platforms looks more credible than one with 30 reviews on Google alone.',
+              weightNote: 'AI trusts consensus. A business with 300 reviews across 4 platforms looks more credible than one with 30 reviews on Google alone.',
             },
             {
               pct: '20%',
               name: 'Service Visibility',
-              what: 'Whether AI knows about and recommends your service and parts department.',
-              how: 'Tests queries about specific services — transmission work, oil changes, tire rotation — and checks whether your service department is cited as an option. Also measures service page content quality.',
+              what: 'Whether AI knows about and recommends your specific services and specialties.',
+              how: 'Tests queries about specific services and checks whether your business is cited as an option. Also measures service page content quality.',
               examples: [
-                '"Honda transmission repair [city]"',
-                '"Where to get winter tires installed [city]"',
-                '"Certified mechanic for BMW [city]"',
+                '"Same-day crown dentist [city]"',
+                '"Tankless water heater installation [city]"',
+                '"LLC formation attorney [city]"',
               ],
-              weightNote: 'Many dealers focus entirely on sales and ignore service — but service customers have higher lifetime value and are more likely to become sales customers too.',
+              weightNote: 'Many businesses list services vaguely — but AI needs specificity to match you to the right customer queries.',
             },
             {
               pct: '15%',
-              name: 'Inventory Presence',
-              what: 'How your vehicles show up in make/model/price specific searches.',
-              how: 'Tests queries like "2022 Mazda CX-5 near Toronto under $28,000" and checks whether your inventory is mentioned. Also evaluates whether your website\'s inventory pages are structured for AI to parse.',
+              name: 'Offerings Presence',
+              what: 'How your specific products or services show up in targeted searches.',
+              how: 'Tests queries like "Invisalign consultation in Boston under $5000" or "emergency HVAC repair same day Chicago" and checks whether your offerings are mentioned.',
               examples: [
-                '"Used Honda CR-V under $30,000 Ottawa"',
-                '"New Toyota RAV4 for sale Mississauga"',
-                '"Best price on a 2023 Ford F-150 [city]"',
+                '"Teeth whitening special offer [city]"',
+                '"HVAC maintenance plan [city]"',
+                '"Free consultation divorce lawyer [city]"',
               ],
-              weightNote: 'Inventory visibility directly ties to the bottom of funnel. Buyers with specific vehicles in mind are highest intent — and most likely to buy from whichever dealer AI recommends.',
+              weightNote: 'Specific offering visibility ties to the bottom of funnel. Customers with clear intent are most likely to book whoever AI recommends.',
             },
             {
               pct: '10%',
-              name: 'Finance Presence',
-              what: 'How clearly AI understands your financing options and programs.',
-              how: 'Tests whether your finance department, APR offerings, lease programs, and in-house financing options appear in relevant queries. Evaluates finance page content depth.',
+              name: 'Pricing & Payment Presence',
+              what: 'How clearly AI understands your pricing options and payment methods.',
+              how: 'Tests whether your pricing page, accepted payment types, financing options, and insurance acceptance appear in relevant queries.',
               examples: [
-                '"Dealership with bad credit financing [city]"',
-                '"Toyota lease deals [city]"',
-                '"In-house financing car dealer [city]"',
+                '"Dentist that accepts Delta Dental [city]"',
+                '"Plumber with flat-rate pricing [city]"',
+                '"Law firm free initial consultation [city]"',
               ],
-              weightNote: 'Finance visibility is often overlooked but matters for the 40%+ of buyers whose purchase decision hinges on financing approval.',
+              weightNote: 'Pricing visibility is often overlooked but matters for customers whose decision hinges on cost transparency.',
             },
           ].map((item) => (
             <div key={item.name} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 28 }}>
@@ -158,10 +158,10 @@ export default function AIVisibilityAuditGuide() {
         </div>
       </section>
 
-      {/* The 84 Prompts */}
+      {/* The Methodology */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
-          The Methodology: 84 Prompts Across 3 AI Platforms
+          The Methodology: Dozens of Prompts Across 3 AI Platforms
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 16 }}>
           Here's the exact process behind a VizBiz audit — so you know what's actually being measured:
@@ -171,17 +171,17 @@ export default function AIVisibilityAuditGuide() {
             {
               step: '1',
               title: 'Define the prompt set',
-              desc: 'We curate 84 buyer-intent prompts across 5 categories (Discovery, Trust, Service, Inventory, Finance). These aren\'t random — they\'re built from real search patterns and refined against actual AI response data. Each prompt reflects something a real car buyer would type.',
+              desc: 'We curate customer-intent prompts across 5 categories (Discovery, Trust, Services, Offerings, Pricing). These aren\'t random — they\'re built from real search patterns and refined against actual AI response data. Each prompt reflects something a real customer would type.',
             },
             {
               step: '2',
               title: 'Run across ChatGPT, Gemini, and Perplexity',
-              desc: 'Each prompt is submitted to all three platforms from a clean session (no prior context). We capture the full response — not just whether your dealership appears, but where, in what context, and what AI says about you.',
+              desc: 'Each prompt is submitted to all three platforms from a clean session (no prior context). We capture the full response — not just whether your business appears, but where, in what context, and what AI says about you.',
             },
             {
               step: '3',
               title: 'Score each result',
-              desc: 'For each prompt, your dealership gets a sub-score: mentioned in top 3 (full points), mentioned but not in top 3 (partial), not mentioned (zero). Each sub-score is weighted by category. Competitors are tracked the same way.',
+              desc: 'For each prompt, your business gets a sub-score: mentioned in top 3 (full points), mentioned but not in top 3 (partial), not mentioned (zero). Each sub-score is weighted by category. Competitors are tracked the same way.',
             },
             {
               step: '4',
@@ -200,7 +200,7 @@ export default function AIVisibilityAuditGuide() {
         </div>
         <div style={{ background: 'rgba(37,209,242,0.06)', border: '1px solid rgba(37,209,242,0.15)', borderRadius: 16, padding: 24, marginTop: 24 }}>
           <p style={{ color: '#94a3b8', lineHeight: 1.7, margin: 0 }}>
-            <strong style={{ color: '#fff' }}>Why 84 prompts?</strong> Research on AI recommendation behavior shows that recommendation patterns vary significantly by query type. One or two prompts can't capture the full picture — you need enough queries to see patterns in where dealers appear and where they don't. 84 is the minimum threshold we found that produces consistent, reproducible scores.
+            <strong style={{ color: '#fff' }}>Why so many prompts?</strong> Research on AI recommendation behavior shows that recommendation patterns vary significantly by query type. One or two prompts can't capture the full picture — you need enough queries to see patterns in where businesses appear and where they don't. Our threshold is the minimum that produces consistent, reproducible scores.
           </p>
         </div>
       </section>
@@ -208,32 +208,32 @@ export default function AIVisibilityAuditGuide() {
       {/* Sample Results Table */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
-          Sample Audit Results: 5 Ontario Dealerships
+          Sample Audit Results: 5 Local Businesses
         </h2>
         <p style={{ color: '#94a3b8', lineHeight: 1.75, marginBottom: 24 }}>
-          Here's what an actual audit comparison looks like. These are anonymized results from our April 2026 Ontario dealership audit (50 dealers total):
+          Here's what an actual audit comparison looks like. These are anonymized results from a recent audit of local businesses:
         </p>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-                <th style={{ textAlign: 'left', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Dealership</th>
+                <th style={{ textAlign: 'left', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Business</th>
                 <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Discovery /30</th>
                 <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Trust /25</th>
                 <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Service /20</th>
-                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Inventory /15</th>
-                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Finance /10</th>
+                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Offerings /15</th>
+                <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>Pricing /10</th>
                 <th style={{ textAlign: 'center', padding: '12px 16px', color: '#fff', fontWeight: 600 }}>AVI Score</th>
               </tr>
             </thead>
             <tbody>
               {[
-                { name: 'Dealer A (Oakville)', d: 24, t: 18, s: 12, i: 9, f: 4, total: 67, badge: 'Leader' },
-                { name: 'Dealer B (Brampton)', d: 19, t: 15, s: 8, i: 7, f: 5, total: 54, badge: 'Rising' },
-                { name: 'Dealer C (Hamilton)', d: 11, t: 14, s: 6, i: 5, f: 3, total: 39, badge: 'Average' },
-                { name: 'Dealer D (Mississauga)', d: 8, t: 9, s: 5, i: 4, f: 2, total: 28, badge: 'Below Avg' },
-                { name: 'Dealer E (Toronto)', d: 5, t: 7, s: 3, i: 2, f: 1, total: 18, badge: 'Invisible' },
-                { name: '📊 Average (50 dealers)', d: 9, t: 8, s: 5, i: 4, f: 2, total: 11, badge: '' },
+                { name: 'Business A (Dental)', d: 24, t: 18, s: 12, i: 9, f: 4, total: 67 },
+                { name: 'Business B (Plumbing)', d: 19, t: 15, s: 8, i: 7, f: 5, total: 54 },
+                { name: 'Business C (Legal)', d: 11, t: 14, s: 6, i: 5, f: 3, total: 39 },
+                { name: 'Business D (HVAC)', d: 8, t: 9, s: 5, i: 4, f: 2, total: 28 },
+                { name: 'Business E (Auto Repair)', d: 5, t: 7, s: 3, i: 2, f: 1, total: 18 },
+                { name: '📊 Average (50 businesses)', d: 9, t: 8, s: 5, i: 4, f: 2, total: 11 },
               ].map((row, i) => (
                 <tr key={row.name} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i === 5 ? 'rgba(37,209,242,0.04)' : 'transparent' }}>
                   <td style={{ padding: '12px 16px', color: i === 5 ? '#25D1F2' : '#cbd5e1', fontWeight: i === 5 ? 600 : 400 }}>{row.name}</td>
@@ -263,7 +263,7 @@ export default function AIVisibilityAuditGuide() {
           </div>
         </div>
         <p style={{ color: '#64748b', lineHeight: 1.7, marginTop: 20, fontSize: '0.9rem' }}>
-          <strong style={{ color: '#94a3b8' }}>Key insight:</strong> Dealer A scores 67 — still room to improve, but clearly in the recommended set. Dealer E scores 18 — nearly invisible to AI, despite being an established, operating dealership. A score of 11 (the average) means AI rarely mentions that dealership at all, even when the query should return them.
+          <strong style={{ color: '#94a3b8' }}>Key insight:</strong> Business A scores 67 — still room to improve, but clearly in the recommended set. Business E scores 18 — nearly invisible to AI, despite being an established, operating business. A score of 11 (the average) means AI rarely mentions that business at all, even when the query should return them.
         </p>
       </section>
 
@@ -280,7 +280,7 @@ export default function AIVisibilityAuditGuide() {
             {
               dimension: 'What it measures',
               seo: 'How well Google can crawl and index your site',
-              avi: 'Whether AI recommends your dealership across multiple platforms',
+              avi: 'Whether AI recommends your business across multiple platforms',
             },
             {
               dimension: 'Platforms tested',
@@ -330,21 +330,21 @@ export default function AIVisibilityAuditGuide() {
       {/* Why You Need One */}
       <section style={{ maxWidth: 780, margin: '0 auto', padding: '0 24px 60px' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 24, color: '#fff' }}>
-          Why Your Dealership Needs an AVI Audit
+          Why Your Business Needs an AVI Audit
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
             {
               title: 'You can\'t fix what you can\'t measure',
-              body: 'Most dealerships have no idea whether they appear in ChatGPT, Gemini, or Perplexity. An AVI audit gives you a baseline. Without a baseline, you\'re guessing — and guessing wastes budget.',
+              body: 'Most businesses have no idea whether they appear in ChatGPT, Gemini, or Perplexity. An AVI audit gives you a baseline. Without a baseline, you\'re guessing — and guessing wastes budget.',
             },
             {
               title: 'Your competitors might already be ahead',
-              body: 'The Ontario audit found dealers scoring 67 alongside dealers scoring 8. That\'s not a small gap — it\'s the difference between being recommended and being invisible. If you haven\'t audited, you don\'t know which side you\'re on.',
+              body: 'Audits found businesses scoring 67 alongside businesses scoring 8. That\'s not a small gap — it\'s the difference between being recommended and being invisible. If you haven\'t audited, you don\'t know which side you\'re on.',
             },
             {
               title: 'AI visibility moves faster than SEO',
-              body: 'Google updates its algorithm a few times a year. AI models update constantly — and an AI model update can completely change which dealerships get recommended. You need to re-audit regularly, not once every two years.',
+              body: 'Google updates its algorithm a few times a year. AI models update constantly — and an AI model update can completely change which businesses get recommended. You need to re-audit regularly, not once every two years.',
             },
             {
               title: 'The audit itself is the action plan',
@@ -365,7 +365,7 @@ export default function AIVisibilityAuditGuide() {
           Get Your AI Visibility Audit
         </h2>
         <p style={{ color: '#94a3b8', fontSize: '1.05rem', marginBottom: 32 }}>
-          Find out exactly where your dealership stands across ChatGPT, Gemini, and Perplexity. Get your score, your category breakdown, and your top 3 gaps — free.
+          Find out exactly where your business stands across ChatGPT, Gemini, and Perplexity. Get your score, your category breakdown, and your top 3 gaps — free.
         </p>
         <a href="/" style={{ display: 'inline-block', background: '#25D1F2', color: '#fff', padding: '14px 36px', borderRadius: 12, fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
           Run Your Free AVI Audit →

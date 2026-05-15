@@ -3,7 +3,14 @@
  *
  * Status flow: new → researching → pending_review → approved (by Vlad)
  * On error: new → researching → new (retry)
+ *
+ * This endpoint is deliberately slow — it runs multiple API stages sequentially
+ * with rate limiting to avoid timeouts and API errors.
+ * Expected total time: 60-120 seconds per lead.
  */
+
+// Allow up to 5 minutes for processing (Vercel pro max is 300s)
+export const maxDuration = 300;
 
 import { NextResponse } from "next/server";
 import { getLeadsByStatus, getLeadByLeadId, updateLeadResearchResults } from "@/lib/google-sheets";
@@ -94,9 +101,11 @@ export async function POST(request: Request) {
     console.info("[process-lead] Starting lead processing");
 
     let targetLeadId: string | null = null;
+    let forceRerun = false;
     try {
       const body = await request.clone().json().catch(() => ({}));
       targetLeadId = body?.leadId || null;
+      forceRerun = body?.force === true;
     } catch { /* not JSON */ }
 
     let newLeads;
@@ -127,26 +136,37 @@ export async function POST(request: Request) {
         // Extract PreFlight profile from notes (contains LLM-classified niche from website scrape)
         let preflightProfile: any = undefined;
         const pfIdx = (lead.notes || '').indexOf('PREFLIGHT:');
-        if (pfIdx >= 0) {
+        if (pfIdx >= 0 && !forceRerun) {
           try {
             const rawAfter = lead.notes.slice(pfIdx + 10);
             const jsonStart = rawAfter.indexOf('{');
             const jsonEnd = rawAfter.lastIndexOf('}');
             if (jsonStart >= 0 && jsonEnd > jsonStart) {
               preflightProfile = JSON.parse(rawAfter.slice(jsonStart, jsonEnd + 1));
+              console.info(`[process-lead] Using cached preflight data`);
             }
           } catch { /* ignore */ }
+        } else if (forceRerun) {
+          console.info(`[process-lead] Force rerun — ignoring cached preflight data`);
         }
 
-        // If no preflight data, run a live website scrape + LLM classification
+        // -- STAGE 1: Preflight Intelligence --
+        // Scrape website + LLM classification (10-20s)
         if (!preflightProfile && lead.website) {
           try {
-            console.info(`[process-lead] No preflight data — running live website scan for ${lead.website}`);
+            console.info(`[process-lead] STAGE 1: Running live website scan for ${lead.website}`);
             preflightProfile = await preflightScan(lead.website);
-            console.info(`[process-lead] Live scan: niche=${preflightProfile.niche}, score=${preflightProfile.aiReadinessScore}`);
+            console.info(`[process-lead] STAGE 1 complete: niche=${preflightProfile.niche}, score=${preflightProfile.aiReadinessScore}, confidence=${(preflightProfile as any)?.nicheConfidence || 'N/A'}`);
           } catch (err) {
-            console.warn(`[process-lead] Live preflight scan failed:`, err);
+            console.warn(`[process-lead] STAGE 1 FAILED:`, err);
           }
+        }
+
+        // Check niche confidence
+        const nicheConfidence = (preflightProfile as any)?.nicheConfidence || 50;
+        if (nicheConfidence < 50) {
+          console.warn(`[process-lead] ⚠️ LOW NICHE CONFIDENCE (${nicheConfidence}/100): ${(preflightProfile as any)?.confidenceReason || 'unknown reason'}`);
+          console.warn(`[process-lead] Business: ${lead.dealershipName}, Niche: ${preflightProfile?.niche}, BusinessType: ${(preflightProfile as any)?.businessType || 'N/A'}`);
         }
 
         // Use preflight niche (from website scrape + LLM) if available
@@ -170,31 +190,34 @@ export async function POST(request: Request) {
         }
         console.info(`[process-lead] Final niche: ${nicheConfig.niche}`);
 
+        // -- STAGE 2: Competitor Discovery --
+        // Uses preflight data to find real competitors (5-15s with rate limiting)
         let competitors: string[] = [];
         if (lead.competitor && lead.competitor.trim() !== "") {
           competitors = [lead.competitor.trim()];
         } else {
-          competitors = await discoverCompetitors(lead.dealershipName, lead.website, lead.city, lead.competitor);
-          const genericCompetitors = ['local competitors', 'nearby businesses', 'similar companies'];
-          const allGeneric = competitors.length > 0 && competitors.every(c => genericCompetitors.includes(c));
-          if (competitors.length === 0 || allGeneric) {
-            const nicheDefaults: Record<string, string[]> = {
-              fine_jewelry: ["Brilliant Earth", "Blue Nile", "Vrai"],
-              car_dealership: ["local dealerships", "other dealers in the area"],
-              spray_tanning: ["local spray tan studios", "other tanning salons"],
-              beauty_salon: ["local salons", "other beauty studios"],
-              dental: ["local dental practices", "other dentists in the area"],
-              real_estate: ["local real estate agents", "other agencies"],
-              fitness: ["local gyms and trainers", "other fitness studios"],
-              mobile_bar: ["local cocktail bars", "event bartending services"],
-            };
-            competitors = nicheDefaults[nicheConfig.niche] || genericCompetitors;
+          console.info(`[process-lead] STAGE 2: Discovering competitors for ${lead.dealershipName}...`);
+          competitors = await discoverCompetitors(lead.dealershipName, lead.website, lead.city, lead.competitor, {
+            competitorSearchQueries: preflightProfile?.competitorSearchQueries,
+            businessType: preflightProfile?.businessType,
+            services: preflightProfile?.services,
+            market: preflightProfile?.market,
+          });
+          if (competitors.length === 0) {
+            console.info(`[process-lead] STAGE 2 complete: No validated competitors found`);
+          } else {
+            console.info(`[process-lead] STAGE 2 complete: Found ${competitors.length} competitors: ${competitors.join(', ')}`);
           }
         }
 
+        // Pause between stages to avoid API pressure
+        await new Promise(r => setTimeout(r, 2000));
 
+        // -- STAGE 3: AI Visibility Research --
+        // Runs 20 searches with rate limiting (~25-40s)
+        console.info(`[process-lead] STAGE 3: Running AI visibility research...`);
         const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
-        console.info(`[process-lead] Research completed: ${researchResult.appearedCount}/${researchResult.totalPrompts}`);
+        console.info(`[process-lead] STAGE 3 complete: ${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
 
 
         const researchJson = JSON.stringify({
@@ -212,6 +235,9 @@ export async function POST(request: Request) {
           competitorLine: researchResult.competitorLine,
           competitorCategories: researchResult.competitorCategories,
           whyThisMatters: researchResult.whyThisMatters,
+          revenueLoss: researchResult.revenueLoss || 0,
+          leadsLost: researchResult.leadsLost || 0,
+          recoveryPotential: researchResult.recoveryPotential || "",
           processedAt: new Date().toISOString(),
           socialPresence: researchResult.socialPresence,
           competitorSocial: researchResult.competitorSocial,

@@ -8,7 +8,7 @@ const findings = [
   {
     icon: BarChart3,
     title: "AI Visibility Score",
-    description: "A simple score that shows how often your dealership appears across the AI platforms tested.",
+    description: "A simple score that shows how often your business appears across the AI platforms tested.",
   },
   {
     icon: Search,
@@ -18,12 +18,12 @@ const findings = [
   {
     icon: CheckCircle2,
     title: "Prompt-level examples",
-    description: "Real prompts, captured responses, and clear examples of how AI talks about your store.",
+    description: "Real prompts, captured responses, and clear examples of how AI talks about your business.",
   },
   {
     icon: MapPinned,
     title: "Local competitor comparison",
-    description: "Spot which nearby dealerships get recommended first and where they are beating you.",
+    description: "Spot which nearby competitors get recommended first and where they are beating you.",
   },
   {
     icon: Target,
@@ -45,7 +45,7 @@ export default function Solution() {
             What the Audit Tells You
           </h2>
           <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/70 sm:text-[1.18rem] sm:leading-9">
-            We show you where your dealership appears, where it doesn&apos;t, and which competitors AI
+            We show you where your business appears, where it doesn&apos;t, and which competitors AI
             recommends instead.
           </p>
         </AnimateIn>

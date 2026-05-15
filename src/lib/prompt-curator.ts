@@ -6,6 +6,8 @@
  * This moves the report from "generic visibility" to "lost revenue analysis."
  */
 
+import { calculateRevenueLoss as sharedRevenueLoss } from "./niche-economics";
+
 export type PromptSet = {
   niche: string;
   label: string;
@@ -428,16 +430,9 @@ export function getPromptSetForNiche(niche: string): PromptSet {
 export function calculateRevenueLoss(
   appearedCount: number, 
   totalPrompts: number, 
-  niche: string
-): { loss: number; leadsLost: number; recoveryPotential: string } {
-  const strategy = getPromptSetForNiche(niche);
-  const visibilityGap = 1 - (appearedCount / Math.max(totalPrompts, 1));
-  const monthlyLeadsLost = Math.round(strategy.estimatedMonthlyVolume * visibilityGap);
-  const monthlyRevenueLoss = Math.round(monthlyLeadsLost * strategy.avgLeadValue);
-  
-  return {
-    loss: monthlyRevenueLoss,
-    leadsLost: monthlyLeadsLost,
-    recoveryPotential: `By closing the visibility gap, you could recover roughly $${monthlyRevenueLoss.toLocaleString()} in monthly revenue.`
-  };
+  niche: string,
+  scrapedPricing: string | null = null
+): { loss: number; leadsLost: number; recoveryPotential: string; currency: string } {
+  // Delegate to shared module — single source of truth for all revenue calculations
+  return sharedRevenueLoss(appearedCount, totalPrompts, niche, scrapedPricing);
 }

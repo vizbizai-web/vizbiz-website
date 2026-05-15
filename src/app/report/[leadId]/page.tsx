@@ -26,6 +26,9 @@ export type ResearchData = {
   socialPresence?: { instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null; instagramUrl: string | null; facebookUrl: string | null };
   competitorSocial?: { name: string; instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null }[];
   socialNarrative?: string;
+  revenueLoss?: number;
+  leadsLost?: number;
+  recoveryPotential?: string;
   socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
 };
 

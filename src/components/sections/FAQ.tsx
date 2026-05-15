@@ -8,14 +8,14 @@ import AnimateIn from "@/components/AnimateIn";
 
 const faqs = [
   {
-    question: "Is AI search actually changing how people find dealerships?",
+    question: "Is AI search actually changing how people find local businesses?",
     answer:
-      'Yes. Buyers now ask ChatGPT, Gemini, and Perplexity questions like "best Honda dealer near me" before they ever visit a listing site. We show you the actual AI responses about your store — not theory, real answers.',
+      'Yes. Buyers now ask ChatGPT, Gemini, and Perplexity questions like "best [service] near me" before they ever visit a listing site. We show you the actual AI responses about your business — not theory, real answers.',
   },
   {
     question: "What exactly do you test?",
     answer:
-      'We run 20-25 real buyer-intent questions across five AI platforms: ChatGPT, Gemini, Perplexity, Claude, and Copilot. Questions like "most trusted used car lot in [your city]" and "best financing options near me." We record every response.',
+      'We run 20-25 real buyer-intent questions across five AI platforms: ChatGPT, Gemini, Perplexity, Claude, and Copilot. Questions like "most trusted [service] in [your city]" and "best options near me." We record every response.',
   },
   {
     question: "When will I see my results?",
@@ -25,7 +25,7 @@ const faqs = [
   {
     question: "Do I need to do anything technical?",
     answer:
-      "No. Give us your dealership name, market, and top competitors. We handle everything else.",
+      "No. Give us your business name, market, and top competitors. We handle everything else.",
   },
   {
     question: "Is this a subscription?",
@@ -43,7 +43,7 @@ const faqs = [
       "PDF with an executive summary, score breakdown, competitor comparison, prompt-by-prompt findings, and a prioritized list of what to fix first. Designed to share with your team or agency.",
   },
   {
-    question: "What if AI doesn't recommend any dealership in my area?",
+    question: "What if AI doesn't recommend any business in my area?",
     answer:
       "That's a finding worth knowing. It means the market is wide open and whoever moves first wins the recommendations.",
   },
@@ -74,7 +74,7 @@ export default function FAQ() {
             Questions buyers ask before they commit.
           </h2>
           <p className="mt-5 text-[1.02rem] leading-7 text-white/70 sm:text-[1.12rem] sm:leading-8">
-            These are the common concerns we hear before a dealership decides to run the audit.
+            These are the common concerns we hear before a business decides to run the audit.
           </p>
         </AnimateIn>
 

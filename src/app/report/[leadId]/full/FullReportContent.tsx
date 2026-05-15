@@ -58,7 +58,8 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
   const invisibleQueries = promptResults.filter((q: any) => !q.businessAppeared);
   const gapQueries = invisibleQueries.filter((q: any) => q.competitorAppeared);
 
-  // Revenue estimates
+  // Revenue estimates — use research data when available, fallback to niche defaults
+  // Revenue estimates — use research data when available, fallback to niche defaults
   const revenueRanges: Record<string, { low: number; high: number }> = {
     car_dealership: { low: 5600, high: 45000 },
     tourism_experience: { low: 2000, high: 12000 },
@@ -70,7 +71,11 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
     real_estate: { low: 4000, high: 25000 },
     local_business: { low: 1500, high: 8000 },
   };
-  const range = revenueRanges[niche] || revenueRanges.local_business;
+  // Use actual revenue loss from research if available
+  let range = revenueRanges[niche] || revenueRanges.local_business;
+  if (researchData?.revenueLoss && researchData.revenueLoss > 0) {
+    range = { low: Math.round(researchData.revenueLoss * 0.3), high: Math.round(researchData.revenueLoss * 1.2) };
+  }
   const gapRevenueLow = Math.round((range.low / totalPrompts) * gapQueries.length);
   const gapRevenueHigh = Math.round((range.high / totalPrompts) * gapQueries.length);
 
@@ -138,25 +143,25 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
 
   if (!leadData && !researchData) {
     return (
-      <div className="min-h-screen bg-[#02091F] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <h1 className="text-2xl font-bold mb-4">Report Not Available</h1>
           <p className="text-gray-400 mb-6">This report hasn't been generated yet.</p>
-          <a href="/intake/" className="inline-block bg-[#25D1F2] text-[#02091F] px-6 py-3 rounded-lg font-medium">Get Your Free Snapshot</a>
+          <a href="/intake/" className="inline-block bg-[#22D3EE] text-[#020617] px-6 py-3 rounded-lg font-medium">Get Your Free Snapshot</a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#02091F] text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="min-h-screen bg-[#020617] text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
       {/* === HEADER === */}
-      <header className="bg-[#0A0F1E] border-b border-white/5">
+      <header className="bg-[#0F172A] border-b border-white/5">
         <div className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Image src="/logo.jpg" alt="VizBiz" width={36} height={36} className="rounded" />
             <div>
-              <div className="text-base font-semibold">VizBiz<span className="text-[#25D1F2]">.ai</span></div>
+              <div className="text-base font-semibold">VizBiz<span className="text-[#22D3EE]">.ai</span></div>
               <div className="text-[10px] text-gray-500 tracking-wider uppercase">AI Visibility Report</div>
             </div>
           </div>
@@ -341,9 +346,9 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
             <p className="text-xs text-gray-600 mb-6">How you compare against your top competitors in AI recommendations — and what they're doing differently.</p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="rounded-xl p-5 bg-[#25D1F2]/5 border border-[#25D1F2]/20">
+              <div className="rounded-xl p-5 bg-[#22D3EE]/5 border border-[#22D3EE]/20">
                 <div className="text-sm font-medium mb-2">{businessName} (You)</div>
-                <div className="text-3xl font-bold text-[#25D1F2]">{appearedCount}<span className="text-sm text-gray-500">/{totalPrompts}</span></div>
+                <div className="text-3xl font-bold text-[#22D3EE]">{appearedCount}<span className="text-sm text-gray-500">/{totalPrompts}</span></div>
                 <div className="text-xs text-gray-500 mt-1">queries where AI mentions you</div>
               </div>
               <div className="rounded-xl p-5 bg-amber-500/5 border border-amber-500/20">
@@ -415,7 +420,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
 
                   {/* What to do about it */}
                   <div className="mt-3 pt-3 border-t border-white/5">
-                    <div className="text-[10px] text-[#25D1F2] uppercase tracking-wider mb-1">What to do</div>
+                    <div className="text-[10px] text-[#22D3EE] uppercase tracking-wider mb-1">What to do</div>
                     <p className="text-xs text-gray-400">
                       {compGapQueries.length > 2
                         ? `Create targeted content for ${compGapQueries.length} queries where ${compName} appears instead of you. Focus on pages that directly answer these buyer questions with specific, local details.`
@@ -519,7 +524,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
             {fixes.map((fix, i) => (
               <div key={i} className="rounded-xl p-5 bg-white/[0.02] border border-white/5">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-[#25D1F2]/10 flex items-center justify-center text-[#25D1F2] font-bold text-sm shrink-0">{i + 1}</div>
+                  <div className="w-8 h-8 rounded-lg bg-[#22D3EE]/10 flex items-center justify-center text-[#22D3EE] font-bold text-sm shrink-0">{i + 1}</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-sm">{fix.title}</span>
@@ -576,7 +581,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
                         <div className="mt-3">
                           <div className="text-[10px] text-gray-500 mb-1">Sources AI cited:</div>
                           {captureMatch.sourceUrls.slice(0, 5).map((url: string, j: number) => (
-                            <div key={j} className="text-[10px] text-[#25D1F2]/60 truncate">{url}</div>
+                            <div key={j} className="text-[10px] text-[#22D3EE]/60 truncate">{url}</div>
                           ))}
                         </div>
                       )}

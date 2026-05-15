@@ -1,10 +1,11 @@
 /**
- * Social Signals Module v2
+ * Social Signals Module v3
  *
  * Collects social media presence data for a business:
  * - Google reviews (count + rating)
  * - Instagram followers
  * - Facebook page likes
+ * - YouTube channel (AI citation potential)
  *
  * Uses Tavily search for ALL social data — it returns answer snippets
  * with follower counts, review ratings, and page likes.
@@ -13,7 +14,17 @@
  * Key insight for reports: social following ≠ AI visibility.
  * A business with zero social presence can still dominate AI recommendations
  * through content quality, schema markup, and local signals.
+ *
+ * YouTube is the exception — it's the #1 most-cited site in AI search
+ * (Edward Sturm research), making it a direct AI visibility lever.
  */
+
+import {
+  analyzeYouTubePresence,
+  scoreVideoSEO,
+  generateYouTubeReport,
+  type YouTubePresence,
+} from "./youtube-scoring";
 
 export interface SocialPresence {
   instagram: number | null;
@@ -23,6 +34,12 @@ export interface SocialPresence {
   
   instagramUrl: string | null;
   facebookUrl: string | null;
+
+  youtube: {
+    channelFound: boolean;
+    subscriberCount: number | null;
+    aiCitationPotential: string;
+  };
 }
 
 export interface CompetitorSocial {
@@ -55,12 +72,22 @@ export async function collectSocialSignals(
   city: string,
   website: string,
   competitorNames: string[],
+  socialUrls?: { instagram?: string | null; facebook?: string | null },
 ): Promise<SocialAnalysis> {
   // Step 1: Collect business social data via Tavily (parallel)
-  const [google, instagram, facebook] = await Promise.all([
+  // Use actual URLs from scraper when available for more accurate results
+  const instagramQuery = socialUrls?.instagram
+    ? `${socialUrls.instagram} Instagram followers count`
+    : `${businessName} ${city} Instagram followers`;
+  const facebookQuery = socialUrls?.facebook
+    ? `${socialUrls.facebook} Facebook page likes`
+    : `${businessName} ${city} Facebook page likes`;
+
+  const [google, instagram, facebook, youTubePresence] = await Promise.all([
     tavilySocialSearch(`${businessName} ${city} Google reviews rating number of reviews`),
-    tavilySocialSearch(`${businessName} ${city} Instagram followers`),
-    tavilySocialSearch(`${businessName} ${city} Facebook page likes`),
+    tavilySocialSearch(instagramQuery),
+    tavilySocialSearch(facebookQuery),
+    analyzeYouTubePresence(businessName, city, "auto dealer"), // default niche; caller can override via socialUrls
   ]);
 
   const business: SocialPresence = {
@@ -68,11 +95,16 @@ export async function collectSocialSignals(
     facebook: parseFollowerCount(facebook),
     googleReviews: parseReviewCount(google),
     googleRating: parseRating(google),
-    instagramUrl: null,
-    facebookUrl: null,
+    instagramUrl: socialUrls?.instagram || null,
+    facebookUrl: socialUrls?.facebook || null,
+    youtube: {
+      channelFound: youTubePresence.channelFound,
+      subscriberCount: youTubePresence.subscriberCount,
+      aiCitationPotential: youTubePresence.aiCitationPotential,
+    },
   };
 
-  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, Google=${business.googleReviews} reviews (${business.googleRating} stars)`);
+  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, Google=${business.googleReviews} reviews (${business.googleRating} stars), YT=${business.youtube.channelFound ? "found" : "none"}`);
 
   // Step 2: Collect competitor social data (parallel, top 3)
   const competitors: CompetitorSocial[] = await Promise.all(
@@ -105,9 +137,18 @@ export async function collectSocialSignals(
 /**
  * Query Tavily for social data — returns the answer text
  */
+let lastSocialTavilyCall = 0;
+
 async function tavilySocialSearch(query: string): Promise<string> {
   const tavilyKey = process.env.TAVILY_API_KEY;
   if (!tavilyKey) return "";
+
+  // Rate limit
+  const elapsed = Date.now() - lastSocialTavilyCall;
+  if (elapsed < 1100) {
+    await new Promise(r => setTimeout(r, 1100 - elapsed));
+  }
+  lastSocialTavilyCall = Date.now();
 
   try {
     const res = await fetch("https://api.tavily.com/search", {

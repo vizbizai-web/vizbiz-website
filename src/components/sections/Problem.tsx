@@ -5,23 +5,23 @@ import { motion } from "framer-motion";
 import AnimateIn from "@/components/AnimateIn";
 
 const prompts = [
-  "Best Honda dealer near me",
-  "Most reliable used car lot in [city]",
-  "Where should I buy a used SUV in [city]?",
-  "Which dealership has the best financing options near me?",
-  "Top-rated Toyota dealer in [city]",
+  "Best [service] near me",
+  "Most trusted [business type] in [city]",
+  "Where should I go for [service] in [city]?",
+  "Who has the best [service] and pricing near me?",
+  "Top-rated [business type] in [city]",
 ];
 
 const signals = [
   {
     icon: MessageSquare,
     title: "Buyers ask AI first",
-    description: "More shoppers start with ChatGPT, Gemini, or Perplexity before they ever open a listing site.",
+    description: "More customers start with ChatGPT, Gemini, or Perplexity before they ever visit a listing site.",
   },
   {
     icon: Search,
     title: "AI narrows the field",
-    description: "The answer often names a short list of dealers, which shapes who gets researched next.",
+    description: "The answer often names a short list of businesses, which shapes who gets contacted first.",
   },
   {
     icon: Building2,
@@ -44,9 +44,8 @@ export default function Problem() {
               The Shift Buyers Are Making
             </h2>
             <p className="mt-6 max-w-2xl text-[1.08rem] leading-8 text-white/70 sm:text-[1.18rem] sm:leading-9">
-              Car buyers are starting with AI answers, not just Google results. They ask who to trust,
-              where to shop, and which dealership looks strongest before they visit Cars.com,
-              AutoTrader, or your website.
+              Customers are starting with AI answers, not just Google results. They ask who to trust,
+              where to go, and which business looks strongest before they ever visit your website.
             </p>
 
             <AnimateIn stagger className="mt-9 grid gap-4 sm:grid-cols-3">
@@ -75,10 +74,10 @@ export default function Problem() {
                   </div>
                   <div className="min-w-0">
                     <p className="display-font text-[11px] font-bold uppercase tracking-[0.24em] text-white/48 sm:text-sm">
-                      What shoppers ask
+                      What customers ask
                     </p>
                     <p className="mt-1 text-sm leading-6 text-white/70 sm:text-base">
-                      These are the kinds of prompts shaping dealer consideration.
+                      These are the kinds of prompts shaping purchase decisions.
                     </p>
                   </div>
                 </div>

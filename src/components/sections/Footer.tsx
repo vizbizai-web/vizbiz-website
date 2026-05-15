@@ -26,7 +26,7 @@ export default function Footer() {
             </div>
             <div>
               <p className="display-font text-lg font-black uppercase tracking-[-0.04em]">VizBiz</p>
-              <p className="text-sm text-white/58">AI Visibility Audit for car dealerships</p>
+              <p className="text-sm text-white/58">AI Visibility Audit for Local Businesses</p>
             </div>
           </Link>
         </div>

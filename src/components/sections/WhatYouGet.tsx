@@ -16,13 +16,13 @@ const deliverables = [
     icon: FileText,
     title: "Executive summary",
     description:
-      "A clear first-page summary of the biggest takeaways, what matters most, and where your store stands now.",
+      "A clear first-page summary of the biggest takeaways, what matters most, and where your business stands now.",
   },
   {
     icon: Gauge,
     title: "AI Visibility Score",
     description:
-      "A score across the major AI platforms tested so you can see how often your dealership shows up in buyer-facing answers.",
+      "A score across the major AI platforms tested so you can see how often your business shows up in customer-facing answers.",
   },
   {
     icon: ClipboardList,
@@ -34,13 +34,13 @@ const deliverables = [
     icon: BadgeCheck,
     title: "Competitor comparison",
     description:
-      "A local benchmark against the dealerships AI recommends in your market so you can see who leads and why.",
+      "A local benchmark against the businesses AI recommends in your market so you can see who leads and why.",
   },
   {
     icon: ScanSearch,
     title: "Gap analysis",
     description:
-      "A breakdown of the blind spots, missing trust signals, and weak areas that cause AI to skip over your store.",
+      "A breakdown of the blind spots, missing trust signals, and weak areas that cause AI to skip over your business.",
   },
   {
     icon: Target,
@@ -112,7 +112,7 @@ export default function WhatYouGet() {
                     <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-white/46">
                       Audit preview
                     </p>
-                    <h4 className="mt-2 text-lg font-semibold text-white sm:text-xl">Dealer visibility report</h4>
+                    <h4 className="mt-2 text-lg font-semibold text-white sm:text-xl">Business visibility report</h4>
                   </div>
                   <div className="shrink-0 rounded-2xl border border-white/10 bg-white/8 px-3 py-2.5 text-right sm:px-4 sm:py-3">
                     <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white/46 sm:text-[11px]">
