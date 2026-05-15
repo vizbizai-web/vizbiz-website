@@ -192,22 +192,20 @@ export async function POST(request: Request) {
 
         // -- STAGE 2: Competitor Discovery --
         // Uses preflight data to find real competitors (5-15s with rate limiting)
-        let competitors: string[] = [];
-        if (lead.competitor && lead.competitor.trim() !== "") {
-          competitors = [lead.competitor.trim()];
+        // ALWAYS runs discoverCompetitors — even when user provides a competitor,
+        // it gets validated. If validation fails, auto-discovery kicks in.
+        console.info(`[process-lead] STAGE 2: Discovering competitors for ${lead.dealershipName}...`);
+        const competitors = await discoverCompetitors(lead.dealershipName, lead.website, lead.city, lead.competitor || undefined, {
+          competitorSearchQueries: preflightProfile?.competitorSearchQueries,
+          businessType: preflightProfile?.businessType,
+          services: preflightProfile?.services,
+          market: preflightProfile?.market,
+        });
+        if (competitors.length === 0) {
+          console.info(`[process-lead] STAGE 2 complete: No validated competitors found`);
         } else {
-          console.info(`[process-lead] STAGE 2: Discovering competitors for ${lead.dealershipName}...`);
-          competitors = await discoverCompetitors(lead.dealershipName, lead.website, lead.city, lead.competitor, {
-            competitorSearchQueries: preflightProfile?.competitorSearchQueries,
-            businessType: preflightProfile?.businessType,
-            services: preflightProfile?.services,
-            market: preflightProfile?.market,
-          });
-          if (competitors.length === 0) {
-            console.info(`[process-lead] STAGE 2 complete: No validated competitors found`);
-          } else {
-            console.info(`[process-lead] STAGE 2 complete: Found ${competitors.length} competitors: ${competitors.join(', ')}`);
-          }
+          const source = lead.competitor?.trim() ? 'user-provided (validated)' : 'auto-discovered';
+          console.info(`[process-lead] STAGE 2 complete: Found ${competitors.length} competitors (${source}): ${competitors.join(', ')}`);
         }
 
         // Pause between stages to avoid API pressure

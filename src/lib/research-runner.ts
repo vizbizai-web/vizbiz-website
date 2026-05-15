@@ -13,6 +13,7 @@ import { isJunkCompetitor } from "./junk-filter";
 import { collectSocialSignals } from "./social-signals";
 import { extractFanoutQueries, scoreFanoutCoverage, generateFanoutReport } from "./query-fanout";
 import { tavilySearch, type TavilySearchResult } from "./tavily-client";
+import { validateCompetitor } from "./competitor-discovery";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
@@ -290,7 +291,7 @@ export async function runResearch(
         const promptRaw = rawResults[i];
         if (promptRaw && promptRaw.results.length > 0) {
           const discResult = checkCompetitorAppearance(promptRaw.results, discoveredNames);
-          if (discResult.appeared && discResult.name && isRealBusiness(discResult.name, { businessType: preflightProfile?.businessType, services: preflightProfile?.services })) {
+          if (discResult.appeared && discResult.name && validateCompetitor(discResult.name, { businessType: preflightProfile?.businessType, services: preflightProfile?.services }).valid) {
             results[i].competitorAppeared = true;
             results[i].competitorName = discResult.name;
           }
@@ -836,7 +837,7 @@ function checkCompetitorAppearance(
     if (/\.[a-z]{2,}(\/|$)/i.test(rawName)) return { appeared: false };
     
     // Reject aggregator/platform names (Getyourguide, Viator, etc.)
-    if (!isRealBusiness(rawName, undefined)) return { appeared: false };
+    if (!validateCompetitor(rawName).valid) return { appeared: false };
 
     return { appeared: true, name: rawName };
   }
@@ -927,60 +928,8 @@ const JUNK_BUSINESS_PATTERNS: RegExp[] = [
   /^training$/i,
 ];
 
-/**
- * Check if a competitor name is a real business (not an aggregator/platform/directory)
- * When preflight context is available, also validates niche relevance.
- */
-function isRealBusiness(
-  name: string,
-  preflightContext?: { businessType?: string; services?: string[] }
-): boolean {
-  const lower = name.toLowerCase().trim();
-  
-  // Reject if it matches any aggregator pattern
-  if (AGGREGATOR_NAMES.some(a => lower === a || lower.startsWith(a) || lower.endsWith(a))) {
-    return false;
-  }
-  
-  // Reject expanded junk patterns (associations, government, generic)
-  if (JUNK_BUSINESS_PATTERNS.some(p => p.test(lower))) {
-    return false;
-  }
-  
-  // Reject if it looks like a directory listing ("X near Y", "X in Z")
-  if (/^(car |vehicle |auto ).*(near|in |around )/i.test(lower)) return false;
-  if (/ near .*,/i.test(lower)) return false;
-  if (/ in .*, (on|nsw|vic|qld|ca|ny|tx)/i.test(lower)) return false;
-  
-  // Reject if it's a generic phrase
-  if (GENERIC_PHRASES.some(p => lower.includes(p))) return false;
-  
-  // Reject very short or very long names
-  if (lower.length < 4 || lower.length > 60) return false;
-  
-  // Reject if it's just a location/area name
-  if (/^(the )?(best|top|cheap|affordable|reliable|local) /i.test(lower)) return false;
-  
-  // Reject single generic words that aren't brand names
-  const GENERIC_SINGLE_WORDS = new Set([
-    'news', 'weather', 'events', 'jobs', 'home', 'welcome', 'about', 'contact',
-    'services', 'gallery', 'menu', 'blog', 'shop', 'store', 'directory',
-    'guide', 'review', 'reviews', 'maps', 'directions', 'hours', 'booking',
-    'water polo', 'football', 'basketball', 'cricket', 'tennis', 'swimming',
-    'gymnastics', 'hockey', 'volleyball', 'rugby', 'baseball', 'soccer',
-  ]);
-  if (GENERIC_SINGLE_WORDS.has(lower)) return false;
-  
-  // Reject names with 6+ words — likely article titles, not business names
-  if (name.split(/\s+/).length >= 6) return false;
-  
-  // Reject common article/content title patterns
-  if (/transfers?\s+(&|and)\s+(rumou?rs?|gossip|news)/i.test(lower)) return false;
-  if (/ready\s+to\s+(make|take|win|join|lead)/i.test(lower)) return false;
-  if (/membership\s+(schedule|form|plan|fee|dues)/i.test(lower)) return false;
-  
-  return true;
-}
+// NOTE: isRealBusiness removed — use validateCompetitor() from ./competitor-discovery instead
+// which provides the same checks plus additional geo + niche validation.
 
 function extractDomainName(url: string): { name: string; domain: string } | null {
   try {
@@ -1111,7 +1060,7 @@ function discoverCompetitorsFromResults(
   }
   
   return sorted.sort((a, b) => b.appearances - a.appearances)
-    .filter(dc => isRealBusiness(dc.name, { businessType: preflightContext?.businessType, services: preflightContext?.services }))
+    .filter(dc => validateCompetitor(dc.name, { businessType: preflightContext?.businessType, services: preflightContext?.services }).valid)
     .slice(0, 5);
 }
 
