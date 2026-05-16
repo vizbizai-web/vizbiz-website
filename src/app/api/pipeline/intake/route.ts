@@ -130,6 +130,7 @@ export async function POST(request: Request) {
   }
 
   // Send Telegram alert — MUST await on serverless (Vercel kills process after response)
+  let alertSent = false;
   try {
     await sendLeadAlertTelegram({
       leadId,
@@ -146,6 +147,7 @@ export async function POST(request: Request) {
       utmCampaign: cleanPayload.utmCampaign,
       referrer: cleanPayload.referrer,
     });
+    alertSent = true;
   } catch (err) {
     console.error("[pipeline/intake] Telegram alert failed", err);
   }
