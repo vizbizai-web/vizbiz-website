@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     "*.trycloudflare.com",
     "*.loca.lt",
   ],
+  async rewrites() {
+    return [
+      {
+        source: '/google151e827d1737bb24.html',
+        destination: '/api/gsc-verify',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
