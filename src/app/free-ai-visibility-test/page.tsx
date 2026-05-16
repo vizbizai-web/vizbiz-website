@@ -367,7 +367,7 @@ export default function FreeTestPage() {
               Move beyond the snapshot. Get a complete, 252-point audit of your dealership's AI visibility and a prioritized plan to dominate your local market.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/intake" className="premium-button rounded-xl px-8 py-4 font-semibold text-lg">
+              <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=free-test-upsell" className="premium-button rounded-xl px-8 py-4 font-semibold text-lg">
                 Get My Full Report
               </Link>
               <Link href="/sample-ai-visibility-report-for-car-dealerships" className="secondary-button rounded-xl px-8 py-4 font-medium">

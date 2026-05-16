@@ -158,7 +158,7 @@ export default function FaqAiVisibilityForLocalBusinessesPage() {
               See how your business appears in AI-driven search, where competitors are showing up more often today, and what to improve first.
             </p>
             <div className="mt-8">
-              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=faq-dealerships" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

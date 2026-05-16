@@ -169,7 +169,7 @@ export default function InsightsPage() {
               </p>
               <div className="mt-8">
                 <Link
-                  href="/intake/"
+                  href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=insights-page"
                   className="premium-button inline-block rounded-2xl px-6 py-3.5 text-sm font-semibold"
                 >
                   Get My AI Visibility Snapshot
