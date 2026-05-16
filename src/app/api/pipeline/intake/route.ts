@@ -27,6 +27,9 @@ type IntakePayload = {
   utmTerm?: string;
   utmContent?: string;
   referrer?: string;
+  timezone?: string;
+  utcOffset?: string;
+  locale?: string;
 };
 
 const requiredFields = [
@@ -87,6 +90,9 @@ export async function POST(request: Request) {
     utmTerm: payload.utm_term?.trim() || undefined,
     utmContent: payload.utm_content?.trim() || undefined,
     referrer: payload.referrer?.trim() || undefined,
+    timezone: payload.timezone?.trim() || undefined,
+    utcOffset: payload.utcOffset?.trim() || undefined,
+    locale: payload.locale?.trim() || undefined,
   };
 
   // Write to Sheets immediately — fast path
@@ -110,7 +116,7 @@ export async function POST(request: Request) {
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}.`,
+        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""}.`,
         source: cleanPayload.source,
       });
       sheetsOk = true;

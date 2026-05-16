@@ -194,6 +194,13 @@ function IntakeForm() {
       if (document.referrer) payload.append('referrer', document.referrer);
     } catch {}
 
+    // Attribution: capture user timezone + locale
+    try {
+      payload.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+      payload.append('utcOffset', String(new Date().getTimezoneOffset()));
+      payload.append('locale', navigator.language);
+    } catch {}
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/pipeline/intake', { method: 'POST', body: payload });
