@@ -127,15 +127,7 @@ export default async function ThankYouPage({
               </div>
 
               <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>Your full AI visibility report is being generated. Our AI analyzes your presence across 20+ real search scenarios and benchmarks you against competitors.</p>
-                {leadId && (
-                  <a
-                    href={`/report/${leadId}${reportToken ? `?token=${reportToken}` : ''}`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] px-6 py-3 font-semibold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.02] mt-2"
-                  >
-                    View My Report →
-                  </a>
-                )}
+                <p>Your full AI visibility report is being generated. Our AI analyzes your presence across 20+ real search scenarios and benchmarks you against competitors. You'll receive an email with your interactive report shortly.</p>
               </div>
             </div>
 
