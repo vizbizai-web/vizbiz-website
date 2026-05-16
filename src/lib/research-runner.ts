@@ -828,52 +828,62 @@ async function runPromptSearches(
   // Track which provider is being used across all prompts
   let aiVisibilityProvider: "perplexity" | "web-search-fallback" | "failed" = "web-search-fallback";
   
-  for (const prompt of prompts) {
-    try {
-      // === NEW: Real AI visibility check via Perplexity Sonar ===
-      const aiResult = await checkAIBusinessAppearance(prompt, businessName, website);
-      
-      // If Perplexity succeeded for any prompt, mark the whole run as using Perplexity
-      if (aiResult.provider === "perplexity") {
-        aiVisibilityProvider = "perplexity";
+  // === BATCHED PARALLEL Perplexity calls (5 concurrent) for speed ===
+  // This keeps total time under 60s instead of 120s+ sequential
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < prompts.length; i += BATCH_SIZE) {
+    const batch = prompts.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (prompt) => {
+        try {
+          const aiResult = await checkAIBusinessAppearance(prompt, businessName, website);
+          // Also get web search results for competitor discovery (parallel with AI check)
+          const searchPromise = searchWithFallback(prompt).catch(() => ({ results: [] as TavilySearchResult[], provider: "failed" }));
+          return { prompt, aiResult, searchPromise };
+        } catch (error) {
+          console.error(`[research-runner] Failed for "${prompt}":`, error);
+          return { prompt, aiResult: null as any, searchPromise: null };
+        }
+      })
+    );
+    
+    for (const { prompt, aiResult, searchPromise } of batchResults) {
+      if (aiResult) {
+        if (aiResult.provider === "perplexity") {
+          aiVisibilityProvider = "perplexity";
+        }
+        aiVisibilityChecks.push({ prompt, appeared: aiResult.appeared, provider: aiResult.provider });
+        
+        // Get web search results for competitor discovery
+        let competitorResult: { appeared: boolean; name?: string } = { appeared: false };
+        if (searchPromise) {
+          try {
+            const { results: searchResults } = await searchPromise;
+            rawResults.push({ prompt, results: searchResults });
+            competitorResult = checkCompetitorAppearance(searchResults, competitors);
+          } catch {
+            rawResults.push({ prompt, results: [] });
+          }
+        } else {
+          rawResults.push({ prompt, results: [] });
+        }
+        
+        results.push({
+          prompt,
+          businessAppeared: aiResult.appeared,
+          competitorAppeared: competitorResult.appeared,
+          competitorName: competitorResult.name
+        });
+      } else {
+        aiVisibilityChecks.push({ prompt, appeared: false, provider: "failed" });
+        results.push({ prompt, businessAppeared: false, competitorAppeared: false });
+        rawResults.push({ prompt, results: [] });
       }
-      
-      aiVisibilityChecks.push({
-        prompt,
-        appeared: aiResult.appeared,
-        provider: aiResult.provider,
-      });
-      
-      // Also run web search for competitor discovery (still need raw results)
-      const { results: searchResults } = await searchWithFallback(prompt);
-      rawResults.push({ prompt, results: searchResults });
-      
-      // Check competitor appearance via web search (competitor discovery still uses web search)
-      const competitorResult = checkCompetitorAppearance(searchResults, competitors);
-      
-      results.push({
-        prompt,
-        businessAppeared: aiResult.appeared,
-        competitorAppeared: competitorResult.appeared,
-        competitorName: competitorResult.name
-      });
-      
-      // Be gentle with APIs — 1000ms between Perplexity calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-    } catch (error) {
-      console.error(`[research-runner] Failed prompt search for "${prompt}":`, error);
-      results.push({
-        prompt,
-        businessAppeared: false,
-        competitorAppeared: false
-      });
-      rawResults.push({ prompt, results: [] });
-      aiVisibilityChecks.push({
-        prompt,
-        appeared: false,
-        provider: "failed",
-      });
+    }
+    
+    // Small delay between batches to avoid rate limiting
+    if (i + BATCH_SIZE < prompts.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
   
