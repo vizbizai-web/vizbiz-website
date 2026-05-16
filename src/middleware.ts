@@ -50,5 +50,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/mission-control/:path*', '/googlefffa2894f075b012.html']
+  matcher: ['/mission-control/:path*', '/googlefffa2894f075b012.html', '/google151e827d1737bb24.html']
 };
