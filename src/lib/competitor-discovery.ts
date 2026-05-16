@@ -178,8 +178,87 @@ const LISTICLE_PATTERNS: RegExp[] = [
 ];
 
 /* ───────────────────────────────
-   2. SHARED VALIDATION
+   GENERIC NAME BLOCK LIST
    ─────────────────────────────── */
+
+/**
+ * Generic business type words that, when combined with a brand, create
+ * a category name rather than a unique business name.
+ * Examples: "Kia Dealership", "Honda Dealer", "Yoga Studio" — these are
+ * categories, not real competitors. Real competitors: "Scarborough Kia", "Prana Yoga & Healing Center"
+ */
+const GENERIC_BUSINESS_TYPES: string[] = [
+  "dealership", "dealer", "dealers", "studio", "studios",
+  "center", "centre", "centers", "clinic", "clinics",
+  "shop", "shops", "store", "stores", "salon", "salons",
+  "spa", "spas", "gym", "gyms", "restaurant", "restaurants",
+  "bar", "cafe", "hotel", "motel", "inn", "resort",
+  "service", "services", "repair", "repairs", "auto", "automotive",
+  "group", "inc", "llc", "ltd", "corp", "corporation",
+  "company", "co", "enterprise", "solutions", "consulting",
+];
+
+/**
+ * Common car brand names that when combined with a business type make a generic name.
+ * e.g. "Kia Dealership" → generic, "Kia of Scarborough" → real business
+ */
+const CAR_BRANDS: string[] = [
+  "acura", "audi", "bmw", "buick", "cadillac", "chevrolet", "chevy",
+  "chrysler", "dodge", "ford", "gmc", "honda", "hyundai", "infiniti",
+  "jeep", "kia", "lexus", "lincoln", "mazda", "mercedes", "mercury",
+  "mini", "mitsubishi", "nissan", "porsche", "ram", "subaru", "tesla",
+  "toyota", "volkswagen", "vw", "volvo", "jaguar", "land rover",
+  "alfa romeo", "maserati", "ferrari", "bentley", "rolls royce",
+];
+
+/**
+ * Check if a name is a generic category like "Kia Dealership" or "Yoga Studio"
+ * instead of a real unique business name.
+ */
+function isGenericCategoryName(name: string): boolean {
+  const lower = name.toLowerCase().trim();
+  const words = lower.split(/\s+/);
+
+  // Must be at least 2 words to be a "{Brand} {Type}" pattern
+  if (words.length < 2) return false;
+
+  // Pattern 1: "{Brand} {BusinessType}" — e.g., "Kia Dealership", "Honda Dealer"
+  // where the ENTIRE name is just brand + business type with no distinguishing words
+  const firstWord = words[0];
+  const lastWord = words[words.length - 1];
+
+  // If it's exactly "{CarBrand} {BusinessType}" → generic
+  const isCarBrand = CAR_BRANDS.includes(firstWord);
+  const isBusinessType = GENERIC_BUSINESS_TYPES.includes(lastWord);
+
+  if (isCarBrand && isBusinessType && words.length === 2) {
+    return true;
+  }
+
+  // Pattern 2: Any name that ends with a generic business type AND
+  // has no other distinguishing words (no location, no unique modifier)
+  // e.g., "Scarborough Kia" → has location word "Scarborough" → NOT generic
+  // e.g., "Kia Dealership" → no distinguishing words → generic
+  if (isBusinessType) {
+    // Check if there are any distinguishing words (location, unique modifier)
+    const distinguishingWords = words.slice(0, -1).filter(w =>
+      w.length > 3 &&
+      !CAR_BRANDS.includes(w) &&
+      !["the", "and", "of", "for", "in", "at", "by", "a", "an"].includes(w)
+    );
+    // If no distinguishing words besides the brand → it's generic
+    if (distinguishingWords.length === 0) {
+      return true;
+    }
+  }
+
+  // Pattern 3: "{BusinessType}" as the entire name or with "the/a/an"
+  if (words.length === 1 && GENERIC_BUSINESS_TYPES.includes(lastWord)) {
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Exported validation function — used by competitor-discovery, research-runner, and process-lead.
@@ -290,7 +369,12 @@ export function validateCompetitor(
     }
   }
 
-  // ── 8. Geographic relevance (local mode) ──
+  // ── 9. Reject generic category names like "Kia Dealership" ──
+  if (isGenericCategoryName(candidateName)) {
+    return { valid: false, name: candidateName, reason: "Generic category name, not a real business" };
+  }
+
+  // ── 10. Geographic relevance (local mode) ──
   const isLocalMode = market === "local" || !!city;
   if (isLocalMode && city) {
     const cityLower = city.toLowerCase();
@@ -459,12 +543,14 @@ async function discoverLocalCompetitors(
     console.info(`[competitor-discovery] LOCAL mode: Using Google Places API as primary source`);
     const placesResults = await discoverLocalViaPlaces(niche, city, address, businessName);
 
+    console.info(`[competitor-discovery] Places API returned ${placesResults.length} validated competitors`);
+    // If Places returned real competitors, trust them — don't supplement with Tavily
     if (placesResults.length >= 2) {
-      console.info(`[competitor-discovery] Places API returned ${placesResults.length} validated competitors`);
+      console.info(`[competitor-discovery] Places API returned ${placesResults.length} validated competitors — using Places only, skipping Tavily`);
       return placesResults;
     }
 
-    // If Places returned < 2, log and fall through to Tavily
+    // If Places returned 0-1, still supplement with Tavily — but log it
     console.info(`[competitor-discovery] Places API returned only ${placesResults.length} competitors, supplementing with Tavily`);
     for (const name of placesResults) {
       candidates.set(name.toLowerCase(), { name, snippet: `Places API result in ${city}`, appearances: 10 });

@@ -25,15 +25,11 @@ import {
   generateYouTubeReport,
   type YouTubePresence,
 } from "./youtube-scoring";
+import { geocodeAddress, placesNearbySearch, isPlacesConfigured } from "./places-client";
 
 export interface SocialPresence {
-  instagram: number | null;
-  facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
-  
-  instagramUrl: string | null;
-  facebookUrl: string | null;
 
   youtube: {
     channelFound: boolean;
@@ -44,11 +40,8 @@ export interface SocialPresence {
 
 export interface CompetitorSocial {
   name: string;
-  instagram: number | null;
-  facebook: number | null;
   googleReviews: number | null;
   googleRating: number | null;
-  
 }
 
 export interface SocialAnalysis {
@@ -74,29 +67,25 @@ export async function collectSocialSignals(
   competitorNames: string[],
   socialUrls?: { instagram?: string | null; facebook?: string | null },
 ): Promise<SocialAnalysis> {
-  // Step 1: Collect business social data via Tavily (parallel)
-  // Use actual URLs from scraper when available for more accurate results
-  const instagramQuery = socialUrls?.instagram
-    ? `${socialUrls.instagram} Instagram followers count`
-    : `${businessName} ${city} Instagram followers`;
-  const facebookQuery = socialUrls?.facebook
-    ? `${socialUrls.facebook} Facebook page likes`
-    : `${businessName} ${city} Facebook page likes`;
-
-  const [google, instagram, facebook, youTubePresence] = await Promise.all([
-    tavilySocialSearch(`${businessName} ${city} Google reviews rating number of reviews`),
-    tavilySocialSearch(instagramQuery),
-    tavilySocialSearch(facebookQuery),
+  // Step 1: Collect business social data (parallel)
+  // Google Places API for reviews (primary), Tavily as fallback
+  const [placesData, youTubePresence] = await Promise.all([
+    getGoogleReviewsFromPlaces(businessName, city),
     analyzeYouTubePresence(businessName, city, "auto dealer"), // default niche; caller can override via socialUrls
   ]);
 
+  // Fallback to Tavily for Google reviews only if Places returns nothing
+  let googleReviews = placesData.reviews;
+  let googleRating = placesData.rating;
+  if (googleReviews === null && googleRating === null) {
+    const tavilyGoogle = await tavilySocialSearch(`${businessName} ${city} Google reviews rating number of reviews`);
+    googleReviews = parseReviewCount(tavilyGoogle);
+    googleRating = parseRating(tavilyGoogle);
+  }
+
   const business: SocialPresence = {
-    instagram: parseFollowerCount(instagram),
-    facebook: parseFollowerCount(facebook),
-    googleReviews: parseReviewCount(google),
-    googleRating: parseRating(google),
-    instagramUrl: socialUrls?.instagram || null,
-    facebookUrl: socialUrls?.facebook || null,
+    googleReviews,
+    googleRating,
     youtube: {
       channelFound: youTubePresence.channelFound,
       subscriberCount: youTubePresence.subscriberCount,
@@ -104,21 +93,24 @@ export async function collectSocialSignals(
     },
   };
 
-  console.info(`[social-signals] ${businessName}: IG=${business.instagram}, FB=${business.facebook}, Google=${business.googleReviews} reviews (${business.googleRating} stars), YT=${business.youtube.channelFound ? "found" : "none"}`);
+  console.info(`[social-signals] ${businessName}: Google=${business.googleReviews} reviews (${business.googleRating} stars), YT=${business.youtube.channelFound ? "found" : "none"}`);
 
   // Step 2: Collect competitor social data (parallel, top 3)
+  // Use Google Places API for competitors too, with Tavily fallback
   const competitors: CompetitorSocial[] = await Promise.all(
     competitorNames.slice(0, 3).map(async (name) => {
-      const [g, ig] = await Promise.all([
-        tavilySocialSearch(`${name} ${city} Google reviews rating number of reviews`),
-        tavilySocialSearch(`${name} ${city} Instagram followers`),
-      ]);
+      const placesComp = await getGoogleReviewsFromPlaces(name, city);
+      let compReviews = placesComp.reviews;
+      let compRating = placesComp.rating;
+      if (compReviews === null && compRating === null) {
+        const tavilyComp = await tavilySocialSearch(`${name} ${city} Google reviews rating number of reviews`);
+        compReviews = parseReviewCount(tavilyComp);
+        compRating = parseRating(tavilyComp);
+      }
       return {
         name,
-        instagram: parseFollowerCount(ig),
-        facebook: null,
-        googleReviews: parseReviewCount(g),
-        googleRating: parseRating(g),
+        googleReviews: compReviews,
+        googleRating: compRating,
       };
     })
   );
@@ -135,7 +127,54 @@ export async function collectSocialSignals(
 }
 
 /**
+ * Get Google review data from Google Places API (New)
+ * This is the PRIMARY source for review counts — accurate and specific.
+ */
+async function getGoogleReviewsFromPlaces(
+  businessName: string,
+  city: string
+): Promise<{ reviews: number | null; rating: number | null }> {
+  if (!isPlacesConfigured()) {
+    return { reviews: null, rating: null };
+  }
+
+  try {
+    const coords = await geocodeAddress(city);
+    if (!coords) {
+      return { reviews: null, rating: null };
+    }
+
+    // Search for the business by name in the city
+    const places = await placesNearbySearch(businessName, coords, 15000, 5);
+
+    // Find the best match (exact or close name match)
+    const lowerBizName = businessName.toLowerCase();
+    let bestMatch = places[0];
+
+    for (const place of places) {
+      const placeName = place.displayName?.text?.toLowerCase() || "";
+      if (placeName.includes(lowerBizName) || lowerBizName.includes(placeName.split(' ')[0])) {
+        bestMatch = place;
+        break;
+      }
+    }
+
+    if (bestMatch?.userRatingCount || bestMatch?.rating) {
+      return {
+        reviews: bestMatch.userRatingCount || null,
+        rating: bestMatch.rating || null,
+      };
+    }
+  } catch (error) {
+    console.warn(`[social-signals] Places API review lookup failed for "${businessName}":`, error instanceof Error ? error.message : error);
+  }
+
+  return { reviews: null, rating: null };
+}
+
+/**
  * Query Tavily for social data — returns the answer text
+ * Now used ONLY as a fallback when Places API is unavailable.
  */
 let lastSocialTavilyCall = 0;
 

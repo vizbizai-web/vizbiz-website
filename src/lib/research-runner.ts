@@ -17,12 +17,16 @@ import { validateCompetitor } from "./competitor-discovery";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 
 if (!TAVILY_API_KEY) {
   console.warn("[research-runner] TAVILY_API_KEY not configured");
 }
 if (!BRAVE_API_KEY) {
   console.warn("[research-runner] BRAVE_SEARCH_API_KEY not configured — no fallback available");
+}
+if (!PERPLEXITY_API_KEY) {
+  console.warn("[research-runner] PERPLEXITY_API_KEY not configured — AI visibility checks will use web search fallback (NOT true AI visibility)");
 }
 
 // TavilySearchResult imported from tavily-client.ts
@@ -67,6 +71,128 @@ async function braveSearch(query: string): Promise<TavilySearchResult[]> {
   } catch (error) {
     console.error("[research-runner] Brave search error:", error);
     throw error;
+  }
+}
+
+/**
+ * Perplexity Sonar API — Real AI Visibility Check
+ * 
+ * Calls Perplexity's Sonar model (a real AI model) with a prompt and checks
+ * whether the business name or website appears in the AI's answer.
+ * This is TRUE AI visibility — not web search results.
+ * 
+ * Request format: POST https://api.perplexity.ai/v1/sonar
+ * Response: { choices: [{ message: { content: string } }], citations: [{ url: string }] }
+ */
+async function queryAIModel(prompt: string): Promise<{ content: string; citations: string[]; provider: string }> {
+  if (!PERPLEXITY_API_KEY) {
+    throw new Error("PERPLEXITY_API_KEY not configured — cannot check real AI visibility");
+  }
+
+  try {
+    const response = await fetch("https://api.perplexity.ai/v1/sonar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${PERPLEXITY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1024,
+      }),
+      signal: AbortSignal.timeout(30000), // 30s timeout
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Perplexity API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content || "";
+    const citations = (data?.citations || []).map((c: any) => {
+      if (typeof c === "string") return c;
+      if (c?.url) return c.url;
+      return "";
+    }).filter(Boolean);
+
+    return { content, citations, provider: "perplexity" };
+  } catch (error) {
+    console.error("[research-runner] Perplexity API error:", error instanceof Error ? error.message : error);
+    throw error;
+  }
+}
+
+/**
+ * Check AI visibility using Perplexity Sonar API.
+ * Returns true if the business appears in the AI's answer text OR in citations.
+ * 
+ * If Perplexity API key is not available, falls back to web search with a warning.
+ */
+async function checkAIBusinessAppearance(
+  prompt: string,
+  businessName: string,
+  website: string
+): Promise<{ appeared: boolean; provider: string; content: string; citations: string[] }> {
+  const lowerBusinessName = businessName.toLowerCase();
+  const lowerWebsite = website.toLowerCase().replace(/^https?:\/\//, "");
+
+  // Try Perplexity first for REAL AI visibility
+  if (PERPLEXITY_API_KEY) {
+    try {
+      const aiResponse = await queryAIModel(prompt);
+      const lowerContent = aiResponse.content.toLowerCase();
+
+      // Check if business name appears in AI answer text
+      const nameInAnswer = lowerContent.includes(lowerBusinessName);
+
+      // Check if website domain appears in AI answer text
+      const websiteInAnswer = lowerContent.includes(lowerWebsite);
+
+      // Check citations for the business website
+      const websiteInCitations = aiResponse.citations.some(
+        (url) => url.toLowerCase().includes(lowerWebsite)
+      );
+
+      const appeared = nameInAnswer || websiteInAnswer || websiteInCitations;
+
+      if (appeared) {
+        console.info(`[research-runner] ✅ AI visibility (Perplexity): "${businessName}" appeared in answer to "${prompt}"`);
+      }
+
+      return {
+        appeared,
+        provider: "perplexity",
+        content: aiResponse.content,
+        citations: aiResponse.citations,
+      };
+    } catch (error) {
+      console.warn(`[research-runner] Perplexity failed for "${prompt}", falling back to web search:`, error instanceof Error ? error.message : error);
+    }
+  }
+
+  // FALLBACK: Web search (Tavily/Brave) — NOT true AI visibility
+  console.warn(`[research-runner] ⚠️ FALLBACK to web search for "${prompt}" — results are NOT true AI visibility. Install PERPLEXITY_API_KEY for real AI visibility checks.`);
+
+  try {
+    const { results: searchResults } = await searchWithFallback(prompt);
+    const appeared = checkBusinessAppearance(searchResults, businessName, website);
+
+    return {
+      appeared,
+      provider: "web-search-fallback",
+      content: searchResults.map(r => r.content).join(" "),
+      citations: searchResults.map(r => r.url),
+    };
+  } catch (error) {
+    console.error(`[research-runner] Web search fallback also failed for "${prompt}":`, error instanceof Error ? error.message : error);
+    return {
+      appeared: false,
+      provider: "failed",
+      content: "",
+      citations: [],
+    };
   }
 }
 
@@ -121,8 +247,8 @@ export interface ResearchResult {
   valueProposition?: string;
   pricingInfo?: string | null;
   estimatedRevenueGap?: { low: number; high: number; currency: string };
-  socialPresence?: { instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null; instagramUrl: string | null; facebookUrl: string | null };
-  competitorSocial?: { name: string; instagram: number | null; facebook: number | null; googleReviews: number | null; googleRating: number | null }[];
+  socialPresence?: { googleReviews: number | null; googleRating: number | null };
+  competitorSocial?: { name: string; googleReviews: number | null; googleRating: number | null }[];
   socialNarrative?: string;
   socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
   // Edward Sturm query fan-out
@@ -132,6 +258,9 @@ export interface ResearchResult {
     missedQueries: string[];
     competitorDominantQueries: string[];
   };
+  // AI visibility tracking
+  aiVisibilityProvider?: string; // "perplexity" or "web-search-fallback"
+  aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: string }[];
 }
 
 export async function runResearch(
@@ -271,8 +400,10 @@ export async function runResearch(
     }
   }
   
-  // STEP 4: Run searches and track appearances — check against BOTH names
-  const { results, rawResults } = await runPromptSearches(prompts, resolvedName, website, competitors, businessName);
+  // STEP 4: Run AI visibility checks and track appearances — check against BOTH names
+  const { results, rawResults, aiVisibilityChecks, aiVisibilityProvider } = await runPromptSearches(
+    prompts, resolvedName, website, competitors, businessName
+  );
   
   // STEP 4.5: Discover competitors from search results
   // If no competitors were provided or the known competitors didn't show up,
@@ -302,6 +433,10 @@ export async function runResearch(
   
   // STEP 5: Calculate scores and bands
   const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
+  
+  // Track which provider was used for AI visibility
+  finalResult.aiVisibilityProvider = aiVisibilityProvider;
+  finalResult.aiVisibilityChecks = aiVisibilityChecks;
 
   // STEP 5.5: Post-research sanity check
   // If ALL prompts returned zero AND same competitor across all results,
@@ -345,14 +480,13 @@ export async function runResearch(
     ).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
 
     const socialData = await collectSocialSignals(
-      businessName, city, website, competitorNames,
-      { instagram: preflightProfile?.socialLinks?.instagram, facebook: preflightProfile?.socialLinks?.facebook }
+      businessName, city, website, competitorNames
     );
     finalResult.socialPresence = socialData.business;
     finalResult.competitorSocial = socialData.competitors;
     finalResult.socialNarrative = socialData.narrative;
     finalResult.socialVsVisibility = socialData.aiVisibilityVsSocial;
-    console.info(`[research-runner] Social signals: IG=${socialData.business.instagram}, FB=${socialData.business.facebook}, Google=${socialData.business.googleReviews} reviews`);
+    console.info(`[research-runner] Social signals: Google=${socialData.business.googleReviews} reviews (${socialData.business.googleRating} stars), YT=${socialData.business.youtube.channelFound ? "found" : "none"}`);
   } catch (e) {
     console.warn(`[research-runner] Social signals failed (non-blocking):`, e instanceof Error ? e.message : e);
   }
@@ -676,6 +810,8 @@ interface PromptResult {
 interface PromptSearchOutput {
   results: PromptResult[];
   rawResults: { prompt: string; results: TavilySearchResult[] }[];
+  aiVisibilityChecks: { prompt: string; appeared: boolean; provider: string }[];
+  aiVisibilityProvider: string;
 }
 
 async function runPromptSearches(
@@ -687,32 +823,43 @@ async function runPromptSearches(
 ): Promise<PromptSearchOutput> {
   const results: PromptResult[] = [];
   const rawResults: { prompt: string; results: TavilySearchResult[] }[] = [];
+  const aiVisibilityChecks: { prompt: string; appeared: boolean; provider: string }[] = [];
+  
+  // Track which provider is being used across all prompts
+  let aiVisibilityProvider = "web-search-fallback";
   
   for (const prompt of prompts) {
     try {
-      const { results: searchResults, provider } = await searchWithFallback(prompt);
+      // === NEW: Real AI visibility check via Perplexity Sonar ===
+      const aiResult = await checkAIBusinessAppearance(prompt, businessName, website);
       
-      // Store raw results for competitor discovery
-      rawResults.push({ prompt, results: searchResults });
-      
-      // Check if business appears — use resolved name AND original name
-      let businessAppeared = checkBusinessAppearance(searchResults, businessName, website);
-      if (!businessAppeared && originalName && originalName !== businessName) {
-        businessAppeared = checkBusinessAppearance(searchResults, originalName, website);
+      // If Perplexity succeeded for any prompt, mark the whole run as using Perplexity
+      if (aiResult.provider === "perplexity") {
+        aiVisibilityProvider = "perplexity";
       }
       
-      // Check if any competitor appears
+      aiVisibilityChecks.push({
+        prompt,
+        appeared: aiResult.appeared,
+        provider: aiResult.provider,
+      });
+      
+      // Also run web search for competitor discovery (still need raw results)
+      const { results: searchResults } = await searchWithFallback(prompt);
+      rawResults.push({ prompt, results: searchResults });
+      
+      // Check competitor appearance via web search (competitor discovery still uses web search)
       const competitorResult = checkCompetitorAppearance(searchResults, competitors);
       
       results.push({
         prompt,
-        businessAppeared,
+        businessAppeared: aiResult.appeared,
         competitorAppeared: competitorResult.appeared,
         competitorName: competitorResult.name
       });
       
-      // Be gentle with API - 500ms between requests (on top of Tavily rate limiter)
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Be gentle with APIs — 1000ms between Perplexity calls
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
     } catch (error) {
       console.error(`[research-runner] Failed prompt search for "${prompt}":`, error);
@@ -722,12 +869,26 @@ async function runPromptSearches(
         competitorAppeared: false
       });
       rawResults.push({ prompt, results: [] });
+      aiVisibilityChecks.push({
+        prompt,
+        appeared: false,
+        provider: "failed",
+      });
     }
   }
   
-  return { results, rawResults };
+  // Log summary of AI visibility provider used
+  const perplexityCount = aiVisibilityChecks.filter(c => c.provider === "perplexity").length;
+  const fallbackCount = aiVisibilityChecks.filter(c => c.provider === "web-search-fallback").length;
+  console.info(`[research-runner] AI visibility: ${perplexityCount}/${prompts.length} prompts checked via Perplexity Sonar, ${fallbackCount} via web search fallback`);
+  
+  return { results, rawResults, aiVisibilityChecks, aiVisibilityProvider };
 }
 
+/**
+ * Check business appearance in web search results (legacy — used for fallback only).
+ * For real AI visibility, use checkAIBusinessAppearance() which queries Perplexity Sonar.
+ */
 function checkBusinessAppearance(
   searchResults: TavilySearchResult[],
   businessName: string,

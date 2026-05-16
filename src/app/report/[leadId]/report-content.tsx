@@ -46,16 +46,12 @@ interface Recommendation {
 }
 
 interface SocialPresence {
-  instagram: number | null;
-  facebook: number | null;
   googleReviews: number | null;
   overallScore: number;
 }
 
 interface CompetitorSocial {
   name: string;
-  instagram: number | null;
-  facebook: number | null;
   googleReviews: number | null;
 }
 
@@ -965,12 +961,10 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   const isMobile = useIsMobile();
 
   const platforms = [
-    { label: 'Instagram', value: data.socialPresence.instagram, icon: 'instagram' },
-    { label: 'Facebook', value: data.socialPresence.facebook, icon: 'facebook' },
     { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: 'google' },
   ].filter(p => p.value !== null && p.value !== undefined);
 
-  const hasSocialData = data.socialPresence.instagram || data.socialPresence.facebook || data.socialPresence.googleReviews;
+  const hasSocialData = data.socialPresence.googleReviews !== null && data.socialPresence.googleReviews !== undefined;
   const hasCompetitorSocialData = data.competitorSocial && data.competitorSocial.length > 0;
 
   if (!hasSocialData && !hasCompetitorSocialData) return (
@@ -1009,13 +1003,7 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
               {platforms.map((p) => (
                 <div key={p.label} className="text-center p-3 sm:p-4 rounded-xl" style={{ background: t.barTrack }}>
                   <div className="text-xl mb-1 flex items-center justify-center">
-                    {p.icon === 'instagram' ? (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#E1306C' }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><circle cx="12" cy="12" r="5.5" /><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" /></svg>
-                    ) : p.icon === 'facebook' ? (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                    ) : (
-                      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
-                    )}
+                    <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
                   </div>
                   <p className="text-xl sm:text-2xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>
                     {p.value ? p.value.toLocaleString() : '—'}
@@ -1035,8 +1023,6 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
               {/* Mobile: stacked cards */}
               <div className="flex flex-col gap-3 sm:hidden">
                 {([
-                  { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
-                  { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
                   { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
                 ] as const).filter(p => p.yours !== null && p.yours !== undefined).map((platform) => (
                   <div key={platform.label} className="rounded-xl p-3" style={{ background: t.barTrack }}>
@@ -1080,8 +1066,6 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
                   </thead>
                   <tbody>
                     {([
-                      { label: 'Instagram', yours: data.socialPresence.instagram, getTheirs: (c: CompetitorSocial) => c.instagram },
-                      { label: 'Facebook', yours: data.socialPresence.facebook, getTheirs: (c: CompetitorSocial) => c.facebook },
                       { label: 'Google Reviews', yours: data.socialPresence.googleReviews, getTheirs: (c: CompetitorSocial) => c.googleReviews },
                     ] as const).filter(p => p.yours !== null && p.yours !== undefined).map((platform) => (
                       <tr key={platform.label} style={{ borderBottom: `1px solid ${t.borderSubtle}` }}>
@@ -1604,15 +1588,11 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         { id: 3, title: 'Improve competitive positioning', description: 'Highlight what makes your business unique compared to competitors.', impact: 'Medium' as const },
       ],
       socialPresence: {
-        instagram: researchData.socialPresence?.instagram ?? null,
-        facebook: researchData.socialPresence?.facebook ?? null,
         googleReviews: researchData.socialPresence?.googleReviews ?? null,
         overallScore: 0,
       },
       competitorSocial: researchData.competitorSocial?.map(c => ({
         name: c.name,
-        instagram: c.instagram,
-        facebook: c.facebook,
         googleReviews: c.googleReviews,
       })) || [],
       socialNarrative: researchData.socialNarrative,
@@ -1663,8 +1643,6 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         { id: 3, title: 'Improve competitive positioning', description: 'Highlight what makes your business unique compared to competitors.', impact: 'Medium' as const },
       ],
       socialPresence: {
-        instagram: null,
-        facebook: null,
         googleReviews: 0,
         overallScore: 0,
       },
@@ -1689,7 +1667,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       invisibleQueries: [],
       competitors: [],
       recommendations: [],
-      socialPresence: { instagram: 0, facebook: 0, googleReviews: 0, overallScore: 0 },
+      socialPresence: { googleReviews: 0, overallScore: 0 },
       competitorSocial: [],
     };
   }
