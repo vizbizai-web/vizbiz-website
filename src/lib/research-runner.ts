@@ -84,7 +84,7 @@ async function braveSearch(query: string): Promise<TavilySearchResult[]> {
  * Request format: POST https://api.perplexity.ai/v1/sonar
  * Response: { choices: [{ message: { content: string } }], citations: [{ url: string }] }
  */
-async function queryAIModel(prompt: string): Promise<{ content: string; citations: string[]; provider: string }> {
+async function queryAIModel(prompt: string): Promise<{ content: string; citations: string[] }> {
   if (!PERPLEXITY_API_KEY) {
     throw new Error("PERPLEXITY_API_KEY not configured — cannot check real AI visibility");
   }
@@ -117,7 +117,7 @@ async function queryAIModel(prompt: string): Promise<{ content: string; citation
       return "";
     }).filter(Boolean);
 
-    return { content, citations, provider: "perplexity" };
+    return { content, citations };
   } catch (error) {
     console.error("[research-runner] Perplexity API error:", error instanceof Error ? error.message : error);
     throw error;
@@ -134,7 +134,7 @@ async function checkAIBusinessAppearance(
   prompt: string,
   businessName: string,
   website: string
-): Promise<{ appeared: boolean; provider: string; content: string; citations: string[] }> {
+): Promise<{ appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed"; content: string; citations: string[] }> {
   const lowerBusinessName = businessName.toLowerCase();
   const lowerWebsite = website.toLowerCase().replace(/^https?:\/\//, "");
 
@@ -163,7 +163,7 @@ async function checkAIBusinessAppearance(
 
       return {
         appeared,
-        provider: "perplexity",
+        provider: "perplexity" as const,
         content: aiResponse.content,
         citations: aiResponse.citations,
       };
@@ -181,7 +181,7 @@ async function checkAIBusinessAppearance(
 
     return {
       appeared,
-      provider: "web-search-fallback",
+      provider: "web-search-fallback" as const,
       content: searchResults.map(r => r.content).join(" "),
       citations: searchResults.map(r => r.url),
     };
@@ -189,7 +189,7 @@ async function checkAIBusinessAppearance(
     console.error(`[research-runner] Web search fallback also failed for "${prompt}":`, error instanceof Error ? error.message : error);
     return {
       appeared: false,
-      provider: "failed",
+      provider: "failed" as const,
       content: "",
       citations: [],
     };
@@ -259,8 +259,8 @@ export interface ResearchResult {
     competitorDominantQueries: string[];
   };
   // AI visibility tracking
-  aiVisibilityProvider?: string; // "perplexity" or "web-search-fallback"
-  aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: string }[];
+  aiVisibilityProvider?: "perplexity" | "web-search-fallback" | "failed";
+  aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
 }
 
 export async function runResearch(
@@ -810,8 +810,8 @@ interface PromptResult {
 interface PromptSearchOutput {
   results: PromptResult[];
   rawResults: { prompt: string; results: TavilySearchResult[] }[];
-  aiVisibilityChecks: { prompt: string; appeared: boolean; provider: string }[];
-  aiVisibilityProvider: string;
+  aiVisibilityChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
+  aiVisibilityProvider: "perplexity" | "web-search-fallback" | "failed";
 }
 
 async function runPromptSearches(
@@ -823,10 +823,10 @@ async function runPromptSearches(
 ): Promise<PromptSearchOutput> {
   const results: PromptResult[] = [];
   const rawResults: { prompt: string; results: TavilySearchResult[] }[] = [];
-  const aiVisibilityChecks: { prompt: string; appeared: boolean; provider: string }[] = [];
+  const aiVisibilityChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[] = [];
   
   // Track which provider is being used across all prompts
-  let aiVisibilityProvider = "web-search-fallback";
+  let aiVisibilityProvider: "perplexity" | "web-search-fallback" | "failed" = "web-search-fallback";
   
   for (const prompt of prompts) {
     try {
