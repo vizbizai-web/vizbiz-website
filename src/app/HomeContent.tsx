@@ -206,7 +206,7 @@ function IntakeForm() {
       const res = await fetch('/api/pipeline/intake', { method: 'POST', body: payload });
       if (res.ok) {
         const data = await res.json().catch(() => null);
-        if (data?.leadId) { window.location.href = `/thank-you?submitted=1&leadId=${data.leadId}`; }
+        if (data?.leadId) { window.location.href = `/thank-you?submitted=1&lid=${data.leadId}${data.redirectUrl?.includes('token=') ? '&token=' + data.redirectUrl.split('token=')[1] : ''}`; }
         else { window.location.href = '/thank-you?submitted=1'; }
       } else {
         // Fallback to old intake if new pipeline fails

@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { appendLead, isSheetsConfigured } from "@/lib/google-sheets";
 import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
+import { generateReportToken } from "@/lib/report-token";
 
 type IntakePayload = {
   name: string;
@@ -163,9 +164,15 @@ export async function POST(request: Request) {
   }
 
   // Return immediately — fast response
+  // Generate a client token so the lead can view their own report immediately
+  const clientToken = sheetsOk ? generateReportToken(leadId) : "";
+  const redirectUrl = clientToken
+    ? `/report/${leadId}?token=${clientToken}`
+    : `/report/${leadId}`;
+
   return NextResponse.json({
     success: true,
     leadId,
-    redirectUrl: `/report/${leadId}`,
+    redirectUrl,
   });
 }
