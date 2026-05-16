@@ -27,11 +27,11 @@ const blurredRows = [
 export default async function ThankYouPage({
   searchParams,
 }: {
-  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string; score?: string; llms?: string; schema?: string; niche?: string; revLossMin?: string; revLossMax?: string; nicheLabel?: string }>;
+  searchParams: Promise<{ appeared?: string; band?: string; service?: string; competitor?: string; lid?: string; score?: string; llms?: string; schema?: string; niche?: string; revLossMin?: string; revLossMax?: string; nicheLabel?: string; token?: string }>;
 }) {
   const params = await searchParams;
   const leadId = params.lid || '';
-  
+  const reportToken = params.token || '';
   // AI Readiness Data — safe to show (technical, not niche-dependent)
   const score = Number(params.score || "0");
   const hasLlms = params.llms === "1";
@@ -127,13 +127,17 @@ export default async function ThankYouPage({
               </div>
 
               <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>Your full report will be ready shortly. We&apos;ll walk you through the results on a quick call.</p>
+                <p>Your full AI visibility report is being generated. Our AI analyzes your presence across 20+ real search scenarios and benchmarks you against competitors.</p>
+                {leadId && (
+                  <a
+                    href={`/report/${leadId}${reportToken ? `?token=${reportToken}` : ''}`}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#22D3EE] to-[#06B6D4] px-6 py-3 font-semibold text-[#020617] shadow-[0_0_20px_rgba(34,211,238,0.3)] transition hover:scale-[1.02] mt-2"
+                  >
+                    View My Report →
+                  </a>
+                )}
               </div>
             </div>
-
-            <div className="mt-6 space-y-3 text-sm leading-7 text-[var(--text-secondary)]">
-                <p>Your full AI visibility report is being generated. Our AI analyzes your presence across 20+ real search scenarios and benchmarks you against competitors. You'll receive an email with your interactive report shortly.</p>
-              </div>
 
             <div className="glass-card rounded-[2rem] p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[rgba(0,240,255,0.06)] text-[var(--neon-cyan)]">
