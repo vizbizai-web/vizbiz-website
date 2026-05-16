@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         source: '/google151e827d1737bb24.html',
         destination: '/api/gsc-verify',
       },
+      {
+        source: '/google151e827d1737bb24.html/',
+        destination: '/api/gsc-verify',
+      },
     ];
   },
 };
