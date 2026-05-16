@@ -255,8 +255,8 @@ export async function POST(request: Request) {
 
         console.info(`[process-lead] Lead ${lead.leadId} research complete — awaiting Vlad review`);
 
-        // Send Vlad review alert (non-blocking)
-        sendVladReviewAlert(lead.leadId, lead.dealershipName, lead.city, lead.competitor, researchResult).catch(() => {});
+        // Send Vlad review alert
+        try { await sendVladReviewAlert(lead.leadId, lead.dealershipName, lead.city, lead.competitor, researchResult); } catch (e) { console.error('[process-lead] Review alert failed:', e); }
 
         processedCount++;
       } catch (error) {
