@@ -129,24 +129,26 @@ export async function POST(request: Request) {
     console.warn("[pipeline/intake] Google Sheets not configured — lead NOT stored");
   }
 
-  // Send Telegram alert (non-blocking)
-  sendLeadAlertTelegram({
-    leadId,
-    dealershipName: cleanPayload.dealershipName,
-    contactName: cleanPayload.name,
-    email: cleanPayload.email,
-    city: cleanPayload.cityMarket,
-    website: cleanPayload.websiteUrl,
-    appeared: "Pending",
-    band: "Pending",
-    sheetsOk,
-    utmSource: cleanPayload.utmSource,
-    utmMedium: cleanPayload.utmMedium,
-    utmCampaign: cleanPayload.utmCampaign,
-    referrer: cleanPayload.referrer,
-  }).catch((err) => {
+  // Send Telegram alert — MUST await on serverless (Vercel kills process after response)
+  try {
+    await sendLeadAlertTelegram({
+      leadId,
+      dealershipName: cleanPayload.dealershipName,
+      contactName: cleanPayload.name,
+      email: cleanPayload.email,
+      city: cleanPayload.cityMarket,
+      website: cleanPayload.websiteUrl,
+      appeared: "Pending",
+      band: "Pending",
+      sheetsOk,
+      utmSource: cleanPayload.utmSource,
+      utmMedium: cleanPayload.utmMedium,
+      utmCampaign: cleanPayload.utmCampaign,
+      referrer: cleanPayload.referrer,
+    });
+  } catch (err) {
     console.error("[pipeline/intake] Telegram alert failed", err);
-  });
+  }
 
   // Fire preflight in background — don't await
   if (sheetsOk && leadId) {
