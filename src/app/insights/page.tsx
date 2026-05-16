@@ -4,15 +4,15 @@ import SiteHeader from "@/components/SiteHeader";
 
 
 export const metadata: Metadata = {
-  title: "VizBiz Insights | AI Visibility for Car Dealerships",
+  title: "VizBiz Insights — AI Search Visibility Data & Research",
   description:
-    "Updates, data, and insights from VizBiz on AI visibility for car dealerships. See how ChatGPT, Google AI Overviews, and Gemini are reshaping automotive retail discovery.",
+    "Research, data, and insights on how businesses appear in ChatGPT, Google AI Overviews, Gemini, and Perplexity. Real numbers from real audits.",
   keywords:
-    "AI visibility for car dealerships, ChatGPT dealership visibility, Google AI Overviews automotive, AI search optimization, VizBiz insights",
+    "AI visibility data, AI search research, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, VizBiz insights, AI search analytics",
   openGraph: {
-    title: "VizBiz Insights | AI Visibility for Car Dealerships",
+    title: "VizBiz Insights — AI Search Visibility Data & Research",
     description:
-      "Updates, data, and insights from VizBiz on AI visibility for car dealerships.",
+      "Research, data, and insights on how businesses appear in AI-powered search. Real numbers from real audits.",
     type: "website",
     url: "https://vizbiz.ai/insights",
   },
