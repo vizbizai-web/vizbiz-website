@@ -135,7 +135,7 @@ export default function AiVisibilityForCarDealershipsPage() {
               AI visibility determines whether your dealership is included in those answers.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If you want the operational view, see <Link href="/how-dealerships-show-up-in-ai-search/" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>. If you want the commercial offer, see the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. If you want direct answers to common dealership questions, use the <Link href="/faq-ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">FAQ hub</Link>.
+              If you want the operational view, see <Link href="/how-dealerships-show-up-in-ai-search/" className="text-[var(--neon-cyan)] hover:text-white">how dealerships show up in AI search</Link>. If you want the commercial offer, see the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. If you want direct answers to common dealership questions, use the <Link href="/faq-ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">FAQ hub</Link>.
             </p>
           </div>
         </div>

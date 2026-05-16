@@ -267,7 +267,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Ongoing tracking so you can measure progress and prove ROI</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Start with a free <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
+              Start with a free <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
             </p>
           </div>
         </div>

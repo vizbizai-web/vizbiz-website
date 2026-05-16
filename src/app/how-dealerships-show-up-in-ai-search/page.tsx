@@ -125,7 +125,7 @@ export default function HowLocalBusinessesShowUpInAiSearchPage() {
               AI tools look for signals that help them decide which businesses are credible, relevant, and useful to mention.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for local businesses</Link>. For the commercial deliverable, see the <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for local businesses</Link>.
+              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for local businesses</Link>. For the commercial deliverable, see the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for local businesses</Link>.
             </p>
           </div>
         </div>
