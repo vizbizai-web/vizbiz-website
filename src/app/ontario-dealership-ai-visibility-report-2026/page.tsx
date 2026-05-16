@@ -287,7 +287,7 @@ export default function OntarioReportPage() {
               competitors appear instead, and what to fix first.
             </p>
             <a
-              href="/ai-visibility-audit-for-car-dealerships/"
+              href="/intake/"
               className="inline-block bg-white text-black font-bold px-8 py-3 rounded-lg hover:bg-white/90 transition"
             >
               Get Your AI Visibility Audit

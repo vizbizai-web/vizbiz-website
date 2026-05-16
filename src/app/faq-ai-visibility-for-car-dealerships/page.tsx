@@ -56,7 +56,7 @@ const relatedPages = [
   },
   {
     title: "AI Visibility Audit for Local Businesses",
-    href: "/ai-visibility-audit-for-car-dealerships",
+    href: "/intake/",
     description: "Shows what the audit includes and how competitor gaps are revealed.",
   },
   {

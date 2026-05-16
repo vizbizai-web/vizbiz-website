@@ -345,7 +345,7 @@ export default function Page() {
               Get a free AVI snapshot and find out whether VizBiz, Metricus, or Scope would give you the most useful data — starting with where you actually stand.
             </p>
             <a 
-              href="/ai-visibility-audit-for-car-dealerships" 
+              href="/intake/" 
               className="bg-white text-blue-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-100 transition-colors inline-block"
             >
               Get Your Free AVI Snapshot
