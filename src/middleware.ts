@@ -3,9 +3,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Serve Google Search Console verification file
-  if (request.nextUrl.pathname === '/googlefffa2894f075b012.html') {
-    return new NextResponse('google-site-verification: googlefffa2894f075b012\n', {
+  // Serve Google Search Console verification files
+  const gscFiles: Record<string, string> = {
+    '/googlefffa2894f075b012.html': 'google-site-verification: googlefffa2894f075b012',
+    '/google151e827d1737bb24.html': 'google-site-verification: google151e827d1737bb24.html',
+  };
+  if (gscFiles[request.nextUrl.pathname]) {
+    return new NextResponse(gscFiles[request.nextUrl.pathname] + '\n', {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
