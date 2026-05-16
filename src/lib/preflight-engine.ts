@@ -103,6 +103,18 @@ export type BusinessProfile = {
     url: string | null;
     placeId: string | null;
   };
+
+  // -- Edward Sturm AI Discovery fields --
+  /** Bing Webmaster Tools verification status */
+  bingWmtVerified: boolean;
+  /** Whether the site has a blog/content section */
+  hasBlog: boolean;
+  /** Blog URL if found */
+  blogUrl: string | null;
+  /** Number of indexed pages from sitemap */
+  indexedPages: number | null;
+  /** Whether site has customer reviews/testimonials */
+  hasReviews: boolean;
 };
 
 // Weighted scoring for each niche — average lead value and monthly volume
@@ -196,6 +208,133 @@ WEBSITE CONTENT:
 `;
 
 /**
+ * Check for Bing Webmaster Tools verification meta tag
+ */
+function checkBingWMT(html: string | undefined): boolean {
+  if (!html) return false;
+  const bingMeta = html.match(/<meta[^>]+name=["']msvalidate\.1["'][^>]*>/i);
+  if (bingMeta) {
+    const contentMatch = bingMeta[0].match(/content=["']([^"']+)["']/i);
+    if (contentMatch && contentMatch[1].length > 10) {
+      console.info(`[preflight] Bing WMT verified: ${contentMatch[1].substring(0, 20)}...`);
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check for blog/content section by looking for common paths in HTML and sitemap
+ */
+function checkForBlog(html: string | undefined, baseUrl: string): { hasBlog: boolean; blogUrl: string | null } {
+  if (!html) return { hasBlog: false, blogUrl: null };
+  
+  // Common blog path patterns
+  const blogPatterns = [
+    /href=["'][^"']*\/(blog|news|articles|resources|insights)["']/i,
+    /href=["'][^"']*\/(blog|news|articles|resources|insights)\//i,
+  ];
+  
+  for (const pattern of blogPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const hrefMatch = match[0].match(/href=["']([^"']+)["']/i);
+      if (hrefMatch) {
+        const blogUrl = hrefMatch[1].startsWith('http') ? hrefMatch[1] : `${baseUrl.replace(/\/+$/, '')}${hrefMatch[1]}`;
+        console.info(`[preflight] Blog found: ${blogUrl}`);
+        return { hasBlog: true, blogUrl };
+      }
+    }
+  }
+  
+  // Also check for WordPress or common blog platforms in URLs
+  const blogPlatformPattern = /href=["'][^"']*(\/category\/|\/tag\/|\/20\d{2}\/|\/author\/)["']/i;
+  if (blogPlatformPattern.test(html)) {
+    console.info(`[preflight] Blog platform detected via URL patterns`);
+    return { hasBlog: true, blogUrl: `${baseUrl}/blog` };
+  }
+  
+  return { hasBlog: false, blogUrl: null };
+}
+
+/**
+ * Count indexed pages from sitemap.xml if available
+ */
+async function countIndexedPages(baseUrl: string): Promise<number | null> {
+  const sitemapUrls = [
+    `${baseUrl}/sitemap.xml`,
+    `${baseUrl}/sitemap_index.xml`,
+    `${baseUrl}/sitemap-index.xml`,
+  ];
+  
+  for (const sitemapUrl of sitemapUrls) {
+    try {
+      const response = await fetch(sitemapUrl, {
+        signal: AbortSignal.timeout(5000),
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VizBizBot/1.0)' },
+      });
+      
+      if (response.ok) {
+        const sitemapContent = await response.text();
+        const urlMatches = sitemapContent.match(/<url>/g);
+        const count = urlMatches ? urlMatches.length : 0;
+        console.info(`[preflight] Sitemap found at ${sitemapUrl}: ${count} pages`);
+        return count;
+      }
+    } catch {
+      // Continue to next URL
+    }
+  }
+  
+  console.info(`[preflight] No sitemap found`);
+  return null;
+}
+
+/**
+ * Check for customer reviews/testimonials on the site
+ */
+function checkForReviews(html: string | undefined): boolean {
+  if (!html) return false;
+  
+  const reviewPatterns = [
+    /testimonial/i,
+    /review/i,
+    /rating/i,
+    /stars?/i,
+    /customer/i,
+    /client/i,
+    /quote/i,
+  ];
+  
+  // Check for structured review data
+  const hasReviewSchema = html.includes('"@type": "Review"') || html.includes('"@type":"Review"');
+  const hasAggregateRating = html.includes('"@type": "AggregateRating"') || html.includes('"@type":"AggregateRating"');
+  
+  if (hasReviewSchema || hasAggregateRating) {
+    console.info(`[preflight] Review schema markup found`);
+    return true;
+  }
+  
+  // Check for testimonial sections in HTML
+  const textContent = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .toLowerCase();
+  
+  let reviewScore = 0;
+  for (const pattern of reviewPatterns) {
+    if (pattern.test(textContent)) reviewScore++;
+  }
+  
+  if (reviewScore >= 3) {
+    console.info(`[preflight] Review/testimonial content detected (${reviewScore} signals)`);
+    return true;
+  }
+  
+  return false;
+}
+
+/**
  * PreFlight v2 — Deep Business Intelligence
  */
 export async function preflightScan(url: string): Promise<BusinessProfileWithAudit> {
@@ -218,6 +357,14 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
 
   const hasLlmsTxt = llmsTxtContent !== null && llmsTxtContent.length > 0;
   const hasSchema = seoAudit?.hasSchema || false;
+
+  // -- Stage 2.5: New preflight checks (Edward Sturm) --
+  const bingWmtVerified = checkBingWMT(scraped.html);
+  const blogCheck = checkForBlog(scraped.html, url);
+  const indexedPages = await countIndexedPages(url);
+  const hasReviews = checkForReviews(scraped.html);
+  
+  console.info(`[preflight] Sturm checks: BingWMT=${bingWmtVerified}, Blog=${blogCheck.hasBlog}, IndexedPages=${indexedPages ?? 'N/A'}, Reviews=${hasReviews}`);
 
   // Scrape failure fallback
   if (!scraped.html && scraped.error) {
@@ -255,6 +402,12 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
       schemaOrg: { types: [], name: null, aggregateRating: null, sameAs: [] },
       openGraph: { title: null, description: null, image: null },
       googleBusiness: { url: null, placeId: null },
+      // Edward Sturm fields
+      bingWmtVerified: false,
+      hasBlog: false,
+      blogUrl: null,
+      indexedPages: null,
+      hasReviews: false,
     };
   }
 
@@ -455,6 +608,12 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
       image: scraped.intelligence.openGraph.image,
     } : { title: null, description: null, image: null },
     googleBusiness: scraped.intelligence?.googleBusiness || { url: null, placeId: null },
+    // Edward Sturm AI Discovery fields
+    bingWmtVerified,
+    hasBlog: blogCheck.hasBlog,
+    blogUrl: blogCheck.blogUrl,
+    indexedPages,
+    hasReviews,
   };
 
   console.info(`[preflight] Result:`, {

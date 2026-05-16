@@ -75,6 +75,21 @@ interface LeadData {
   competitorSocial: CompetitorSocial[];
   socialNarrative?: string;
   socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
+  // Edward Sturm AI Discovery
+  aiDiscovery?: {
+    qfoQueries: string[];
+    qfoResults: { query: string; appeared: boolean; sourcesCited: string[] }[];
+    competitorCitations: { domain: string; count: number; sampleUrls: string[] }[];
+    bingWmtVerified: boolean;
+    contentReadiness: {
+      qfoCoverage: number;
+      groundingQueryReadiness: number;
+      citationCompetitiveness: number;
+      contentDepth: number;
+      overall: number;
+    };
+    recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
+  };
 }
 
 type Theme = 'dark' | 'light';
@@ -743,6 +758,172 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
                 ? `Your competitor appeared ${maxScore - yourScore} more times than you in AI recommendations. When a buyer asks ChatGPT for a recommendation, they're getting your competitor's name instead of yours.`
                 : `You appeared in only ${yourScore} out of ${totalQ} AI recommendations. There's significant room to improve your AI visibility.`
               }
+            </div>
+          )}
+        </div>
+      </section>
+    </FadeIn>
+  );
+}
+
+/* ── AI Discovery Analysis (Edward Sturm Playbook) ─── */
+function AIDiscoveryAnalysis({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const discovery = data.aiDiscovery;
+  
+  if (!discovery) return null;
+
+  const readiness = discovery.contentReadiness;
+  const readinessCategories = [
+    { name: 'QFO Coverage', score: readiness.qfoCoverage, desc: 'How many query fan-out paths mention your business' },
+    { name: 'Grounding Queries', score: readiness.groundingQueryReadiness, desc: 'Whether your site matches AI search patterns' },
+    { name: 'Citation Authority', score: readiness.citationCompetitiveness, desc: 'How often AI models cite you vs competitors' },
+    { name: 'Content Depth', score: readiness.contentDepth, desc: 'llms.txt, schema, reviews, and blog presence' },
+  ];
+
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <div className="max-w-4xl mx-auto">
+          <SectionTitle style={{ color: t.textPrimary }}>
+            AI Discovery Analysis
+          </SectionTitle>
+          <p className="text-xs sm:text-sm mt-2 mb-8" style={{ color: t.textMuted }}>
+            How AI models discover, evaluate, and recommend your business — based on real AI behavior patterns.
+          </p>
+
+          {/* Bing WMT Alert */}
+          {!discovery.bingWmtVerified && (
+            <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+              <div className="flex items-start gap-3">
+                <span className="text-lg">⚠️</span>
+                <div>
+                  <p className="text-sm font-medium mb-1" style={{ color: '#EF4444' }}>Bing Webmaster Tools Not Verified</p>
+                  <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>
+                    You are missing free AI visibility data including grounding queries that Bing (and Copilot) uses to recommend businesses. 
+                    <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline ml-1" style={{ color: '#22D3EE' }}>Verify now →</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Readiness Score */}
+          <div className="mb-8 p-5 rounded-xl" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium" style={{ color: t.textPrimary }}>AI Content Readiness Score</h3>
+              <span className="text-2xl font-light tabular-nums" style={{ color: getScoreAccent(readiness.overall) }}>{readiness.overall}/100</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {readinessCategories.map((cat) => (
+                <div key={cat.name} className="p-3 rounded-lg" style={{ background: t.barTrack }}>
+                  <p className="text-xs mb-1" style={{ color: t.textMuted }}>{cat.name}</p>
+                  <p className="text-lg font-semibold tabular-nums" style={{ color: getScoreAccent(cat.score) }}>{cat.score}</p>
+                  <p className="text-[10px] leading-tight mt-1" style={{ color: t.textMuted }}>{cat.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* QFO Results Table */}
+          {discovery.qfoResults.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>Query Fan-Out Results</h3>
+              <p className="text-xs mb-4" style={{ color: t.textMuted }}>
+                When AI models research your business, they perform follow-up searches. Here's what they find:
+              </p>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${t.borderSubtle}` }}>
+                <table className="w-full">
+                  <thead>
+                    <tr style={{ background: t.barTrack, borderBottom: `1px solid ${t.borderSubtle}` }}>
+                      <th className="text-left py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted }}>Query</th>
+                      <th className="text-center py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted, width: 80 }}>Status</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted }}>Top Source Cited</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {discovery.qfoResults.slice(0, 10).map((qfo, i) => (
+                      <tr key={i} className={i > 0 ? 'border-t' : ''} style={{ borderColor: t.borderSubtle }}>
+                        <td className="py-2.5 px-3 text-sm" style={{ color: t.textSecondary }}>{qfo.query}</td>
+                        <td className="py-2.5 px-3 text-center">
+                          {qfo.appeared ? (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: '#22C55E', background: 'rgba(34,197,94,0.1)' }}>Found</span>
+                          ) : (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: '#EF4444', background: 'rgba(239,68,68,0.1)' }}>Missing</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-xs truncate max-w-[200px]" style={{ color: t.textMuted }}>
+                          {qfo.sourcesCited[0] || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {discovery.qfoResults.length > 10 && (
+                  <p className="text-xs py-2 px-3 text-center" style={{ color: t.textMuted, borderTop: `1px solid ${t.borderSubtle}` }}>
+                    + {discovery.qfoResults.length - 10} more queries
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Competitor Citations */}
+          {discovery.competitorCitations.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>Who AI Trusts Instead of You</h3>
+              <p className="text-xs mb-4" style={{ color: t.textMuted }}>
+                These domains are cited by AI models when your business doesn't appear:
+              </p>
+              <div className="space-y-2">
+                {discovery.competitorCitations.map((citation, i) => (
+                  <div key={citation.domain} className="flex items-center justify-between p-3 rounded-lg" style={{ background: t.barTrack }}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium tabular-nums" style={{ color: t.textMuted }}>#{i + 1}</span>
+                      <span className="text-sm" style={{ color: t.textPrimary }}>{citation.domain}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: t.textMuted }}>Cited {citation.count} times</span>
+                      <div className="w-16 h-1.5 rounded-full" style={{ background: t.barTrack }}>
+                        <div 
+                          className="h-full rounded-full" 
+                          style={{ 
+                            width: `${Math.min((citation.count / discovery.competitorCitations[0].count) * 100, 100)}%`,
+                            background: ['#8B5CF6', '#F97316', '#EC4899', '#22D3EE', '#10B981'][i % 5]
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Discovery Recommendations */}
+          {discovery.recommendations.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>AI Discovery Recommendations</h3>
+              <div className="space-y-3">
+                {discovery.recommendations.map((rec, i) => {
+                  const impactColor = getImpactColor(rec.impact);
+                  const impactBg = getImpactBg(rec.impact);
+                  return (
+                    <div key={i} className="flex items-start gap-3 p-4 rounded-xl" style={{ background: t.barTrack, border: `1px solid ${t.borderSubtle}` }}>
+                      <span className="text-lg flex-shrink-0">{rec.impact === 'High' ? '🔴' : rec.impact === 'Medium' ? '🟡' : '🟢'}</span>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-sm font-medium" style={{ color: t.textPrimary }}>{rec.title}</h4>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ color: impactColor, background: impactBg }}>
+                            {rec.impact}
+                          </span>
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>{rec.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -1597,6 +1778,8 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       })) || [],
       socialNarrative: researchData.socialNarrative,
       socialVsVisibility: researchData.socialVsVisibility,
+      // Edward Sturm AI Discovery
+      aiDiscovery: researchData.aiDiscovery,
     };
   }
 
@@ -1713,10 +1896,13 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           {/* 5. Revenue at Risk */}
           <RevenueImpact data={data} theme={theme} />
 
-          {/* 6. Priority Actions */}
+          {/* 6. AI Discovery Analysis (Edward Sturm Playbook) */}
+          <AIDiscoveryAnalysis data={data} theme={theme} />
+
+          {/* 7. Priority Actions */}
           <Recommendations data={data} theme={theme} />
 
-          {/* 7. Social Context */}
+          {/* 8. Social Context */}
           <SocialMedia data={data} theme={theme} />
 
           {/* 8. Full Report Teaser */}

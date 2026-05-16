@@ -30,6 +30,21 @@ export type ResearchData = {
   leadsLost?: number;
   recoveryPotential?: string;
   socialVsVisibility?: { hasStrongVisibilityLowSocial: boolean; hasWeakVisibilityHighSocial: boolean; socialGapMultiplier: number | null };
+  // Edward Sturm AI Discovery
+  aiDiscovery?: {
+    qfoQueries: string[];
+    qfoResults: { query: string; appeared: boolean; sourcesCited: string[] }[];
+    competitorCitations: { domain: string; count: number; sampleUrls: string[] }[];
+    bingWmtVerified: boolean;
+    contentReadiness: {
+      qfoCoverage: number;
+      groundingQueryReadiness: number;
+      citationCompetitiveness: number;
+      contentDepth: number;
+      overall: number;
+    };
+    recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
+  };
 };
 
 export type LeadPageData = {

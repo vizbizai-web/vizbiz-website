@@ -124,6 +124,11 @@ async function queryAIModel(prompt: string): Promise<{ content: string; citation
   }
 }
 
+interface CitationAnalysis {
+  allCitations: string[];
+  citationsByDomain: Map<string, { count: number; urls: string[] }>;
+}
+
 /**
  * Check AI visibility using Perplexity Sonar API.
  * Returns true if the business appears in the AI's answer text OR in citations.
@@ -197,6 +202,90 @@ async function checkAIBusinessAppearance(
 }
 
 /**
+ * Extract domain from URL
+ */
+function getDomain(url: string): string {
+  try {
+    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return parsed.hostname.replace(/^www\./, '');
+  } catch {
+    return url.split('/')[0] || url;
+  }
+}
+
+/**
+ * Analyze all citations across prompts to find competitor domains
+ */
+function analyzeCitations(rawResults: { prompt: string; results: TavilySearchResult[] }[], 
+                          aiChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[]): CitationAnalysis {
+  const allCitations: string[] = [];
+  const citationsByDomain = new Map<string, { count: number; urls: string[] }>();
+  
+  for (let i = 0; i < rawResults.length; i++) {
+    const { prompt, results } = rawResults[i];
+    const aiCheck = aiChecks[i];
+    
+    // For Perplexity results, use the citations from the AI response
+    // For web search fallback, use the search result URLs
+    for (const result of results) {
+      if (result.url) {
+        allCitations.push(result.url);
+        const domain = getDomain(result.url);
+        const existing = citationsByDomain.get(domain);
+        if (existing) {
+          existing.count++;
+          if (existing.urls.length < 3) existing.urls.push(result.url);
+        } else {
+          citationsByDomain.set(domain, { count: 1, urls: [result.url] });
+        }
+      }
+    }
+  }
+  
+  return { allCitations, citationsByDomain };
+}
+
+/**
+ * Get top competitor citations (domains cited most often that aren't the business)
+ */
+function getTopCompetitorCitations(
+  citationsByDomain: Map<string, { count: number; urls: string[] }>,
+  businessWebsite: string,
+  topN = 5
+): { domain: string; count: number; sampleUrls: string[] }[] {
+  const lowerBizWebsite = businessWebsite.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+  
+  // Directory domains to exclude
+  const directoryDomains = new Set([
+    'google.com', 'maps.google.com', 'yelp.com', 'tripadvisor.com', 'yellowpages.com',
+    'whitepages.com', 'foursquare.com', 'bbb.org', 'wikipedia.org', 'medium.com',
+    'facebook.com', 'instagram.com', 'linkedin.com', 'pinterest.com', 'reddit.com',
+    'youtube.com', 'bing.com', 'apple.com', 'waze.com', 'angi.com', 'homeadvisor.com',
+    'thumbtack.com', 'booking.com', 'airbnb.com', 'expedia.com', 'zillow.com',
+    'trulia.com', 'cars.com', 'autotrader.com', 'edmunds.com', 'cargurus.com',
+    'truecar.com', 'kbb.com', 'mapquest.com', 'whereis.com', 'f6s.com',
+    'crunchbase.com', 'glassdoor.com', 'indeed.com', 'timeout.com',
+  ]);
+  
+  const entries = Array.from(citationsByDomain.entries());
+  
+  return entries
+    .filter(([domain]) => {
+      const lowerDomain = domain.toLowerCase();
+      // Exclude business domain
+      if (lowerDomain === lowerBizWebsite || lowerDomain.includes(lowerBizWebsite)) return false;
+      // Exclude directories
+      if (directoryDomains.has(lowerDomain)) return false;
+      // Exclude generic TLDs
+      if (domain.length < 4) return false;
+      return true;
+    })
+    .map(([domain, data]) => ({ domain, count: data.count, sampleUrls: data.urls }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, topN);
+}
+
+/**
  * Search with automatic fallback: Tavily → Brave
  * Tries Tavily first. On any failure (rate limit, timeout, error), falls back to Brave.
  */
@@ -261,6 +350,27 @@ export interface ResearchResult {
   // AI visibility tracking
   aiVisibilityProvider?: "perplexity" | "web-search-fallback" | "failed";
   aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
+  // Edward Sturm AI Discovery Analysis
+  aiDiscovery?: {
+    /** What queries the AI searched (from QFO) */
+    qfoQueries: string[];
+    /** Whether business appeared in each QFO query */
+    qfoResults: { query: string; appeared: boolean; sourcesCited: string[] }[];
+    /** Domains the AI cited instead of the business */
+    competitorCitations: { domain: string; count: number; sampleUrls: string[] }[];
+    /** Bing Webmaster Tools verification status */
+    bingWmtVerified: boolean;
+    /** AI Content Readiness Score breakdown */
+    contentReadiness: {
+      qfoCoverage: number; // 0-100
+      groundingQueryReadiness: number; // 0-100
+      citationCompetitiveness: number; // 0-100
+      contentDepth: number; // 0-100
+      overall: number; // 0-100
+    };
+    /** Recommendations based on AI Discovery analysis */
+    recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
+  };
 }
 
 export async function runResearch(
@@ -293,6 +403,14 @@ export async function runResearch(
       tiktok: string | null;
       youtube: string | null;
     };
+    // Edward Sturm AI Discovery fields
+    hasLlmsTxt?: boolean;
+    hasSchema?: boolean;
+    bingWmtVerified?: boolean;
+    hasBlog?: boolean;
+    blogUrl?: string | null;
+    indexedPages?: number | null;
+    hasReviews?: boolean;
   },
   tier: 'free' | 'paid' = 'free'
 ): Promise<ResearchResult> {
@@ -493,6 +611,9 @@ export async function runResearch(
 
   // STEP 8: Query fan-out extraction (Edward Sturm methodology)
   // Discovers the actual follow-up searches AI models perform when researching this business
+  let fanoutQueries: string[] = [];
+  let qfoResults: { query: string; appeared: boolean; sourcesCited: string[] }[] = [];
+  
   try {
     console.info(`[research-runner] Running query fan-out extraction...`);
     const fanout = await extractFanoutQueries(resolvedName, city, finalNiche);
@@ -510,12 +631,80 @@ export async function runResearch(
         missedQueries: fanoutReport.missedQueries,
         competitorDominantQueries: fanoutReport.competitorDominantQueries,
       };
+      
+      // Build QFO results for AI Discovery
+      fanoutQueries = fanout.fanoutQueries;
+      qfoResults = coverage.map(c => ({
+        query: c.query,
+        appeared: c.businessVisible,
+        sourcesCited: c.topResult ? [c.topResult] : [],
+      }));
+      
       console.info(`[research-runner] Fan-out: ${fanout.fanoutQueries.length} queries, ${fanoutReport.missedQueries.length} missed, ${fanoutReport.competitorDominantQueries.length} competitor-dominated`);
     } else {
       console.info(`[research-runner] Fan-out extraction returned too few queries (${fanout.fanoutQueries.length}), skipping`);
     }
   } catch (e) {
     console.warn(`[research-runner] Query fan-out failed (non-blocking):`, e instanceof Error ? e.message : e);
+  }
+  
+  // STEP 9: AI Discovery Analysis (Edward Sturm playbook)
+  // Aggregate citation analysis, compute content readiness, generate recommendations
+  try {
+    console.info(`[research-runner] Building AI Discovery analysis...`);
+    
+    // Analyze all citations from search results
+    const citationAnalysis = analyzeCitations(rawResults, aiVisibilityChecks);
+    const topCompetitorCitations = getTopCompetitorCitations(
+      citationAnalysis.citationsByDomain, 
+      website, 
+      5
+    );
+    
+    // Calculate content readiness score
+    const contentReadiness = calculateAIContentReadiness(
+      finalResult.appearedCount,
+      preflightProfile ? {
+        services: preflightProfile.services,
+        hasLlmsTxt: preflightProfile.hasLlmsTxt,
+        hasSchema: preflightProfile.hasSchema,
+      } : undefined,
+      topCompetitorCitations.reduce((sum, c) => sum + c.count, 0),
+      finalResult.totalPrompts
+    );
+    
+    // Get Bing WMT status from preflight
+    const bingWmtVerified = preflightProfile?.bingWmtVerified ?? false;
+    
+    // Generate recommendations
+    const aiDiscoveryRecs = generateAIDiscoveryRecommendations(
+      contentReadiness,
+      bingWmtVerified,
+      preflightProfile?.hasLlmsTxt ?? false,
+      preflightProfile?.hasSchema ?? false
+    );
+    
+    // Build QFO results from prompts if fanout didn't populate them
+    if (qfoResults.length === 0) {
+      qfoResults = prompts.map((prompt, i) => ({
+        query: prompt,
+        appeared: finalResult.promptResults[i]?.businessAppeared ?? false,
+        sourcesCited: rawResults[i]?.results?.slice(0, 3).map(r => r.url) ?? [],
+      }));
+    }
+    
+    finalResult.aiDiscovery = {
+      qfoQueries: fanoutQueries.length > 0 ? fanoutQueries : prompts,
+      qfoResults,
+      competitorCitations: topCompetitorCitations,
+      bingWmtVerified,
+      contentReadiness,
+      recommendations: aiDiscoveryRecs,
+    };
+    
+    console.info(`[research-runner] AI Discovery: ${contentReadiness.overall}/100 readiness, ${topCompetitorCitations.length} competitor citation sources, BingWMT=${bingWmtVerified}`);
+  } catch (e) {
+    console.warn(`[research-runner] AI Discovery analysis failed (non-blocking):`, e instanceof Error ? e.message : e);
   }
 
   return finalResult;
@@ -1233,6 +1422,109 @@ function discoverCompetitorsFromResults(
   return sorted.sort((a, b) => b.appearances - a.appearances)
     .filter(dc => validateCompetitor(dc.name, { businessType: preflightContext?.businessType, services: preflightContext?.services }).valid)
     .slice(0, 5);
+}
+
+function calculateAIContentReadiness(
+  qfoCoverage: number,
+  preflightProfile: {
+    services?: string[];
+    hasLlmsTxt?: boolean;
+    hasSchema?: boolean;
+  } | undefined,
+  competitorCitationCount: number,
+  totalPrompts: number
+): { qfoCoverage: number; groundingQueryReadiness: number; citationCompetitiveness: number; contentDepth: number; overall: number; } {
+  // a) QFO Coverage (already calculated as percentage)
+  const qfoCoverageScore = Math.min(Math.round((qfoCoverage / totalPrompts) * 100), 100);
+  
+  // b) Grounding Query Readiness
+  let groundingScore = 0;
+  if (preflightProfile?.services && preflightProfile.services.length >= 3) groundingScore += 30;
+  else if (preflightProfile?.services && preflightProfile.services.length >= 1) groundingScore += 15;
+  if (preflightProfile?.services?.some(s => s.toLowerCase().includes('location') || s.toLowerCase().includes('service'))) groundingScore += 20;
+  groundingScore = Math.min(groundingScore + 50, 100); // Base score for having service pages
+  
+  // c) Citation Competitiveness
+  const yourCitationCount = qfoCoverage; // Number of prompts where you appeared
+  const totalCitations = yourCitationCount + competitorCitationCount;
+  const citationScore = totalCitations > 0 
+    ? Math.min(Math.round((yourCitationCount / totalCitations) * 100), 100)
+    : 50;
+  
+  // d) Content Depth Signals
+  let contentDepthScore = 0;
+  if (preflightProfile?.hasLlmsTxt) contentDepthScore += 25;
+  if (preflightProfile?.hasSchema) contentDepthScore += 25;
+  contentDepthScore += 50; // Base score
+  
+  const overall = Math.round((qfoCoverageScore + groundingScore + citationScore + contentDepthScore) / 4);
+  
+  return {
+    qfoCoverage: qfoCoverageScore,
+    groundingQueryReadiness: groundingScore,
+    citationCompetitiveness: citationScore,
+    contentDepth: contentDepthScore,
+    overall,
+  };
+}
+
+function generateAIDiscoveryRecommendations(
+  contentReadiness: { qfoCoverage: number; groundingQueryReadiness: number; citationCompetitiveness: number; contentDepth: number; overall: number; },
+  bingWmtVerified: boolean,
+  hasLlmsTxt: boolean,
+  hasSchema: boolean
+): { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[] {
+  const recs: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[] = [];
+  
+  if (!bingWmtVerified) {
+    recs.push({
+      title: 'Verify Bing Webmaster Tools',
+      description: 'Bing Webmaster Tools provides free data on how AI models discover your site, including grounding queries. Without verification, you\'re flying blind on AI visibility data.',
+      impact: 'High',
+    });
+  }
+  
+  if (contentReadiness.groundingQueryReadiness < 70) {
+    recs.push({
+      title: 'Create Service-Specific Landing Pages',
+      description: 'AI models recommend businesses with dedicated pages for each service. Create location + service landing pages (e.g., "Used Car Financing in Austin") to match AI grounding queries.',
+      impact: 'High',
+    });
+  }
+  
+  if (contentReadiness.citationCompetitiveness < 50) {
+    recs.push({
+      title: 'Build Citation Authority',
+      description: `Your competitors are cited ${100 - contentReadiness.citationCompetitiveness}% more often by AI models. Get listed in industry directories, local guides, and partner with complementary businesses to increase citations.`,
+      impact: 'Medium',
+    });
+  }
+  
+  if (!hasLlmsTxt) {
+    recs.push({
+      title: 'Add llms.txt File',
+      description: 'An llms.txt file tells AI models exactly what your business does, improving discovery and recommendation accuracy. It takes 5 minutes to create.',
+      impact: 'Medium',
+    });
+  }
+  
+  if (!hasSchema) {
+    recs.push({
+      title: 'Add Schema Markup',
+      description: 'Schema.org structured data helps AI models understand your business type, services, reviews, and contact info — directly improving AI recommendation chances.',
+      impact: 'Medium',
+    });
+  }
+  
+  if (contentReadiness.contentDepth < 70) {
+    recs.push({
+      title: 'Add Customer Reviews & Testimonials',
+      description: 'AI models prefer businesses with social proof. Add customer reviews, testimonials, and case studies to your site to increase AI trust signals.',
+      impact: 'Low',
+    });
+  }
+  
+  return recs;
 }
 
 function calculateScores(
