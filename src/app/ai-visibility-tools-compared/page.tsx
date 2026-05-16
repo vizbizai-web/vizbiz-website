@@ -361,7 +361,7 @@ export default function AIVisibilityToolsComparedPage() {
               Get your free AVI Snapshot and find out if your dealership appears when buyers ask AI for recommendations.
             </p>
             <Link
-              href="/intake/"
+              href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=tools-compared"
               className="mt-8 inline-flex items-center rounded-full bg-[var(--neon-cyan)] px-8 py-4 text-base font-semibold text-black transition-transform hover:scale-105 sm:text-lg"
             >
               Get Your Free AVI Snapshot →

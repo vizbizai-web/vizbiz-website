@@ -125,7 +125,7 @@ export default function HowLocalBusinessesShowUpInAiSearchPage() {
               AI tools look for signals that help them decide which businesses are credible, relevant, and useful to mention.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for local businesses</Link>. For the commercial deliverable, see the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for local businesses</Link>.
+              For the category-level overview, see <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for local businesses</Link>. For the commercial deliverable, see the <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=how-dealerships-ai-search" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for local businesses</Link>.
             </p>
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function HowLocalBusinessesShowUpInAiSearchPage() {
               See how your business appears in AI-driven search, where competitors are being surfaced instead, and what to fix first.
             </p>
             <div className="mt-8">
-              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=how-dealerships-ai-search" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>
