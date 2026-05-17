@@ -1863,6 +1863,13 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       visibleQueries,
       invisibleQueries,
       competitors: (() => {
+        // Client-only mode: only show the business itself, no competitor comparison
+        if (researchData.competitorMode === 'client_only') {
+          return [
+            { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
+          ];
+        }
+        // Client-provided mode: show client competitors + discovered ones
         const userCompetitors = (leadData?.competitor || '')
           .split(',')
           .map((c: string) => c.trim())
