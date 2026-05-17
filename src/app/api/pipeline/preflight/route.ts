@@ -9,6 +9,9 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead, updateLeadResearchResults, isSheetsConfigured } from "@/lib/google-sheets";
 import { preflightScan } from "@/lib/preflight-engine";
 
+// Preflight takes 30-60s (Firecrawl scrape + LLM classification + SEO audit)
+export const maxDuration = 120;
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const { leadId } = body;

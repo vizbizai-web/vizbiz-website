@@ -9,6 +9,9 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead, updateLeadResearchResults } from "@/lib/google-sheets";
 import { runResearch } from "@/lib/research-runner";
 
+// Research takes 60-120s (20 Perplexity calls + competitor discovery + social signals)
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const { leadId } = body;
