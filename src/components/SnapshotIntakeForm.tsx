@@ -146,18 +146,31 @@ export default function SnapshotIntakeForm({
 
       <div>
         <label htmlFor="competitor" className={labelClassName}>
-          Top competitors <span className="text-[var(--text-secondary)]">(recommended)</span>
+          Competitor 1 <span className="text-[var(--text-secondary)]">(optional)</span>
         </label>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-          Naming your top 1-3 competitors helps us build a more detailed comparison showing exactly where you're winning and losing. The more specific you are, the better your report.
-        </p>
         <input
           id="competitor"
           name="competitor"
           type="text"
           className={inputClassName}
-          placeholder="Competitor A, Competitor B, Competitor C"
+          placeholder="e.g., Rival Business Name"
         />
+      </div>
+
+      <div>
+        <label htmlFor="competitor2" className={labelClassName}>
+          Competitor 2 <span className="text-[var(--text-secondary)]">(optional)</span>
+        </label>
+        <input
+          id="competitor2"
+          name="competitor2"
+          type="text"
+          className={inputClassName}
+          placeholder="e.g., Rival Business Name"
+        />
+        <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+          Optional but strongly recommended: add 1–2 local competitors you want to beat. Your report is more accurate when you name the businesses your customers compare you against. If skipped, your free snapshot will focus on your business only.
+        </p>
       </div>
 
       <div>

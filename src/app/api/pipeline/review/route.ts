@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Lead not found" }, { status: 404 });
     }
 
-    // Parse research data from notes
+    // Parse research data and competitor mode from notes
     let researchData: {
       appearedCount?: number;
       totalPrompts?: number;
@@ -33,6 +33,9 @@ export async function POST(request: Request) {
       competitorMention?: string;
       niche?: string;
     } = {};
+    let competitorMode: "client_provided" | "client_only" = "client_only";
+    let competitors: string[] = [];
+    let competitorValidations: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[] = [];
 
     try {
       const notesStr = lead.notes || "";
@@ -49,6 +52,9 @@ export async function POST(request: Request) {
         if (jsonEnd > 0) {
           const parsed = JSON.parse(notesStr.substring(jsonStart, jsonEnd));
           researchData = parsed.research || {};
+          competitorMode = parsed.competitorMode || "client_only";
+          competitors = parsed.competitors || [];
+          competitorValidations = parsed.research?.competitorValidations || [];
         }
       }
     } catch (parseErr) {
@@ -92,6 +98,11 @@ export async function POST(request: Request) {
       `${emoji} Score: ${appearedCount}/${totalPrompts} (${statusBand})`,
       `🏷️ Niche: ${niche}`,
       `📊 Classification: ${classificationLabel}`,
+      ...(competitorMode === "client_provided" ? [`🎯 Client competitors: ${competitors.join(", ")}`] : []),
+      ...(competitorMode === "client_only" ? [`📍 No competitors named — auto-discovery only`] : []),
+      ...(competitorValidations.length > 0 ? competitorValidations.map(cv =>
+        `  ${cv.validationStatus === 'validated' ? '✅' : '⚠️'} ${cv.name}: ${cv.rating ?? 'N/A'}⭐ ${cv.userReviewCount ?? 0} reviews${cv.distanceFromClientKm ? `, ${cv.distanceFromClientKm}km away` : ''}`
+      ) : []),
       ...(warnings.length > 0 ? [`⚠️ Warnings: ${warnings.join("; ")}`] : []),
       "",
       `Lead ID: ${leadId}`,

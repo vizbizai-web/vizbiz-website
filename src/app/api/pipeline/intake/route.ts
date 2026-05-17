@@ -18,6 +18,8 @@ type IntakePayload = {
   websiteUrl: string;
   cityMarket: string;
   competitor?: string;
+  competitor2?: string;
+  competitorMode?: string;
   selectedPlan?: string;
   source: string;
   originalCta?: string;
@@ -73,6 +75,10 @@ export async function POST(request: Request) {
     );
   }
 
+  // Determine competitor mode
+  const hasClientCompetitor = (payload.competitor?.trim() || payload.competitor2?.trim()) ? true : false;
+  const competitorMode = hasClientCompetitor ? "client_provided" : "client_only";
+
   const cleanPayload: IntakePayload = {
     name: payload.name.trim(),
     dealershipName: payload.dealershipName.trim(),
@@ -81,6 +87,8 @@ export async function POST(request: Request) {
     websiteUrl: normalizeWebsiteUrl(payload.websiteUrl),
     cityMarket: payload.cityMarket.trim(),
     competitor: payload.competitor?.trim() || undefined,
+    competitor2: payload.competitor2?.trim() || undefined,
+    competitorMode,
     selectedPlan: payload.selectedPlan?.trim() || undefined,
     source: payload.source?.trim() || "snapshot funnel",
     originalCta: payload.originalCta?.trim() || undefined,
@@ -110,14 +118,14 @@ export async function POST(request: Request) {
         contactName: cleanPayload.name,
         email: cleanPayload.email,
         phone: cleanPayload.phone,
-        competitor: cleanPayload.competitor || "",
+        competitor: [cleanPayload.competitor, cleanPayload.competitor2].filter(Boolean).join(", ") || "",
         snapshotAppeared: "",
         visibilityBand: "",
         serviceVisibility: "",
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""}.`,
+        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""} | CompetitorMode: ${cleanPayload.competitorMode}.`,
         source: cleanPayload.source,
       });
       sheetsOk = true;
@@ -146,6 +154,8 @@ export async function POST(request: Request) {
       utmMedium: cleanPayload.utmMedium,
       utmCampaign: cleanPayload.utmCampaign,
       referrer: cleanPayload.referrer,
+      competitorMode: cleanPayload.competitorMode,
+      competitors: [cleanPayload.competitor, cleanPayload.competitor2].filter(Boolean).join(", ") || undefined,
     });
     alertSent = true;
   } catch (err) {

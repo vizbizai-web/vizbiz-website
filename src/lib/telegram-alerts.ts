@@ -25,6 +25,14 @@ type LeadAlert = {
   utmMedium?: string;
   utmCampaign?: string;
   referrer?: string;
+  competitorMode?: string;
+  competitors?: string;
+  // Google Places enrichment
+  googleProfileFound?: boolean;
+  googleRating?: number | null;
+  googleReviews?: number | null;
+  googleWebsiteMatch?: boolean | null;
+  localEntityTrustScore?: number | null;
 };
 
 export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
@@ -41,6 +49,10 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
 
   const isWeak = lead.band.toLowerCase().includes("weak") || lead.band.toLowerCase() === "pending";
 
+  const competitorNote = lead.competitorMode === "client_provided"
+    ? `🎯 Client named competitors: ${lead.competitors || "N/A"}`
+    : `📍 No competitors named — client-only snapshot`;
+
   // -- 1. Group alert (structured, for the Leads topic) --
   const groupMessage = [
     `🎯 NEW LEAD — ${lead.dealershipName}`,
@@ -52,6 +64,14 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
     `${emoji} AI Visibility: ${lead.band}`,
     `📊 Appeared in: ${lead.appeared}`,
     "",
+    competitorNote,
+    "",
+    lead.googleProfileFound !== undefined ? `🔍 Google profile: ${lead.googleProfileFound ? 'found' : 'not found'}` : null,
+    lead.googleRating !== undefined && lead.googleRating !== null ? `⭐ Google rating: ${lead.googleRating}` : null,
+    lead.googleReviews !== undefined && lead.googleReviews !== null ? `📝 Google reviews: ${lead.googleReviews}` : null,
+    lead.googleWebsiteMatch !== undefined && lead.googleWebsiteMatch !== null ? `🔗 Website match: ${lead.googleWebsiteMatch ? 'yes' : 'no'}` : null,
+    lead.localEntityTrustScore !== undefined && lead.localEntityTrustScore !== null ? `🏆 Local trust: ${lead.localEntityTrustScore}/100` : null,
+    lead.googleProfileFound !== undefined ? "" : null,
     lead.sheetsOk ? "✅ Captured in Sheets CRM" : "⚠️ Sheets not configured — lead NOT stored",
     "",
     `ID: ${lead.leadId || "N/A"}`,
@@ -91,6 +111,7 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
         `What you should know:`,
         `• Contact: ${lead.contactName} (${lead.email})`,
         `• Website: ${lead.website}`,
+        `• ${competitorNote}`,
         `• Lead ID: ${lead.leadId}`,
         "",
         `Once research is done, I'll flag it for your review. If it looks good, we approve and I'll draft the outreach email. One approval from you and it goes.`,
@@ -104,6 +125,7 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
         "",
         `Contact: ${lead.contactName} (${lead.email})`,
         `Website: ${lead.website}`,
+        `${competitorNote}`,
         `Lead ID: ${lead.leadId}`,
       ].join("\n");
 

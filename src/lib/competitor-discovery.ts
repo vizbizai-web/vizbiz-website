@@ -894,3 +894,69 @@ export async function discoverCompetitors(
 
 // Also export validation for research-runner.ts
 export { validateCompetitor as validateCompetitorForReuse };
+
+/**
+ * Validate a competitor name using Google Places API.
+ * Returns the resolved business name from Places if found, or the original name if not.
+ * This enriches client-provided competitors with real business data.
+ */
+export async function validateCompetitorViaPlaces(
+  competitorName: string,
+  city: string
+): Promise<{ valid: boolean; resolvedName?: string; reason?: string }> {
+  if (!isPlacesConfigured()) {
+    // Places API not configured — fallback to basic validation
+    const basicValidation = validateCompetitor(competitorName);
+    return {
+      valid: basicValidation.valid,
+      resolvedName: basicValidation.valid ? competitorName : undefined,
+      reason: basicValidation.valid ? undefined : basicValidation.reason,
+    };
+  }
+
+  try {
+    // First, geocode the city to get coordinates
+    const geoResult = await geocodeAddress(city);
+    if (!geoResult) {
+      console.info(`[competitor-discovery] Could not geocode city: ${city}`);
+      const basicValidation = validateCompetitor(competitorName);
+      return {
+        valid: basicValidation.valid,
+        resolvedName: basicValidation.valid ? competitorName : undefined,
+        reason: "Could not geocode city",
+      };
+    }
+
+    // Try to find the competitor in Google Places
+    const query = `${competitorName}`;
+    const places = await placesNearbySearch(query, geoResult, 15000, 5);
+
+    if (places.length > 0) {
+      // Found matches — use the first (best) match
+      const bestMatch = places[0];
+      console.info(`[competitor-discovery] Places API validated: "${competitorName}" → "${bestMatch.displayName.text}" (${bestMatch.formattedAddress})`);
+      return {
+        valid: true,
+        resolvedName: bestMatch.displayName.text,
+        reason: undefined,
+      };
+    }
+
+    // No Places match — fall back to basic validation
+    console.info(`[competitor-discovery] Places API found no match for: "${competitorName}" in ${city}`);
+    const basicValidation = validateCompetitor(competitorName);
+    return {
+      valid: basicValidation.valid,
+      resolvedName: basicValidation.valid ? competitorName : undefined,
+      reason: "No Google Places match — using basic validation",
+    };
+  } catch (error) {
+    console.warn(`[competitor-discovery] Places API validation failed for "${competitorName}":`, error instanceof Error ? error.message : error);
+    const basicValidation = validateCompetitor(competitorName);
+    return {
+      valid: basicValidation.valid,
+      resolvedName: basicValidation.valid ? competitorName : undefined,
+      reason: "Places API error — using basic validation",
+    };
+  }
+}

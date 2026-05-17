@@ -39,12 +39,19 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
   const appearedCount = promptResults.filter((r: any) => r.businessAppeared).length;
   const aviScore = Math.round((appearedCount / totalPrompts) * 100);
 
-  // Competitor data
+  const competitorMode = researchData?.competitorMode || "client_only";
+  const isClientProvided = competitorMode === "client_provided";
+
+  // Competitor data — only show real competitor analysis when client provided competitors
   const competitorFreq: Record<string, number> = {};
-  for (const p of promptResults) {
-    if (p.competitorName) competitorFreq[p.competitorName] = (competitorFreq[p.competitorName] || 0) + 1;
+  if (isClientProvided) {
+    for (const p of promptResults) {
+      if (p.competitorName) competitorFreq[p.competitorName] = (competitorFreq[p.competitorName] || 0) + 1;
+    }
   }
-  const topCompetitor = Object.entries(competitorFreq).sort((a, b) => b[1] - a[1])[0];
+  const topCompetitor = isClientProvided 
+    ? Object.entries(competitorFreq).sort((a, b) => b[1] - a[1])[0]
+    : null;
 
   // AI capture data (real responses) — full 84-prompt if available
   const captureResults = aiCaptureData?.results || [];
@@ -56,7 +63,10 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
   
   const visibleQueries = promptResults.filter((q: any) => q.businessAppeared);
   const invisibleQueries = promptResults.filter((q: any) => !q.businessAppeared);
-  const gapQueries = invisibleQueries.filter((q: any) => q.competitorAppeared);
+  // Only count gap queries (where competitor appeared) when client provided competitors
+  const gapQueries = isClientProvided 
+    ? invisibleQueries.filter((q: any) => q.competitorAppeared)
+    : invisibleQueries; // When client_only, all invisible queries are "gaps"
 
   // Revenue estimates — use research data when available, fallback to niche defaults
   // Revenue estimates — use research data when available, fallback to niche defaults
@@ -93,7 +103,9 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
   const fixes = [
     ...(gapQueries.length > 0 ? [{
       title: `Create pages targeting your ${gapQueries.length} gap queries`,
-      detail: `These are searches where AI recommends your competitor instead of you. Each one represents real buyers who never find you.`,
+      detail: isClientProvided
+        ? `These are searches where AI recommends your competitor instead of you. Each one represents real buyers who never find you.`
+        : `These are searches where your business doesn't appear in AI recommendations. Each one represents real buyers who never find you.`,
       queries: gapQueries.map((q: any) => q.prompt),
       impact: 'High',
       effort: 'Medium',
@@ -182,18 +194,29 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
               <span className="text-white font-medium">{businessName}</span> has <span className="text-white font-semibold">{aviScore}% AI visibility</span> across {totalPrompts} buyer-intent searches.
               AI platforms mention you in {appearedCount} out of {totalPrompts} queries tested.
             </p>
-            {topCompetitor && (
+            {topCompetitor && isClientProvided ? (
               <p>
                 Your top competitor, <span className="text-amber-400 font-medium">{topCompetitor[0]}</span>, appears in {topCompetitor[1]} out of {totalPrompts} queries — 
                 {topCompetitor[1] > appearedCount ? ` ${topCompetitor[1] - appearedCount} more than you.` : ' roughly equal to you.'}
               </p>
-            )}
-            {gapQueries.length > 0 && (
+            ) : !isClientProvided && invisibleQueries.length > 0 ? (
+              <p>
+                You didn't specify competitors, so we ran a business-only analysis. 
+                You appeared in {appearedCount} out of {totalPrompts} queries — 
+                <span className="text-red-400 font-medium">{invisibleQueries.length} queries</span> where buyers ask for recommendations but don't find you.
+              </p>
+            ) : null}
+            {gapQueries.length > 0 && isClientProvided ? (
               <p>
                 There are <span className="text-red-400 font-medium">{gapQueries.length} queries</span> where AI explicitly recommends your competitor instead of you.
                 These gaps represent an estimated <span className="text-red-400 font-medium">{formatCurrency(gapRevenueLow)}–{formatCurrency(gapRevenueHigh)}/month</span> in potential revenue going elsewhere.
               </p>
-            )}
+            ) : gapQueries.length > 0 && !isClientProvided ? (
+              <p>
+                There are <span className="text-red-400 font-medium">{gapQueries.length} queries</span> where your business doesn't appear in AI recommendations.
+                To see who AI recommends instead — and quantify the revenue impact — add 1–2 competitors to your report.
+              </p>
+            ) : null}
             {heroQuote && (
               <div className="mt-6 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
                 <div className="text-xs text-emerald-400 mb-2">What AI says about you:</div>

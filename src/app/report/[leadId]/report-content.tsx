@@ -90,6 +90,17 @@ interface LeadData {
     };
     recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
   };
+  // Competitor mode tracking
+  competitorMode?: "client_provided" | "client_only";
+  // Google Places enrichment
+  googlePlaceEnrichment?: {
+    placeId: string | null;
+    rating: number | null;
+    userReviewCount: number | null;
+    websiteMatch: boolean | null;
+  } | null;
+  localEntityTrustScore?: number | null;
+  competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
 }
 
 type Theme = 'dark' | 'light';
@@ -407,11 +418,13 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
   const compData = data.competitors.filter(c => !c.isYou && !c.isYours && !isJunkCompetitor(c.name));
   const yourRank = [...data.competitors].sort((a, b) => b.score - a.score).findIndex(c => c.isYou) + 1;
 
+  const isClientOnly = data.competitorMode === "client_only";
+
   const summaryText = data.aviScore >= 60
-    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still return competitors first. Closing those gaps could unlock ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional revenue.`
+    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still return ${isClientOnly ? 'other businesses' : 'competitors'} first. Closing those gaps could unlock ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional revenue.`
     : data.aviScore >= 35
-      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of AI recommendations go to competitors${topCompetitor ? `, led by ${topCompetitor.name}` : ''}. That's ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in revenue going elsewhere.`
-      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. When buyers in ${data.location} ask ChatGPT or Gemini for recommendations, they get your competitors instead — costing you an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo.`;
+      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of AI recommendations go to ${isClientOnly ? 'other businesses' : 'competitors'}${!isClientOnly && topCompetitor ? `, led by ${topCompetitor.name}` : ''}. That's ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in revenue going elsewhere.`
+      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. When buyers in ${data.location} ask ChatGPT or Gemini for recommendations, they find ${isClientOnly ? 'other businesses' : 'your competitors'} instead — costing you an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo.`;
 
   return (
     <FadeIn>
@@ -1611,6 +1624,119 @@ function ReportFooter({ theme }: { theme: Theme }) {
   );
 }
 
+/* ── Google Trust Signals ─── */
+function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const gpe = data.googlePlaceEnrichment;
+  
+  // Don't render if no Places data at all
+  if (!gpe || !gpe.placeId) return null;
+
+  const trustScore = data.localEntityTrustScore;
+  const compValidations = data.competitorValidations || [];
+  const isClientOnly = data.competitorMode === "client_only";
+
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <div className="max-w-4xl mx-auto">
+          <SectionTitle style={{ color: t.textPrimary }}>
+            Google Profile & Trust Signals
+          </SectionTitle>
+          <p className="text-xs sm:text-sm mt-2 mb-6" style={{ color: t.textMuted }}>
+            How your business appears on Google — a key signal AI platforms use to evaluate credibility.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {gpe.rating !== null && (
+              <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
+                <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: gpe.rating >= 4 ? '#22C55E' : gpe.rating >= 3 ? '#F59E0B' : '#EF4444' }}>{gpe.rating}</p>
+                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Google Rating</p>
+              </div>
+            )}
+            {gpe.userReviewCount !== null && (
+              <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
+                <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: t.textPrimary }}>{gpe.userReviewCount}</p>
+                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Google Reviews</p>
+              </div>
+            )}
+            {gpe.websiteMatch !== null && (
+              <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
+                <p className="text-xl sm:text-2xl font-light" style={{ color: gpe.websiteMatch ? '#22C55E' : '#F59E0B' }}>{gpe.websiteMatch ? '✓' : '✗'}</p>
+                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Website Match</p>
+              </div>
+            )}
+            {trustScore !== null && trustScore !== undefined && (
+              <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
+                <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: trustScore >= 60 ? '#22C55E' : trustScore >= 40 ? '#F59E0B' : '#EF4444' }}>{trustScore}</p>
+                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Trust Score</p>
+              </div>
+            )}
+          </div>
+
+          {/* Competitor comparison — only when client provided competitors */}
+          {!isClientOnly && compValidations.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>Competitor Google Comparison</p>
+              <div className="space-y-2">
+                {compValidations.map((cv, i) => (
+                  <div key={cv.name} className="flex items-center justify-between p-3 rounded-lg" style={{ background: t.barTrack }}>
+                    <span className="text-sm" style={{ color: ['#8B5CF6', '#F97316', '#EC4899'][i % 3] }}>{cv.name}</span>
+                    <div className="flex gap-4 text-xs tabular-nums" style={{ color: t.textSecondary }}>
+                      {cv.rating !== null && <span>{cv.rating}⭐</span>}
+                      {cv.userReviewCount !== null && <span>{cv.userReviewCount} reviews</span>}
+                      {cv.distanceFromClientKm !== null && <span>{cv.distanceFromClientKm}km</span>}
+                      <span>{cv.validationStatus === 'validated' ? '✅' : '⚠️'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </FadeIn>
+  );
+}
+
+/* ── Competitor Fallback (client-only snapshot) ─── */
+function CompetitorFallback({ theme }: { theme: Theme }) {
+  const t = getThemeStyles(theme);
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <div className="max-w-4xl mx-auto">
+          <SectionTitle style={{ color: t.textPrimary }}>
+            Local Competitor Tracking
+          </SectionTitle>
+          <div className="mt-4 p-6 rounded-xl" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
+            <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
+              No competitors were provided for this free snapshot, so this report focuses on your business only.
+            </p>
+            <p className="text-sm leading-7 mt-4" style={{ color: t.textSecondary }}>
+              In the full report, VizBiz can compare you against 1–2 named local competitors to show:
+            </p>
+            <ul className="mt-3 space-y-2 text-sm leading-7" style={{ color: t.textSecondary }}>
+              <li className="flex items-start gap-2">
+                <span style={{ color: '#22D3EE' }}>•</span>
+                <span>which businesses AI/search systems recommend instead</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span style={{ color: '#22D3EE' }}>•</span>
+                <span>what trust signals and pages they have that you do not</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span style={{ color: '#22D3EE' }}>•</span>
+                <span>what fixes can help you win more local recommendations</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </FadeIn>
+  );
+}
+
 /* ── Main Component ────────────────────────────── */
 export default function ReportContent({ leadId, leadData, researchData }: { leadId: string; leadData: LeadPageData | null; researchData: ResearchData | null }) {
   const { theme, toggle } = useTheme();
@@ -1780,6 +1906,12 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       socialVsVisibility: researchData.socialVsVisibility,
       // Edward Sturm AI Discovery
       aiDiscovery: researchData.aiDiscovery,
+      // Competitor mode tracking
+      competitorMode: researchData.competitorMode,
+      // Google Places enrichment
+      googlePlaceEnrichment: researchData.googlePlaceEnrichment || null,
+      localEntityTrustScore: researchData.localEntityTrustScore ?? null,
+      competitorValidations: researchData.competitorValidations || [],
     };
   }
 
@@ -1802,6 +1934,12 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       { name: 'Content & Authority', score: Math.max(Math.round(fallbackAppearanceRate * 60), 3), description: 'Whether AI tools see you as an authority' },
     ];
 
+    // Parse competitorMode from lead data for fallback path
+    const fallbackCompetitorMode = (() => {
+      const modeMatch = leadData.notes?.match(/CompetitorMode:\s*(\w+)/);
+      return modeMatch?.[1] === 'client_provided' ? 'client_provided' as const : 'client_only' as const;
+    })();
+
     data = {
       businessName: leadData.businessName,
       contactName: leadData.contactName,
@@ -1816,10 +1954,12 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       categories: fallbackCategories,
       visibleQueries: [],
       invisibleQueries: [],
-      competitors: [
-        { name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true },
-        { name: competitorName, score: Math.min(promptsAppeared + 5, totalPrompts) },
-      ],
+      competitors: fallbackCompetitorMode === 'client_only'
+        ? [{ name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true }]
+        : [
+            { name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true },
+            { name: competitorName, score: Math.min(promptsAppeared + 5, totalPrompts) },
+          ],
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
         { id: 2, title: 'Build trust signals', description: 'Encourage more client testimonials and case studies to improve trust and review scores.', impact: 'Medium' as const },
@@ -1830,6 +1970,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         overallScore: 0,
       },
       competitorSocial: [],
+      competitorMode: fallbackCompetitorMode,
     };
   }
 
@@ -1887,8 +2028,15 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           {/* 2. Score Breakdown */}
           <CategoryScores data={data} theme={theme} />
 
-          {/* 3. How You Compare */}
-          <CompetitorComparison data={data} theme={theme} />
+          {/* 2b. Google Trust Signals (if Places data available) */}
+          <GoogleTrustSignals data={data} theme={theme} />
+
+          {/* 3. How You Compare — only show when client provided competitors */}
+          {data.competitorMode !== "client_only" ? (
+            <CompetitorComparison data={data} theme={theme} />
+          ) : (
+            <CompetitorFallback theme={theme} />
+          )}
 
           {/* 4. Where You Appear / Where You're Invisible */}
           <QueryLists data={data} theme={theme} />
