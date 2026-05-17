@@ -104,8 +104,8 @@ export async function POST(request: Request) {
     locale: payload.locale?.trim() || undefined,
   };
 
-  // Write to Sheets immediately — fast path
-  let leadId = "";
+  // Always generate a leadId upfront — even if Sheets fails, we have a reference
+  let leadId = `VZB-${Date.now().toString(36).toUpperCase()}`;
   let sheetsOk = false;
 
   if (isSheetsConfigured()) {
@@ -162,8 +162,8 @@ export async function POST(request: Request) {
     console.error("[pipeline/intake] Telegram alert failed", err);
   }
 
-  // Fire preflight in background — don't await
-  if (sheetsOk && leadId) {
+  // Fire preflight in background — even if Sheets failed, we have a leadId
+  if (leadId) {
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
 
   // Return immediately — fast response
   // Generate a client token so the lead can view their own report immediately
-  const clientToken = sheetsOk ? generateReportToken(leadId) : "";
+  const clientToken = generateReportToken(leadId);
   const redirectUrl = clientToken
     ? `/report/${leadId}?token=${clientToken}`
     : `/report/${leadId}`;
