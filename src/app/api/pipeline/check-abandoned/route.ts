@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server";
 import { getLeadsByStatus, updateLead } from "@/lib/google-sheets";
 import { sendRevenueAlert } from "@/lib/telegram-alerts";
+import { generateReportToken } from "@/lib/report-token";
 
 export async function GET() {
   console.info("[pipeline/check-abandoned] Running abandoned checkout check");
@@ -40,7 +41,7 @@ export async function GET() {
           await sendRevenueAlert(
             `⚠️ Possible abandoned checkout: ${lead.dealershipName} (${lead.leadId}) — ${lead.email}\n` +
             `Status: ${lead.status}, Created: ${lead.timestamp}\n` +
-            `Report: https://vizbiz.ai/report/${lead.leadId}\n` +
+            `Report: https://vizbiz.ai/report/${lead.leadId}?token=${generateReportToken(lead.leadId)}\n` +
             `Follow up?`
           ).catch(() => {});
 

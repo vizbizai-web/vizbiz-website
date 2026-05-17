@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
+import { generateReportToken } from "@/lib/report-token";
 
 async function sendSnapshotEmail(
   to: string,
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
 
     // Telegram alert
     await sendPipelineAlert(
-      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}`
+      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}?token=${generateReportToken(leadId)}`
     );
 
     console.info(`[pipeline/deliver] Complete for ${leadId}`);
