@@ -350,6 +350,13 @@ export interface ResearchResult {
   // AI visibility tracking
   aiVisibilityProvider?: "perplexity" | "web-search-fallback" | "failed";
   aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
+  // Competitor mode tracking
+  competitorMode?: "client_provided" | "client_only";
+  internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
+  // Google Places enrichment
+  competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
+  localEntityTrustScore?: number | null;
+  googlePlaceEnrichment?: { placeId: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null } | null;
   // Edward Sturm AI Discovery Analysis
   aiDiscovery?: {
     /** What queries the AI searched (from QFO) */
@@ -411,12 +418,17 @@ export async function runResearch(
     blogUrl?: string | null;
     indexedPages?: number | null;
     hasReviews?: boolean;
+    // Google Places enrichment
+    googlePlaceEnrichment?: any;
+    localEntityTrustScore?: number | null;
   },
-  tier: 'free' | 'paid' = 'free'
+  tier: 'free' | 'paid' = 'free',
+  competitorMode: "client_provided" | "client_only" = "client_only"
 ): Promise<ResearchResult> {
   // Resolve the best business name to use for searches
   const resolvedName = resolveBusinessName(businessName, website);
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
+  console.info(`[research-runner] Competitor mode: ${competitorMode}, provided competitors: ${competitors.length > 0 ? competitors.join(", ") : "none"}`);
   
   // STEP 1: Use PreFlight profile if available (no duplicate site fetch needed)
   let websiteInsight;
@@ -519,13 +531,55 @@ export async function runResearch(
   }
   
   // STEP 4: Run AI visibility checks and track appearances — check against BOTH names
+  // Validate/enrich client-provided competitors via Places API before searching
+  let clientProvidedCompetitors: string[] = [];
+  let internalCompetitorSuggestions: DiscoveredCompetitor[] = [];
+  let placesCompetitorValidations: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[] = [];
+
+  if (competitorMode === "client_provided" && competitors.length > 0) {
+    console.info(`[research-runner] Validating ${competitors.length} client-provided competitors via Places API...`);
+    const { validateCompetitorViaPlaces } = await import("./competitor-discovery");
+    const { enrichCompetitor } = await import("./places-client");
+    for (const comp of competitors) {
+      const validation = await validateCompetitorViaPlaces(comp, city);
+      if (validation.valid) {
+        clientProvidedCompetitors.push(validation.resolvedName || comp);
+        console.info(`[research-runner]   ✅ Validated competitor: ${validation.resolvedName || comp}`);
+      } else {
+        console.info(`[research-runner]   ⚠️ Could not validate competitor: ${comp} — using as-is`);
+        clientProvidedCompetitors.push(comp);
+      }
+    }
+
+    // Enrich competitors with Google Places data (rating, reviews, distance)
+    try {
+      const validations = [];
+      for (const comp of competitors) {
+        const enriched = await enrichCompetitor(comp, city);
+        validations.push({
+          name: enriched.name,
+          validationStatus: enriched.validationStatus,
+          rating: enriched.googlePlace.rating,
+          userReviewCount: enriched.googlePlace.userRatingCount,
+          distanceFromClientKm: enriched.googlePlace.distanceFromClientKm,
+        });
+      }
+      placesCompetitorValidations = validations;
+      console.info(`[research-runner] Google Places: enriched ${validations.length} competitors`);
+    } catch (e) {
+      console.warn(`[research-runner] Competitor Places enrichment failed (non-blocking):`, e instanceof Error ? e.message : e);
+    }
+  }
+
+  // Use client-provided competitors if available, else empty (for client_only)
+  const competitorsToCheck = competitorMode === "client_provided" ? clientProvidedCompetitors : competitors;
+
   const { results, rawResults, aiVisibilityChecks, aiVisibilityProvider } = await runPromptSearches(
-    prompts, resolvedName, website, competitors, businessName
+    prompts, resolvedName, website, competitorsToCheck, businessName
   );
   
   // STEP 4.5: Discover competitors from search results
-  // If no competitors were provided or the known competitors didn't show up,
-  // scan ALL search results for recurring business names
+  // Always run auto-discovery for internal intelligence (used in both modes)
   const discoveredCompetitors = discoverCompetitorsFromResults(rawResults, resolvedName, website, businessName, { businessType: preflightProfile?.businessType, services: preflightProfile?.services });
   if (discoveredCompetitors.length > 0) {
     console.info(`[research-runner] Discovered ${discoveredCompetitors.length} competitors from search results:`);
@@ -533,16 +587,21 @@ export async function runResearch(
       console.info(`[research-runner]   - ${dc.name} (appeared in ${dc.appearances} prompts)`);
     }
     
-    // Re-check competitor appearances using discovered competitors
-    const discoveredNames = discoveredCompetitors.map(dc => dc.name);
-    for (let i = 0; i < results.length; i++) {
-      if (!results[i].competitorAppeared) {
-        const promptRaw = rawResults[i];
-        if (promptRaw && promptRaw.results.length > 0) {
-          const discResult = checkCompetitorAppearance(promptRaw.results, discoveredNames);
-          if (discResult.appeared && discResult.name && validateCompetitor(discResult.name, { businessType: preflightProfile?.businessType, services: preflightProfile?.services }).valid) {
-            results[i].competitorAppeared = true;
-            results[i].competitorName = discResult.name;
+    // Store for internal use regardless of mode
+    internalCompetitorSuggestions = discoveredCompetitors;
+    
+    // For client_only mode: also re-check competitor appearances using discovered competitors
+    if (competitorMode === "client_only") {
+      const discoveredNames = discoveredCompetitors.map(dc => dc.name);
+      for (let i = 0; i < results.length; i++) {
+        if (!results[i].competitorAppeared) {
+          const promptRaw = rawResults[i];
+          if (promptRaw && promptRaw.results.length > 0) {
+            const discResult = checkCompetitorAppearance(promptRaw.results, discoveredNames);
+            if (discResult.appeared && discResult.name && validateCompetitor(discResult.name, { businessType: preflightProfile?.businessType, services: preflightProfile?.services }).valid) {
+              results[i].competitorAppeared = true;
+              results[i].competitorName = discResult.name;
+            }
           }
         }
       }
@@ -550,11 +609,34 @@ export async function runResearch(
   }
   
   // STEP 5: Calculate scores and bands
-  const finalResult = calculateScores(results, resolvedName, competitors, finalNiche);
+  // For client_only mode, pass empty competitors to calculateScores so it doesn't fabricate comparisons
+  const competitorsForScoring = competitorMode === "client_only" ? [] : competitorsToCheck;
+  const finalResult = calculateScores(results, resolvedName, competitorsForScoring, finalNiche);
   
   // Track which provider was used for AI visibility
   finalResult.aiVisibilityProvider = aiVisibilityProvider;
   finalResult.aiVisibilityChecks = aiVisibilityChecks;
+
+  // Store competitor mode and internal suggestions
+  finalResult.competitorMode = competitorMode;
+  finalResult.internalCompetitorSuggestions = internalCompetitorSuggestions;
+
+  // Pass through Google Places enrichment from preflight
+  if (preflightProfile?.googlePlaceEnrichment) {
+    const gpe = preflightProfile.googlePlaceEnrichment;
+    finalResult.googlePlaceEnrichment = {
+      placeId: gpe.placeId || null,
+      rating: gpe.rating ?? null,
+      userReviewCount: gpe.userRatingCount ?? null,
+      websiteMatch: gpe.websiteMatch ?? null,
+    };
+    finalResult.localEntityTrustScore = preflightProfile.localEntityTrustScore ?? null;
+  }
+
+  // Set competitor validations from Google Places
+  if (placesCompetitorValidations.length > 0) {
+    finalResult.competitorValidations = placesCompetitorValidations;
+  }
 
   // STEP 5.5: Post-research sanity check
   // If ALL prompts returned zero AND same competitor across all results,
@@ -705,6 +787,13 @@ export async function runResearch(
     console.info(`[research-runner] AI Discovery: ${contentReadiness.overall}/100 readiness, ${topCompetitorCitations.length} competitor citation sources, BingWMT=${bingWmtVerified}`);
   } catch (e) {
     console.warn(`[research-runner] AI Discovery analysis failed (non-blocking):`, e instanceof Error ? e.message : e);
+  }
+
+  // Override competitor messaging for client_only mode
+  if (competitorMode === "client_only") {
+    finalResult.competitorMention = "auto-discovered competitors (internal only)";
+    finalResult.competitorLine = "Your competitors were identified from search data but not specified by you.";
+    finalResult.competitorCategories = [];
   }
 
   return finalResult;

@@ -78,10 +78,22 @@ export async function POST(request: Request) {
       console.warn(`[pipeline/research] Could not parse preflight JSON from notes, continuing without it:`, parseErr);
     }
 
-    // Extract competitors from the lead data
+    // Extract competitors and competitor mode from the lead data
     const competitors = lead.competitor
       ? lead.competitor.split(",").map(c => c.trim()).filter(Boolean)
       : [];
+
+    // Parse competitorMode from notes (set by intake route)
+    let competitorMode: "client_provided" | "client_only" = "client_only";
+    const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
+    if (modeMatch) {
+      competitorMode = modeMatch[1] === "client_provided" ? "client_provided" : "client_only";
+    } else if (competitors.length > 0) {
+      // Fallback: if competitors exist but mode wasn't explicitly set
+      competitorMode = "client_provided";
+    }
+
+    console.info(`[pipeline/research] Competitor mode: ${competitorMode}, competitors: ${competitors.join(", ") || "none"}`);
 
     // Run research
     const result = await runResearch(
@@ -90,7 +102,8 @@ export async function POST(request: Request) {
       lead.city,
       competitors,
       preflightProfile,
-      "free"
+      "free",
+      competitorMode
     );
 
     // Update Sheets with research results
@@ -102,6 +115,8 @@ export async function POST(request: Request) {
       serviceVisibility: result.serviceVisibility,
       notes: JSON.stringify({
         preflight: preflightProfile,
+        competitorMode,
+        competitors,
         research: {
           appearedCount: result.appearedCount,
           totalPrompts: result.totalPrompts,
@@ -114,6 +129,7 @@ export async function POST(request: Request) {
           socialPresence: result.socialPresence,
           competitorSocial: result.competitorSocial,
           socialNarrative: result.socialNarrative,
+          internalCompetitorSuggestions: result.internalCompetitorSuggestions,
         },
       }),
     });

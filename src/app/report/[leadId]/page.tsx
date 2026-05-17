@@ -45,6 +45,13 @@ export type ResearchData = {
     };
     recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
   };
+  // Competitor mode tracking
+  competitorMode?: "client_provided" | "client_only";
+  internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
+  // Google Places enrichment
+  googlePlaceEnrichment?: { placeId: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null } | null;
+  localEntityTrustScore?: number | null;
+  competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
 };
 
 export type LeadPageData = {
@@ -107,6 +114,40 @@ export default async function ReportPage({
           try {
             researchData = JSON.parse(lead.notes.slice(idx + marker.length));
           } catch { /* ignore parse errors */ }
+        }
+
+        // If researchData is null, try parsing the JSON blob from research route
+        // Research route stores: { preflight, competitorMode, competitors, research: {...} }
+        if (!researchData) {
+          try {
+            const notesStr = lead.notes || '';
+            const jsonStart = notesStr.lastIndexOf('{"preflight"');
+            if (jsonStart !== -1) {
+              let braceCount = 0;
+              let jsonEnd = -1;
+              for (let i = jsonStart; i < notesStr.length; i++) {
+                if (notesStr[i] === '{') braceCount++;
+                if (notesStr[i] === '}') braceCount--;
+                if (braceCount === 0) { jsonEnd = i + 1; break; }
+              }
+              if (jsonEnd > 0) {
+                const parsed = JSON.parse(notesStr.substring(jsonStart, jsonEnd));
+                if (parsed.research) {
+                  researchData = {
+                    ...parsed.research,
+                    competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
+                    internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
+                  } as any;
+                }
+              }
+            }
+          } catch { /* ignore parse errors */ }
+        }
+
+        // Fallback: parse competitorMode from notes text if still not available
+        if (researchData && !researchData.competitorMode) {
+          const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
+          researchData.competitorMode = modeMatch?.[1] === 'client_provided' ? 'client_provided' : 'client_only';
         }
       }
     } catch (err) {

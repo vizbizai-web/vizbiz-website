@@ -131,3 +131,252 @@ export function isPlacesConfigured(): boolean {
 }
 
 export type { PlaceResult };
+
+/* ───────────────────────────────
+   ENRICHMENT FUNCTIONS
+   ─────────────────────────────── */
+
+/** Result of enriching a business profile via Google Places */
+export interface GooglePlaceEnrichment {
+  placeId: string | null;
+  displayName: string | null;
+  formattedAddress: string | null;
+  cityMatch: boolean | null;
+  websiteUri: string | null;
+  websiteMatch: boolean | null;
+  googleMapsUri: string | null;
+  rating: number | null;
+  userRatingCount: number | null;
+  businessStatus: string | null;
+  types: string[];
+  location: { lat: number | null; lng: number | null };
+}
+
+/** Competitor validation result */
+export interface CompetitorValidation {
+  name: string;
+  source: "client_provided";
+  validationStatus: "validated" | "needs_review" | "not_found";
+  googlePlace: GooglePlaceEnrichment & {
+    distanceFromClientKm: number | null;
+  };
+}
+
+/** Internal competitor suggestion (never shown to client) */
+export interface InternalCompetitorSuggestion {
+  name: string;
+  placeId: string;
+  formattedAddress: string | null;
+  websiteUri: string | null;
+  googleMapsUri: string | null;
+  rating: number | null;
+  userRatingCount: number | null;
+  types: string[];
+  distanceFromClientKm: number | null;
+  confidence: "high" | "medium" | "low";
+  reason: string;
+  clientFacingAllowed: false;
+}
+
+/** Simple in-memory cache with TTL */
+const placesCache = new Map<string, { data: any; expires: number }>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function getCached<T>(key: string): T | null {
+  const entry = placesCache.get(key);
+  if (entry && entry.expires > Date.now()) return entry.data as T;
+  if (entry) placesCache.delete(key);
+  return null;
+}
+
+function setCache(key: string, data: any): void {
+  placesCache.set(key, { data, expires: Date.now() + CACHE_TTL_MS });
+}
+
+/**
+ * Look up a business in Google Places and return enrichment data.
+ * Used for client business validation and trust scoring.
+ */
+export async function enrichBusinessProfile(
+  businessName: string,
+  city: string,
+  website?: string
+): Promise<GooglePlaceEnrichment> {
+  const empty: GooglePlaceEnrichment = {
+    placeId: null, displayName: null, formattedAddress: null, cityMatch: null,
+    websiteUri: null, websiteMatch: null, googleMapsUri: null,
+    rating: null, userRatingCount: null, businessStatus: null,
+    types: [], location: { lat: null, lng: null },
+  };
+
+  if (!isPlacesConfigured()) return empty;
+
+  // Check env flag
+  if (process.env.ENABLE_GOOGLE_PLACES_ENRICHMENT === "false") return empty;
+
+  const cacheKey = `enrich:${businessName}:${city}`;
+  const cached = getCached<GooglePlaceEnrichment>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const geoResult = await geocodeAddress(city);
+    if (!geoResult) return empty;
+
+    const places = await placesNearbySearch(businessName, geoResult, 15000, 3);
+    if (!places.length) return empty;
+
+    const best = places[0];
+    const placeId = best.name?.replace("places/", "") || null;
+    const domainFromUrl = (u: string) => {
+      try { return new URL(u.startsWith('http') ? u : `https://${u}`).hostname.replace(/^www\./, ''); } catch { return ''; }
+    };
+    const bizDomain = website ? domainFromUrl(website) : "";
+    const placeDomain = best.websiteUri ? domainFromUrl(best.websiteUri) : "";
+    const websiteMatch = !!(bizDomain && placeDomain && (bizDomain === placeDomain || placeDomain.includes(bizDomain) || bizDomain.includes(placeDomain)));
+
+    const result: GooglePlaceEnrichment = {
+      placeId,
+      displayName: best.displayName?.text || null,
+      formattedAddress: best.formattedAddress || null,
+      cityMatch: best.formattedAddress?.toLowerCase().includes(city.toLowerCase().split(',')[0].trim().toLowerCase()) ?? null,
+      websiteUri: best.websiteUri || null,
+      websiteMatch,
+      googleMapsUri: best.googleMapsUri || null,
+      rating: best.rating ?? null,
+      userRatingCount: best.userRatingCount ?? null,
+      businessStatus: null, // Not available from searchText without extra field mask
+      types: best.types || [],
+      location: best.location ? { lat: best.location.latitude, lng: best.location.longitude } : { lat: null, lng: null },
+    };
+
+    setCache(cacheKey, result);
+    console.info(`[places-client] Enriched: "${businessName}" → placeId=${placeId}, rating=${result.rating}, reviews=${result.userRatingCount}, websiteMatch=${websiteMatch}`);
+    return result;
+  } catch (error) {
+    console.warn(`[places-client] enrichBusinessProfile failed for "${businessName}":`, error instanceof Error ? error.message : error);
+    return empty;
+  }
+}
+
+/**
+ * Validate and enrich a client-provided competitor via Google Places.
+ */
+export async function enrichCompetitor(
+  competitorName: string,
+  clientCity: string,
+  clientLocation?: { lat: number; lng: number }
+): Promise<CompetitorValidation> {
+  const emptyPlace: GooglePlaceEnrichment & { distanceFromClientKm: number | null } = {
+    placeId: null, displayName: null, formattedAddress: null, cityMatch: null,
+    websiteUri: null, websiteMatch: null, googleMapsUri: null,
+    rating: null, userRatingCount: null, businessStatus: null,
+    types: [], location: { lat: null, lng: null }, distanceFromClientKm: null,
+  };
+
+  if (!isPlacesConfigured() || process.env.ENABLE_GOOGLE_PLACES_ENRICHMENT === "false") {
+    return { name: competitorName, source: "client_provided", validationStatus: "needs_review", googlePlace: emptyPlace };
+  }
+
+  const cacheKey = `competitor:${competitorName}:${clientCity}`;
+  const cached = getCached<CompetitorValidation>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const geoResult = await geocodeAddress(clientCity);
+    if (!geoResult) {
+      return { name: competitorName, source: "client_provided", validationStatus: "needs_review", googlePlace: emptyPlace };
+    }
+
+    const places = await placesNearbySearch(competitorName, geoResult, 25000, 5);
+    if (!places.length) {
+      console.info(`[places-client] Competitor "${competitorName}" not found in Places near ${clientCity}`);
+      return { name: competitorName, source: "client_provided", validationStatus: "not_found", googlePlace: emptyPlace };
+    }
+
+    const best = places[0];
+    const placeId = best.name?.replace("places/", "") || null;
+
+    // Calculate distance if client location available
+    let distanceKm: number | null = null;
+    if (clientLocation && best.location) {
+      const R = 6371;
+      const dLat = (best.location.latitude - clientLocation.lat) * Math.PI / 180;
+      const dLon = (best.location.longitude - clientLocation.lng) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(clientLocation.lat * Math.PI / 180) * Math.cos(best.location.latitude * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      distanceKm = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 10) / 10;
+    }
+
+    const validation: CompetitorValidation = {
+      name: best.displayName?.text || competitorName,
+      source: "client_provided",
+      validationStatus: "validated",
+      googlePlace: {
+        placeId,
+        displayName: best.displayName?.text || null,
+        formattedAddress: best.formattedAddress || null,
+        cityMatch: best.formattedAddress?.toLowerCase().includes(clientCity.toLowerCase().split(',')[0].trim().toLowerCase()) ?? null,
+        websiteUri: best.websiteUri || null,
+        websiteMatch: null,
+        googleMapsUri: best.googleMapsUri || null,
+        rating: best.rating ?? null,
+        userRatingCount: best.userRatingCount ?? null,
+        businessStatus: null,
+        types: best.types || [],
+        location: best.location ? { lat: best.location.latitude, lng: best.location.longitude } : { lat: null, lng: null },
+        distanceFromClientKm: distanceKm,
+      },
+    };
+
+    setCache(cacheKey, validation);
+    console.info(`[places-client] Competitor validated: "${competitorName}" → "${validation.googlePlace.displayName}", rating=${validation.googlePlace.rating}, distance=${distanceKm}km`);
+    return validation;
+  } catch (error) {
+    console.warn(`[places-client] enrichCompetitor failed for "${competitorName}":`, error instanceof Error ? error.message : error);
+    return { name: competitorName, source: "client_provided", validationStatus: "needs_review", googlePlace: emptyPlace };
+  }
+}
+
+/**
+ * Calculate a local entity trust score (0-100) from Google Places enrichment data.
+ *
+ * Factors:
+ * - Google profile found (yes/no)
+ * - Website matches submitted website
+ * - City/location match
+ * - Rating (normalized to 0-25)
+ * - Review count (logarithmic scale, 0-20)
+ * - Business category clarity
+ */
+export function calculateLocalEntityTrustScore(enrichment: GooglePlaceEnrichment): number {
+  let score = 0;
+
+  // Profile exists (0 or 15)
+  if (enrichment.placeId) score += 15;
+
+  // Website match (0 or 20)
+  if (enrichment.websiteMatch === true) score += 20;
+  else if (enrichment.websiteMatch === null) score += 5; // Unknown
+
+  // City match (0 or 15)
+  if (enrichment.cityMatch === true) score += 15;
+  else if (enrichment.cityMatch === null) score += 5;
+
+  // Rating (0-25, normalized from 1-5)
+  if (enrichment.rating !== null) {
+    score += Math.round((enrichment.rating / 5) * 25);
+  }
+
+  // Review count (logarithmic, 0-15)
+  if (enrichment.userRatingCount !== null) {
+    const logReviews = Math.log10(enrichment.userRatingCount + 1);
+    score += Math.min(Math.round(logReviews * 5), 15); // log10(100)=2 → 10pts, log10(1000)=3 → 15pts
+  }
+
+  // Category clarity (0-10)
+  if (enrichment.types.length > 0) score += 5;
+  if (enrichment.types.length >= 3) score += 5;
+
+  return Math.min(score, 100);
+}
