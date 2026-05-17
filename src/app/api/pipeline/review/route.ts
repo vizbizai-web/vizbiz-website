@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead, updateLeadResearchResults } from "@/lib/google-sheets";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
+import { generateReportToken } from "@/lib/report-token";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
       ...(warnings.length > 0 ? [`⚠️ Warnings: ${warnings.join("; ")}`] : []),
       "",
       `Lead ID: ${leadId}`,
-      `Report: https://vizbiz.ai/report/${leadId}`,
+      `Report: https://vizbiz.ai/report/${leadId}?token=${generateReportToken(leadId)}`,
       `MC: https://vizbiz.ai/mission-control/leads/${leadId}`,
     ].join("\n");
 
