@@ -84,7 +84,7 @@ export default function SampleAiVisibilityReportForCarDealershipsPage() {
               The goal is not to give a generic score. The goal is to show what categories are strong, where competitors are winning today, and what should be improved first.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              If you want to understand the deliverable itself, see the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. If you want the category background, read <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>.
+              If you want to understand the deliverable itself, see the <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Audit for automotive retailers</Link>. If you want the category background, read <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility for automotive retailers</Link>.
             </p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function SampleAiVisibilityReportForCarDealershipsPage() {
               The report should lead to practical assets that a dealership or webmaster can actually use.
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For the affordability / inventory angle specifically, see <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">cheap used car near me: AI visibility for dealerships</Link>.
+              For the affordability / inventory angle specifically, see <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" className="text-[var(--neon-cyan)] hover:text-white">cheap used car near me: AI visibility for dealerships</Link>.
             </p>
             <div className="mt-6 space-y-3">
               {sampleAssets.map((item) => (
@@ -201,7 +201,7 @@ export default function SampleAiVisibilityReportForCarDealershipsPage() {
               See where your dealership appears, where competitors are showing up instead, and what the strongest next move should be.
             </p>
             <div className="mt-8">
-              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

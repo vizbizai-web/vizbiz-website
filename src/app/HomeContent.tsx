@@ -662,7 +662,7 @@ export default function HomeContent() {
                 <Link href="/blog" className="hover:text-white">Blog</Link>
                 <Link href="/faq-ai-visibility-for-car-dealerships" className="hover:text-white">FAQ</Link>
                 <Link href="/about" className="hover:text-white">About</Link>
-                <Link href="/intake/" className="font-semibold text-[#22D3EE] hover:text-white">Get My Snapshot</Link>
+                <Link href="/intake/?utm_source=site&utm_medium=home-link&utm_campaign=conversion" className="font-semibold text-[#22D3EE] hover:text-white">Get My Snapshot</Link>
               </div>
             </div>
             <div className="mt-8 border-t border-white/[0.06] pt-6 text-center text-xs text-white/20">

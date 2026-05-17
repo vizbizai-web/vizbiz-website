@@ -275,7 +275,7 @@ export default function FreeTestPage() {
 
                     <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                       <Link 
-                        href="/intake?page=free-test&cta=Get%20Full%20Report" 
+                        href="/intake?page=free-test&utm_source=site&utm_medium=cta-button&utm_campaign=free-test-upgrade" 
                         className="premium-button rounded-xl px-8 py-4 font-semibold text-lg flex items-center justify-center gap-2"
                       >
                         Get the Full AVI Report <ArrowRight className="h-5 w-5" />
