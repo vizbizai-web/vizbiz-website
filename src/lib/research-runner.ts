@@ -18,6 +18,8 @@ import { validateCompetitor } from "./competitor-discovery";
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+const PERPLEXITY_MODEL = process.env.PERPLEXITY_MODEL || "sonar";
+const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/v1/sonar"; // Verified May 2025
 
 if (!TAVILY_API_KEY) {
   console.warn("[research-runner] TAVILY_API_KEY not configured");
@@ -81,7 +83,8 @@ async function braveSearch(query: string): Promise<TavilySearchResult[]> {
  * whether the business name or website appears in the AI's answer.
  * This provides AI-search answer and citation evidence. It is a supporting evidence layer, not proof of visibility in ChatGPT, Gemini, Claude, or Google AI Overview.
  * 
- * Request format: POST https://api.perplexity.ai/v1/sonar
+ * Request format: POST PERPLEXITY_ENDPOINT
+ * Model: PERPLEXITY_MODEL (default: sonar)
  * Response: { choices: [{ message: { content: string } }], citations: [{ url: string }] }
  */
 async function queryAIModel(prompt: string): Promise<{ content: string; citations: string[] }> {
@@ -90,14 +93,14 @@ async function queryAIModel(prompt: string): Promise<{ content: string; citation
   }
 
   try {
-    const response = await fetch("https://api.perplexity.ai/v1/sonar", {
+    const response = await fetch(PERPLEXITY_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${PERPLEXITY_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "sonar",
+        model: PERPLEXITY_MODEL,
         messages: [{ role: "user", content: prompt }],
         max_tokens: 1024,
       }),
@@ -357,6 +360,11 @@ export interface ResearchResult {
   competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
   localEntityTrustScore?: number | null;
   googlePlaceEnrichment?: { placeId: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null } | null;
+  // Evidence source tracking
+  visibilityEvidenceSource?: "sonar" | "tavily_fallback" | "brave_fallback" | "unavailable";
+  aiAnswerEvidenceAvailable?: boolean;
+  webSearchFallbackUsed?: boolean;
+  evidenceWarnings?: string[];
   // Edward Sturm AI Discovery Analysis
   aiDiscovery?: {
     /** What queries the AI searched (from QFO) */
@@ -628,6 +636,20 @@ export async function runResearch(
   // Track which provider was used for AI visibility
   finalResult.aiVisibilityProvider = aiVisibilityProvider;
   finalResult.aiVisibilityChecks = aiVisibilityChecks;
+
+  // Set evidence source tracking fields
+  const sonarUsed = aiVisibilityChecks?.some(c => c.provider === "perplexity") ?? false;
+  const fallbackUsed = aiVisibilityChecks?.some(c => c.provider === "web-search-fallback") ?? false;
+  finalResult.aiAnswerEvidenceAvailable = sonarUsed;
+  finalResult.webSearchFallbackUsed = fallbackUsed;
+  finalResult.visibilityEvidenceSource = sonarUsed ? "sonar" : fallbackUsed ? "tavily_fallback" : "unavailable";
+  finalResult.evidenceWarnings = [];
+  if (fallbackUsed) {
+    finalResult.evidenceWarnings.push("Web search fallback was used for some queries — results are not AI-generated answers");
+  }
+  if (!sonarUsed && !fallbackUsed) {
+    finalResult.evidenceWarnings.push("No AI-search or web-search evidence available");
+  }
 
   // Store competitor mode and internal suggestions
   finalResult.competitorMode = competitorMode;
