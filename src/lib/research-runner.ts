@@ -75,18 +75,18 @@ async function braveSearch(query: string): Promise<TavilySearchResult[]> {
 }
 
 /**
- * Perplexity Sonar API — Real AI Visibility Check
+ * Perplexity Sonar API — AI-Search Evidence Layer
  * 
  * Calls Perplexity's Sonar model (a real AI model) with a prompt and checks
  * whether the business name or website appears in the AI's answer.
- * This is TRUE AI visibility — not web search results.
+ * This provides AI-search answer and citation evidence. It is a supporting evidence layer, not proof of visibility in ChatGPT, Gemini, Claude, or Google AI Overview.
  * 
  * Request format: POST https://api.perplexity.ai/v1/sonar
  * Response: { choices: [{ message: { content: string } }], citations: [{ url: string }] }
  */
 async function queryAIModel(prompt: string): Promise<{ content: string; citations: string[] }> {
   if (!PERPLEXITY_API_KEY) {
-    throw new Error("PERPLEXITY_API_KEY not configured — cannot check real AI visibility");
+    throw new Error("PERPLEXITY_API_KEY not configured — cannot check AI-search visibility");
   }
 
   try {
@@ -143,7 +143,7 @@ async function checkAIBusinessAppearance(
   const lowerBusinessName = businessName.toLowerCase();
   const lowerWebsite = website.toLowerCase().replace(/^https?:\/\//, "");
 
-  // Try Perplexity first for REAL AI visibility
+  // Try Perplexity first for AI-search evidence
   if (PERPLEXITY_API_KEY) {
     try {
       const aiResponse = await queryAIModel(prompt);
@@ -178,7 +178,7 @@ async function checkAIBusinessAppearance(
   }
 
   // FALLBACK: Web search (Tavily/Brave) — NOT true AI visibility
-  console.warn(`[research-runner] ⚠️ FALLBACK to web search for "${prompt}" — results are NOT true AI visibility. Install PERPLEXITY_API_KEY for real AI visibility checks.`);
+  console.warn(`[research-runner] ⚠️ FALLBACK to web search for "${prompt}" — results are web search, not AI-generated answers. Install PERPLEXITY_API_KEY for AI-search evidence.`);
 
   try {
     const { results: searchResults } = await searchWithFallback(prompt);
@@ -572,7 +572,7 @@ export async function runResearch(
           name: enriched.name,
           validationStatus: enriched.validationStatus,
           rating: enriched.googlePlace.rating,
-          userReviewCount: enriched.googlePlace.userRatingCount,
+          userReviewCount: enriched.googlePlace.userReviewCount,
           distanceFromClientKm: enriched.googlePlace.distanceFromClientKm,
         });
       }
@@ -639,7 +639,7 @@ export async function runResearch(
     finalResult.googlePlaceEnrichment = {
       placeId: gpe.placeId || null,
       rating: gpe.rating ?? null,
-      userReviewCount: gpe.userRatingCount ?? null,
+      userReviewCount: gpe.userReviewCount ?? null,
       websiteMatch: gpe.websiteMatch ?? null,
     };
     finalResult.localEntityTrustScore = preflightProfile.localEntityTrustScore ?? null;
