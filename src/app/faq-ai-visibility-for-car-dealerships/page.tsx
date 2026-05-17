@@ -4,9 +4,9 @@ import SiteHeader from "@/components/SiteHeader";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 export const metadata: Metadata = {
-  title: "AI Visibility for Local Businesses FAQ | VizBiz",
+  title: "AI Visibility FAQ for Car Dealerships | ChatGPT, Gemini & AI Search | VizBiz",
   description:
-    "Answers to common questions about AI visibility, reviews, services, competitor comparisons, and audits for local businesses.",
+    "Common questions about AI visibility for car dealerships — how ChatGPT recommends dealers, what affects your score, and how to improve.",
   alternates: {
     canonical: "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships",
   },
