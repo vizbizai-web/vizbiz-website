@@ -206,13 +206,11 @@ function IntakeForm() {
       const res = await fetch('/api/pipeline/intake', { method: 'POST', body: payload });
       if (res.ok) {
         const data = await res.json().catch(() => null);
-        if (data?.leadId) { window.location.href = `/thank-you?submitted=1&lid=${data.leadId}${data.redirectUrl?.includes('token=') ? '&token=' + data.redirectUrl.split('token=')[1] : ''}`; }
+        if (data?.leadId) { window.location.href = `/report/${data.leadId}${data.redirectUrl?.includes('token=') ? '?token=' + data.redirectUrl.split('token=')[1] : ''}`; }
         else { window.location.href = '/thank-you?submitted=1'; }
       } else {
-        // Fallback to old intake if new pipeline fails
-        const fallbackRes = await fetch('/api/intake', { method: 'POST', body: payload });
-        if (fallbackRes.redirected) { window.location.href = fallbackRes.url; }
-        else { window.location.href = '/thank-you?submitted=1'; }
+        console.error('Intake failed:', res.status);
+        setIsSubmitting(false);
       }
     } catch { setIsSubmitting(false); }
   }

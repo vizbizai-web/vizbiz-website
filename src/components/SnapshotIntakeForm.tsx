@@ -79,15 +79,31 @@ export default function SnapshotIntakeForm({
     setIsSubmitting(true);
 
     try {
-      // Submit form data via fetch
+      // Submit to new pipeline intake
       const formData = new FormData(form);
-      const response = await fetch("/api/intake", {
+      const entries = Object.fromEntries(formData.entries()) as Record<string, string>;
+      
+      // Normalize website URL before sending
+      if (entries.websiteUrl) {
+        entries.websiteUrl = normalizeWebsiteUrl(entries.websiteUrl);
+      }
+      
+      const response = await fetch("/api/pipeline/intake", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entries),
       });
 
-      if (response.redirected) {
-        window.location.href = response.url;
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
+        if (data?.leadId) {
+          window.location.href = `/report/${data.leadId}${data.redirectUrl?.includes('token=') ? '?token=' + data.redirectUrl.split('token=')[1] : ''}`;
+        } else {
+          window.location.href = '/thank-you?submitted=1';
+        }
+      } else {
+        console.error("Pipeline intake failed:", response.status);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Submission failed:", error);
@@ -96,7 +112,7 @@ export default function SnapshotIntakeForm({
   }
 
   return (
-    <form action="/api/intake" method="POST" className="space-y-5" onSubmit={handleSubmit}>
+    <form method="POST" className="space-y-5" onSubmit={handleSubmit}>
       <input type="hidden" name="selectedPlan" value={selectedPlan} />
       <input type="hidden" name="source" value="snapshot funnel" />
       <input type="hidden" name="originalCta" value={originalCta} />
