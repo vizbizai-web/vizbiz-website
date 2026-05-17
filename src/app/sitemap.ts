@@ -18,7 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
-    // ai-visibility-audit-for-car-dealerships — removed (404, page deleted)
+    {
+      url: `${BASE_URL}/ai-visibility-audit-for-car-dealerships/`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
     {
       url: `${BASE_URL}/how-dealerships-show-up-in-ai-search/`,
       lastModified: now,
