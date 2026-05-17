@@ -27,21 +27,14 @@ import { runResearch } from "@/lib/research-runner";
 
 export type ResearchMode = "free" | "paid" | "full";
 
-export interface ResearchModeConfig {
-  maxSonarPrompts: number;
-  runCompetitorDiscovery: boolean;
-  runCompetitorAnalysis: boolean;
-  runFullSeoAudit: boolean;
-  runGooglePlacesEnrichment: boolean;
-  runSocialSignals: boolean;
-  runQueryFanout: boolean;
-  runYouTubeScoring: boolean;
-  sonarModel: string;
-}
+// ─── Cost Control Constants ────────────────────────────────────────────
+// These are the single sources of truth for pipeline cost/depth.
+// Do NOT duplicate these in other files.
 
-export const RESEARCH_MODES: Record<ResearchMode, ResearchModeConfig> = {
+export const PIPELINE_LIMITS = {
   free: {
-    maxSonarPrompts: 5,
+    sonarPrompts: 5,
+    firecrawlPages: 5,
     runCompetitorDiscovery: false,
     runCompetitorAnalysis: false,
     runFullSeoAudit: false,
@@ -52,7 +45,8 @@ export const RESEARCH_MODES: Record<ResearchMode, ResearchModeConfig> = {
     sonarModel: "sonar",
   },
   paid: {
-    maxSonarPrompts: 20,
+    sonarPrompts: 20,
+    firecrawlPages: 15,
     runCompetitorDiscovery: true,
     runCompetitorAnalysis: true,
     runFullSeoAudit: true,
@@ -63,7 +57,8 @@ export const RESEARCH_MODES: Record<ResearchMode, ResearchModeConfig> = {
     sonarModel: "sonar",
   },
   full: {
-    maxSonarPrompts: 30,
+    sonarPrompts: 30,
+    firecrawlPages: 25,
     runCompetitorDiscovery: true,
     runCompetitorAnalysis: true,
     runFullSeoAudit: true,
@@ -73,7 +68,13 @@ export const RESEARCH_MODES: Record<ResearchMode, ResearchModeConfig> = {
     runYouTubeScoring: true,
     sonarModel: "sonar-pro",
   },
-};
+} as const;
+
+export type ResearchModeConfig = typeof PIPELINE_LIMITS[ResearchMode];
+
+export function getResearchModeConfig(mode: ResearchMode): ResearchModeConfig {
+  return PIPELINE_LIMITS[mode];
+}
 
 // ─── Stage Result ─────────────────────────────────────────────────────
 
@@ -131,7 +132,7 @@ export async function runPreflightStage(
 
     // 5. Run preflight
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
-    const preflightResult = await preflightScan(lead.website);
+    const preflightResult = await preflightScan(lead.website, lead.city);
 
     // 6. Parse competitorMode from notes
     const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
@@ -241,7 +242,7 @@ export async function runResearchStage(
 ): Promise<StageResult> {
   const owner = getLockOwner();
   const mode = options.researchMode || "free";
-  const modeConfig = RESEARCH_MODES[mode];
+  const modeConfig = getResearchModeConfig(mode);
 
   // 1. Get lead
   const lead = await getLeadByLeadId(leadId);
@@ -300,7 +301,7 @@ export async function runResearchStage(
     });
 
     // 6. Run research with mode config
-    console.info(`[pipeline] Research starting for ${leadId}: mode=${mode}, prompts=${modeConfig.maxSonarPrompts}, competitors=${competitors.join(",") || "none"}`);
+    console.info(`[pipeline] Research starting for ${leadId}: mode=${mode}, prompts=${modeConfig.sonarPrompts}, competitors=${competitors.join(",") || "none"}`);
     const researchResult = await runResearch(
       lead.dealershipName,
       lead.website,
@@ -309,7 +310,7 @@ export async function runResearchStage(
       preflightProfile,
       {
         competitorMode,
-        maxPrompts: modeConfig.maxSonarPrompts,
+        maxPrompts: modeConfig.sonarPrompts,
         tier: mode,
       }
     );

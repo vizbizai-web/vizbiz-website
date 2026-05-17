@@ -98,6 +98,10 @@ interface LeadData {
     rating: number | null;
     userReviewCount: number | null;
     websiteMatch: boolean | null;
+    validationStatus?: "validated" | "needs_review" | "not_found" | "unavailable";
+    confidence?: "high" | "medium" | "low" | "none";
+    googleProfileFound?: boolean;
+    warnings?: string[];
   } | null;
   localEntityTrustScore?: number | null;
   competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
@@ -424,7 +428,7 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
     ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still return ${isClientOnly ? 'other businesses' : 'competitors'} first. Closing those gaps could unlock ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional revenue.`
     : data.aviScore >= 35
       ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of AI recommendations go to ${isClientOnly ? 'other businesses' : 'competitors'}${!isClientOnly && topCompetitor ? `, led by ${topCompetitor.name}` : ''}. That's ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in revenue going elsewhere.`
-      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. When buyers in ${data.location} ask ChatGPT or Gemini for recommendations, they find ${isClientOnly ? 'other businesses' : 'your competitors'} instead — costing you an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo.`;
+      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. When buyers in ${data.location} search for recommendations, they find ${isClientOnly ? 'other businesses' : 'your competitors'} instead — costing you an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo.`;
 
   return (
     <FadeIn>
@@ -691,7 +695,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
             How You Compare
           </SectionTitle>
           <p className="text-xs sm:text-sm mt-2 mb-6" style={{ color: t.textMuted }}>
-            We tested {totalQ} real buyer-intent queries across ChatGPT, Gemini, and Perplexity.
+            We tested {totalQ} buyer-intent queries using AI-search tools to see which businesses get recommended.
           </p>
 
           {/* Rank summary */}
@@ -1317,7 +1321,7 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
         </p>
         <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
           {leader
-            ? `${leader.name} is already being recommended by ChatGPT, Gemini, and Perplexity when buyers ask for suggestions.`
+            ? `${leader.name} is already being recommended by AI-search tools when buyers ask for suggestions.`
             : 'Right now, AI platforms don\'t have enough signals to recommend your business.'
           }
         </p>
@@ -1629,8 +1633,40 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
   const gpe = data.googlePlaceEnrichment;
   
-  // Don't render if no Places data at all
-  if (!gpe || !gpe.placeId) return null;
+  // If Places data is null, show unavailable message
+  if (!gpe) {
+    return (
+      <FadeIn>
+        <section className="py-12">
+          <div className="max-w-4xl mx-auto">
+            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <div className="p-4 rounded-xl" style={{ background: t.barTrack }}>
+              <p className="text-sm" style={{ color: t.textMuted }}>Google profile signal unavailable — insufficient location data to verify your listing. This does not affect your AI visibility score.</p>
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+    );
+  }
+
+  // If Places looked but didn't find a profile
+  if (!gpe.placeId) {
+    const statusMsg = gpe.validationStatus === 'unavailable'
+      ? "Google profile signal unavailable — we couldn't verify your listing. This does not affect your AI visibility score."
+      : "We couldn't find a matching Google Business profile. Claiming and verifying your listing can strengthen your AI visibility signals.";
+    return (
+      <FadeIn>
+        <section className="py-12">
+          <div className="max-w-4xl mx-auto">
+            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <div className="p-4 rounded-xl" style={{ background: t.barTrack }}>
+              <p className="text-sm" style={{ color: t.textMuted }}>{statusMsg}</p>
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+    );
+  }
 
   const trustScore = data.localEntityTrustScore;
   const compValidations = data.competitorValidations || [];

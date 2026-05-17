@@ -344,7 +344,7 @@ function checkForReviews(html: string | undefined): boolean {
 /**
  * PreFlight v2 — Deep Business Intelligence
  */
-export async function preflightScan(url: string): Promise<BusinessProfileWithAudit> {
+export async function preflightScan(url: string, intakeCity?: string): Promise<BusinessProfileWithAudit> {
   console.info(`[preflight] Scanning ${url}...`);
 
   // -- Stage 1: Scrape site --
@@ -374,22 +374,28 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
   console.info(`[preflight] Sturm checks: BingWMT=${bingWmtVerified}, Blog=${blogCheck.hasBlog}, IndexedPages=${indexedPages ?? 'N/A'}, Reviews=${hasReviews}`);
 
   // -- Stage 2.6: Google Places enrichment for client business --
+  // City resolution order: 1) intake city, 2) will re-enrich after LLM extraction
+  // Do NOT call Places with empty city — return unavailable status instead.
   let googlePlaceEnrichment: GooglePlaceEnrichment | null = null;
   let localEntityTrustScore: number | null = null;
-  try {
-    googlePlaceEnrichment = await enrichBusinessProfile(
-      url.replace(/^https?:\/\//, '').split('/')[0], // Use domain as initial lookup
-      '', // City not known yet at this point, will be enriched later from LLM
-      url
-    );
-    if (googlePlaceEnrichment.placeId) {
-      localEntityTrustScore = calculateLocalEntityTrustScore(googlePlaceEnrichment);
-      console.info(`[preflight] Google Places: found profile, trust=${localEntityTrustScore}/100, rating=${googlePlaceEnrichment.rating}, reviews=${googlePlaceEnrichment.userRatingCount}`);
-    } else {
-      console.info(`[preflight] Google Places: no profile found for ${url}`);
+  const placesLookupName = url.replace(/^https?:\/\//, '').split('/')[0]; // domain as initial name
+  const placesCity = intakeCity?.trim() || ''; // Priority 1: intake city
+
+  if (placesCity) {
+    try {
+      googlePlaceEnrichment = await enrichBusinessProfile(placesLookupName, placesCity, url);
+      if (googlePlaceEnrichment.placeId) {
+        localEntityTrustScore = calculateLocalEntityTrustScore(googlePlaceEnrichment);
+        console.info(`[preflight] Google Places: found profile, trust=${localEntityTrustScore}/100, rating=${googlePlaceEnrichment.rating}, reviews=${googlePlaceEnrichment.userReviewCount}`);
+      } else {
+        console.info(`[preflight] Google Places: no profile found for ${placesLookupName} in ${placesCity}`);
+      }
+    } catch (e) {
+      console.warn(`[preflight] Google Places enrichment failed (non-blocking):`, e instanceof Error ? e.message : e);
     }
-  } catch (e) {
-    console.warn(`[preflight] Google Places enrichment failed (non-blocking):`, e instanceof Error ? e.message : e);
+  } else {
+    console.info(`[preflight] Google Places: skipped — no city provided at intake. Will attempt after LLM extraction.`);
+    googlePlaceEnrichment = null;
   }
 
   // Scrape failure fallback
@@ -582,17 +588,34 @@ export async function preflightScan(url: string): Promise<BusinessProfileWithAud
   const searchLangCode = LANG_CODE_MAP[searchLanguage.toLowerCase()] || "en";
 
   // -- Stage 4.5: Re-enrich with LLM-extracted business name + city --
-  // The initial enrichment used the domain. Now we have the real business name and city.
-  if (llmUsed && businessType && market) {
+  // City resolution: intake city > LLM-extracted market > contact address > domain-only fallback
+  // Only re-enrich if we didn't already get a profile, or if LLM data might improve the match.
+  const cityFromMarket = market?.split(',')[0].trim() || '';
+  const bestCity = intakeCity?.trim() || cityFromMarket;
+  const enrichmentName = businessType || niche.replace(/_/g, ' ');
+
+  if (bestCity && enrichmentName && llmUsed) {
     try {
-      const cityFromMarket = market.split(',')[0].trim();
-      const reEnrichment = await enrichBusinessProfile(businessType, cityFromMarket, url);
-      if (reEnrichment.placeId && (!googlePlaceEnrichment || !googlePlaceEnrichment.placeId)) {
-        googlePlaceEnrichment = reEnrichment;
-        localEntityTrustScore = calculateLocalEntityTrustScore(reEnrichment);
-        console.info(`[preflight] Re-enriched with LLM data: trust=${localEntityTrustScore}/100`);
+      // Only re-enrich if: (a) no profile found yet, or (b) LLM name is better than domain
+      const shouldReEnrich = !googlePlaceEnrichment?.placeId || (enrichmentName !== url.replace(/^https?:\/\//, '').split('/')[0]);
+      if (shouldReEnrich) {
+        const reEnrichment = await enrichBusinessProfile(enrichmentName, bestCity, url);
+        if (reEnrichment.placeId) {
+          // Keep the better result (prefer one with website match)
+          if (!googlePlaceEnrichment?.placeId || reEnrichment.websiteMatch) {
+            googlePlaceEnrichment = reEnrichment;
+            localEntityTrustScore = calculateLocalEntityTrustScore(reEnrichment);
+            console.info(`[preflight] Re-enriched with LLM data: trust=${localEntityTrustScore}/100, name="${enrichmentName}", city="${bestCity}"`);
+          }
+        } else {
+          console.info(`[preflight] Re-enrichment: no profile found for "${enrichmentName}" in "${bestCity}"`);
+        }
       }
-    } catch { /* non-blocking */ }
+    } catch (e) {
+      console.warn(`[preflight] Re-enrichment failed (non-blocking):`, e instanceof Error ? e.message : e);
+    }
+  } else if (!googlePlaceEnrichment?.placeId) {
+    console.info(`[preflight] Google Places: unable to enrich — city="${bestCity}", name="${enrichmentName}". Marking as unavailable.`);
   }
 
   // -- Stage 5: Compute scores --

@@ -865,10 +865,12 @@ export async function discoverCompetitors(
       return [userComp.name];
     }
 
-    console.info(
-      `[competitor-discovery] User-provided competitor "${providedCompetitor}" failed validation: ${userComp.reason}. Falling back to auto-discovery.`
-    );
-    // Fall through to auto-discovery
+      console.info(
+        `[competitor-discovery] User-provided competitor "${providedCompetitor}" failed validation: ${userComp.reason}. Keeping as needs_review — NOT falling back to auto-discovery.`
+      );
+      // Do NOT fall through to auto-discovery for client-facing results.
+      // Return the competitor name anyway with a flag — the caller decides how to display.
+      return [providedCompetitor];
   }
 
   // ── Auto-discovery ──
