@@ -422,9 +422,15 @@ export async function runResearch(
     googlePlaceEnrichment?: any;
     localEntityTrustScore?: number | null;
   },
-  tier: 'free' | 'paid' = 'free',
-  competitorMode: "client_provided" | "client_only" = "client_only"
+  options?: {
+    tier?: 'free' | 'paid' | 'full';
+    competitorMode?: "client_provided" | "client_only";
+    maxPrompts?: number;
+  }
 ): Promise<ResearchResult> {
+  const tier = options?.tier || 'free';
+  const competitorMode = options?.competitorMode || "client_only";
+  const maxPrompts = options?.maxPrompts || (tier === 'paid' ? 20 : 5);
   // Resolve the best business name to use for searches
   const resolvedName = resolveBusinessName(businessName, website);
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
@@ -499,6 +505,12 @@ export async function runResearch(
     const promptSet = getPromptSetForNiche(finalNiche);
     prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
     console.info(`[research-runner] Using standard 20-prompt set (free tier)`);
+  }
+
+  // Apply maxPrompts limit (free mode: 5, paid: 20, full: 30)
+  if (prompts.length > maxPrompts) {
+    console.info(`[research-runner] Limiting prompts: ${prompts.length} → ${maxPrompts} (mode: ${tier})`);
+    prompts = prompts.slice(0, maxPrompts);
   }
   
   // STEP 3.5: Prompt Quality Check — verify prompts match the business

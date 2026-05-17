@@ -214,7 +214,7 @@ export async function POST(request: Request) {
         // -- STAGE 3: AI Visibility Research --
         // Runs 20 searches with rate limiting (~25-40s)
         console.info(`[process-lead] STAGE 3: Running AI visibility research...`);
-        const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile);
+        const researchResult = await runResearch(lead.dealershipName, lead.website, lead.city, competitors, preflightProfile, { tier: 'free', competitorMode: 'client_only' });
         console.info(`[process-lead] STAGE 3 complete: ${researchResult.appearedCount}/${researchResult.totalPrompts} appearances`);
 
 
