@@ -1642,7 +1642,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
           <div className="max-w-4xl mx-auto">
             <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
             <div className="p-4 rounded-xl" style={{ background: t.barTrack }}>
-              <p className="text-sm" style={{ color: t.textMuted }}>Google profile signal unavailable — insufficient location data to verify your listing. This does not affect your AI visibility score.</p>
+              <p className="text-sm" style={{ color: t.textMuted }}>Google Business Profile not detected — we couldn't verify a matching listing for this location. This is a key visibility gap we can help you fix.</p>
             </div>
           </div>
         </section>
@@ -1653,7 +1653,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
   // If Places looked but didn't find a profile (no placeId AND no display name)
   if (!gpe.placeId && !gpe.displayName) {
     const statusMsg = gpe.validationStatus === 'unavailable'
-      ? "Google profile signal unavailable — we couldn't verify your listing. This does not affect your AI visibility score."
+      ? "Google Business Profile not detected — we couldn't verify your listing. This is a key visibility gap we can help you fix."
       : "We couldn't find a matching Google Business profile. Claiming and verifying your listing can strengthen your AI visibility signals.";
     return (
       <FadeIn>
