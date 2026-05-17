@@ -95,6 +95,7 @@ interface LeadData {
   // Google Places enrichment
   googlePlaceEnrichment?: {
     placeId: string | null;
+    displayName?: string | null;
     rating: number | null;
     userReviewCount: number | null;
     websiteMatch: boolean | null;
@@ -815,10 +816,10 @@ function AIDiscoveryAnalysis({ data, theme }: { data: LeadData; theme: Theme }) 
               <div className="flex items-start gap-3">
                 <span className="text-lg">⚠️</span>
                 <div>
-                  <p className="text-sm font-medium mb-1" style={{ color: '#EF4444' }}>Bing Webmaster Tools Not Verified</p>
+                  <p className="text-sm font-medium mb-1" style={{ color: t.textSecondary }}>Bing Webmaster Tools Not Connected</p>
                   <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>
-                    You are missing free AI visibility data including grounding queries that Bing (and Copilot) uses to recommend businesses. 
-                    <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline ml-1" style={{ color: '#22D3EE' }}>Verify now →</a>
+                    Connecting Bing Webmaster Tools unlocks free AI visibility data including grounding queries. This is optional and does not affect your score.
+                    <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline ml-1" style={{ color: '#22D3EE' }}>Learn more →</a>
                   </p>
                 </div>
               </div>
@@ -1649,8 +1650,8 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
     );
   }
 
-  // If Places looked but didn't find a profile
-  if (!gpe.placeId) {
+  // If Places looked but didn't find a profile (no placeId AND no display name)
+  if (!gpe.placeId && !gpe.displayName) {
     const statusMsg = gpe.validationStatus === 'unavailable'
       ? "Google profile signal unavailable — we couldn't verify your listing. This does not affect your AI visibility score."
       : "We couldn't find a matching Google Business profile. Claiming and verifying your listing can strengthen your AI visibility signals.";

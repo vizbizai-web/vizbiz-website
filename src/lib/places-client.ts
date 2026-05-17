@@ -65,6 +65,8 @@ export async function placesNearbySearch(
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
         "X-Goog-FieldMask": [
+          "places.name",
+          "places.id",
           "places.displayName",
           "places.formattedAddress",
           "places.location",
@@ -235,7 +237,7 @@ export async function enrichBusinessProfile(
     if (!places.length) return empty;
 
     const best = places[0];
-    const placeId = best.name?.replace("places/", "") || null;
+    const placeId = (best as unknown as Record<string, string>).id || best.name?.replace("places/", "") || null;
     const domainFromUrl = (u: string) => {
       try { return new URL(u.startsWith('http') ? u : `https://${u}`).hostname.replace(/^www\./, ''); } catch { return ''; }
     };
@@ -322,7 +324,7 @@ export async function enrichCompetitor(
     }
 
     const best = places[0];
-    const placeId = best.name?.replace("places/", "") || null;
+    const placeId = (best as unknown as Record<string, string>).id || best.name?.replace("places/", "") || null;
 
     // Calculate distance if client location available
     let distanceKm: number | null = null;
