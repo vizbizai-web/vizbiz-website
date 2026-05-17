@@ -106,7 +106,8 @@ export async function POST(request: Request) {
   const revGap = aiReport.estimatedRevenueGap;
   
   // Store in Google Sheets CRM
-  let leadId = "";
+  // Always generate leadId upfront
+  let leadId = `VZB-${Date.now().toString(36).toUpperCase()}`;
   let sheetsOk = false;
 
   if (isSheetsConfigured()) {
