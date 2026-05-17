@@ -267,7 +267,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Ongoing tracking so you can measure progress and prove ROI</li>
             </ul>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Start with a free <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/intake/" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
+              Start with a free <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=geo-guide" className="text-[var(--neon-cyan)] hover:text-white">AI Visibility Snapshot</Link> or dive deeper with the <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=geo-guide" className="text-[var(--neon-cyan)] hover:text-white">full audit</Link>.
             </p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               Get a free AI Visibility Snapshot showing how your business performs across ChatGPT, Google AI Overviews, and Perplexity — with a clear action plan for improvement.
             </p>
             <div className="mt-8">
-              <Link href="/intake/" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
+              <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=geo-guide" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">
                 Get My AI Visibility Snapshot
               </Link>
             </div>

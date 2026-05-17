@@ -290,7 +290,7 @@ export default function Page() {
             We run the same 84 prompts across ChatGPT, Gemini, and Perplexity for your dealership specifically. You get a platform-by-platform breakdown of where you appear, where you don't, and which competitors are winning the recommendations you should be getting.
           </p>
           <a 
-            href="/intake/" 
+            href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" 
             className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
           >
             Get Your Free AI Visibility Audit

@@ -159,7 +159,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
         <div className="text-center max-w-md px-4">
           <h1 className="text-2xl font-bold mb-4">Report Not Available</h1>
           <p className="text-gray-400 mb-6">This report hasn't been generated yet.</p>
-          <a href="/intake/" className="inline-block bg-[#22D3EE] text-[#020617] px-6 py-3 rounded-lg font-medium">Get Your Free Snapshot</a>
+          <a href="/intake/?utm_source=report&utm_medium=cta-button&utm_campaign=upsell" className="inline-block bg-[#22D3EE] text-[#020617] px-6 py-3 rounded-lg font-medium">Get Your Free Snapshot</a>
         </div>
       </div>
     );

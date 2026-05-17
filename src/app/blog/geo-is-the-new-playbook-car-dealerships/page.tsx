@@ -308,7 +308,7 @@ export default function GEOPlaybookPost() {
             and see exactly how often you're recommended — and who is taking your spot.
           </p>
           <Link
-            href="/intake"
+            href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion"
             style={{
               display: "inline-block",
               background: "#25D1F2",

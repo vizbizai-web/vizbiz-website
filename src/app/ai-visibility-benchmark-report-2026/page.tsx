@@ -378,7 +378,7 @@ export default function BenchmarkReportPage() {
                 your competitor gaps, and exactly what to fix first.
               </p>
               <div className="mt-8">
-                <Link href="/intake/" className="premium-button inline-block rounded-2xl px-8 py-4 text-sm font-semibold">
+                <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" className="premium-button inline-block rounded-2xl px-8 py-4 text-sm font-semibold">
                   Run Your Free AI Visibility Audit →
                 </Link>
               </div>

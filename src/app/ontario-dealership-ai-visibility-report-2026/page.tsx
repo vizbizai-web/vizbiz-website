@@ -287,7 +287,7 @@ export default function OntarioReportPage() {
               competitors appear instead, and what to fix first.
             </p>
             <a
-              href="/intake/"
+              href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=ontario-report"
               className="inline-block bg-white text-black font-bold px-8 py-3 rounded-lg hover:bg-white/90 transition"
             >
               Get Your AI Visibility Audit

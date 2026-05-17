@@ -87,6 +87,22 @@ export default function SnapshotIntakeForm({
       if (entries.websiteUrl) {
         entries.websiteUrl = normalizeWebsiteUrl(entries.websiteUrl);
       }
+
+      // Attribution: capture UTM params + referrer from URL
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const [key, val] of urlParams.entries()) {
+          if (key.startsWith('utm_')) entries[key] = val;
+        }
+        if (document.referrer) entries.referrer = document.referrer;
+      } catch {}
+
+      // Attribution: capture timezone + locale
+      try {
+        entries.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        entries.utcOffset = String(new Date().getTimezoneOffset());
+        entries.locale = navigator.language;
+      } catch {}
       
       const response = await fetch("/api/pipeline/intake", {
         method: "POST",

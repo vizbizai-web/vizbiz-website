@@ -56,7 +56,7 @@ const relatedPages = [
   },
   {
     title: "AI Visibility Audit for Local Businesses",
-    href: "/intake/",
+    href: "/intake/?utm_source=site&utm_medium=faq-link&utm_campaign=conversion",
     description: "Shows what the audit includes and how competitor gaps are revealed.",
   },
   {
