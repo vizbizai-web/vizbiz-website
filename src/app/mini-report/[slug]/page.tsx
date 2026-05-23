@@ -71,7 +71,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
               </p>
               {report.leadEmail && (
                 <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/5 px-4 py-2 text-sm text-cyan-100">
-                  <Mail className="h-4 w-4" /> {isSpanishReport ? "Resumen preparado para" : "Summary prepared for"} {report.leadEmail}
+                  <Mail className="h-4 w-4" /> <span>{isSpanishReport ? "Resumen preparado para" : "Summary prepared for"} {report.leadEmail}</span>
                 </p>
               )}
               <div className="mt-5 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
@@ -240,7 +240,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-xs uppercase tracking-[0.14em] text-cyan-100/80">Full report unlocks: why they are easier to cite, which pages/signals help them, and what to build first.</p>
+                <p className="mt-3 text-[0.8rem] font-black uppercase tracking-[0.12em] text-cyan-50">Full report unlocks: why they are easier to cite, which pages/signals help them, and what to build first.</p>
               </div>
             )}
             <SocialProofCard socialProof={socialProofScore} />
@@ -599,7 +599,8 @@ function humanizeQuestionText(question: string, report: MiniAuditReport) {
   const service = report.businessProfile?.primaryServices?.[0] ?? report.client.primaryMake ?? "this business";
 
   if (/^(best|top|recommended)\s+.+\s+(in|near|around)\s+.+/.test(normalized)) {
-    return `I’m in ${market} and looking for ${service}. Who should I consider?`;
+    const article = /^[aeiou]/i.test(service) ? "an" : "a";
+    return `I’m in ${market} and looking for ${article} ${service}. Who should I consider?`;
   }
 
   if (/^(most trusted|trusted)\s+.+\s+(in|near|around)\s+.+/.test(normalized)) {
