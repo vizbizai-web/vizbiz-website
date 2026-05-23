@@ -33,7 +33,10 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
   const competitorTeasers = report.leaderboard.filter((row) => row.kind === "competitor").slice(0, 2);
   const topGap = report.topVisibilityGaps[0];
   const revenueLeakSnapshot = report.revenueLeakSnapshot?.length ? report.revenueLeakSnapshot : createRevenueLeakFallback(report, categoryLabels);
-  const evidenceCards = report.evidenceCards?.length ? report.evidenceCards : createEvidenceFallback(report);
+  const evidenceCards = (report.evidenceCards?.length ? report.evidenceCards : createEvidenceFallback(report)).map((card) => ({
+    ...card,
+    evidence: humanizeKeywordQuestionsInText(card.evidence, report),
+  }));
   const socialProofScore = report.socialProofScore ?? createSocialProofFallback(report);
   const localDominationPlan = report.localDominationPlan ?? createLocalDominationFallback(report);
   const revenueScenarios = report.revenueScenarios ? [report.revenueScenarios.conservative, report.revenueScenarios.likely, report.revenueScenarios.aggressive] : [];
@@ -162,7 +165,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                       </div>
                       <div className="grid gap-2">
                         {promptPreview.map((prompt, index) => (
-                          <PromptPreview key={`${prompt.category}-${index}`} question={prompt.question} outcome={prompt.outcome} />
+                          <PromptPreview key={`${prompt.category}-${index}`} question={humanizeQuestionText(prompt.question, report)} outcome={prompt.outcome} />
                         ))}
                       </div>
                     </div>
@@ -189,7 +192,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                 <h2 className="mt-2 font-serif text-3xl">{isSpanishReport ? "Dónde las brechas de IA pueden costar descubrimiento de producto" : isProductBrand ? "Where AI visibility gaps may become lost product discovery" : "Where AI visibility gaps may become lost local attention"}</h2>
               </div>
               <p className="max-w-md text-sm leading-6 text-slate-200">
-                {isSpanishReport ? "Traducimos el puntaje a lenguaje de negocio: qué visibilidad se pierde, por qué importa y cuál es el primer fix." : "This reframes the score into business-owner language: what may be leaking leads, why it matters, and the first fix to make."}
+                {isSpanishReport ? "Traducimos el puntaje a lenguaje de negocio: qué visibilidad se pierde, por qué importa y cuáles oportunidades revisar primero." : "This reframes the score into business-owner language: what visibility may be leaking, why it matters, and which opportunities to review first."}
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -329,7 +332,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
               {report.buyerQuestionTest.prompts.slice(0, 6).map((prompt, index) => (
                 <div key={`${prompt.category}-${index}`} className="rounded-2xl border border-white/10 bg-[#0F172A] p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-semibold text-white">{prompt.question}</p>
+                    <p className="text-sm font-semibold text-white">{humanizeQuestionText(prompt.question, report)}</p>
                     <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-bold capitalize text-cyan-200">{prompt.outcome}</span>
                   </div>
                   <p className="mt-2 text-xs uppercase tracking-[0.14em] text-slate-400">{categoryLabels[prompt.category]}</p>
@@ -583,6 +586,27 @@ function EvidenceCard({ card }: { card: MiniAuditReport["evidenceCards"][number]
       </div>
     </div>
   );
+}
+
+function humanizeKeywordQuestionsInText(text: string, report: MiniAuditReport) {
+  return text.replace(/“([^”]+)”/g, (_, question: string) => `“${humanizeQuestionText(question, report)}”`);
+}
+
+function humanizeQuestionText(question: string, report: MiniAuditReport) {
+  const trimmed = question.trim();
+  const normalized = trimmed.toLowerCase();
+  const market = report.client.market ?? report.client.city;
+  const service = report.businessProfile?.primaryServices?.[0] ?? report.client.primaryMake ?? "this business";
+
+  if (/^(best|top|recommended)\s+.+\s+(in|near|around)\s+.+/.test(normalized)) {
+    return `I’m in ${market} and looking for ${service}. Who should I consider?`;
+  }
+
+  if (/^(most trusted|trusted)\s+.+\s+(in|near|around)\s+.+/.test(normalized)) {
+    return `Which ${service} options near ${market} have strong reviews and are worth checking first?`;
+  }
+
+  return trimmed;
 }
 
 function createRevenueLeakFallback(report: MiniAuditReport, categoryLabels: Record<string, string>): MiniAuditReport["revenueLeakSnapshot"] {
