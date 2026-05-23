@@ -6,15 +6,51 @@ describe("buildPromptPlan", () => {
     const prompts = buildPromptPlan({ name: "Oakville Toyota", city: "Oakville", businessType: "auto_dealer", primaryMake: "Toyota" });
 
     expect(prompts).toHaveLength(11);
-    expect(prompts[0]).toMatchObject({ prompt: "best Toyota dealer in Oakville", category: "discovery", platform: "tavily" });
+    expect(prompts[0]).toMatchObject({ prompt: "best Toyota dealer in Oakville", category: "discovery", platform: "perplexity" });
     expect(prompts[10]).toMatchObject({ prompt: "best dealership for trade-in in Oakville", category: "finance", platform: "openai" });
+    expect(prompts.some((prompt) => prompt.platform === "perplexity" && prompt.prompt === "best Toyota dealer in Oakville")).toBe(true);
   });
 
-  it("adapts prompts for non-dealership local niches", () => {
-    const prompts = buildPromptPlan({ name: "Salsa North", city: "Toronto", businessType: "dance_studio" });
+  it("adapts prompts for detected non-dealership local niches", () => {
+    const prompts = buildPromptPlan({ name: "Oakville Family Dental", city: "Oakville", businessType: "dentist", primaryService: "emergency dental" });
 
     expect(prompts).toHaveLength(11);
-    expect(prompts[0].prompt).toBe("best dance studio in Toronto");
+    expect(prompts[0].prompt).toBe("I'm looking for a dentist in Oakville. Who should I consider?");
+    expect(prompts.some((prompt) => prompt.prompt.includes("emergency dentist"))).toBe(true);
     expect(prompts.some((prompt) => prompt.prompt.includes("car dealership"))).toBe(false);
+  });
+
+  it("builds a mixed AI recommendation prompt universe for restaurants", () => {
+    const prompts = buildPromptPlan({ name: "Rodrigo's Mexican Grill", city: "Huntington Beach", businessType: "mexican_restaurant", primaryService: "Mexican food" });
+
+    expect(prompts).toHaveLength(16);
+    expect(prompts.map((prompt) => prompt.intentBucket)).toEqual(expect.arrayContaining([
+      "category_discovery",
+      "conversational_recommendation",
+      "occasion_context",
+      "menu_service_intent",
+      "trust_review_comparison",
+      "branded_entity",
+    ]));
+    expect(prompts.map((prompt) => prompt.source)).toEqual(expect.arrayContaining([
+      "search_backed",
+      "vertical_pack",
+      "ai_native_variant",
+      "client_entity",
+    ]));
+    expect(prompts.some((prompt) => prompt.prompt === "best Mexican food Huntington Beach")).toBe(true);
+    expect(prompts.some((prompt) => prompt.clientFacingQuestion === "I’m in Huntington Beach and want Mexican food tonight. Where should I go?")).toBe(true);
+    expect(prompts.filter((prompt) => prompt.showInFreeReport)).toHaveLength(5);
+    expect(prompts.filter((prompt) => prompt.showInFreeReport).map((prompt) => prompt.clientFacingQuestion)).not.toContain("best Mexican food Huntington Beach");
+  });
+
+  it("uses Spanish, human-style AI shopping questions for Mexico healthy-snack ecommerce", () => {
+    const prompts = buildPromptPlan({ name: "Gommi-li", city: "Mexico", businessType: "healthy_snack_ecommerce", primaryService: "gomitas sin azúcar" });
+
+    expect(prompts).toHaveLength(16);
+    expect(prompts.filter((prompt) => prompt.showInFreeReport)).toHaveLength(5);
+    expect(prompts.some((prompt) => prompt.clientFacingQuestion === "Tengo antojo de gomitas, pero quiero algo con menos azúcar. ¿Qué marcas me recomiendas en México?")).toBe(true);
+    expect(prompts.some((prompt) => prompt.clientFacingQuestion === "Busco gomitas veganas y sin azúcar añadida para comprar en México. ¿Cuáles debería probar?")).toBe(true);
+    expect(prompts.filter((prompt) => prompt.showInFreeReport).map((prompt) => prompt.clientFacingQuestion)).not.toContain("I want candy that feels like gummies but has less sugar. What brands should I try?");
   });
 });

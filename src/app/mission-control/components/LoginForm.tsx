@@ -15,7 +15,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/mission-control/api/auth', {
+      const res = await fetch('/mission-control/api/auth/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -35,7 +35,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   };
 
   return (
-    <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
+    <div className="w-full max-w-full overflow-hidden rounded-xl border border-slate-800/50 bg-[#111118] p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -45,7 +45,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-[#0a0a0f] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-colors"
+            className="box-border w-full max-w-full rounded-lg border border-slate-700 bg-[#0a0a0f] px-4 py-3 text-white placeholder-slate-500 transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
             placeholder="Enter password"
             required
             autoFocus
@@ -64,7 +64,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full max-w-full rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 font-medium text-white transition-all hover:from-blue-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? (
             <span className="flex items-center justify-center gap-2">

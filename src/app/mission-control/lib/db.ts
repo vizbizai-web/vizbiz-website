@@ -11,63 +11,63 @@ const isStaticExport = process.env.NEXT_EXPORT === 'true' || process.env.NODE_EN
 const mockMissions: Mission[] = [
   {
     id: 'mission-001',
-    title: 'Launch AI Visibility Audit Service',
-    description: 'Complete end-to-end audit service with intake → analysis → report delivery',
+    title: 'Launch Free AVI Mini-Report Funnel',
+    description: 'Keep intake → instant score preview → emailed mini report → expanded report running cleanly',
     status: 'in_progress',
     priority: 'critical',
-    assignee: 'vlad',
+    assignee: 'alex',
     due_date: null,
-    created_at: 1709000000,
-    updated_at: 1709000000,
-    metadata: { target_date: '2026-03-15', progress: 65 }
+    created_at: 1778198400,
+    updated_at: 1778198400,
+    metadata: { target_date: '2026-05-10', progress: 80 }
   },
   {
     id: 'mission-002',
-    title: 'VizBiz.ai SEO Dominance',
-    description: 'Rank #1 for "AI visibility audit" and related keywords',
-    status: 'planning',
-    priority: 'high',
-    assignee: 'vlad',
+    title: 'Wire Stripe + Resend Revenue Plumbing',
+    description: 'Verify payment links, report-page CTA redirects, conversion tracking, and mini-report email delivery',
+    status: 'in_progress',
+    priority: 'critical',
+    assignee: 'alex',
     due_date: null,
-    created_at: 1709000000,
-    updated_at: 1709000000,
-    metadata: { target_date: '2026-04-01', progress: 30 }
+    created_at: 1778198400,
+    updated_at: 1778198400,
+    metadata: { target_date: '2026-05-11', progress: 55 }
   },
   {
     id: 'mission-003',
-    title: 'Client Portal v1.0',
-    description: 'Build and deploy client portal with dashboard, reports, and action items',
-    status: 'in_progress',
-    priority: 'critical',
-    assignee: 'architect',
+    title: 'Publish VizBiz.ai Landing Page',
+    description: 'Merge the updated premium landing page into production vizbiz.ai without breaking Stripe or lead capture',
+    status: 'planning',
+    priority: 'high',
+    assignee: 'alex',
     due_date: null,
-    created_at: 1709000000,
-    updated_at: 1709000000,
-    metadata: { target_date: '2026-02-28', progress: 80 }
+    created_at: 1778198400,
+    updated_at: 1778198400,
+    metadata: { target_date: '2026-05-12', progress: 45 }
   },
   {
     id: 'mission-004',
-    title: 'Auto Transport Brokerage MVP',
-    description: 'Build intake system for car transport brokerage service',
-    status: 'backlog',
-    priority: 'medium',
-    assignee: 'vlad',
+    title: 'Build AI Visibility Content Engine',
+    description: 'Turn X/social research, AI SEO trends, and niche teardowns into posts that drive free mini-report submissions',
+    status: 'planning',
+    priority: 'high',
+    assignee: 'alex',
     due_date: null,
-    created_at: 1709000000,
-    updated_at: 1709000000,
-    metadata: { target_date: '2026-04-15', progress: 0 }
+    created_at: 1778198400,
+    updated_at: 1778198400,
+    metadata: { target_date: '2026-05-15', progress: 25 }
   },
   {
     id: 'mission-005',
-    title: 'Content Engine Automation',
-    description: 'Automated content creation pipeline with AI agents',
+    title: 'Improve Mission Control Mobile Cockpit',
+    description: 'Make lead review, follow-ups, tasks, content ideas, and integrations easy to run from a phone',
     status: 'review',
-    priority: 'high',
-    assignee: 'copywriter',
+    priority: 'medium',
+    assignee: 'alex',
     due_date: null,
-    created_at: 1709000000,
-    updated_at: 1709000000,
-    metadata: { target_date: '2026-02-20', progress: 90 }
+    created_at: 1778198400,
+    updated_at: 1778198400,
+    metadata: { target_date: '2026-05-16', progress: 70 }
   }
 ];
 
@@ -141,16 +141,16 @@ const mockSchedules: Schedule[] = [
 
 const mockAgentLogs: AgentLog[] = [
   { id: 1, agent_name: 'architect', action: 'completed_task', status: 'success', message: 'Built Mission Control dashboard Phase 1', metadata: null, created_at: 1709050000 },
-  { id: 2, agent_name: 'vlad', action: 'deployed', status: 'success', message: 'Client portal UI components integrated', metadata: null, created_at: 1709040000 },
-  { id: 3, agent_name: 'copywriter', action: 'published', status: 'success', message: 'Published "AI Visibility for Dealerships" article', metadata: null, created_at: 1708950000 },
+  { id: 2, agent_name: 'alex', action: 'deployed', status: 'success', message: 'Updated VizBiz landing page and Mission Control cockpit', metadata: null, created_at: 1778198400 },
+  { id: 3, agent_name: 'content', action: 'planned', status: 'success', message: 'Queued AI visibility teardown posts for niche lead magnets', metadata: null, created_at: 1778112000 },
   { id: 4, agent_name: 'researcher', action: 'analysis', status: 'warning', message: 'Competitor AVI scores rising - need strategy adjustment', metadata: null, created_at: 1708860000 },
-  { id: 5, agent_name: 'vlad', action: 'created', status: 'success', message: 'New mission: Auto Transport Brokerage MVP', metadata: null, created_at: 1708770000 }
+  { id: 5, agent_name: 'alex', action: 'created', status: 'success', message: 'New mission: Build AI Visibility Content Engine', metadata: null, created_at: 1778025600 }
 ];
 
 const mockAlerts: Alert[] = [
-  { id: 1, type: 'critical', title: 'Mission Due Soon', message: 'Client Portal v1.0 due in 3 days (Feb 28)', source: 'system', acknowledged_at: null, created_at: 1709050000 },
+  { id: 1, type: 'warning', title: 'Revenue Plumbing Needed', message: 'Connect Stripe and Resend before production launch', source: 'system', acknowledged_at: null, created_at: 1778198400 },
   { id: 2, type: 'warning', title: 'Schedule Job Paused', message: 'Content Publishing Queue is paused - manual review needed', source: 'cron-004', acknowledged_at: null, created_at: 1709040000 },
-  { id: 3, type: 'info', title: 'New Agent Joined', message: 'ARCHITECT agent deployed for Mission Control build', source: 'system', acknowledged_at: null, created_at: 1709030000 }
+  { id: 3, type: 'info', title: 'Founder Cockpit Updated', message: 'Mission Control now centers on leads, reports, content, and revenue', source: 'system', acknowledged_at: null, created_at: 1778198400 }
 ];
 
 export function getDb(): Database.Database | null {
@@ -172,7 +172,7 @@ export function getDb(): Database.Database | null {
     db.exec(initSql);
     
     return db;
-  } catch (error) {
+  } catch {
     console.warn('SQLite not available, using mock data');
     return null;
   }

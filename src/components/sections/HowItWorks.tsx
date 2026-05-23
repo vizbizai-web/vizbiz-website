@@ -9,7 +9,7 @@ export default function HowItWorks() {
       icon: ClipboardCheck,
       title: "The Audit",
       duration: "Week 1",
-      description: "We analyze your dealership across 23 data points in 5 critical categories. We test real AI queries, audit your review presence, check your technical foundation, and benchmark you against every competitor in your market.",
+      description: "We analyze your business across critical AI visibility categories. We test real buyer questions, audit your proof signals, check your technical foundation, and benchmark you against competitors in your market.",
       deliverables: [
         "Complete AVI Score assessment",
         "20 AI query test results",
@@ -110,7 +110,7 @@ export default function HowItWorks() {
         <div className="mt-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
           <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Most dealerships see measurable improvement in their AVI Score within 30 days. 
+            Most local businesses can see measurable improvement in their AVI Score within 30 days. 
             The sooner you start, the harder it is for competitors to catch up.
           </p>
           <a

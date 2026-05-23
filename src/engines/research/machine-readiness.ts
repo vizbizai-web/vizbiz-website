@@ -20,12 +20,21 @@ export function analyzeHtml(html: string, input: ClientInput): MachineReadiness 
   const wordCount = visibleText.trim().split(/\s+/).filter(Boolean).length;
   const businessTypeWords = (input.businessType ?? "").replaceAll("_", " ").toLowerCase();
   const city = input.city.toLowerCase();
+  const isProductBrand = /ecommerce|skincare|product|wellness|aloe/.test(businessTypeWords);
+
+  const schemaTypes = isProductBrand
+    ? "Organization/Product/Offer/Review"
+    : input.businessType?.toLowerCase().includes("dent")
+    ? "LocalBusiness/Dentist/MedicalBusiness/Organization"
+    : input.businessType?.toLowerCase().includes("auto")
+      ? "LocalBusiness/AutoDealer/Organization"
+      : "LocalBusiness/ProfessionalService/Organization";
 
   const checks = [
-    { key: "schema", label: "Local Business Schema present", passed: lower.includes("application/ld+json") && /LocalBusiness|AutoDealer|Organization/i.test(html), points: 5, evidence: "Looks for JSON-LD LocalBusiness/AutoDealer/Organization markup." },
-    { key: "title_h1", label: "Title/H1 clarity", passed: `${title} ${h1}`.toLowerCase().includes(city) && (!businessTypeWords || `${title} ${h1}`.toLowerCase().includes(businessTypeWords.split(" ")[0])), points: 3, evidence: `Title/H1: ${`${title} ${h1}`.trim() || "missing"}` },
-    { key: "nap", label: "Footer NAP consistency", passed: /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(visibleText) && lower.includes(city), points: 2, evidence: "Checks for phone number plus city mention." },
-    { key: "hero_contact", label: "Hero contact accessibility", passed: /tel:|contact|book|form|call/i.test(html), points: 3, evidence: "Checks for phone/contact/form CTA." },
+    { key: "schema", label: isProductBrand ? "Product/brand schema present" : "Local Business Schema present", passed: lower.includes("application/ld+json") && (isProductBrand ? /Product|Offer|Review|Organization|Brand/i.test(html) : /LocalBusiness|Dentist|MedicalBusiness|AutoDealer|ProfessionalService|Organization/i.test(html)), points: 5, evidence: `Looks for JSON-LD ${schemaTypes} markup.` },
+    { key: "title_h1", label: "Title/H1 clarity", passed: isProductBrand ? (!businessTypeWords || `${title} ${h1}`.toLowerCase().includes(businessTypeWords.split(" ")[0]) || /natural|skin|aloe|wellness|beauty/i.test(`${title} ${h1}`)) : `${title} ${h1}`.toLowerCase().includes(city) && (!businessTypeWords || `${title} ${h1}`.toLowerCase().includes(businessTypeWords.split(" ")[0])), points: 3, evidence: `Title/H1: ${`${title} ${h1}`.trim() || "missing"}` },
+    { key: "nap", label: isProductBrand ? "Brand contact and support clarity" : "Footer NAP consistency", passed: isProductBrand ? /contact|support|shipping|returns|faq|email/i.test(visibleText) : /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(visibleText) && lower.includes(city), points: 2, evidence: isProductBrand ? "Checks for contact, support, shipping, returns, or FAQ clarity." : "Checks for phone number plus city mention." },
+    { key: "hero_contact", label: isProductBrand ? "Purchase/contact accessibility" : "Hero contact accessibility", passed: isProductBrand ? /add to cart|shop|buy|contact|subscribe|checkout/i.test(html) : /tel:|contact|book|form|call/i.test(html), points: 3, evidence: isProductBrand ? "Checks for visible shopping or contact CTAs." : "Checks for phone/contact/form CTA." },
     { key: "content_depth", label: "Content depth", passed: wordCount >= 500, points: 3, evidence: `${wordCount} visible words detected.` },
   ];
 

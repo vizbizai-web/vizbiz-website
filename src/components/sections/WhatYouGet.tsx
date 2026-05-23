@@ -27,7 +27,7 @@ export default function WhatYouGet() {
     {
       icon: Users,
       title: "Competitor Benchmarking",
-      description: "Head-to-head comparison against the top 5 dealerships competing for your customers. See their scores, their gaps, and exactly how to beat them.",
+      description: "Head-to-head comparison against the local competitors competing for your customers. See their scores, their gaps, and exactly how to beat them.",
     },
     {
       icon: Star,

@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
+import VizBizLogo from "@/components/VizBizLogo";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     services: [
-      { label: "AVI Audit", href: "#pricing" },
-      { label: "Implementation", href: "#pricing" },
-      { label: "Monthly Monitoring", href: "#pricing" },
-      { label: "Full Management", href: "#pricing" },
+      { label: "$88 Full Report + Fix", href: "#pricing" },
+      { label: "$188 Monthly Growth Plan", href: "#pricing" },
     ],
     company: [
       { label: "How It Works", href: "#how-it-works" },
@@ -31,14 +30,9 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
-              <span className="font-bold text-2xl text-white">VizBiz.ai</span>
-            </Link>
+            <VizBizLogo variant="dark" size="md" className="mb-6" />
             <p className="text-gray-400 mb-6 max-w-sm">
-              AI Visibility Intelligence for car dealerships. We help you become 
+              AI Visibility Intelligence for local businesses. We help you become 
               the answer AI systems recommend.
             </p>
             
@@ -48,13 +42,13 @@ export default function Footer() {
                 <Mail className="w-5 h-5" />
                 hello@vizbiz.ai
               </a>
-              <a href="tel:+19055550123" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+              <a href="tel:+14168902469" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
                 <Phone className="w-5 h-5" />
-                (905) 555-0123
+                (416) 890-2469
               </a>
               <div className="flex items-start gap-3 text-gray-400">
                 <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                <span>Serving Oakville, Mississauga,<br />Burlington & Hamilton</span>
+                <span>Helping local businesses win visibility in their city, town, ZIP code, or postal code — worldwide.</span>
               </div>
             </div>
           </div>
@@ -117,7 +111,7 @@ export default function Footer() {
             {currentYear} VizBiz.ai. All rights reserved.
           </p>
           <p className="text-gray-500 text-sm">
-            Serving car dealerships in the Greater Toronto Area
+            Helping local businesses win visibility worldwide
           </p>
         </div>
       </div>

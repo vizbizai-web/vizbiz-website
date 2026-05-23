@@ -69,11 +69,11 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 -- Seed data: Initial missions
 INSERT OR IGNORE INTO missions (id, title, description, status, priority, assignee, metadata) VALUES
-('mission-001', 'Launch AI Visibility Audit Service', 'Complete end-to-end audit service with intake → analysis → report delivery', 'in_progress', 'critical', 'vlad', '{"target_date": "2026-03-15", "progress": 65}'),
-('mission-002', 'VizBiz.ai SEO Dominance', 'Rank #1 for "AI visibility audit" and related keywords', 'planning', 'high', 'vlad', '{"target_date": "2026-04-01", "progress": 30}'),
-('mission-003', 'Client Portal v1.0', 'Build and deploy client portal with dashboard, reports, and action items', 'in_progress', 'critical', 'architect', '{"target_date": "2026-02-28", "progress": 80}'),
-('mission-004', 'Auto Transport Brokerage MVP', 'Build intake system for car transport brokerage service', 'backlog', 'medium', 'vlad', '{"target_date": "2026-04-15", "progress": 0}'),
-('mission-005', 'Content Engine Automation', 'Automated content creation pipeline with AI agents', 'review', 'high', 'copywriter', '{"target_date": "2026-02-20", "progress": 90}');
+('mission-001', 'Launch Free AVI Mini-Report Funnel', 'Keep intake → instant score preview → emailed mini report → expanded report running cleanly', 'in_progress', 'critical', 'alex', '{"target_date": "2026-05-10", "progress": 80}'),
+('mission-002', 'Wire Stripe + Resend Revenue Plumbing', 'Verify payment links, report-page CTA redirects, conversion tracking, and mini-report email delivery', 'in_progress', 'critical', 'alex', '{"target_date": "2026-05-11", "progress": 55}'),
+('mission-003', 'Publish VizBiz.ai Landing Page', 'Merge the updated premium landing page into production vizbiz.ai without breaking Stripe or lead capture', 'planning', 'high', 'alex', '{"target_date": "2026-05-12", "progress": 45}'),
+('mission-004', 'Build AI Visibility Content Engine', 'Turn X/social research, AI SEO trends, and niche teardowns into posts that drive free mini-report submissions', 'planning', 'high', 'alex', '{"target_date": "2026-05-15", "progress": 25}'),
+('mission-005', 'Improve Mission Control Mobile Cockpit', 'Make lead review, follow-ups, tasks, content ideas, and integrations easy to run from a phone', 'review', 'medium', 'alex', '{"target_date": "2026-05-16", "progress": 70}');
 
 -- Seed data: Schedule jobs
 INSERT OR IGNORE INTO schedules (id, name, description, cron_expression, status, metadata) VALUES
@@ -86,15 +86,15 @@ INSERT OR IGNORE INTO schedules (id, name, description, cron_expression, status,
 -- Seed data: Recent agent logs
 INSERT OR IGNORE INTO agent_logs (agent_name, action, status, message, created_at) VALUES
 ('architect', 'completed_task', 'success', 'Built Mission Control dashboard Phase 1', strftime('%s', 'now') - 3600),
-('vlad', 'deployed', 'success', 'Client portal UI components integrated', strftime('%s', 'now') - 7200),
-('copywriter', 'published', 'success', 'Published "AI Visibility for Dealerships" article', strftime('%s', 'now') - 86400),
+('alex', 'deployed', 'success', 'Updated VizBiz landing page and Mission Control cockpit', strftime('%s', 'now') - 7200),
+('content', 'planned', 'success', 'Queued AI visibility teardown posts for niche lead magnets', strftime('%s', 'now') - 86400),
 ('researcher', 'analysis', 'warning', 'Competitor AVI scores rising - need strategy adjustment', strftime('%s', 'now') - 172800);
 
 -- Seed data: Current alerts
 INSERT OR IGNORE INTO alerts (type, title, message, source, created_at) VALUES
-('critical', 'Mission Due Soon', 'Client Portal v1.0 due in 3 days (Feb 28)', 'system', strftime('%s', 'now') - 3600),
+('warning', 'Revenue Plumbing Needed', 'Connect Stripe and Resend before production launch', 'system', strftime('%s', 'now') - 3600),
 ('warning', 'Schedule Job Paused', 'Content Publishing Queue is paused - manual review needed', 'cron-004', strftime('%s', 'now') - 7200),
-('info', 'New Agent Joined', 'ARCHITECT agent deployed for Mission Control build', 'system', strftime('%s', 'now') - 10800);
+('info', 'Founder Cockpit Updated', 'Mission Control now centers on leads, reports, content, and revenue', 'system', strftime('%s', 'now') - 10800);
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_missions_status ON missions(status);

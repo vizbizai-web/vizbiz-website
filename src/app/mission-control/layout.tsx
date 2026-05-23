@@ -16,14 +16,12 @@ export default function MissionControlLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-slate-200">
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 ml-64 min-h-screen">
-          <div className="p-8 max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
+      <Sidebar />
+      <main className="min-h-screen lg:ml-72">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

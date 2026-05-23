@@ -1,150 +1,98 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ArrowRight, Sparkles, Shield } from "lucide-react";
+import { Check, ArrowRight, Sparkles } from "lucide-react";
 
 export default function Pricing() {
   const plans = [
     {
-      name: "AVI Audit Only",
-      price: "$1,500-2,500",
-      description: "Complete AI visibility assessment",
+      name: "One-Time Full Report + Fix",
+      price: "$88",
+      period: "USD",
+      description: "A one-time local AI visibility report with the exact fixes your site/profile can use next.",
       features: [
-        "Complete AI visibility assessment",
-        "AVI Score with competitor benchmarking",
-        "20 AI query test results",
-        "Priority action roadmap",
-        "1-hour strategy call",
+        "Full local AI visibility report expanded from the free preview",
+        "Two nearby competitor recommendation gap analysis",
+        "Prompt evidence, answer excerpts, and citation/source notes where available",
+        "Website, schema, GBP, reviews, and machine-readiness audit",
+        "Prioritized fix list for the signals most likely to block AI recommendations",
       ],
-      cta: "Get Started",
+      cta: "Get the $88 Full Report + Fix",
       popular: false,
     },
     {
-      name: "Audit + Implementation",
-      price: "$3,500-5,000",
-      description: "We implement the quick wins for you",
+      name: "Monthly Full Report Growth Plan",
+      price: "$188",
+      period: "USD / month",
+      description: "Monthly reporting, local competitor movement, and ongoing action planning so your AI visibility keeps improving.",
       features: [
-        "Everything in Audit Only",
-        "We implement the quick wins for you",
-        "Google Business Profile optimization",
-        "Schema markup installation",
-        "Review response templates",
-        "30-day implementation support",
+        "Everything in the one-time full report",
+        "Monthly AI visibility score refresh",
+        "Nearby competitor movement alerts",
+        "New buyer-question testing and fresh gap checks",
+        "Updated monthly action plan for website, reviews, schema, and local trust signals",
       ],
-      cta: "Most Popular",
+      cta: "Start the $188 Monthly Growth Plan",
       popular: true,
-    },
-    {
-      name: "Monthly Monitoring",
-      price: "$750-1,500",
-      period: "/month",
-      description: "Ongoing tracking and optimization",
-      features: [
-        "Monthly AVI Score updates",
-        "Competitor movement alerts",
-        "Ongoing optimization",
-        "Quarterly strategy reviews",
-        "Priority support",
-      ],
-      cta: "Subscribe",
-      popular: false,
-    },
-    {
-      name: "Full AI Visibility Management",
-      price: "$2,000-3,500",
-      period: "/month",
-      description: "Complete AI visibility management",
-      features: [
-        "Everything in Monthly Monitoring",
-        "We handle all ongoing optimization",
-        "Content updates and schema maintenance",
-        "Review monitoring and response",
-        "Monthly performance reports",
-        "Guaranteed 10+ point AVI Score improvement in 90 days or month 4 is free",
-      ],
-      cta: "Get Full Management",
-      popular: false,
-      guarantee: true,
     },
   ];
 
   return (
-    <section id="pricing" className="py-20 lg:py-32 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Investment
-          </h2>
-          <p className="text-lg text-gray-600">
-            Transparent pricing. No hidden fees. Know exactly what you&apos;re paying for upfront.
+    <section id="pricing" className="bg-gradient-to-br from-[#FAF7F2] to-[#F2EDE4] py-20 text-[#0F172A] lg:py-32">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-16 max-w-3xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">Paid next steps</p>
+          <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">Two simple ways to turn the free preview into action.</h2>
+          <p className="mt-5 text-lg leading-8 text-slate-700">
+            Start with the free local score. Then choose the one-time $88 full report and fix list, or the $188/month growth plan when you want monthly tracking and fresh competitor movement updates.
           </p>
         </div>
-        
-        {/* Pricing Grid */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative bg-white rounded-2xl p-8 border ${
+              className={`relative rounded-[2rem] border bg-white/80 p-8 shadow-sm ${
                 plan.popular
-                  ? "border-blue-500 ring-2 ring-blue-500/20 shadow-xl"
-                  : "border-gray-200 shadow-sm"
+                  ? "border-[#22D3EE] ring-2 ring-cyan-300/20 shadow-xl"
+                  : "border-[#0F172A]/10"
               }`}
             >
-              {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                    <Sparkles className="w-4 h-4" />
-                    Most Popular
+                  <div className="inline-flex items-center gap-1 rounded-full bg-[#020617] px-4 py-1.5 text-sm font-semibold text-cyan-100">
+                    <Sparkles className="h-4 w-4" />
+                    Best for local growth
                   </div>
                 </div>
               )}
-              
-              {/* Guarantee Badge */}
-              {plan.guarantee && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-full">
-                    <Shield className="w-4 h-4" />
-                    Guaranteed Results
-                  </div>
-                </div>
-              )}
-              
-              {/* Plan Header */}
+
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600 text-sm">{plan.description}</p>
+                <h3 className="text-xl font-bold text-[#0F172A]">{plan.name}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{plan.description}</p>
               </div>
-              
-              {/* Price */}
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                {plan.period && (
-                  <span className="text-gray-500">{plan.period}</span>
-                )}
+
+              <div className="mb-6 flex items-end gap-2">
+                <span className="text-5xl font-bold text-[#0F172A]">{plan.price}</span>
+                <span className="pb-2 text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">{plan.period}</span>
               </div>
-              
-              {/* Features */}
-              <ul className="space-y-3 mb-8">
+
+              <ul className="mb-8 space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                      <Check className="w-3 h-3 text-blue-600" />
+                    <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100">
+                      <Check className="h-3 w-3 text-[#06B6D4]" />
                     </div>
-                    <span className="text-gray-600 text-sm">{feature}</span>
+                    <span className="text-sm text-slate-700">{feature}</span>
                   </li>
                 ))}
               </ul>
-              
-              {/* CTA */}
+
               <Link
-                href="#contact"
-                className={`block w-full text-center py-3 px-6 rounded-xl font-semibold transition-colors ${
+                href="#free-mini-report"
+                className={`block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors ${
                   plan.popular
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                    ? "bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] text-[#020617]"
+                    : "bg-[#0F172A] text-white hover:bg-[#020617]"
                 }`}
               >
                 {plan.cta}
@@ -152,22 +100,14 @@ export default function Pricing() {
             </div>
           ))}
         </div>
-        
-        {/* Bottom CTA */}
+
         <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
-            Not sure which plan is right for you?
-          </p>
-          <Link
-            href="#contact"
-            className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700"
-          >
-            Schedule a Free Assessment
-            <ArrowRight className="w-4 h-4" />
+          <p className="mb-4 text-slate-600">Not sure which option fits?</p>
+          <Link href="#free-mini-report" className="inline-flex items-center gap-2 font-semibold text-[#06B6D4] hover:text-[#0891B2]">
+            Run my free local AI visibility report
+            <ArrowRight className="h-4 w-4" />
           </Link>
-          <p className="text-sm text-gray-500 mt-2">
-            No commitment required. See your score before you decide anything.
-          </p>
+          <p className="mt-2 text-sm text-slate-500">No commitment required. See your score before you decide anything.</p>
         </div>
       </div>
     </section>

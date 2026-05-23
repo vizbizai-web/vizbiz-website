@@ -8,8 +8,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip auth for login page and API routes
-  if (request.nextUrl.pathname === '/mission-control/login' ||
+  // Skip auth for login page (with or without trailing slash) and API routes
+  if (request.nextUrl.pathname.startsWith('/mission-control/login') ||
       request.nextUrl.pathname.startsWith('/mission-control/api')) {
     return NextResponse.next();
   }

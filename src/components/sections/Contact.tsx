@@ -7,7 +7,7 @@ export default function Contact() {
   const [formState, setFormState] = useState({
     name: "",
     email: "",
-    dealership: "",
+    business: "",
     phone: "",
     message: "",
   });
@@ -100,25 +100,25 @@ export default function Contact() {
                       value={formState.email}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="john@dealership.com"
+                      placeholder="owner@example.com"
                     />
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="dealership" className="block text-sm font-medium text-gray-700 mb-2">
-                      Dealership Name *
+                    <label htmlFor="business" className="block text-sm font-medium text-gray-700 mb-2">
+                      Business Name *
                     </label>
                     <input
                       type="text"
-                      id="dealership"
-                      name="dealership"
+                      id="business"
+                      name="business"
                       required
-                      value={formState.dealership}
+                      value={formState.business}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="Oakville Honda"
+                      placeholder="Lakeshore Family Dentistry"
                     />
                   </div>
                   <div>
@@ -132,7 +132,7 @@ export default function Contact() {
                       value={formState.phone}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="(905) 555-0123"
+                      placeholder="(416) 890-2469"
                     />
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export default function Contact() {
                     value={formState.message}
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                    placeholder="Tell us about your dealership and any specific concerns..."
+                    placeholder="Tell us about your business and any specific AI/search visibility concerns..."
                   />
                 </div>
 
@@ -209,7 +209,7 @@ export default function Contact() {
                 </a>
 
                 <a
-                  href="tel:+19055550123"
+                  href="tel:+14168902469"
                   className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 transition-colors"
                 >
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -217,7 +217,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Call Us</p>
-                    <p className="text-sm text-gray-600">(905) 555-0123</p>
+                    <p className="text-sm text-gray-600">(416) 890-2469</p>
                   </div>
                 </a>
 
@@ -239,7 +239,7 @@ export default function Contact() {
               <div>
                 <p className="font-semibold text-green-900">We respond within 24 hours</p>
                 <p className="text-sm text-green-700">
-                  Usually much faster. We know you&apos;re busy running a dealership.
+                  Usually much faster. We know you&apos;re busy running the business.
                 </p>
               </div>
             </div>

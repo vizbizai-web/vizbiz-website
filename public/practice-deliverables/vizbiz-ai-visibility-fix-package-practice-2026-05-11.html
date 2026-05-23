@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>VizBiz.ai Visibility Fix Package</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">VizBiz.ai Visibility Fix Package</h1>
+</header>
+<h1 id="vizbiz.ai-practice-ai-visibility-fix-package">VizBiz.ai —
+Practice AI Visibility Fix Package</h1>
+<p><strong>Client:</strong> VizBiz.ai<br />
+<strong>Prepared:</strong> May 11, 2026<br />
+<strong>Package type:</strong> One-Time AI Visibility Fix Package +
+Monthly Growth Plan preview<br />
+<strong>Audit scope:</strong> Public website crawl signals, homepage
+metadata, sitemap, robots.txt, llms.txt, visible page topics, and
+implementation-readiness review.</p>
+<blockquote>
+<p>This is a practice version of the paid client deliverable. The goal
+is to model what a real customer should receive after buying: a
+prioritized fix plan, copy-paste implementation assets, ownership, and
+verification criteria.</p>
+</blockquote>
+<hr />
+<h2 id="executive-summary">1. Executive summary</h2>
+<p>VizBiz.ai already has strong foundations for AI visibility: clear
+positioning, strong homepage metadata, explicit AI crawler permissions
+in <code>robots.txt</code>, an <code>llms.txt</code> file, a live
+sitemap, and multiple educational pages around AI visibility.</p>
+<p>The biggest issue is <strong>positioning drift</strong>. The homepage
+now sells to <strong>local businesses broadly</strong>, while the
+sitemap, blog, <code>llms.txt</code>, about page, and many landing pages
+still heavily position VizBiz as a tool for <strong>car
+dealerships</strong>. This creates a mixed entity signal for Google and
+AI systems.</p>
+<p>For AI visibility, that matters because answer engines need a simple,
+repeated, consistent explanation of:</p>
+<ul>
+<li>who VizBiz serves</li>
+<li>what VizBiz does</li>
+<li>which categories it specializes in</li>
+<li>what proof exists</li>
+<li>which page is the canonical answer for each topic</li>
+</ul>
+<p>Right now, the site tells two stories:</p>
+<ol type="1">
+<li><strong>Current intended story:</strong> AI visibility intelligence
+for local businesses.</li>
+<li><strong>Legacy story:</strong> AI visibility audits/tools for car
+dealerships.</li>
+</ol>
+<p>The highest-impact fix is to make the site entity consistent: either
+fully commit to local businesses broadly, or clearly frame dealerships
+as one vertical example/case-study cluster rather than the main business
+category.</p>
+<hr />
+<h2 id="current-visibility-snapshot">2. Current visibility snapshot</h2>
+<h3 id="strong-signals-found">Strong signals found</h3>
+<ul>
+<li>Homepage returns <code>200</code>.</li>
+<li>Homepage title is strong and current:
+<ul>
+<li><code>VizBiz — AI Visibility Intelligence for Local Businesses</code></li>
+</ul></li>
+<li>Homepage meta description clearly references ChatGPT, Google AI
+Overviews, Gemini, and Perplexity.</li>
+<li>Canonical tag is present on homepage:
+<ul>
+<li><code>https://vizbiz.ai/</code></li>
+</ul></li>
+<li><code>robots.txt</code> is accessible and explicitly allows major
+AI/search crawlers:
+<ul>
+<li>GPTBot</li>
+<li>ChatGPT-User</li>
+<li>ClaudeBot</li>
+<li>Google-Extended</li>
+<li>PerplexityBot</li>
+<li>Googlebot</li>
+<li>Bingbot</li>
+</ul></li>
+<li>Sitemap exists:
+<ul>
+<li><code>https://vizbiz.ai/sitemap.xml</code></li>
+</ul></li>
+<li><code>llms.txt</code> exists:
+<ul>
+<li><code>https://vizbiz.ai/llms.txt</code></li>
+</ul></li>
+<li>Homepage has strong AI-search topical language and a clear free
+mini-report CTA.</li>
+</ul>
+<h3 id="visibility-blockers-found">Visibility blockers found</h3>
+<ul>
+<li>Sitemap still contains many dealership-first URLs.</li>
+<li><code>llms.txt</code> still defines VizBiz as helping <strong>car
+dealerships</strong>, not local businesses broadly.</li>
+<li>Blog page meta description says: “Practical guides and insights on
+how car dealerships can improve…”</li>
+<li>About page title says:
+<code>About VizBiz | AI Visibility Intelligence for Car Dealerships</code>.</li>
+<li>Homepage crawl detected multiple H1-like outputs:
+<ul>
+<li><code>VizBiz — AI Visibility Reports for Local Businesses</code></li>
+<li><code>Be the business</code></li>
+<li><code>AI recommends</code></li>
+</ul></li>
+<li>Public benchmark page H1 appears malformed:
+<ul>
+<li><code>2026 AI Visibility Benchmark Report for Car Local businesses</code></li>
+</ul></li>
+<li>Some links referenced in <code>llms.txt</code> appear inconsistent
+with sitemap paths, e.g. <code>/pricing/</code>, <code>/intake/</code>,
+and several resource URLs not present in the current sitemap.</li>
+<li>Static HTML inspection did not reliably expose homepage JSON-LD
+schema blocks. Browser-rendered schema validation should be run before
+finalizing this finding.</li>
+</ul>
+<hr />
+<h2 id="priority-scorecard">3. Priority scorecard</h2>
+<h3 id="overall-ai-visibility-foundation-72-100">Overall AI visibility
+foundation: <strong>72 / 100</strong></h3>
+<p>Breakdown:</p>
+<ul>
+<li><p><strong>Technical crawlability:</strong> 90 / 100<br />
+Robots, sitemap, canonical, and crawler access are strong.</p></li>
+<li><p><strong>Entity consistency:</strong> 45 / 100<br />
+Local-business positioning conflicts with legacy dealership
+content.</p></li>
+<li><p><strong>AI-citable page structure:</strong> 70 / 100<br />
+The site explains AI visibility well, but the strongest answer-ready
+pages are still vertical-specific.</p></li>
+<li><p><strong>Trust/proof clarity:</strong> 68 / 100<br />
+Strong benchmark claims exist, but they need clearer source framing and
+broader-local-business alignment.</p></li>
+<li><p><strong>Implementation readiness:</strong> 80 / 100<br />
+Fixes are mostly content, metadata, sitemap, and llms.txt changes —
+high-impact and practical.</p></li>
+</ul>
+<hr />
+<h2 id="top-10-prioritized-fixes">4. Top 10 prioritized fixes</h2>
+<h3 id="fix-1-resolve-the-positioning-conflict-across-the-site">Fix 1 —
+Resolve the positioning conflict across the site</h3>
+<p><strong>Priority:</strong> Critical<br />
+<strong>Impact:</strong> High<br />
+<strong>Difficulty:</strong> Medium<br />
+<strong>Owner:</strong> VizBiz/content<br />
+<strong>Status:</strong> Ready for implementation</p>
+<p><strong>Issue:</strong><br />
+Homepage says VizBiz serves local businesses broadly. Many other public
+assets still say VizBiz is for car dealerships.</p>
+<p><strong>Why it matters:</strong><br />
+AI systems build entity understanding from repeated statements across
+pages. Mixed vertical language can weaken the site’s ability to be cited
+for broad “AI visibility for local businesses” queries.</p>
+<p><strong>Recommended decision:</strong><br />
+Position VizBiz as:</p>
+<blockquote>
+<p>AI visibility intelligence for local businesses, starting with
+high-trust local categories like dentists, med spas, dealerships,
+lawyers, and home services.</p>
+</blockquote>
+<p>This lets existing dealership content remain useful while no longer
+defining the whole company.</p>
+<p><strong>Implementation:</strong></p>
+<ul>
+<li>Update <code>llms.txt</code> company description.</li>
+<li>Update About page title/H1/body.</li>
+<li>Update Blog page meta description.</li>
+<li>Update dealership pages so they are clearly labelled as one vertical
+resource cluster.</li>
+<li>Add local-business category pages for dentists first.</li>
+</ul>
+<p><strong>Verification:</strong><br />
+Search the rendered site and source for <code>dealership</code>,
+<code>car dealership</code>, <code>automotive retailer</code>, and
+confirm those terms only appear on dealership-specific pages.</p>
+<hr />
+<h3 id="fix-2-rewrite-llms.txt-to-match-current-positioning">Fix 2 —
+Rewrite <code>llms.txt</code> to match current positioning</h3>
+<p><strong>Priority:</strong> Critical<br />
+<strong>Impact:</strong> High<br />
+<strong>Difficulty:</strong> Easy<br />
+<strong>Owner:</strong> VizBiz/developer<br />
+<strong>Status:</strong> Copy ready</p>
+<p><strong>Current issue:</strong><br />
+<code>llms.txt</code> currently begins:</p>
+<pre class="text"><code>VizBiz is an AI visibility intelligence platform that helps car dealerships measure and improve how they appear in AI-powered search results...</code></pre>
+<p><strong>Recommended replacement:</strong></p>
+<pre class="text"><code># VizBiz.ai
+&gt; VizBiz.ai is an AI visibility intelligence platform for local businesses. It helps service-area and location-based businesses measure, compare, and improve how they appear in AI-powered search results such as ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity.
+
+## What VizBiz does
+VizBiz audits a business website, local trust signals, competitor visibility, schema, reviews, and AI-citable content to show whether AI systems can confidently understand and recommend that business.
+
+## Who VizBiz helps
+VizBiz serves local businesses where trust, location, reviews, and service clarity affect customer choice. Example categories include dentists, med spas, lawyers, home services, clinics, dealerships, and other local service providers.
+
+## Core offers
+- Free AI visibility mini report
+- One-time AI Visibility Fix Package
+- Monthly AI Visibility Growth Plan
+
+## Main pages
+- [Homepage](https://vizbiz.ai/): AI visibility intelligence for local businesses.
+- [Free mini report](https://vizbiz.ai/#free-mini-report): Submit a business and two competitors for a free AI visibility snapshot.
+- [2026 AI Visibility Benchmark Report](https://vizbiz.ai/ai-visibility-benchmark-report-2026/): Original research on how local businesses appear in AI answers.
+- [Blog](https://vizbiz.ai/blog/): Practical guides on AI visibility, local SEO, schema, trust signals, and answer-engine optimization.
+- [About](https://vizbiz.ai/about/): What VizBiz does and why AI visibility matters for local businesses.
+- [Book a call](https://vizbiz.ai/book-call/): Schedule a review call.
+
+## Vertical resources
+VizBiz may publish category-specific resources for industries such as dealerships, dental practices, med spas, legal services, and home services. These pages are examples of applying AI visibility principles to specific local markets.
+
+## Contact
+- Website: https://vizbiz.ai
+- Email: hello@vizbiz.ai</code></pre>
+<p><strong>Verification:</strong><br />
+Visit <code>https://vizbiz.ai/llms.txt</code> after deployment and
+confirm the first paragraph says “local businesses,” not “car
+dealerships.”</p>
+<hr />
+<h3 id="fix-3-clean-up-sitemap-vertical-drift">Fix 3 — Clean up sitemap
+vertical drift</h3>
+<p><strong>Priority:</strong> High<br />
+<strong>Impact:</strong> High<br />
+<strong>Difficulty:</strong> Medium<br />
+<strong>Owner:</strong> VizBiz/developer<br />
+<strong>Status:</strong> Needs decision</p>
+<p><strong>Issue:</strong><br />
+Current sitemap includes a full dealership topical cluster:</p>
+<ul>
+<li><code>/ai-visibility-for-car-dealerships/</code></li>
+<li><code>/ai-visibility-audit-for-car-dealerships/</code></li>
+<li><code>/how-dealerships-show-up-in-ai-search/</code></li>
+<li><code>/sample-ai-visibility-report-for-car-dealerships/</code></li>
+<li><code>/faq-ai-visibility-for-car-dealerships/</code></li>
+<li><code>/cheap-used-car-near-me-ai-visibility-for-dealerships/</code></li>
+<li>multiple dealership-first blog posts</li>
+</ul>
+<p><strong>Recommendation:</strong><br />
+Do not delete them blindly. Instead:</p>
+<ol type="1">
+<li>Keep the best dealership pages as a vertical cluster.</li>
+<li>Add a parent page:
+<ul>
+<li><code>/industries/car-dealerships/</code></li>
+</ul></li>
+<li>Update titles to make them vertical examples, not the whole company
+positioning.</li>
+<li>Add equivalent first-priority dental cluster:
+<ul>
+<li><code>/industries/dentists/</code></li>
+<li><code>/ai-visibility-for-dentists/</code></li>
+<li><code>/sample-ai-visibility-report-for-dentists/</code></li>
+<li><code>/blog/how-dentists-show-up-in-chatgpt/</code></li>
+</ul></li>
+<li>Update sitemap priorities so homepage, benchmark, free mini report,
+and broad local-business pages are canonical priority pages.</li>
+</ol>
+<p><strong>Verification:</strong><br />
+Sitemap should clearly show broad pages first, then vertical clusters
+underneath.</p>
+<hr />
+<h3 id="fix-4-fix-homepage-h1-structure">Fix 4 — Fix homepage H1
+structure</h3>
+<p><strong>Priority:</strong> High<br />
+<strong>Impact:</strong> Medium<br />
+<strong>Difficulty:</strong> Easy<br />
+<strong>Owner:</strong> VizBiz/developer<br />
+<strong>Status:</strong> Ready</p>
+<p><strong>Issue:</strong><br />
+Homepage inspection surfaced multiple H1-like outputs:</p>
+<ul>
+<li><code>VizBiz — AI Visibility Reports for Local Businesses</code></li>
+<li><code>Be the business</code></li>
+<li><code>AI recommends</code></li>
+</ul>
+<p>This may be caused by one screen-reader-only H1 plus visible H1
+fragments. The final rendered DOM should be checked, but the safer
+pattern is one clear H1.</p>
+<p><strong>Recommended H1:</strong></p>
+<pre class="text"><code>Be the local business AI recommends</code></pre>
+<p><strong>Recommended supporting screen-reader/SEO phrase:</strong></p>
+<pre class="text"><code>VizBiz.ai helps local businesses measure and improve visibility in ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity.</code></pre>
+<p><strong>Verification:</strong><br />
+Rendered DOM should contain one primary <code>&lt;h1&gt;</code> element
+on the homepage.</p>
+<hr />
+<h3 id="fix-5-repair-malformed-benchmark-h1">Fix 5 — Repair malformed
+benchmark H1</h3>
+<p><strong>Priority:</strong> High<br />
+<strong>Impact:</strong> Medium<br />
+<strong>Difficulty:</strong> Easy<br />
+<strong>Owner:</strong> VizBiz/content or developer<br />
+<strong>Status:</strong> Ready</p>
+<p><strong>Current H1 detected:</strong></p>
+<pre class="text"><code>2026 AI Visibility Benchmark Report for Car Local businesses</code></pre>
+<p><strong>Recommended H1:</strong></p>
+<pre class="text"><code>2026 AI Visibility Benchmark Report for Local Businesses</code></pre>
+<p><strong>Why it matters:</strong><br />
+This is likely one of the strongest proof pages. A malformed H1 weakens
+trust and can signal sloppy content to both humans and crawlers.</p>
+<p><strong>Verification:</strong><br />
+Visit <code>/ai-visibility-benchmark-report-2026/</code> and confirm the
+H1 no longer contains “Car Local businesses.”</p>
+<hr />
+<h3
+id="fix-6-add-a-canonical-ai-visibility-for-local-businesses-explainer-page">Fix
+6 — Add a canonical “AI visibility for local businesses” explainer
+page</h3>
+<p><strong>Priority:</strong> High<br />
+<strong>Impact:</strong> High<br />
+<strong>Difficulty:</strong> Medium<br />
+<strong>Owner:</strong> VizBiz/content<br />
+<strong>Status:</strong> Brief ready</p>
+<p><strong>Recommended URL:</strong></p>
+<pre class="text"><code>/ai-visibility-for-local-businesses/</code></pre>
+<p><strong>Purpose:</strong><br />
+Become the canonical page for broad category queries like:</p>
+<ul>
+<li>what is AI visibility for local businesses</li>
+<li>how local businesses show up in ChatGPT</li>
+<li>AI visibility audit for local businesses</li>
+<li>local SEO vs AI visibility</li>
+</ul>
+<p><strong>Recommended H1:</strong></p>
+<pre class="text"><code>AI Visibility for Local Businesses</code></pre>
+<p><strong>Required sections:</strong></p>
+<ul>
+<li>What AI visibility means</li>
+<li>Why local businesses are often missed by AI systems</li>
+<li>The 6 signals AI systems need to trust a local business</li>
+<li>How VizBiz measures visibility</li>
+<li>Example: dentist vs competitor comparison</li>
+<li>What to fix first</li>
+<li>CTA: Run the free mini report</li>
+</ul>
+<p><strong>AI-citable answer block:</strong></p>
+<pre class="text"><code>AI visibility for local businesses is the ability of search and answer engines such as ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity to understand, trust, and recommend a specific local business when a customer asks for providers nearby. It depends on website clarity, local SEO signals, reviews, schema markup, contact consistency, service pages, and competitor strength.</code></pre>
+<p><strong>Verification:</strong><br />
+Page is in sitemap, linked from homepage, linked from blog, and
+referenced in <code>llms.txt</code>.</p>
+<hr />
+<h3
+id="fix-7-addconfirm-organization-website-softwareapplication-schema-on-homepage">Fix
+7 — Add/confirm Organization + WebSite + SoftwareApplication schema on
+homepage</h3>
+<p><strong>Priority:</strong> Medium<br />
+<strong>Impact:</strong> Medium<br />
+<strong>Difficulty:</strong> Easy/Medium<br />
+<strong>Owner:</strong> VizBiz/developer<br />
+<strong>Status:</strong> Needs browser validation</p>
+<p><strong>Issue:</strong><br />
+Static HTML inspection did not expose homepage JSON-LD blocks, though
+Next.js can sometimes serialize schema in ways that require rendered DOM
+validation.</p>
+<p><strong>Recommended schema types:</strong></p>
+<ul>
+<li><code>Organization</code></li>
+<li><code>WebSite</code></li>
+<li><code>SoftwareApplication</code> or <code>Service</code></li>
+<li><code>FAQPage</code> if homepage FAQ is present</li>
+</ul>
+<p><strong>Recommended Organization JSON-LD skeleton:</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;VizBiz.ai&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://vizbiz.ai/&quot;</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://vizbiz.ai/vizbiz-icon-256.svg&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;VizBiz.ai helps local businesses measure and improve how they appear in AI-powered search results such as ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity.&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;hello@vizbiz.ai&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[]</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Verification:</strong><br />
+Run Google Rich Results Test and inspect rendered DOM for
+<code>script[type="application/ld+json"]</code>.</p>
+<hr />
+<h3 id="fix-8-create-a-proof-and-methodology-page">Fix 8 — Create a
+“proof and methodology” page</h3>
+<p><strong>Priority:</strong> Medium<br />
+<strong>Impact:</strong> High for trust<br />
+<strong>Difficulty:</strong> Medium<br />
+<strong>Owner:</strong> VizBiz/content<br />
+<strong>Status:</strong> Brief ready</p>
+<p><strong>Recommended URL:</strong></p>
+<pre class="text"><code>/methodology/</code></pre>
+<p><strong>Purpose:</strong><br />
+Make claims more citeable and defensible.</p>
+<p><strong>Sections:</strong></p>
+<ul>
+<li>What VizBiz measures</li>
+<li>What platforms are tested</li>
+<li>How competitors are selected</li>
+<li>What “AI visibility score” means</li>
+<li>What “social proof score” means</li>
+<li>What the score does not guarantee</li>
+<li>How recommendations are prioritized</li>
+<li>How implementation is verified</li>
+</ul>
+<p><strong>Why it matters:</strong><br />
+AI systems and skeptical customers both need transparent methodology
+before trusting the product.</p>
+<hr />
+<h3 id="fix-9-update-about-page-to-broad-local-business-positioning">Fix
+9 — Update About page to broad local-business positioning</h3>
+<p><strong>Priority:</strong> Medium<br />
+<strong>Impact:</strong> Medium<br />
+<strong>Difficulty:</strong> Easy<br />
+<strong>Owner:</strong> VizBiz/content<br />
+<strong>Status:</strong> Copy ready</p>
+<p><strong>Current title detected:</strong></p>
+<pre class="text"><code>About VizBiz | AI Visibility Intelligence for Car Dealerships</code></pre>
+<p><strong>Recommended title:</strong></p>
+<pre class="text"><code>About VizBiz.ai | AI Visibility Intelligence for Local Businesses</code></pre>
+<p><strong>Recommended H1:</strong></p>
+<pre class="text"><code>Built to make local businesses visible in AI search</code></pre>
+<p><strong>Recommended intro copy:</strong></p>
+<pre class="text"><code>VizBiz.ai helps local businesses understand whether AI systems can find, trust, and recommend them when customers ask for providers nearby. We audit the signals that shape visibility across ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity — then turn those findings into practical website, profile, schema, and trust-signal fixes.</code></pre>
+<hr />
+<h3 id="fix-10-add-an-implementation-tracker-to-paid-deliverables">Fix
+10 — Add an implementation tracker to paid deliverables</h3>
+<p><strong>Priority:</strong> High for paid product<br />
+<strong>Impact:</strong> High<br />
+<strong>Difficulty:</strong> Medium<br />
+<strong>Owner:</strong> VizBiz/product<br />
+<strong>Status:</strong> Product brief ready</p>
+<p><strong>Issue:</strong><br />
+The paid product should not end with advice. It should track whether the
+advice went live.</p>
+<p><strong>Recommended tracker fields:</strong></p>
+<ul>
+<li>Task</li>
+<li>Priority</li>
+<li>Impact</li>
+<li>Owner</li>
+<li>Status</li>
+<li>Due date</li>
+<li>Implementation notes</li>
+<li>Verification method</li>
+<li>Verified date</li>
+</ul>
+<p><strong>Suggested statuses:</strong></p>
+<ul>
+<li>Ready for client approval</li>
+<li>Ready for developer</li>
+<li>Implemented by VizBiz</li>
+<li>Implemented by client</li>
+<li>Waiting on access</li>
+<li>Waiting on client</li>
+<li>Blocked</li>
+<li>Verified live</li>
+<li>Not implemented</li>
+</ul>
+<hr />
+<h2 id="copy-paste-implementation-pack">5. Copy-paste implementation
+pack</h2>
+<h3 id="homepage-metadata">Homepage metadata</h3>
+<p><strong>Current title:</strong></p>
+<pre class="text"><code>VizBiz — AI Visibility Intelligence for Local Businesses</code></pre>
+<p><strong>Keep or slightly improve:</strong></p>
+<pre class="text"><code>VizBiz.ai — AI Visibility Intelligence for Local Businesses</code></pre>
+<p><strong>Recommended meta description:</strong></p>
+<pre class="text"><code>VizBiz.ai helps local businesses measure and improve how they appear in ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity. Get a free AI visibility mini report comparing your business with two competitors.</code></pre>
+<h3 id="blog-page-metadata">Blog page metadata</h3>
+<p><strong>Current issue:</strong><br />
+Blog description is dealership-specific.</p>
+<p><strong>Recommended title:</strong></p>
+<pre class="text"><code>VizBiz Blog — AI Visibility Insights for Local Businesses</code></pre>
+<p><strong>Recommended description:</strong></p>
+<pre class="text"><code>Practical guides on AI visibility, local SEO, schema, reviews, trust signals, and answer-engine optimization for local businesses.</code></pre>
+<h3 id="about-page-metadata">About page metadata</h3>
+<p><strong>Recommended title:</strong></p>
+<pre class="text"><code>About VizBiz.ai | AI Visibility Intelligence for Local Businesses</code></pre>
+<p><strong>Recommended description:</strong></p>
+<pre class="text"><code>Learn how VizBiz.ai helps local businesses measure, compare, and improve their visibility in AI-powered search results across ChatGPT, Google AI Overviews, Gemini, Claude, and Perplexity.</code></pre>
+<h3 id="benchmark-page-fix">Benchmark page fix</h3>
+<p><strong>Recommended H1:</strong></p>
+<pre class="text"><code>2026 AI Visibility Benchmark Report for Local Businesses</code></pre>
+<p><strong>Recommended intro:</strong></p>
+<pre class="text"><code>VizBiz analyzed local-business AI visibility signals across buyer-intent prompts, competitor comparisons, and trust indicators to understand how often local providers are understood and recommended by AI systems.</code></pre>
+<hr />
+<h2 id="developer-ready-task-list">6. Developer-ready task list</h2>
+<h3 id="task-1-update-llms.txt">Task 1 — Update
+<code>llms.txt</code></h3>
+<ul>
+<li><strong>Priority:</strong> Critical</li>
+<li><strong>Owner:</strong> Developer</li>
+<li><strong>Estimated time:</strong> 20 minutes</li>
+<li><strong>Action:</strong> Replace dealership-first language with
+local-business language.</li>
+<li><strong>Verification:</strong> Visit
+<code>https://vizbiz.ai/llms.txt</code> and confirm first paragraph says
+“local businesses.”</li>
+</ul>
+<h3 id="task-2-fix-benchmark-h1">Task 2 — Fix benchmark H1</h3>
+<ul>
+<li><strong>Priority:</strong> High</li>
+<li><strong>Owner:</strong> Developer/content</li>
+<li><strong>Estimated time:</strong> 10 minutes</li>
+<li><strong>Action:</strong> Replace malformed H1.</li>
+<li><strong>Verification:</strong> Page source/rendered page shows
+<code>2026 AI Visibility Benchmark Report for Local Businesses</code>.</li>
+</ul>
+<h3 id="task-3-update-blogabout-metadata">Task 3 — Update blog/about
+metadata</h3>
+<ul>
+<li><strong>Priority:</strong> High</li>
+<li><strong>Owner:</strong> Developer/content</li>
+<li><strong>Estimated time:</strong> 30 minutes</li>
+<li><strong>Action:</strong> Replace dealership-specific metadata on
+broad site pages.</li>
+<li><strong>Verification:</strong> Crawl titles/descriptions for
+<code>/blog/</code> and <code>/about/</code>.</li>
+</ul>
+<h3 id="task-4-audit-all-dealership-terms">Task 4 — Audit all dealership
+terms</h3>
+<ul>
+<li><strong>Priority:</strong> High</li>
+<li><strong>Owner:</strong> Developer/content</li>
+<li><strong>Estimated time:</strong> 45 minutes</li>
+<li><strong>Action:</strong> Search site source for:
+<ul>
+<li><code>car dealership</code></li>
+<li><code>dealership</code></li>
+<li><code>automotive retailer</code></li>
+<li><code>cheap used car</code></li>
+</ul></li>
+<li><strong>Rule:</strong> Keep only on vertical-specific pages. Replace
+elsewhere with “local business.”</li>
+<li><strong>Verification:</strong> Search results show dealership
+language only on dealership pages.</li>
+</ul>
+<h3 id="task-5-create-ai-visibility-for-local-businesses">Task 5 —
+Create <code>/ai-visibility-for-local-businesses/</code></h3>
+<ul>
+<li><strong>Priority:</strong> High</li>
+<li><strong>Owner:</strong> Content/developer</li>
+<li><strong>Estimated time:</strong> 2–3 hours</li>
+<li><strong>Action:</strong> Build broad canonical explainer page.</li>
+<li><strong>Verification:</strong> Page is live, in sitemap, linked from
+homepage, and referenced in <code>llms.txt</code>.</li>
+</ul>
+<h3 id="task-6-validate-homepage-schema">Task 6 — Validate homepage
+schema</h3>
+<ul>
+<li><strong>Priority:</strong> Medium</li>
+<li><strong>Owner:</strong> Developer</li>
+<li><strong>Estimated time:</strong> 30 minutes</li>
+<li><strong>Action:</strong> Use browser-rendered DOM and Google Rich
+Results Test.</li>
+<li><strong>Verification:</strong> Organization/WebSite/Service or
+SoftwareApplication schema are detected without errors.</li>
+</ul>
+<hr />
+<h2 id="implementation-tracker-practice-version">7. Implementation
+tracker — practice version</h2>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 25%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>Task</th>
+<th style="text-align: right;">Priority</th>
+<th>Owner</th>
+<th>Status</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Update <code>llms.txt</code> positioning</td>
+<td style="text-align: right;">Critical</td>
+<td>Developer</td>
+<td>Ready</td>
+<td><code>/llms.txt</code> says local businesses</td>
+</tr>
+<tr>
+<td>Fix benchmark H1</td>
+<td style="text-align: right;">High</td>
+<td>Content/dev</td>
+<td>Ready</td>
+<td>H1 no longer says “Car Local businesses”</td>
+</tr>
+<tr>
+<td>Update About page title/H1</td>
+<td style="text-align: right;">High</td>
+<td>Content/dev</td>
+<td>Ready</td>
+<td>About page says local businesses</td>
+</tr>
+<tr>
+<td>Update Blog metadata</td>
+<td style="text-align: right;">High</td>
+<td>Content/dev</td>
+<td>Ready</td>
+<td>Meta description no longer says dealerships</td>
+</tr>
+<tr>
+<td>Create broad local-business explainer</td>
+<td style="text-align: right;">High</td>
+<td>Content</td>
+<td>Brief ready</td>
+<td>URL live + in sitemap</td>
+</tr>
+<tr>
+<td>Reframe dealership pages as vertical cluster</td>
+<td style="text-align: right;">Medium</td>
+<td>Content/dev</td>
+<td>Needs decision</td>
+<td>URLs grouped or internally linked as vertical resources</td>
+</tr>
+<tr>
+<td>Validate homepage schema</td>
+<td style="text-align: right;">Medium</td>
+<td>Developer</td>
+<td>Needs validation</td>
+<td>Rich Results Test passes</td>
+</tr>
+<tr>
+<td>Add methodology page</td>
+<td style="text-align: right;">Medium</td>
+<td>Content</td>
+<td>Brief ready</td>
+<td>URL live + linked from footer/report pages</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="verification-plan-after-implementation">8. Verification plan
+after implementation</h2>
+<p>After changes go live, run this verification checklist:</p>
+<ol type="1">
+<li><strong>Crawl public pages</strong>
+<ul>
+<li>Confirm titles, H1s, descriptions, canonicals.</li>
+</ul></li>
+<li><strong>Search for stale vertical copy</strong>
+<ul>
+<li><code>dealership</code></li>
+<li><code>car dealership</code></li>
+<li><code>automotive retailer</code></li>
+<li><code>cheap used car</code></li>
+</ul></li>
+<li><strong>Validate AI crawler files</strong>
+<ul>
+<li><code>robots.txt</code></li>
+<li><code>sitemap.xml</code></li>
+<li><code>llms.txt</code></li>
+<li>optional <code>llms-full.txt</code></li>
+</ul></li>
+<li><strong>Validate schema</strong>
+<ul>
+<li>Browser-rendered JSON-LD inspection</li>
+<li>Google Rich Results Test</li>
+<li>Schema.org validator</li>
+</ul></li>
+<li><strong>Confirm internal links</strong>
+<ul>
+<li>Homepage links to broad explainer</li>
+<li>Blog links to broad explainer</li>
+<li>Dealership pages link up to vertical parent</li>
+<li>Dental/local pages exist if dental is now the first target
+vertical</li>
+</ul></li>
+<li><strong>Record status</strong>
+<ul>
+<li>Implemented</li>
+<li>Partially implemented</li>
+<li>Not implemented</li>
+<li>Blocked by decision</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="monthly-growth-plan-preview-for-vizbiz.ai">9. Monthly Growth
+Plan preview for VizBiz.ai</h2>
+<p>If VizBiz.ai were on the monthly plan, the first 90 days should look
+like this:</p>
+<h3 id="month-1-entity-cleanup-and-foundation">Month 1 — Entity cleanup
+and foundation</h3>
+<p><strong>Goal:</strong> Make the site clearly understood as “AI
+visibility for local businesses.”</p>
+<p>Deliverables:</p>
+<ul>
+<li>Update <code>llms.txt</code></li>
+<li>Fix broad page metadata</li>
+<li>Fix benchmark H1</li>
+<li>Create broad local-business explainer page</li>
+<li>Validate schema</li>
+<li>Add methodology page brief</li>
+<li>Baseline scorecard</li>
+</ul>
+<h3 id="month-2-vertical-expansion">Month 2 — Vertical expansion</h3>
+<p><strong>Goal:</strong> Build category-specific authority without
+confusing the core entity.</p>
+<p>Deliverables:</p>
+<ul>
+<li>Dentist vertical page</li>
+<li>Sample dentist report page</li>
+<li>Blog post: “How dentists show up in ChatGPT”</li>
+<li>Reframe dealership cluster under vertical resources</li>
+<li>Add vertical links from homepage/report pages</li>
+<li>Competitor comparison against AI visibility tools and local SEO
+audit providers</li>
+</ul>
+<h3 id="month-3-proof-and-conversion-lift">Month 3 — Proof and
+conversion lift</h3>
+<p><strong>Goal:</strong> Improve trust and conversion from free mini
+report to paid plan.</p>
+<p>Deliverables:</p>
+<ul>
+<li>Methodology page live</li>
+<li>Add implementation-tracking explanation to pricing/CTA sections</li>
+<li>Add “what happens after purchase” section</li>
+<li>Publish one case-study-style sample deliverable</li>
+<li>Add FAQ answers about implementation, ranking expectations, and
+access requirements</li>
+<li>Compare month-over-month visibility/entity consistency
+improvements</li>
+</ul>
+<hr />
+<h2 id="result-expectations">10. Result expectations</h2>
+<p>VizBiz should not claim guaranteed rankings. The expected outcome
+from this fix package is stronger clarity and trust for both humans and
+AI systems.</p>
+<p>Expected improvements:</p>
+<ul>
+<li>Clearer entity understanding: VizBiz = AI visibility for local
+businesses.</li>
+<li>Fewer contradictory vertical signals.</li>
+<li>Better AI-citable explanation of what VizBiz does.</li>
+<li>Stronger eligibility for broad local-business AI visibility
+queries.</li>
+<li>Cleaner implementation narrative for paid clients.</li>
+<li>Better alignment between homepage, reports, pricing,
+<code>llms.txt</code>, sitemap, and blog.</li>
+</ul>
+<hr />
+<h2 id="client-facing-summary">11. Client-facing summary</h2>
+<p>VizBiz.ai has a strong AI visibility foundation, but the site still
+carries legacy dealership-first language across important
+machine-readable and human-readable surfaces. The fastest path to
+improvement is to align every major signal around the current offer: AI
+visibility intelligence for local businesses.</p>
+<p>The first implementation sprint should update <code>llms.txt</code>,
+metadata, sitemap hierarchy, the About page, the Blog page, and the
+benchmark report. Then VizBiz should add a canonical local-business
+explainer page and methodology page so both customers and AI systems
+have a clean source to cite.</p>
+<p>Once those fixes are live, VizBiz should re-crawl the site and mark
+each task as verified, partially implemented, or still pending. That
+verification step is what turns this from an audit into an actual
+visibility improvement service.</p>
+</body>
+</html>

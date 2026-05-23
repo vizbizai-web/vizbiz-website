@@ -32,6 +32,7 @@ export function generateFixPackage(audit: AuditReport): FixPackage {
 }
 
 function implementationPacket(audit: AuditReport) {
+  const labels = fixLabelsFor(audit);
   return `# VizBiz Implementation Packet — ${audit.client.name}
 
 AVI Score: ${audit.aviScore}/100 (${audit.band})
@@ -53,8 +54,8 @@ The audit found ${audit.promptsAppeared} appearances across ${audit.promptsTotal
 - Discovery: ${audit.discoveryScore}/100
 - Trust & Reviews: ${audit.trustScore}/100
 - Service Visibility: ${audit.serviceScore}/100
-- Affordability/Inventory: ${audit.inventoryScore}/100
-- Finance/Trade-In: ${audit.financeScore}/100
+- ${labels.offerCategory}: ${audit.inventoryScore}/100
+- ${labels.valueCategory}: ${audit.financeScore}/100
 ${revenueOpportunitySection(audit)}
 `;
 }
@@ -62,15 +63,16 @@ ${revenueOpportunitySection(audit)}
 function revenueOpportunitySection(audit: AuditReport) {
   const projection = audit.revenueOpportunity;
   if (!projection) return "";
+  const labels = fixLabelsFor(audit);
 
   return `
-## Revenue Opportunity Gap™
+## Local Visibility Opportunity Estimate
 
 Estimated AI recommendation share: ${percent(projection.clientAiRecommendationShare)}
 Top competitor: ${projection.topCompetitor.name} (${percent(projection.topCompetitor.aiRecommendationShare)} estimated AI recommendation share)
 Top two competitor average: ${percent(projection.topTwoAverageShare)}
 
-Based on current visibility against the supplied competitors, the estimated opportunity gap is:
+Based on current visibility against the supplied competitors, this is a simple estimate of how much visibility the business may be losing to local competitors:
 
 - Versus top-two average: ${currency(projection.monthlyGapVsTopTwoAverage)}/month (${currency(projection.annualGapVsTopTwoAverage)}/year)
 - Versus best competitor: ${currency(projection.monthlyGapVsTopCompetitor)}/month (${currency(projection.annualGapVsTopCompetitor)}/year)
@@ -81,7 +83,7 @@ Sensitivity range:
 - Likely: ${currency(projection.scenarios.likely.monthlyGapVsTopTwoAverage)}/month (${currency(projection.scenarios.likely.annualGapVsTopTwoAverage)}/year)
 - Aggressive: ${currency(projection.scenarios.aggressive.monthlyGapVsTopTwoAverage)}/month (${currency(projection.scenarios.aggressive.annualGapVsTopTwoAverage)}/year)
 
-Assumptions: ${projection.assumptions.monthlyUnitsSold} monthly units, ${currency(projection.assumptions.averageGrossPerVehicle)} average gross per vehicle, ${percent(projection.assumptions.aiInfluencedBuyerShare)} AI/search-influenced buyer share. ${projection.disclaimer}
+Assumptions: ${projection.assumptions.monthlyUnitsSold} ${labels.unitLabel}, ${currency(projection.assumptions.averageGrossPerVehicle)} ${labels.valueLabel}, ${percent(projection.assumptions.aiInfluencedBuyerShare)} AI/search-influenced buyer share. ${projection.disclaimer}
 `;
 }
 
@@ -106,6 +108,7 @@ ${JSON.stringify({
 }
 
 function llmsTxt(audit: AuditReport) {
+  const preferredTargets = isAutoDealer(audit) ? ["/", "/about", "/contact", "/service", "/inventory", "/finance"] : ["/", "/about", "/contact", "/services", "/pricing-or-insurance", "/faq"];
   return `# ${audit.client.name}
 
 > ${audit.client.name} is a ${audit.client.businessType.replaceAll("_", " ")} serving ${audit.client.market ?? audit.client.city}.
@@ -118,12 +121,7 @@ Key facts:
 ${audit.client.primaryMake ? `- Primary make: ${audit.client.primaryMake}` : ""}
 
 Preferred crawl targets:
-- /
-- /about
-- /contact
-- /service
-- /inventory
-- /finance
+${preferredTargets.map((target) => `- ${target}`).join("\n")}
 `;
 }
 
@@ -143,14 +141,37 @@ function invisiblePrompts(audit: AuditReport) {
 function faqMarkdown(audit: AuditReport) {
   const prompts = invisiblePrompts(audit);
   const items = prompts.length ? prompts : audit.promptResults.slice(0, 3);
+  const proofSpecifics = isAutoDealer(audit) ? "reviews, service details, inventory or offer specifics" : "reviews, service details, proof points, pricing/booking context";
   return `# FAQ Block — ${audit.client.name}
 
 ${items.map((result) => `## ${questionFromPrompt(result.prompt)}
 
 Target query: ${result.prompt}
 
-${audit.client.name} serves ${audit.client.city} customers looking for ${result.prompt.replace(/^best |^where to |^which /i, "")}. The page should answer this directly with proof: reviews, service details, inventory or offer specifics, and clear contact paths.
+${audit.client.name} serves ${audit.client.city} customers looking for ${result.prompt.replace(/^best |^where to |^which /i, "")}. The page should answer this directly with proof: ${proofSpecifics}, and clear contact paths.
 `).join("\n")}`;
+}
+
+function isAutoDealer(audit: AuditReport) {
+  return audit.client.businessType === "auto_dealer" || audit.businessProfile?.niche === "auto_dealer";
+}
+
+function fixLabelsFor(audit: AuditReport) {
+  if (isAutoDealer(audit)) {
+    return {
+      offerCategory: "Affordability/Inventory",
+      valueCategory: "Finance/Trade-In",
+      unitLabel: "monthly units",
+      valueLabel: "average gross per vehicle",
+    };
+  }
+
+  return {
+    offerCategory: "Offer/Service Visibility",
+    valueCategory: "Value & Pricing Visibility",
+    unitLabel: "monthly customer opportunities",
+    valueLabel: "average customer value",
+  };
 }
 
 function faqHtml(audit: AuditReport) {

@@ -7,7 +7,7 @@ export default function Solution() {
     {
       icon: Brain,
       title: "AI Systems Analysis",
-      description: "We analyze exactly how ChatGPT, Google AI, Perplexity, and other AI systems see your dealership.",
+      description: "We analyze exactly how ChatGPT, Google AI, Perplexity, and other AI systems see your business.",
     },
     {
       icon: Target,
@@ -36,10 +36,10 @@ export default function Solution() {
             The Solution
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            AI Visibility Intelligence for Car Dealerships
+            AI Visibility Intelligence for Local Businesses
           </h2>
           <p className="text-lg text-gray-600 mb-4">
-            We help car dealerships become the answer AI systems recommend—across ChatGPT, 
+            We help local businesses become the answer AI systems recommend—across ChatGPT, 
             Google AI Overviews, Perplexity, and emerging AI search platforms.
           </p>
           <p className="text-blue-600 font-semibold">
@@ -51,7 +51,7 @@ export default function Solution() {
         <div className="max-w-3xl mx-auto mb-16">
           <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
             <p className="text-gray-700 text-lg leading-relaxed">
-              We analyze exactly how AI systems see your dealership, identify why they might be 
+              We analyze exactly how AI systems see your business, identify why they might be 
               choosing your competitors, and give you a clear roadmap to fix it.
             </p>
           </div>
@@ -82,7 +82,7 @@ export default function Solution() {
               </h3>
               <p className="text-gray-300 mb-6">
                 The AI Visibility Intelligence Score is a proprietary metric (0-100) that measures 
-                how likely AI systems are to recommend your dealership. It&apos;s calculated across 
+                how likely AI systems are to recommend your business. It&apos;s calculated across 
                 23 data points in 5 critical categories.
               </p>
               <ul className="space-y-3">

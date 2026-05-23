@@ -1,20 +1,32 @@
 import { buildPromptPlan } from "@/lib/prompts";
+import { createBusinessProfile } from "@/engines/business-profile/profile";
 import { checkMachineReadiness } from "./machine-readiness";
+import { buildSeoSiteIntelligence } from "./site-intelligence";
 import { calculateAviScore, competitorGapScore, primaryCompetitor, scorePromptResult } from "./scorer";
 import { queryOpenAI } from "./platforms/openai";
+import { queryPerplexitySonar } from "./platforms/perplexity";
+import { enrichWithGooglePlaces } from "./platforms/google-places";
 import { queryTavily } from "./platforms/tavily";
 import { calculateRevenueOpportunity } from "./revenue";
-import type { AuditClient, AuditReport, ClientInput, PromptRunResult } from "./types";
+import { createClientDeliverables } from "@/engines/deliverables/client-output";
+import type { AuditClient, AuditReport, ClientInput, PromptRunResult, PromptTemplate } from "./types";
 
 export async function runAudit(input: ClientInput): Promise<AuditReport> {
   const createdAt = new Date().toISOString();
-  const client = normalizeClient(input);
-  const promptPlan = buildPromptPlan(input);
+  const initialClient = normalizeClient(input);
+  const businessProfile = await createBusinessProfile(input);
+  const enrichedInput: ClientInput = {
+    ...input,
+    businessType: input.businessType ?? businessProfile.niche,
+    primaryService: input.primaryService ?? businessProfile.primaryServices[0],
+  };
+  const client = { ...initialClient, businessType: enrichedInput.businessType ?? initialClient.businessType };
+  const promptPlan = buildPromptPlan(enrichedInput);
   const promptResults: PromptRunResult[] = [];
 
   for (const prompt of promptPlan) {
     try {
-      const raw = prompt.platform === "openai" ? await queryOpenAI(prompt) : await queryTavily(prompt);
+      const raw = await queryPromptProvider(prompt);
       const isFallback = raw.includes("API_KEY is not configured");
       const scored = isFallback ? { score: null, position: null, snippet: null } : scorePromptResult(client.name, raw);
       promptResults.push({
@@ -29,6 +41,10 @@ export async function runAudit(input: ClientInput): Promise<AuditReport> {
         competitors: extractCompetitors(raw, client.name),
         rawResponse: raw,
         error: isFallback ? "API key not configured; prompt excluded from averages." : null,
+        intentBucket: prompt.intentBucket,
+        source: prompt.source,
+        clientFacingQuestion: prompt.clientFacingQuestion,
+        showInFreeReport: prompt.showInFreeReport,
       });
     } catch (error) {
       promptResults.push({
@@ -43,6 +59,10 @@ export async function runAudit(input: ClientInput): Promise<AuditReport> {
         competitors: [],
         rawResponse: null,
         error: error instanceof Error ? error.message : "Unknown platform error",
+        intentBucket: prompt.intentBucket,
+        source: prompt.source,
+        clientFacingQuestion: prompt.clientFacingQuestion,
+        showInFreeReport: prompt.showInFreeReport,
       });
     }
   }
@@ -54,7 +74,11 @@ export async function runAudit(input: ClientInput): Promise<AuditReport> {
     competitors: input.competitors ?? [],
     assumptions: input.revenueAssumptions,
   });
-  return {
+  const machineReadiness = await checkMachineReadiness(enrichedInput);
+  const seoSiteIntelligence = await buildSeoSiteIntelligence(enrichedInput);
+  const googlePlaces = await enrichWithGooglePlaces(enrichedInput);
+
+  const report: AuditReport = {
     id: `audit_${crypto.randomUUID()}`,
     client,
     status: "completed",
@@ -64,11 +88,23 @@ export async function runAudit(input: ClientInput): Promise<AuditReport> {
     promptsTotal: promptResults.length,
     promptsAppeared: promptResults.filter((result) => (result.score ?? 0) > 0).length,
     promptResults,
-    machineReadiness: await checkMachineReadiness(input),
+    machineReadiness,
+    seoSiteIntelligence,
+    googlePlaces,
+    businessProfile,
     revenueOpportunity,
     createdAt,
     completedAt: new Date().toISOString(),
   };
+
+  report.clientDeliverables = createClientDeliverables(report);
+  return report;
+}
+
+function queryPromptProvider(prompt: PromptTemplate) {
+  if (prompt.platform === "openai") return queryOpenAI(prompt);
+  if (prompt.platform === "perplexity") return queryPerplexitySonar(prompt);
+  return queryTavily(prompt);
 }
 
 function normalizeClient(input: ClientInput): AuditClient {
@@ -76,7 +112,7 @@ function normalizeClient(input: ClientInput): AuditClient {
     id: input.id ?? `client_${slugify(input.name)}`,
     name: input.name,
     slug: input.slug ?? slugify(input.name),
-    businessType: input.businessType ?? "auto_dealer",
+    businessType: input.businessType ?? "generic_local_service",
     websiteUrl: input.websiteUrl ?? null,
     city: input.city,
     market: input.market ?? input.city,

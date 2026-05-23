@@ -25,7 +25,7 @@ export default function FAQ() {
     },
     {
       question: "What if our competitors are already doing this?",
-      answer: "Then you're already behind. But most dealerships aren't—yet. The window to establish AI visibility dominance in your market is closing. The earlier you start, the harder it is for competitors to catch up. We've seen dealerships go from invisible to #1 in their market in just a few months.",
+      answer: "Then you're already behind. But most local businesses aren't fully optimized for AI visibility yet. The window to establish visibility in your market is closing. The earlier you start, the harder it is for competitors to catch up.",
     },
   ];
 

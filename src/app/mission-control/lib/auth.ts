@@ -17,7 +17,8 @@ export function verifyPassword(inputPassword: string): boolean {
     return inputPassword === 'vizbiz2026';
   }
   
-  const expectedPassword = process.env.MISSION_CONTROL_PASSWORD;
+  const expectedPassword = process.env.MISSION_CONTROL_PASSWORD ||
+    (process.env.NODE_ENV !== 'production' ? 'vizbiz2026' : undefined);
   if (!expectedPassword) {
     console.error('MISSION_CONTROL_PASSWORD not set');
     return false;
@@ -69,7 +70,7 @@ export async function getSessionId(): Promise<string | undefined> {
   try {
     const cookieStore = await cookies();
     return cookieStore.get(SESSION_COOKIE)?.value;
-  } catch (error) {
+  } catch {
     return undefined;
   }
 }

@@ -7,7 +7,7 @@ export default function WhyUs() {
     {
       icon: Car,
       title: "We're Dealership Specialists",
-      description: "Not a generic marketing agency. We only work with car dealerships. We know your business, your customers, and your competition.",
+      description: "Not a generic marketing agency. We focus on local AI visibility: how buyers find, compare, and choose businesses in your market.",
     },
     {
       icon: MapPin,
@@ -17,7 +17,7 @@ export default function WhyUs() {
     {
       icon: Award,
       title: "Proprietary Methodology",
-      description: "The AVI Score™ isn't a generic audit. It's a scoring system we developed specifically for dealerships, tested against thousands of real AI queries.",
+      description: "The AVI Score™ isn't a generic SEO audit. It's a scoring system for local AI visibility, tested against real buyer-intent queries.",
     },
     {
       icon: DollarSign,
@@ -40,7 +40,7 @@ export default function WhyUs() {
             Why Work With Us?
           </h2>
           <p className="text-lg text-gray-300">
-            We&apos;re not another marketing agency. We&apos;re AI visibility specialists for car dealerships.
+            We&apos;re not another marketing agency. We&apos;re AI visibility specialists for local businesses.
           </p>
         </div>
         

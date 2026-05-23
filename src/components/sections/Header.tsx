@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import VizBizLogo from "@/components/VizBizLogo";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,70 +16,58 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">V</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">VizBiz.ai</span>
-          </Link>
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#020617]/88 backdrop-blur-xl">
+      <div className="mx-auto max-w-[88rem] px-4 sm:px-6 lg:px-10">
+        <div className="flex h-[4.5rem] items-center justify-between">
+          <VizBizLogo variant="dark" size="sm" />
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
+                className="text-sm font-medium text-slate-300 transition-colors hover:text-[#22D3EE]"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              href="#contact"
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Free Assessment
-            </Link>
-          </div>
+          <Link
+            href="#free-mini-report"
+            className="hidden rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-4 py-2 text-sm font-bold text-[#020617] shadow-[0_0_24px_rgba(34,211,238,0.18)] transition hover:scale-[1.01] lg:inline-flex"
+          >
+            Run free report
+          </Link>
 
-          {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+            className="rounded-xl border border-cyan-300/25 bg-white/5 p-2 text-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.12)] transition hover:border-cyan-300/50 hover:bg-white/10 hover:text-[#22D3EE] md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="border-t border-white/10 py-4 md:hidden">
             <nav className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                  className="rounded-lg px-4 py-2 font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-[#22D3EE]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
               <Link
-                href="#contact"
-                className="mx-4 mt-2 inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                href="#free-mini-report"
+                className="mt-2 rounded-lg bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-4 py-3 text-center font-bold text-[#020617]"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Free Assessment
+                Run free report
               </Link>
             </nav>
           </div>

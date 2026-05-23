@@ -12,7 +12,7 @@ export default function Problem() {
             You&apos;re Losing Customers Before They Even Visit Your Website
           </h2>
           <p className="text-lg text-gray-600">
-            The way people find dealerships has fundamentally changed.
+            The way people find local businesses has fundamentally changed.
           </p>
         </div>
         
@@ -29,7 +29,7 @@ export default function Problem() {
             <ol className="space-y-4">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">1</span>
-                <span className="text-gray-600">Customer Googles &quot;Honda dealership Oakville&quot;</span>
+                <span className="text-gray-600">Customer Googles &quot;best dentist in Oakville&quot;</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">2</span>
@@ -53,7 +53,7 @@ export default function Problem() {
             <ol className="space-y-4">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm font-medium text-white">1</span>
-                <span className="text-blue-100">Customer asks ChatGPT <em>&quot;best car dealership near me&quot;</em></span>
+                <span className="text-blue-100">Customer asks ChatGPT <em>&quot;best local provider near me&quot;</em></span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm font-medium text-white">2</span>
@@ -61,7 +61,7 @@ export default function Problem() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm font-medium text-white">3</span>
-                <span className="text-blue-100">Visits that dealership</span>
+                <span className="text-blue-100">Visits that recommended business</span>
               </li>
             </ol>
           </div>
@@ -71,7 +71,7 @@ export default function Problem() {
         <div className="grid sm:grid-cols-3 gap-6 mb-16">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
             <div className="text-4xl font-bold text-blue-600 mb-2">73%</div>
-            <p className="text-gray-600">of car buyers now use AI assistants for research</p>
+            <p className="text-gray-600">of buyers now use AI assistants for local research</p>
             <p className="text-sm text-gray-400 mt-1">Source: CDK Global, 2024</p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
@@ -99,7 +99,7 @@ export default function Problem() {
               </h3>
               <p className="text-gray-600">
                 While you&apos;re focused on traditional SEO, they&apos;re becoming the answer AI recommends. 
-                The dealerships that establish AI visibility now will be nearly impossible to displace later.
+                The local businesses that establish AI visibility now will be harder to displace later.
               </p>
             </div>
           </div>

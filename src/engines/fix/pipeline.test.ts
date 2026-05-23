@@ -31,6 +31,18 @@ const audit: AuditReport = {
     { promptId: "trust-1", prompt: "which dealership has the best reviews in Oakville", category: "trust", platform: "tavily", targetName: "Oakville Toyota", score: 0, position: null, snippet: "Burlington Toyota is recommended.", competitors: ["Burlington Toyota"], rawResponse: null, error: null },
   ],
   machineReadiness: { schemaPresent: false, titleH1Clarity: false, footerNapConsistent: false, heroContactAccessible: true, contentDepth: "thin", score: 3, checks: [] },
+  seoSiteIntelligence: {
+    score: 38,
+    crawlSource: "built_in_fetch",
+    generatedAt: "2026-05-01T00:00:30.000Z",
+    target: { name: "Oakville Toyota", url: "https://oakvilletoyota.example", fetched: true, title: "Oakville Toyota", h1: "Oakville Toyota", wordCount: 300, schemaTypes: [], hasRobots: false, hasSitemap: false, hasFaqPattern: false, socialProfiles: [] },
+    competitors: [],
+    technicalChecks: [],
+    contentBriefs: [],
+    competitorFindings: [],
+    automation: [],
+    notes: [],
+  },
   revenueOpportunity: null,
   createdAt: "2026-05-01T00:00:00.000Z",
   completedAt: "2026-05-01T00:01:00.000Z",
@@ -82,7 +94,7 @@ describe("generateFixPackage", () => {
       },
     });
 
-    expect(fixPackage.assets["implementation-packet.md"]).toContain("Revenue Opportunity Gap");
+    expect(fixPackage.assets["implementation-packet.md"]).toContain("Local Visibility Opportunity Estimate");
     expect(fixPackage.assets["implementation-packet.md"]).toContain("$6,781/month");
     expect(fixPackage.assets["implementation-packet.md"]).toContain("$81,370/year");
   });

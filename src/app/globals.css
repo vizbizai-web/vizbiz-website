@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
+  --background: #020617;
+  --foreground: #ffffff;
+  --primary: #22D3EE;
+  --primary-dark: #06B6D4;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -26,18 +26,22 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-poppins);
+  --font-serif: var(--font-lora);
   --font-mono: var(--font-geist-mono);
 }
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
+  max-width: 100vw;
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-poppins), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Animation utilities */
@@ -59,6 +63,159 @@ body {
   50% {
     opacity: 0.5;
   }
+}
+
+@keyframes heroTickerIn {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroTickerOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-110%);
+  }
+}
+
+@keyframes heroCursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.hero-cursor {
+  display: inline-block;
+  width: clamp(2px, 0.25vw, 4px);
+  height: 0.72em;
+  margin-left: 0.08em;
+  border-radius: 999px;
+  background: #22D3EE;
+  vertical-align: middle;
+  animation: heroCursorBlink 1s step-end infinite;
+}
+
+.hero-ticker-outer {
+  display: block;
+  position: relative;
+  height: calc(clamp(1.55rem, 8vw, 3.875rem) * 1.45);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.hero-ticker-word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  color: #22D3EE;
+  font-size: clamp(1.55rem, 8vw, 3.875rem);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 640px) {
+  .hero-ticker-outer {
+    height: calc(clamp(2.4rem, 4.1vw, 3.875rem) * 1.45);
+  }
+
+  .hero-ticker-word {
+    font-size: clamp(2.4rem, 4.1vw, 3.875rem);
+  }
+}
+
+@media (max-width: 639px) {
+  .vizbiz-hero-grid {
+    width: 100vw;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .vizbiz-hero-copy,
+  .vizbiz-intake-shell,
+  #free-mini-report {
+    min-width: 0;
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .vizbiz-hero-copy h1,
+  .vizbiz-hero-copy p,
+  #free-mini-report h2,
+  #free-mini-report p,
+  #free-mini-report label,
+  #free-mini-report span,
+  #free-mini-report input {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  #free-mini-report input {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero-ticker-word {
+    letter-spacing: -0.045em;
+  }
+}
+
+.hero-ticker-word-in {
+  animation: heroTickerIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-ticker-word-out {
+  animation: heroTickerOut 0.26s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.zip-postal-ticker {
+  display: inline-block;
+  position: relative;
+  width: 6.8em;
+  height: 1.05em;
+  margin-left: 0.18em;
+  overflow: hidden;
+  vertical-align: middle;
+  color: #22D3EE;
+  font-family: var(--font-poppins), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.zip-postal-ticker-word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1.08;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+.zip-postal-ticker-word-in {
+  animation: heroTickerIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.zip-postal-ticker-word-out {
+  animation: heroTickerOut 0.24s cubic-bezier(0.55, 0, 1, 0.45) forwards;
 }
 
 .animate-fadeInUp {

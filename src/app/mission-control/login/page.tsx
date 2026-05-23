@@ -8,8 +8,8 @@ export default function LoginPage({
   searchParams: { redirect?: string }
 }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex min-h-dvh items-center justify-center overflow-x-hidden bg-[#0a0a0f] px-4 py-6">
+      <div className="w-full max-w-[calc(100vw-2rem)] sm:max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 mb-4">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -16,6 +16,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     primaryCompetitor: audit.primaryCompetitor,
     prompts: audit.promptResults,
     machineReadiness: audit.machineReadiness,
-    actionItems: audit.machineReadiness.checks.filter((check) => !check.passed).map((check) => check.label),
+    seoSiteIntelligence: audit.seoSiteIntelligence,
+    clientDeliverables: audit.clientDeliverables,
+    actionItems: [
+      ...audit.machineReadiness.checks.filter((check) => !check.passed).map((check) => check.label),
+      ...(audit.seoSiteIntelligence?.technicalChecks.filter((check) => !check.passed).map((check) => check.label) ?? []),
+    ],
   });
 }

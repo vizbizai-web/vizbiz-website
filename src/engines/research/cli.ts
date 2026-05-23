@@ -12,7 +12,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
 
   if (!args.name || !args.city) {
-    console.error('Usage: npm run audit -- --name "Business" --city "City" --website "https://example.com" --type "auto_dealer" --make "Toyota"');
+    console.error('Usage: npm run audit -- --name "Business" --city "City" --website "https://example.com" --type "dentist"');
     process.exit(1);
   }
 
@@ -20,7 +20,7 @@ async function main() {
     name: args.name,
     city: args.city,
     websiteUrl: args.website,
-    businessType: args.type ?? "auto_dealer",
+    businessType: args.type ?? "generic_local_service",
     primaryMake: args.make,
     vehicle: args.vehicle,
     competitors: parseCompetitors(args.competitors),

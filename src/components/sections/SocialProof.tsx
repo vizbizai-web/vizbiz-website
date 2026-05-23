@@ -7,11 +7,11 @@ export default function SocialProof() {
     {
       quote: "We didn't even know this was a thing until Alex showed us our AVI Score. We were invisible in AI search. Three months later, we're #1 in our market. The ROI is ridiculous—our ChatGPT referrals alone paid for the service.",
       author: "General Manager",
-      company: "Honda Dealership, Oakville",
+      company: "Local Business, Oakville",
       rating: 5,
     },
     {
-      quote: "I was skeptical. Sounded like marketing fluff. But Alex showed us exactly where we were losing to Burlington Honda. We implemented the roadmap, and within 60 days we moved from #4 to #2. Now we're chasing #1.",
+      quote: "I was skeptical. Sounded like marketing fluff. But Alex showed us exactly where competitors were being recommended instead of us. We implemented the roadmap, and within 60 days we moved from invisible to consistently cited.",
       author: "Owner",
       company: "Multi-location Dealership Group",
       rating: 5,
@@ -33,7 +33,7 @@ export default function SocialProof() {
             Dealerships That Own the AI Answer
           </h2>
           <p className="text-lg text-gray-600">
-            Real results from real dealerships in your market
+            Real visibility improvements for local businesses
           </p>
         </div>
         
@@ -99,7 +99,7 @@ export default function SocialProof() {
         {/* Trust Badges */}
         <div className="mt-16 pt-8 border-t border-gray-200">
           <p className="text-center text-gray-500 text-sm mb-6">
-            Trusted by dealerships across the Greater Toronto Area
+            Built for local businesses across competitive markets
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 opacity-60">
             {["Oakville", "Mississauga", "Burlington", "Hamilton", "Toronto"].map((city) => (

@@ -1,342 +1,231 @@
-'use client';
-
-import { useState } from 'react';
-import { Alert, AgentLog } from '../lib/db';
-
-interface DashboardStats {
-  missionCounts: Record<string, number>;
-  criticalAlerts: number;
-  activeSchedules: number;
-  recentActivity: number;
-}
+import Link from 'next/link';
+import type { MissionControlSnapshot, MissionControlMetric, MissionControlLeadSummary } from '../lib/mission-control-insights';
 
 interface CommandCenterProps {
-  stats: DashboardStats;
-  alerts: Alert[];
-  logs: AgentLog[];
+  snapshot: MissionControlSnapshot;
 }
 
-const priorityColors: Record<string, string> = {
-  critical: 'bg-red-500',
-  high: 'bg-orange-500',
-  warning: 'bg-yellow-500',
-  error: 'bg-red-500',
-  info: 'bg-blue-500',
-  low: 'bg-slate-500',
-  medium: 'bg-slate-400'
+const toneClasses: Record<MissionControlMetric['tone'], string> = {
+  cyan: 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200',
+  emerald: 'border-emerald-300/20 bg-emerald-300/10 text-emerald-200',
+  amber: 'border-amber-300/20 bg-amber-300/10 text-amber-200',
+  violet: 'border-violet-300/20 bg-violet-300/10 text-violet-200',
+  rose: 'border-rose-300/20 bg-rose-300/10 text-rose-200',
+  slate: 'border-slate-600/40 bg-slate-800/40 text-slate-300',
 };
 
-const statusColors: Record<string, string> = {
-  success: 'bg-emerald-500',
-  error: 'bg-red-500',
-  warning: 'bg-yellow-500'
+const priorityToneClasses: Record<MissionControlSnapshot['priorities'][number]['tone'], string> = {
+  cyan: 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200',
+  emerald: 'border-emerald-300/20 bg-emerald-300/10 text-emerald-200',
+  amber: 'border-amber-300/20 bg-amber-300/10 text-amber-200',
+  violet: 'border-violet-300/20 bg-violet-300/10 text-violet-200',
+  rose: 'border-rose-300/20 bg-rose-300/10 text-rose-200',
 };
 
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp * 1000);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  
-  if (hours < 1) return 'Just now';
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
+const temperatureClasses: Record<MissionControlLeadSummary['temperature'], string> = {
+  New: 'bg-cyan-300/10 text-cyan-200 border-cyan-300/20',
+  Warm: 'bg-violet-300/10 text-violet-200 border-violet-300/20',
+  Hot: 'bg-amber-300/10 text-amber-200 border-amber-300/20',
+  Won: 'bg-emerald-300/10 text-emerald-200 border-emerald-300/20',
+  Review: 'bg-slate-700/50 text-slate-300 border-slate-600/40',
+};
 
-export function CommandCenter({ stats, alerts, logs }: CommandCenterProps) {
-  const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([]);
-
-  const activeAlerts = alerts.filter(a => !dismissedAlerts.includes(a.id));
-
-  const handleDismiss = async (id: number) => {
-    setDismissedAlerts(prev => [...prev, id]);
-    await fetch(`/mission-control/api/alerts/${id}/acknowledge`, { method: 'POST' });
-  };
-
-  const totalMissions = Object.values(stats.missionCounts).reduce((a, b) => a + b, 0);
-  const inProgressMissions = stats.missionCounts.in_progress || 0;
-
+export function CommandCenter({ snapshot }: CommandCenterProps) {
   return (
     <div className="space-y-6">
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-4 gap-6">
-        <StatCard
-          title="Total Missions"
-          value={totalMissions}
-          subtitle={`${inProgressMissions} in progress`}
-          icon="🎯"
-          color="blue"
-        />
-        <StatCard
-          title="Active Schedules"
-          value={stats.activeSchedules}
-          subtitle="Cron jobs running"
-          icon="⏰"
-          color="emerald"
-        />
-        <StatCard
-          title="Critical Alerts"
-          value={stats.criticalAlerts}
-          subtitle={stats.criticalAlerts > 0 ? 'Needs attention' : 'All clear'}
-          icon="🔔"
-          color={stats.criticalAlerts > 0 ? 'red' : 'slate'}
-        />
-        <StatCard
-          title="24h Activity"
-          value={stats.recentActivity}
-          subtitle="Agent actions"
-          icon="⚡"
-          color="indigo"
-        />
-      </div>
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        {snapshot.metricCards.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
+      </section>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Priority Missions */}
-        <div className="col-span-2 bg-[#111118] border border-slate-800/50 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span className="text-xl">🚨</span>
-              Priority Missions
-            </h2>
-            <a 
-              href="/mission-control/kanban" 
-              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              View all →
-            </a>
-          </div>
+      <section className="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
+        <Panel title="Today’s revenue priorities" eyebrow="What to do next" icon="🚦">
           <div className="space-y-3">
-            {inProgressMissions === 0 ? (
-              <EmptyState message="No missions currently in progress" />
-            ) : (
-              <MissionPreview title="Client Portal v1.0" assignee="architect" progress={80} dueIn="3 days" />
-            )}
-            <MissionPreview title="AI Visibility Audit Service" assignee="vlad" progress={65} dueIn="18 days" />
-            <MissionPreview title="Content Engine Automation" assignee="copywriter" progress={90} dueIn="Complete" />
+            {snapshot.priorities.map((priority) => (
+              <Link
+                key={priority.title}
+                href={priority.href}
+                className={`block rounded-2xl border p-4 transition hover:scale-[1.005] hover:bg-white/[0.06] ${priorityToneClasses[priority.tone]}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-white">{priority.title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-300">{priority.description}</p>
+                  </div>
+                  <span className="hidden shrink-0 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold sm:inline-flex">{priority.cta}</span>
+                </div>
+              </Link>
+            ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* Quick Actions */}
-        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-            <span className="text-xl">🎛️</span>
-            Quick Actions
-          </h2>
+        <Panel title="Quick actions" eyebrow="Founder shortcuts" icon="🎛️">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <QuickAction label="Intake Inbox" helper="Review new leads" href="/mission-control/leads" icon="💼" />
+            <QuickAction label="Tasks" helper="Follow-ups and launch work" href="/mission-control/tasks" icon="✅" />
+            <QuickAction label="Content Studio" helper="Draft posts from research" href="/mission-control/content" icon="✍️" />
+            <QuickAction label="X Research" helper="Find monetizable topics" href="/mission-control/research" icon="𝕏" />
+            <QuickAction label="Settings" helper="Stripe, Resend, Sheets" href="/mission-control/settings" icon="⚙️" />
+          </div>
+        </Panel>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <Panel title="Hot leads" eyebrow="Report views + CTA intent" icon="🔥" action={{ label: 'Open all leads', href: '/mission-control/leads' }}>
+          {snapshot.hotLeads.length === 0 ? (
+            <EmptyState title="No hot leads yet" message="When someone views a report or clicks a paid CTA, they’ll appear here for fast follow-up." />
+          ) : (
+            <div className="space-y-3">
+              {snapshot.hotLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="Recent funnel activity" eyebrow="Latest intake movement" icon="📈">
+          {snapshot.recentActivity.length === 0 ? (
+            <EmptyState title="No funnel activity yet" message="Submit a free mini report to populate the intake timeline." />
+          ) : (
+            <div className="space-y-3">
+              {snapshot.recentActivity.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className={`mt-1 h-2.5 w-2.5 rounded-full ${dotClass(item.tone)}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-white">{item.title}</p>
+                      <p className="mt-1 text-sm text-slate-400">{item.description}</p>
+                      <p className="mt-2 text-xs text-slate-500">{formatDateTime(item.at)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <Panel title="Launch checklist" eyebrow="Production readiness" icon="🚀">
           <div className="space-y-3">
-            <QuickActionButton 
-              label="New Mission" 
-              icon="➕" 
-              href="/mission-control/kanban?action=new" 
-            />
-            <QuickActionButton 
-              label="View Agent Logs" 
-              icon="📊" 
-              href="/mission-control/agents" 
-            />
-            <QuickActionButton 
-              label="Check Schedules" 
-              icon="📅" 
-              href="/mission-control/schedule" 
-            />
-            <QuickActionButton 
-              label="VizBiz Website" 
-              icon="🌐" 
-              href="https://vizbiz.ai" 
-              external 
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        {/* Active Alerts */}
-        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span className="text-xl">🔔</span>
-              Active Alerts
-              {activeAlerts.length > 0 && (
-                <span className="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">
-                  {activeAlerts.length}
+            {snapshot.launchChecklist.map((item) => (
+              <div key={item.title} className="flex gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
+                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${item.done ? 'bg-emerald-300 text-slate-950' : 'bg-amber-300 text-slate-950'}`}>
+                  {item.done ? '✓' : '!'}
                 </span>
-              )}
-            </h2>
+                <div>
+                  <p className="font-medium text-white">{item.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-400">{item.helper}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="space-y-3">
-            {activeAlerts.length === 0 ? (
-              <EmptyState message="No active alerts" />
-            ) : (
-              activeAlerts.slice(0, 5).map(alert => (
-                <AlertCard 
-                  key={alert.id} 
-                  alert={alert} 
-                  onDismiss={() => handleDismiss(alert.id)} 
-                />
-              ))
-            )}
-          </div>
-        </div>
+        </Panel>
 
-        {/* Recent Activity */}
-        <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-            <span className="text-xl">📈</span>
-            Recent Activity
-          </h2>
-          <div className="space-y-3">
-            {logs.length === 0 ? (
-              <EmptyState message="No recent activity" />
-            ) : (
-              logs.map(log => (
-                <ActivityItem key={log.id} log={log} />
-              ))
-            )}
+        <Panel title="Growth engine ideas" eyebrow="Content → intake loop" icon="🧠">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Idea title="AI recommended your competitor because…" helper="Turn report gaps into educational X posts and mini teardowns." />
+            <Idea title="Niche-specific proof posts" helper="Dentists, med spas, law firms, roofers, clinics, and home services each get their own angle." />
+            <Idea title="Weekly AI visibility watch" helper="Track Google AI Overviews, ChatGPT recommendations, and local SEO conversations." />
+            <Idea title="Lead magnet CTA" helper="Every post should point back to the free AVI mini report when it makes sense." />
           </div>
-        </div>
-      </div>
+        </Panel>
+      </section>
     </div>
   );
 }
 
-function StatCard({ title, value, subtitle, icon, color }: {
-  title: string;
-  value: number;
-  subtitle: string;
-  icon: string;
-  color: string;
-}) {
-  const colorClasses: Record<string, string> = {
-    blue: 'from-blue-500/20 to-blue-600/10 text-blue-400',
-    emerald: 'from-emerald-500/20 to-emerald-600/10 text-emerald-400',
-    red: 'from-red-500/20 to-red-600/10 text-red-400',
-    slate: 'from-slate-500/20 to-slate-600/10 text-slate-400',
-    indigo: 'from-indigo-500/20 to-indigo-600/10 text-indigo-400'
-  };
-
+function MetricCard({ metric }: { metric: MissionControlMetric }) {
   return (
-    <div className="bg-[#111118] border border-slate-800/50 rounded-xl p-6">
-      <div className="flex items-start justify-between">
+    <div className={`rounded-2xl border p-4 shadow-sm ${toneClasses[metric.tone]}`}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{metric.label}</p>
+        <span className="text-2xl">{metric.icon}</span>
+      </div>
+      <p className="mt-3 text-3xl font-bold text-white">{metric.value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-400">{metric.helper}</p>
+    </div>
+  );
+}
+
+function Panel({ title, eyebrow, icon, action, children }: { title: string; eyebrow: string; icon: string; action?: { label: string; href: string }; children: React.ReactNode }) {
+  return (
+    <div className="rounded-3xl border border-slate-800/60 bg-[#111118] p-4 shadow-[0_0_40px_rgba(15,23,42,0.22)] sm:p-6">
+      <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <p className="text-slate-400 text-sm mb-1">{title}</p>
-          <p className="text-3xl font-bold text-white">{value}</p>
-          <p className="text-slate-500 text-sm mt-1">{subtitle}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/80">{eyebrow}</p>
+          <h2 className="mt-2 flex items-center gap-2 text-lg font-semibold text-white sm:text-xl"><span>{icon}</span>{title}</h2>
         </div>
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center text-2xl`}>
-          {icon}
+        {action && <Link href={action.href} className="shrink-0 text-sm font-semibold text-cyan-300 hover:text-cyan-200">{action.label} →</Link>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function QuickAction({ label, helper, href, icon }: { label: string; helper: string; href: string; icon: string }) {
+  return (
+    <Link href={href} className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4 transition hover:border-cyan-300/30 hover:bg-cyan-300/10">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-xl">{icon}</span>
+      <span>
+        <span className="block font-semibold text-white">{label}</span>
+        <span className="text-sm text-slate-400">{helper}</span>
+      </span>
+    </Link>
+  );
+}
+
+function LeadCard({ lead }: { lead: MissionControlLeadSummary }) {
+  return (
+    <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold text-white">{lead.name}</h3>
+            <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${temperatureClasses[lead.temperature]}`}>{lead.temperature}</span>
+          </div>
+          <p className="mt-1 text-sm text-slate-400">{lead.city} · {lead.service}</p>
+          <p className="mt-1 text-xs text-slate-500">{lead.email}</p>
         </div>
+        <Link href={`/mini-report/${lead.reportSlug}`} className="rounded-xl bg-cyan-300 px-3 py-2 text-center text-sm font-bold text-slate-950 hover:bg-cyan-200">
+          Open report
+        </Link>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-300">
+        <div className="rounded-xl bg-slate-950/40 p-3"><span className="block text-xs text-slate-500">CTA clicks</span>{lead.ctaClicks}</div>
+        <div className="rounded-xl bg-slate-950/40 p-3"><span className="block text-xs text-slate-500">Last product</span>{lead.lastProduct?.replaceAll('_', ' ') ?? 'None yet'}</div>
       </div>
     </div>
   );
 }
 
-function MissionPreview({ title, assignee, progress, dueIn }: {
-  title: string;
-  assignee: string;
-  progress: number;
-  dueIn: string;
-}) {
+function Idea({ title, helper }: { title: string; helper: string }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <h3 className="text-white font-medium truncate">{title}</h3>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-slate-500">@{assignee}</span>
-          <span className="text-slate-600">•</span>
-          <span className="text-xs text-slate-500">{dueIn}</span>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <span className="text-sm text-slate-400 w-10 text-right">{progress}%</span>
-      </div>
+    <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
+      <p className="font-semibold text-white">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{helper}</p>
     </div>
   );
 }
 
-function QuickActionButton({ label, icon, href, external }: {
-  label: string;
-  icon: string;
-  href: string;
-  external?: boolean;
-}) {
+function EmptyState({ title, message }: { title: string; message: string }) {
   return (
-    <a
-      href={href}
-      target={external ? '_blank' : undefined}
-      rel={external ? 'noopener noreferrer' : undefined}
-      className="flex items-center gap-3 p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors group"
-    >
-      <span className="text-xl">{icon}</span>
-      <span className="text-slate-300 group-hover:text-white transition-colors">{label}</span>
-      {external && (
-        <svg className="w-4 h-4 text-slate-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-        </svg>
-      )}
-    </a>
-  );
-}
-
-function AlertCard({ alert, onDismiss }: { alert: Alert; onDismiss: () => void }) {
-  return (
-    <div className={`p-4 rounded-lg border ${
-      alert.type === 'critical' 
-        ? 'bg-red-500/10 border-red-500/30' 
-        : alert.type === 'warning'
-        ? 'bg-yellow-500/10 border-yellow-500/30'
-        : 'bg-blue-500/10 border-blue-500/30'
-    }`}>
-      <div className="flex items-start gap-3">
-        <span className={`w-2 h-2 rounded-full mt-2 ${priorityColors[alert.type]}`} />
-        <div className="flex-1 min-w-0">
-          <h3 className={`font-medium ${
-            alert.type === 'critical' ? 'text-red-400' : 
-            alert.type === 'warning' ? 'text-yellow-400' : 'text-blue-400'
-          }`}>
-            {alert.title}
-          </h3>
-          <p className="text-slate-400 text-sm mt-1">{alert.message}</p>
-          <p className="text-slate-600 text-xs mt-2">{formatTime(alert.created_at)}</p>
-        </div>
-        <button
-          onClick={onDismiss}
-          className="text-slate-500 hover:text-slate-300 transition-colors"
-          title="Dismiss"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+    <div className="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30 p-6 text-center">
+      <p className="font-semibold text-white">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{message}</p>
     </div>
   );
 }
 
-function ActivityItem({ log }: { log: AgentLog }) {
-  return (
-    <div className="flex items-start gap-3 p-3 bg-slate-800/20 rounded-lg">
-      <span className={`w-2 h-2 rounded-full mt-2 ${statusColors[log.status]}`} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-white font-medium text-sm">@{log.agent_name}</span>
-          <span className="text-slate-500 text-sm">{log.action}</span>
-        </div>
-        <p className="text-slate-400 text-sm mt-0.5">{log.message}</p>
-        <p className="text-slate-600 text-xs mt-1">{formatTime(log.created_at)}</p>
-      </div>
-    </div>
-  );
+function formatDateTime(value: string): string {
+  return new Date(value).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="text-center py-8 text-slate-500">
-      <p>{message}</p>
-    </div>
-  );
+function dotClass(tone: MissionControlSnapshot['recentActivity'][number]['tone']) {
+  const classes = {
+    cyan: 'bg-cyan-300',
+    emerald: 'bg-emerald-300',
+    amber: 'bg-amber-300',
+    violet: 'bg-violet-300',
+    rose: 'bg-rose-300',
+    slate: 'bg-slate-400',
+  };
+  return classes[tone];
 }
