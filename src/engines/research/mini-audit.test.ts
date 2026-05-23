@@ -124,10 +124,10 @@ describe("createMiniReportFromAudit", () => {
     expect(report.paidDeliverables.monthlyGrowthPlan.timeline).toEqual(["30 days", "60 days", "90 days"]);
     expect(report.localDominationPlan.title).toBe("Local Community Domination Plan");
     expect(report.localDominationPlan.thesis).toContain("stronger signals");
-    expect(report.localDominationPlan.queryFanOutBrief).toContain("The free report shows the gap");
-    expect(report.localDominationPlan.recommendedPages).toContain("Local service/page opportunities detected — exact page map unlocks in the full report.");
-    expect(report.localDominationPlan.faqOpportunities).toContain("High-intent recommendation questions detected — exact FAQ blocks unlock in the full report.");
-    expect(report.localDominationPlan.reviewSyndicationActions).toContain("Proof distribution opportunities detected — channel-by-channel actions unlock in the full report.");
+    expect(report.localDominationPlan.queryFanOutBrief).toContain("The free report gives you the first read");
+    expect(report.localDominationPlan.recommendedPages).toContain("Make service/city pages answer real local recommendation questions, not just keywords.");
+    expect(report.localDominationPlan.faqOpportunities).toContain("Answer who-to-choose questions buyers would ask an AI assistant.");
+    expect(report.localDominationPlan.reviewSyndicationActions).toContain("Reuse strong reviews as website proof blocks, profile updates, social posts, and short FAQs.");
     expect(report.localDominationPlan.brandDefensePrompts).toContain("Oakville Toyota brand-search protection opportunity detected");
     expect(report.lockedSections).toContain("Exact page map, FAQ blocks, schema recommendations, and fix sequence");
     expect(report.paidDeliverables.monthlyGrowthPlan.includes).toContain("Monthly service/city page, FAQ, review syndication, and brand-search protection updates");

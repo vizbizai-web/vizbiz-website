@@ -30,6 +30,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
     .slice(0, 3);
   const promptPreview = missedPrompts.length ? missedPrompts : report.buyerQuestionTest.prompts.slice(0, 3);
   const competitorSnapshot = report.leaderboard.slice(0, 3);
+  const competitorTeasers = report.leaderboard.filter((row) => row.kind === "competitor").slice(0, 2);
   const topGap = report.topVisibilityGaps[0];
   const revenueLeakSnapshot = report.revenueLeakSnapshot?.length ? report.revenueLeakSnapshot : createRevenueLeakFallback(report, categoryLabels);
   const evidenceCards = report.evidenceCards?.length ? report.evidenceCards : createEvidenceFallback(report);
@@ -209,7 +210,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                 <p className="mt-2 text-sm text-slate-700">Directional estimate, not a guarantee.</p>
               </div>
             ) : (
-              <p className="mt-4 text-slate-300">{isSpanishReport ? "Para este snapshot gratuito de marca ecommerce, no mostramos una estimación en dólares. Las señales confiables aquí son presencia en respuestas de IA, prueba de producto/marca, competidores nombrados y preparación del sitio para lectura por máquinas." : isProductBrand ? "For this free product-brand snapshot, we are not showing a dollar-gap estimate. The reliable signals here are AI answer presence, product/brand trust proof, named-competitor context, and website machine-readiness." : "For this free restaurant snapshot, we are not showing a dollar-gap estimate. The reliable signals here are AI answer presence, Google profile trust, named-competitor validation, and website machine-readiness."}</p>
+              <p className="mt-4 text-slate-300">{isSpanishReport ? "Para este snapshot gratuito, no mostramos una estimación en dólares cuando los supuestos todavía no son confiables. Las señales útiles aquí son presencia en respuestas de IA, prueba de confianza, competidores nombrados y preparación del sitio para lectura por máquinas." : isProductBrand ? "For this free product-brand snapshot, we are not showing a dollar-gap estimate. The useful signals here are AI answer presence, product/brand trust proof, named-competitor context, and website machine-readiness." : "For this free business snapshot, we only show dollar-gap estimates when the assumptions are strong enough. The useful signals here are AI answer presence, local trust proof, named-competitor context, and website machine-readiness."}</p>
             )}
             {revenueScenarios.length > 0 && (
               <div className="mt-5 grid gap-2">
@@ -220,8 +221,25 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
             )}
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-slate-300">
               <p className="font-bold text-white">What this means</p>
-              <p className="mt-1">{isProductBrand ? "This snapshot is intentionally conservative: it shows the real AI-answer misses and product trust signals without inventing a revenue number for this free preview." : "This snapshot is intentionally conservative: it shows the real AI-answer misses and verified local trust signals without inventing a revenue number for a restaurant lead."}</p>
+              <p className="mt-1">{isProductBrand ? "This snapshot is intentionally conservative: it shows real AI-answer misses, product trust signals, and a few useful clues without giving away the complete fix plan." : "This snapshot is intentionally conservative: it shows real AI-answer misses, local trust signals, named competitor context, and a few useful clues without pretending one exact fix or revenue number is guaranteed."}</p>
             </div>
+            {competitorTeasers.length > 0 && (
+              <div className="mt-5 rounded-2xl border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm leading-6 text-cyan-50">
+                <p className="font-bold text-white">Competitor taste</p>
+                <p className="mt-1 text-cyan-50/90">The free snapshot does not reveal the full competitor teardown, but it does show who we are comparing against and the first visible signal gap.</p>
+                <div className="mt-3 grid gap-2">
+                  {competitorTeasers.map((row) => (
+                    <div key={`teaser-${row.name}`} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#020617]/50 px-3 py-2">
+                      <span className="font-semibold text-white">{row.name}</span>
+                      <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-xs font-black text-cyan-100">
+                        {row.aiRecommendationShare == null ? `${row.aviScore}/100 signal score` : `${Math.round(row.aiRecommendationShare * 100)}% AI share`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs uppercase tracking-[0.14em] text-cyan-100/80">Full report unlocks: why they are easier to cite, which pages/signals help them, and what to build first.</p>
+              </div>
+            )}
             <SocialProofCard socialProof={socialProofScore} />
             {report.llmReadiness && <LlmReadinessCard readiness={report.llmReadiness} />}
           </div>
@@ -376,7 +394,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
               <Link href={`/api/mini-audit/cta?slug=${encodeURIComponent(report.slug)}&product=fix_package`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-5 py-4 font-bold text-[#020617]">
                 {report.ctas.fullReport.label} <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link href={`/api/mini-audit/cta?slug=${encodeURIComponent(report.slug)}&product=monthly_plan`} className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 py-4 font-bold text-white">
+              <Link href={`/api/mini-audit/cta?slug=${encodeURIComponent(report.slug)}&product=monthly_plan`} className="inline-flex items-center justify-center rounded-xl border border-cyan-200/70 bg-[#E0F7FA] px-5 py-4 font-black text-[#020617] shadow-[0_0_28px_rgba(34,211,238,0.22)] transition hover:bg-white">
                 {report.ctas.monthlyMonitoring.label}
               </Link>
             </div>

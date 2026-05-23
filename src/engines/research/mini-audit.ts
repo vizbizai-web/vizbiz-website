@@ -345,26 +345,26 @@ function createLocalDominationPlan(audit: AuditReport): LocalDominationPlan {
       ? `${brand} does not need to beat every brand at once. It needs to become easier for AI systems to trust and cite when shoppers ask for product recommendations.`
       : `${brand} does not need to beat every national brand first. It needs stronger signals when buyers ask AI/search who to trust in ${market}.`,
     queryFanOutBrief: productBrand
-      ? "The free report shows the gap. The full report unlocks the exact product pages, comparison angles, proof assets, and technical fixes to prioritize."
-      : "The free report shows the gap. The full report unlocks the exact local pages, proof assets, review strategy, and technical fixes to prioritize.",
+      ? "The free report gives you the first read: where AI may miss the brand, what kind of product proof is thin, and which comparison moments deserve attention. The full report turns that into the exact page map, evidence, and implementation sequence."
+      : "The free report gives you the first read: where AI may miss the business, what local trust proof is thin, and which competitor comparison moments deserve attention. The full report turns that into the exact page map, evidence, and implementation sequence.",
     recommendedPages: productBrand ? [
-      "Product discovery opportunities detected — exact page map unlocks in the full report.",
-      "Comparison and buying-intent opportunities detected — exact targets unlock in the full report.",
-      "Trust-proof content opportunities detected — exact assets unlock in the full report.",
+      "Make product/category pages answer the way shoppers ask AI for recommendations.",
+      "Add comparison proof so AI can understand when this brand is a better fit.",
+      "Move ingredients, reviews, guarantees, and buying proof closer to decision pages.",
     ] : [
-      "Local service/page opportunities detected — exact page map unlocks in the full report.",
-      "Review and trust-proof opportunities detected — exact assets unlock in the full report.",
-      "Brand-search protection opportunities detected — exact targets unlock in the full report.",
+      "Make service/city pages answer real local recommendation questions, not just keywords.",
+      "Put review proof, location clarity, and trust signals closer to call/booking moments.",
+      "Protect branded searches so AI sees the business as the safest local answer.",
     ],
     faqOpportunities: [
-      "High-intent recommendation questions detected — exact FAQ blocks unlock in the full report.",
-      "Trust and comparison questions detected — exact wording unlocks in the full report.",
-      "Buyer objection questions detected — answer copy unlocks in the full report.",
+      "Answer who-to-choose questions buyers would ask an AI assistant.",
+      "Answer comparison questions that mention nearby competitors or alternatives.",
+      "Answer trust questions about reviews, service quality, pricing, availability, and fit.",
     ],
     reviewSyndicationActions: [
-      "Proof distribution opportunities detected — channel-by-channel actions unlock in the full report.",
-      "Review and social proof gaps detected — exact repurposing plan unlocks in the full report.",
-      "Citation-building opportunities detected — monthly execution plan unlocks in the paid plan.",
+      "Reuse strong reviews as website proof blocks, profile updates, social posts, and short FAQs.",
+      "Connect social, review, directory, and website proof so the entity story is consistent.",
+      "Refresh proof monthly so competitor movement does not quietly pass the business.",
     ],
     brandDefensePrompts: [
       `${brand} brand-search protection opportunity detected`,
@@ -515,7 +515,7 @@ function createRevenueLeakSnapshot(audit: AuditReport): MiniRevenueLeakFinding[]
       summary: missingPrompts > 0
         ? "When buyers ask AI/search tools for local recommendations, the business is not consistently part of the answer set."
         : "The business appears in some tested prompts, but still needs stronger repeatable citation coverage.",
-      fix: "The full report identifies the exact content, proof, and technical fixes needed for the missed recommendation moments.",
+      fix: "Start by making the missed recommendation moments easier to answer with clearer service pages, trust proof, and machine-readable business details. The full report maps the exact priorities.",
     },
   ];
 
@@ -571,7 +571,7 @@ function createEvidenceCards(audit: AuditReport): MiniEvidenceCard[] {
       ? `AI recommendation moment tested: “${missedPrompt.clientFacingQuestion ?? missedPrompt.prompt}”. Outcome: ${missedPrompt.score === 0 ? "target absent" : "competitors appeared"}.`
       : `${audit.promptsAppeared}/${audit.promptsTotal} tested AI recommendation moments surfaced the business in the free preview model.`,
     whyItMatters: "If the business is absent from answer engines at the recommendation moment, buyers may shortlist competitors before reaching Google or the website.",
-    recommendedFix: "The full report maps the missed recommendation moments to the exact pages, proof blocks, and technical changes to prioritize.",
+    recommendedFix: "A good first move is to add clearer answer-ready content and trust proof around this kind of question. The full report maps which pages, proof blocks, and technical changes come first.",
     confidence: missedPrompt ? "High" : "Directional",
   });
 
@@ -686,11 +686,11 @@ function sampleQuestionFor(category: BusinessCategory, audit: AuditReport) {
   const market = audit.client.market ?? audit.client.city;
   const service = audit.businessProfile?.primaryServices[0] ?? audit.client.primaryMake ?? "business";
   const questions: Record<BusinessCategory, string> = {
-    discovery: `Best ${service} near ${market}`,
-    trust: `Most trusted ${service} provider in ${market}`,
-    service: `${service} service options in ${market}`,
-    inventory: `Where to compare ${service} offers in ${market}`,
-    finance: `Best value ${service} provider in ${market}`,
+    discovery: `I’m in ${market} and need ${service}. Who should I consider?`,
+    trust: `Which ${service} options near ${market} have strong reviews and are worth checking first?`,
+    service: `Where can I get help with ${service} around ${market}?`,
+    inventory: `What should I compare before choosing a ${service} option near ${market}?`,
+    finance: `Who offers a good value for ${service} near ${market}?`,
   };
   return questions[category];
 }
