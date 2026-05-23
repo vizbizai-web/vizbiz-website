@@ -9,8 +9,13 @@ export async function saveJson<T extends { id: string }>(collection: string, rec
 
 export async function saveJsonWithKey<T>(collection: string, key: string, record: T): Promise<T> {
   const dir = path.join(dataDir, collection);
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, `${safeFileKey(key)}.json`), JSON.stringify(record, null, 2));
+  try {
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, `${safeFileKey(key)}.json`), JSON.stringify(record, null, 2));
+  } catch (error) {
+    if (isReadOnlyFilesystemError(error)) return record;
+    throw error;
+  }
   return record;
 }
 
@@ -41,4 +46,8 @@ export async function listJson<T>(collection: string): Promise<T[]> {
 
 function safeFileKey(key: string) {
   return key.replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
+function isReadOnlyFilesystemError(error: unknown) {
+  return error instanceof Error && "code" in error && (error as NodeJS.ErrnoException).code === "EROFS";
 }

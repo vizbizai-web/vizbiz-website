@@ -91,6 +91,32 @@ export async function saveSupabaseMiniReport(input: {
   });
 }
 
+export async function findSupabaseMiniReportBySlug(
+  slug: string,
+): Promise<(MiniAuditReport & { leadEmail?: string; competitorSource?: CompetitorSource; competitorNote?: string }) | null> {
+  if (!hasSupabaseServerConfig()) return null;
+  try {
+    const reports = await supabaseFetch<Array<{ report_json: MiniAuditReport & { leadEmail?: string; competitorSource?: CompetitorSource; competitorNote?: string } }>>(
+      `mini_reports?select=report_json&slug=eq.${encodeURIComponent(slug)}&limit=1`,
+      { method: "GET" },
+    );
+    return reports[0]?.report_json ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function markSupabaseMiniReportViewed(slug: string) {
+  const lead = await findSupabaseLeadByReportSlug(slug);
+  if (!lead) return { ok: false };
+  const event = await createSupabaseLeadEvent({
+    leadId: lead.id,
+    eventType: "report_viewed",
+    payload: { slug },
+  });
+  return { ok: !event.error };
+}
+
 export async function saveSupabaseSiteIntelligencePlaceholder(input: {
   leadId: string;
   audit: AuditReport;

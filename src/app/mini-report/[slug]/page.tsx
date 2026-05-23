@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight, CheckCircle2, DollarSign, FileText, Lock, Ma
 import type { MiniAuditReport } from "@/engines/research/mini-audit";
 import { listJson, readJson, saveJsonWithKey } from "@/lib/file-store";
 import { appendStatus, type MiniLeadRecord } from "@/lib/lead-pipeline";
+import { findSupabaseMiniReportBySlug, markSupabaseMiniReportViewed } from "@/lib/supabase-crm";
 import VizBizLogo from "@/components/VizBizLogo";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const revalidate = 0;
 
 export default async function MiniReportPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const report = await readJson<MiniAuditReport>("mini-reports", slug);
+  const report = (await readJson<MiniAuditReport>("mini-reports", slug)) ?? (await findSupabaseMiniReportBySlug(slug));
   if (!report) notFound();
   await markReportViewed(slug);
 
@@ -387,10 +388,15 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
 }
 
 async function markReportViewed(slug: string) {
+  await markSupabaseMiniReportViewed(slug);
   const leads = await listJson<MiniLeadRecord>("mini-leads");
   const lead = leads.find((record) => record.reportSlug === slug);
   if (!lead) return;
-  await saveJsonWithKey("mini-leads", lead.id, appendStatus(lead, "report_viewed"));
+  try {
+    await saveJsonWithKey("mini-leads", lead.id, appendStatus(lead, "report_viewed"));
+  } catch {
+    // Vercel production has a read-only app filesystem; Supabase remains the durable event store.
+  }
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
