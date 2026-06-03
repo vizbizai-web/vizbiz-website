@@ -3,7 +3,7 @@ import { ArrowRight, CheckCircle2, Gift, ShieldCheck } from "lucide-react";
 
 const deliverables = [
   "120 buyer-intent AI prompts across discovery, trust, service, urgent, comparison, and nearby-market questions",
-  "Two nearby competitor benchmark showing where AI recommends them instead of you",
+  "Two nearby competitor benchmarks showing where AI may recommend them instead of you",
   "Prompt evidence table with provider, outcome, rank, answer excerpt, and citation/source notes where available",
   "Website, schema, sitemap, robots.txt, llms.txt, GBP, reviews, and local entity readiness audit",
   "Why AI recommended your competitor section with evidence, missing proof, and fix needed",

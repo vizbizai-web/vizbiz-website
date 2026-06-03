@@ -520,7 +520,7 @@ function RevenueLeakCard({ leak }: { leak: MiniAuditReport["revenueLeakSnapshot"
       <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-cyan-200">{leak.leakType}</p>
       <h3 className="mt-1 text-lg font-bold leading-snug text-white">{leak.title}</h3>
       <p className="mt-3 text-sm leading-6 text-slate-300">{leak.summary}</p>
-      <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm leading-6 text-slate-200"><span className="font-bold text-cyan-100">First fix —</span>{" "}{leak.fix}</p>
+      <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm leading-6 text-slate-200"><span className="font-bold text-cyan-100">Paid report focus —</span>{" "}{leak.fix}</p>
     </div>
   );
 }
@@ -557,7 +557,7 @@ function SocialProofCard({ socialProof }: { socialProof: MiniAuditReport["social
           <p key={signal} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm leading-6 text-slate-200"><span className="font-bold text-cyan-100">Signal:</span> {signal}</p>
         ))}
         {socialProof.opportunities.slice(0, 2).map((opportunity) => (
-          <p key={opportunity} className="rounded-2xl border border-cyan-200/15 bg-cyan-300/10 p-3 text-sm leading-6 text-cyan-50"><span className="font-bold">Next fix:</span> {opportunity}</p>
+          <p key={opportunity} className="rounded-2xl border border-cyan-200/15 bg-cyan-300/10 p-3 text-sm leading-6 text-cyan-50"><span className="font-bold">Paid report opportunity:</span> {opportunity}</p>
         ))}
       </div>
     </div>
@@ -621,7 +621,7 @@ function EvidenceCard({ card }: { card: MiniAuditReport["evidenceCards"][number]
       <div className="mt-4 grid min-w-0 gap-3 text-sm leading-6 [overflow-wrap:anywhere]">
         <p className="min-w-0 text-slate-300"><span className="font-bold text-cyan-100">Evidence —</span>{" "}{card.evidence}</p>
         <p className="min-w-0 text-slate-300"><span className="font-bold text-cyan-100">Why it matters —</span>{" "}{card.whyItMatters}</p>
-        <p className="min-w-0 rounded-2xl border border-cyan-200/15 bg-cyan-300/10 p-3 text-cyan-50"><span className="font-bold">Recommended fix —</span>{" "}{card.recommendedFix}</p>
+        <p className="min-w-0 rounded-2xl border border-cyan-200/15 bg-cyan-300/10 p-3 text-cyan-50"><span className="font-bold">Paid report focus —</span>{" "}{card.recommendedFix}</p>
       </div>
     </div>
   );
