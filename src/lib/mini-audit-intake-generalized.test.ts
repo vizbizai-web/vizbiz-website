@@ -22,6 +22,19 @@ describe("parseMiniAuditLead generalized intake", () => {
     expect(lead.auditInput.businessType).toBeUndefined();
   });
 
+  it("infers dealership category from business name or primary service", () => {
+    const lead = parseMiniAuditLead({
+      name: "Foster Kia",
+      email: "owner@fosterkia.example",
+      websiteUrl: "fosterkia.com",
+      city: "Oakville",
+      primaryService: "Kia dealership",
+    });
+
+    expect(lead.auditInput.businessType).toBe("auto_dealer");
+    expect(lead.auditInput.primaryMake).toBe("Kia");
+  });
+
   it("accepts optional niche/category and two separate user-supplied competitor fields", () => {
     const lead = parseMiniAuditLead({
       name: "Reliable Roof Co",

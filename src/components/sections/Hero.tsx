@@ -26,7 +26,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-xl sm:leading-8">
-            When someone asks ChatGPT, Google AI, Gemini, Claude, or Perplexity who to choose nearby, does your business show up — or do your competitors? VizBiz checks your local AI visibility and gives you the website, review, schema, and trust fixes that make your business easier to recommend.
+            When someone asks ChatGPT, Google AI, Gemini, Claude, Perplexity, or another AI-powered search tool who to choose nearby, does your business show up — or do your competitors? VizBiz checks your local AI visibility and gives you the website, review, schema, and trust fixes that make your business easier to recommend as this search behavior grows.
           </p>
 
           <div className="mt-6 inline-flex w-fit flex-wrap items-center gap-2 rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100">
@@ -53,7 +53,7 @@ export default function Hero() {
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link href="#free-mini-report" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-7 py-4 font-bold text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.35)] transition hover:scale-[1.01]">
-              Run my free local AI visibility report <ArrowRight className="h-5 w-5" />
+              Email me my free AI visibility snapshot <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="#pricing" className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10">
               View full report options

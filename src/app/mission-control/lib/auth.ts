@@ -4,8 +4,9 @@ import { createHash, timingSafeEqual } from 'crypto';
 const SESSION_COOKIE = 'mc_session';
 const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
 
-// Demo mode for static export
-const isStaticExport = process.env.NEXT_EXPORT === 'true' || process.env.NODE_ENV === 'production';
+// Static export cannot use secure server cookies. Normal Vercel/Next production
+// must still enforce server-side Mission Control auth.
+const isStaticExport = process.env.NEXT_EXPORT === 'true';
 
 export function hashPassword(password: string): string {
   return createHash('sha256').update(password + (process.env.MISSION_CONTROL_SECRET_SALT || 'vizbiz-salt')).digest('hex');

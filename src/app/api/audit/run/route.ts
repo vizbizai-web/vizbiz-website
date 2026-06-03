@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { runAudit } from "@/engines/research/runner";
-import { saveJson } from "@/lib/file-store";
-import type { ClientInput } from "@/engines/research/types";
 
-export async function POST(request: Request) {
-  const input = await request.json() as ClientInput;
-  if (!input.name || !input.city) {
-    return NextResponse.json({ error: "name and city are required" }, { status: 400 });
-  }
+const DEPRECATED_AUDIT_RUN_RESPONSE = {
+  status: "deprecated",
+  code: "sync_audit_route_deprecated",
+  message: "The synchronous audit runner is archived and is no longer a client-facing source of truth. Use the async intake queue and report worker instead.",
+  replacement: "/api/mini-audit/run",
+  workerCommand: "npm run worker:reports -- --limit=3",
+};
 
-  const audit = await runAudit(input);
-  await saveJson("audits", audit);
-  return NextResponse.json(audit, { status: 201 });
+export async function POST(_request: Request) {
+  return NextResponse.json(DEPRECATED_AUDIT_RUN_RESPONSE, { status: 410 });
 }

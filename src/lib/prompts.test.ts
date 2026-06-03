@@ -6,9 +6,15 @@ describe("buildPromptPlan", () => {
     const prompts = buildPromptPlan({ name: "Oakville Toyota", city: "Oakville", businessType: "auto_dealer", primaryMake: "Toyota" });
 
     expect(prompts).toHaveLength(11);
-    expect(prompts[0]).toMatchObject({ prompt: "best Toyota dealer in Oakville", category: "discovery", platform: "perplexity" });
+    expect(prompts[0]).toMatchObject({ prompt: "I'm in Oakville and looking for a Toyota dealership. Who should I consider?", category: "discovery", platform: "perplexity", showInFreeReport: true });
+    expect(prompts.map((prompt) => prompt.prompt)).toEqual(expect.arrayContaining([
+      "Where should I take my Toyota for service or repairs near Oakville?",
+      "Which Toyota dealer near Oakville is good for parts, maintenance, brakes, or warranty service?",
+    ]));
     expect(prompts[10]).toMatchObject({ prompt: "best dealership for trade-in in Oakville", category: "finance", platform: "openai" });
-    expect(prompts.some((prompt) => prompt.platform === "perplexity" && prompt.prompt === "best Toyota dealer in Oakville")).toBe(true);
+    expect(prompts.filter((prompt) => prompt.showInFreeReport)).toHaveLength(5);
+    expect(prompts.map((prompt) => prompt.clientFacingQuestion)).toContain("Which dealership near Oakville seems trustworthy for buying a Toyota?");
+    expect(prompts.filter((prompt) => prompt.showInFreeReport).map((prompt) => prompt.clientFacingQuestion)).not.toContain("best Toyota dealer in Oakville");
   });
 
   it("adapts prompts for detected non-dealership local niches", () => {
@@ -52,5 +58,26 @@ describe("buildPromptPlan", () => {
     expect(prompts.some((prompt) => prompt.clientFacingQuestion === "Tengo antojo de gomitas, pero quiero algo con menos azúcar. ¿Qué marcas me recomiendas en México?")).toBe(true);
     expect(prompts.some((prompt) => prompt.clientFacingQuestion === "Busco gomitas veganas y sin azúcar añadida para comprar en México. ¿Cuáles debería probar?")).toBe(true);
     expect(prompts.filter((prompt) => prompt.showInFreeReport).map((prompt) => prompt.clientFacingQuestion)).not.toContain("I want candy that feels like gummies but has less sugar. What brands should I try?");
+  });
+
+  it("builds human tax-service questions instead of generic local-business prompts", () => {
+    const prompts = buildPromptPlan({ name: "AK Consultancy Services Inc.", city: "Oakville", businessType: "tax_service", primaryService: "tax services" });
+
+    expect(prompts).toHaveLength(7);
+    expect(prompts[0]).toMatchObject({ prompt: "I'm in Oakville and need help with taxes. Which tax services should I consider?", category: "discovery", platform: "perplexity", showInFreeReport: true });
+    expect(prompts.map((prompt) => prompt.prompt)).toEqual(expect.arrayContaining([
+      "Which tax accountant near Oakville seems trustworthy for personal or small business taxes?",
+      "Where can I get personal tax returns, corporate tax filing, or bookkeeping help near Oakville?",
+    ]));
+    expect(prompts.map((prompt) => prompt.prompt).join(" ")).not.toContain("local business");
+  });
+
+  it("builds dynamic service prompts for new clear niches instead of local-business fallback", () => {
+    const prompts = buildPromptPlan({ name: "Green Yard Pros", city: "Hamilton", businessType: "generic_local_service", primaryService: "landscaping" });
+
+    expect(prompts).toHaveLength(6);
+    expect(prompts[0]).toMatchObject({ prompt: "I'm in Hamilton and need help with landscaping. Who should I consider?", showInFreeReport: true });
+    expect(prompts.map((prompt) => prompt.prompt).join(" ")).not.toContain("local business");
+    expect(prompts.filter((prompt) => prompt.showInFreeReport)).toHaveLength(4);
   });
 });

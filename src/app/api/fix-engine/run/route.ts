@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { generateFixPackage } from "@/engines/fix/pipeline";
-import type { AuditReport } from "@/engines/research/types";
-import { readJson, saveJson } from "@/lib/file-store";
 
-export async function POST(request: Request) {
-  const body = await request.json() as { auditId?: string; audit?: AuditReport };
-  const audit = body.audit ?? (body.auditId ? await readJson<AuditReport>("audits", body.auditId) : null);
-  if (!audit) return NextResponse.json({ error: "auditId or audit payload is required" }, { status: 400 });
+const DEPRECATED_FIX_RUN_RESPONSE = {
+  status: "deprecated",
+  code: "sync_fix_route_deprecated",
+  message: "The synchronous fix generator is archived and is no longer a production fulfillment path. Use paid intake jobs and the report worker/operator review queue instead.",
+  replacement: "paid intake queue + report worker",
+  intakeEndpoint: "/api/purchase/intake",
+  workerCommand: "npm run worker:reports -- --limit=3",
+};
 
-  const fixPackage = generateFixPackage(audit);
-  await saveJson("fix-packages", fixPackage);
-  return NextResponse.json(fixPackage, { status: 201 });
+export async function POST(_request: Request) {
+  return NextResponse.json(DEPRECATED_FIX_RUN_RESPONSE, { status: 410 });
 }

@@ -12,8 +12,10 @@ grant select, insert, update, delete on public.competitor_candidates to service_
 grant select, insert, update, delete on public.mini_reports to service_role;
 grant select, insert, update, delete on public.lead_events to service_role;
 grant select, insert, update, delete on public.crm_sync_logs to service_role;
+grant select, insert, update, delete on public.report_jobs to service_role;
 grant select, insert, update, delete on public.telegram_alert_logs to service_role;
 grant select, insert, update, delete on public.paid_orders to service_role;
+grant select, insert, update, delete on public.paid_fulfillment_tasks to service_role;
 
 grant usage, select on all sequences in schema public to service_role;
 

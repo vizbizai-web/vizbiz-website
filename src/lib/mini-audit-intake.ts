@@ -17,8 +17,9 @@ export function parseMiniAuditLead(raw: RawMiniAuditLead): MiniAuditLead {
   const email = normalizeEmail(requiredString(raw.email, "email"));
   const city = requiredString(raw.city, "city");
   const websiteUrl = optionalWebsite(raw.websiteUrl);
-  const primaryMake = optionalString(raw.primaryMake);
   const primaryService = optionalString(raw.primaryService);
+  const primaryMake = optionalString(raw.primaryMake) ?? inferVehicleMake([name, primaryService, websiteUrl].filter(Boolean).join(" "));
+  const inferredBusinessType = optionalString(raw.businessType) ?? (primaryMake || looksLikeAutoDealer([name, primaryService, websiteUrl].filter(Boolean).join(" ")) ? "auto_dealer" : undefined);
   const competitors = parseCompetitors(raw);
 
   return {
@@ -30,7 +31,7 @@ export function parseMiniAuditLead(raw: RawMiniAuditLead): MiniAuditLead {
       market: optionalString(raw.market) ?? city,
       ...(primaryMake ? { primaryMake } : {}),
       ...(primaryService ? { primaryService } : {}),
-      ...(optionalString(raw.businessType) || primaryMake ? { businessType: optionalString(raw.businessType) ?? "auto_dealer" } : {}),
+      ...(inferredBusinessType ? { businessType: inferredBusinessType } : {}),
       ...(websiteUrl ? { websiteUrl } : {}),
       ...(competitors.length ? { competitors } : {}),
     },
@@ -60,6 +61,19 @@ function optionalWebsite(value: unknown) {
   if (!website) return undefined;
   if (/^https?:\/\//i.test(website)) return website;
   return `https://${website}`;
+}
+
+function inferVehicleMake(value: string) {
+  const match = value.match(/\b(Kia|Toyota|Honda|Hyundai|Ford|Chevrolet|Chevy|Nissan|Mazda|Subaru|Volkswagen|VW|BMW|Mercedes|Audi|Lexus|Acura|Jeep|Dodge|Ram|Chrysler|GMC|Cadillac|Volvo|Porsche|Mitsubishi|Buick|Lincoln|Genesis|Infiniti|Mini|Tesla)\b/i);
+  if (!match) return undefined;
+  const normalized = match[1];
+  if (normalized.toUpperCase() === "VW") return "Volkswagen";
+  if (normalized.toLowerCase() === "chevy") return "Chevrolet";
+  return normalized[0].toUpperCase() + normalized.slice(1).toLowerCase();
+}
+
+function looksLikeAutoDealer(value: string) {
+  return /\b(dealer|dealership|auto dealer|car dealer|new cars|used cars|vehicle sales|service department|parts department)\b/i.test(value);
 }
 
 function parseCompetitors(raw: RawMiniAuditLead): CompetitorBenchmark[] {

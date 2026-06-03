@@ -43,7 +43,7 @@ export default function WhyAiRecommendsCompetitors() {
             AI does not guess who owns the local market. It looks for evidence.
           </h2>
           <p className="mt-5 text-lg leading-8 text-slate-300">
-            When someone asks ChatGPT, Gemini, Claude, Perplexity, or Google AI for a local recommendation, your website is only one signal. The answer usually comes from a pattern: clear services, clean local data, reviews, schema, and third-party mentions that all point to the same business in the same town, city, ZIP code, or postal code.
+            When someone asks ChatGPT, Gemini, Claude, Perplexity, Google AI, or another AI-powered search experience for a local recommendation, your website is only one signal. The answer usually comes from a pattern: clear services, clean local data, reviews, schema, and third-party mentions that all point to the same business in the same town, city, ZIP code, or postal code.
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function WhyAiRecommendsCompetitors() {
         <div className="mt-10 rounded-[2rem] bg-gradient-to-br from-[#E0F7FA] to-[#CFFAFE] p-6 text-[#0F172A] shadow-[0_0_60px_rgba(34,211,238,0.18)] sm:p-8">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-600">What the free report checks first</p>
           <p className="mt-3 max-w-4xl font-serif text-2xl leading-snug sm:text-3xl">
-            Enter your website and two nearby competitors. VizBiz shows whether AI is more likely to recommend you, where your local evidence breaks down, and which fixes should come first.
+            Enter your website and two nearby competitors. VizBiz emails a free snapshot showing whether popular AI assistants can understand and recommend you, where your local evidence breaks down, and which paid fixes should come first.
           </p>
         </div>
       </div>

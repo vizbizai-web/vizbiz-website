@@ -4,26 +4,26 @@ import { ArrowRight, Eye, FileText, LockKeyhole, TrendingUp } from "lucide-react
 const journey = [
   {
     step: "01",
-    title: "Run the free scan",
-    body: "Share your website, town/city, email, and two nearby competitors. That is enough to create a useful local visibility read without making you fill out a long intake form.",
+    title: "Submit the free intake",
+    body: "Share your website, town/city, email, and two nearby competitors. We capture the lead, prepare the snapshot, and email the report link instead of dumping the report immediately after the form.",
   },
   {
     step: "02",
-    title: "See where AI loses confidence",
-    body: "The mini report shows your score, your weakest local buyer questions, and whether the two competitors you named look easier for AI to recommend in your market.",
+    title: "Open the emailed report link",
+    body: "The free report shows your score, realistic AI recommendation moments, and whether the competitors you named look easier for popular AI assistants to trust and recommend.",
   },
   {
     step: "03",
-    title: "Fix the missing signals",
-    body: "The full report turns the preview into a prioritized fix list: service pages, schema, FAQs, local entity signals, reviews, and monitoring. If we don’t uncover at least 10 clear AI visibility gaps or local competitor advantages, we refund the report.",
+    title: "Build the AI reputation layer early",
+    body: "The full report turns the preview into a prioritized fix list: service pages, schema, FAQs, local entity signals, reviews, and monitoring. Early businesses can build trust signals before the AI search wave gets crowded.",
   },
 ];
 
 const benefits = [
-  "Know if AI recommends you or the two nearby businesses customers already compare you with",
-  "Find the local buyer questions where your website, reviews, or trust signals are weakest",
-  "Preview a simple estimate of how much visibility you may be losing to local competitors",
-  "Move from a free preview to a full report, fix package, or monthly monitoring",
+  "Know if popular AI assistants can understand and recommend your business when local buyers ask who to choose",
+  "Find the human-style recommendation moments where your website, reviews, or trust signals are weakest",
+  "Start building AI-readable reputation before local competitors treat AI search as a serious channel",
+  "Move from a free emailed snapshot to a full report, fix package, or monthly monitoring",
 ];
 
 export default function MiniReportJourney() {
@@ -32,13 +32,13 @@ export default function MiniReportJourney() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">From local score to fix list</p>
-            <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
-              A mini report should show how to win more local AI recommendations.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-slate-700">
-              The free report gives you the first useful read: where AI sees you, where it prefers a nearby competitor, and which trust signals are missing. The paid founder report expands that into 120 buyer-intent AI prompts, raw evidence, competitor-by-competitor reasoning, and a prioritized local fix plan.
-            </p>
+              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#06B6D4]">From intake to emailed report</p>
+              <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
+                The free snapshot starts the AI reputation conversation.
+              </h2>
+              <p className="mt-5 text-lg leading-8 text-slate-700">
+                The intake captures the lead, the email delivers the private report link, and the report page proves the problem. The paid founder report expands that snapshot into platform-by-platform evidence, competitor reasoning, exact fixes, and a prioritized local AI reputation plan.
+              </p>
             <div className="mt-8 grid gap-3">
               {benefits.map((benefit) => (
                 <div key={benefit} className="flex items-start gap-3 rounded-2xl bg-white/70 p-4 shadow-sm">
@@ -89,7 +89,7 @@ export default function MiniReportJourney() {
               </div>
 
               <Link href="#free-mini-report" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-4 font-bold text-[#020617]">
-                Run my free local AI visibility report <ArrowRight className="h-5 w-5" />
+                Email me my free AI visibility snapshot <ArrowRight className="h-5 w-5" />
               </Link>
             </div>
           </div>

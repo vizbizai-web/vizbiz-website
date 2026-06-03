@@ -1,3 +1,4 @@
+import type { GoogleBusinessEvidence } from "../business-intelligence-types";
 import type { ClientInput, CompetitorBenchmark, GooglePlaceCompetitorValidation, GooglePlaceProfile, GooglePlacesEnrichment, LocalEntityTrustScore } from "../types";
 
 const GOOGLE_PLACES_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText";
@@ -172,6 +173,62 @@ function validationStatus(place: GooglePlaceProfile, distanceFromClientKm: numbe
   if (distanceFromClientKm !== null && distanceFromClientKm > 50) return "needs_review";
   if (categoryMatch === false) return "needs_review";
   return "validated";
+}
+
+export function toGoogleBusinessEvidence(place: GooglePlaceProfile, submittedWebsiteUrl?: string | null): GoogleBusinessEvidence {
+  const websiteMatch = classifyWebsiteMatch(submittedWebsiteUrl, place.websiteUri);
+  const evidence: string[] = [];
+  if (place.placeId) evidence.push("Google Business Profile found.");
+  if (place.displayName) evidence.push(`Google canonical name: ${place.displayName}.`);
+  if (place.types.length) evidence.push(`Google categories/types include ${place.types.slice(0, 5).join(", ")}.`);
+  if (websiteMatch === "exact" || websiteMatch === "same_domain") evidence.push("Google profile website matches the submitted website.");
+  if (websiteMatch === "mismatch") evidence.push("Google profile website conflicts with the submitted website.");
+  if (typeof place.userRatingCount === "number") evidence.push(`${place.userRatingCount} Google reviews detected.`);
+  const confidence = Math.max(0, Math.min(100, Math.round(
+    (place.placeId ? 30 : 0) +
+    (place.types.length ? 20 : 0) +
+    (websiteMatch === "exact" ? 25 : websiteMatch === "same_domain" ? 20 : websiteMatch === "mismatch" ? -20 : 0) +
+    (place.cityMatch ? 10 : 0) +
+    Math.min(15, (place.userRatingCount ?? 0) / 10),
+  )));
+
+  return {
+    placeId: place.placeId,
+    canonicalName: place.displayName,
+    primaryType: place.types.find((type) => !["point_of_interest", "establishment", "health", "store"].includes(type)) ?? null,
+    types: place.types,
+    rating: place.rating,
+    reviewCount: place.userRatingCount,
+    websiteUrl: place.websiteUri,
+    websiteMatch,
+    address: place.formattedAddress,
+    mapsUrl: place.googleMapsUri,
+    confidence,
+    evidence,
+  };
+}
+
+function classifyWebsiteMatch(submittedWebsiteUrl?: string | null, googleWebsiteUrl?: string | null): GoogleBusinessEvidence["websiteMatch"] {
+  if (!submittedWebsiteUrl || !googleWebsiteUrl) return "missing";
+  const submitted = normalizeUrlParts(submittedWebsiteUrl);
+  const google = normalizeUrlParts(googleWebsiteUrl);
+  if (!submitted || !google) return "mismatch";
+  if (submitted.href === google.href) return "exact";
+  if (submitted.hostname === google.hostname) return "same_domain";
+  return "mismatch";
+}
+
+function normalizeUrlParts(value: string) {
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    url.hash = "";
+    url.search = "";
+    const hostname = url.hostname.replace(/^www\./, "").toLowerCase();
+    const pathname = url.pathname.replace(/\/$/, "");
+    return { href: `${url.protocol}//${hostname}${pathname}`, hostname };
+  } catch {
+    return null;
+  }
 }
 
 function emptyPlace(): GooglePlaceProfile {

@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import { createMiniReportFromAudit } from "@/engines/research/mini-audit";
-import { runAudit } from "@/engines/research/runner";
-import { saveJson, saveJsonWithKey } from "@/lib/file-store";
-import { sendMiniReportEmail } from "@/lib/email";
-import { buildMiniLeadRecord } from "@/lib/lead-pipeline";
 import { parseMiniAuditLead } from "@/lib/mini-audit-intake";
+import { enqueueReportJob } from "@/lib/report-job-queue";
 import {
   attributionFromRawIntake,
   buildFreeIntakeAlert,
@@ -14,10 +10,7 @@ import {
   createSupabaseLead,
   createSupabaseLeadEvent,
   createSupabaseTelegramAlertLog,
-  saveSupabaseBusinessProfile,
   saveSupabaseCompetitors,
-  saveSupabaseMiniReport,
-  saveSupabaseSiteIntelligencePlaceholder,
   updateSupabaseLeadStatus,
 } from "@/lib/supabase-crm";
 
@@ -64,74 +57,40 @@ export async function POST(request: Request) {
           errorMessage: alert.error,
         });
       }
-      await updateSupabaseLeadStatus({ leadId: supabaseLead.data.id, status: "site_intelligence_running" });
     }
 
-    const audit = await runAudit(lead.auditInput);
-    const miniReport = {
-      ...createMiniReportFromAudit(audit),
-      leadEmail: lead.email,
-      competitorSource: lead.competitorSource,
-      competitorNote: lead.competitorSource === "user_supplied"
-        ? "Competitor benchmark uses the two competitors you supplied, which improves accuracy."
-        : "Add two competitors to make the competitor gap and local visibility opportunity estimate more accurate.",
-    };
-
-    const reportUrl = `/mini-report/${miniReport.slug}`;
-    const absoluteReportUrl = new URL(reportUrl, request.url).toString();
-    const emailDelivery = await sendMiniReportEmail({
-      to: lead.email,
-      email: miniReport.emailMiniReport,
-      reportUrl: absoluteReportUrl,
-      apiKey: process.env.RESEND_API_KEY,
-      from: process.env.RESEND_FROM_EMAIL,
+    const supabaseLeadId = supabaseLead.data?.id ?? null;
+    const baseUrl = new URL(request.url).origin;
+    const job = await enqueueReportJob({
+      type: "free_mini_report",
+      leadId: supabaseLeadId,
+      payload: {
+        rawIntake,
+        lead,
+        auditInput: lead.auditInput,
+        email: lead.email,
+        competitorSource: lead.competitorSource,
+        baseUrl,
+        origin: baseUrl,
+        supabaseLeadId,
+      },
     });
 
-    await saveJson("audits", audit);
-    await saveJsonWithKey("mini-reports", miniReport.slug, miniReport);
-    await saveJsonWithKey("mini-report-emails", miniReport.id, {
-      id: miniReport.id,
-      to: lead.email,
-      reportUrl,
-      absoluteReportUrl,
-      subject: miniReport.emailMiniReport.subject,
-      previewText: miniReport.emailMiniReport.previewText,
-      openingLine: miniReport.emailMiniReport.openingLine,
-      bullets: miniReport.emailMiniReport.bullets,
-      ctaLabel: miniReport.emailMiniReport.ctaLabel,
-      delivery: emailDelivery,
-      createdAt: miniReport.createdAt,
-    });
-    await saveJsonWithKey("mini-leads", miniReport.id, buildMiniLeadRecord({
-      id: miniReport.id,
-      email: lead.email,
-      auditId: audit.id,
-      reportSlug: miniReport.slug,
-      competitorSource: lead.competitorSource,
-      competitors: lead.auditInput.competitors ?? [],
-      client: miniReport.client,
-      emailDeliveryStatus: emailDelivery.status,
-      createdAt: miniReport.createdAt,
-    }));
-
-    if (supabaseLead.data) {
-      await saveSupabaseSiteIntelligencePlaceholder({ leadId: supabaseLead.data.id, audit });
-      await saveSupabaseBusinessProfile({ leadId: supabaseLead.data.id, report: miniReport });
-      await saveSupabaseMiniReport({
-        leadId: supabaseLead.data.id,
-        report: miniReport,
-        absoluteReportUrl,
-        emailDeliveryStatus: emailDelivery.status,
-      });
+    if (supabaseLeadId) {
       await createSupabaseLeadEvent({
-        leadId: supabaseLead.data.id,
-        eventType: "report_generated",
-        payload: { slug: miniReport.slug, aviScore: miniReport.aviScore, reportUrl: absoluteReportUrl },
+        leadId: supabaseLeadId,
+        eventType: "report_queued",
+        payload: { jobId: job.id, jobType: job.type },
       });
-      await updateSupabaseLeadStatus({ leadId: supabaseLead.data.id, status: emailDelivery.status === "sent" ? "report_sent" : "report_generating" });
+      await updateSupabaseLeadStatus({ leadId: supabaseLeadId, status: "report_queued" });
     }
 
-    return NextResponse.json({ slug: miniReport.slug, reportUrl, report: miniReport, emailDelivery, supabaseLeadId: supabaseLead.data?.id ?? null }, { status: 201 });
+    return NextResponse.json({
+      status: "queued",
+      jobId: job.id,
+      thankYouUrl: `/intake/thank-you?${new URLSearchParams({ email: lead.email, delivery: "queued" }).toString()}`,
+      supabaseLeadId,
+    }, { status: 202 });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to run mini audit" },

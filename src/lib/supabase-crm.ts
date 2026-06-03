@@ -27,6 +27,23 @@ export interface SupabaseLeadRow {
   updated_at: string;
 }
 
+export interface SupabaseReportJobRow {
+  id: string;
+  type: string;
+  status: string;
+  lead_id: string | null;
+  paid_order_id: string | null;
+  payload: Record<string, unknown>;
+  attempts: number;
+  max_attempts: number;
+  locked_at: string | null;
+  locked_by: string | null;
+  last_error: string | null;
+  result: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export function hasSupabaseServerConfig() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
@@ -229,6 +246,68 @@ export async function createSupabaseTelegramAlertLog(input: {
     status: input.status,
     error_message: input.errorMessage ?? null,
   });
+}
+
+export async function createSupabaseReportJob(input: {
+  id: string;
+  type: string;
+  status: string;
+  leadId?: string | null;
+  paidOrderId?: string | null;
+  payload?: Record<string, unknown>;
+  attempts: number;
+  maxAttempts: number;
+  lockedAt?: string | null;
+  lockedBy?: string | null;
+  lastError?: string | null;
+  result?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+}): Promise<SupabaseInsertResult<SupabaseReportJobRow>> {
+  return safeSupabaseInsert<SupabaseReportJobRow>("report_jobs", {
+    id: input.id,
+    type: input.type,
+    status: input.status,
+    lead_id: input.leadId ?? null,
+    paid_order_id: input.paidOrderId ?? null,
+    payload: input.payload ?? {},
+    attempts: input.attempts,
+    max_attempts: input.maxAttempts,
+    locked_at: input.lockedAt ?? null,
+    locked_by: input.lockedBy ?? null,
+    last_error: input.lastError ?? null,
+    result: input.result ?? null,
+    created_at: input.createdAt,
+    updated_at: input.updatedAt,
+  });
+}
+
+export async function listSupabaseReportJobs(status?: string): Promise<SupabaseReportJobRow[]> {
+  if (!hasSupabaseServerConfig()) return [];
+  const statusFilter = status ? `&status=eq.${encodeURIComponent(status)}` : "";
+  return supabaseFetch<SupabaseReportJobRow[]>(
+    `report_jobs?select=*&order=created_at.asc${statusFilter}`,
+    { method: "GET" },
+  );
+}
+
+export async function readSupabaseReportJob(id: string): Promise<SupabaseReportJobRow | null> {
+  if (!hasSupabaseServerConfig()) return null;
+  const rows = await supabaseFetch<SupabaseReportJobRow[]>(`report_jobs?select=*&id=eq.${encodeURIComponent(id)}&limit=1`, { method: "GET" });
+  return rows[0] ?? null;
+}
+
+export async function updateSupabaseReportJob(
+  id: string,
+  patch: Partial<Omit<SupabaseReportJobRow, "id" | "created_at">>,
+): Promise<SupabaseReportJobRow> {
+  const rows = await supabaseFetch<SupabaseReportJobRow[]>(`report_jobs?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+    headers: { Prefer: "return=representation" },
+  });
+  if (!rows[0]) throw new Error(`Report job not found: ${id}`);
+  return rows[0];
 }
 
 export async function createSupabaseFulfillmentTask(input: {

@@ -15,8 +15,8 @@ const points = [
   },
   {
     icon: TimerReset,
-    title: "Start before the channel gets crowded",
-    body: "AI local search is still early. Build your visibility foundation now while many local competitors are still invisible, inconsistent, or hard for AI systems to verify.",
+    title: "Build reputation before the channel gets crowded",
+    body: "AI-powered discovery is still early. Build your visibility foundation now while many local competitors are still invisible, inconsistent, or hard for AI systems to verify.",
   },
   {
     icon: ShieldCheck,
@@ -40,13 +40,13 @@ export default function LocalAiLandGrab() {
               before nearby competitors catch up.
             </h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              AI search is becoming the new front door for local discovery. When customers ask who to trust nearby, AI looks for repeated proof across service pages, reviews, social posts, local listings, and competitor comparisons — not just one pretty homepage.
+              Google still matters, but it is no longer the only discovery path. AI-powered search is becoming a new front door for local discovery. When customers ask who to trust nearby, AI looks for repeated proof across service pages, reviews, social posts, local listings, and competitor comparisons — not just one pretty homepage.
             </p>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
               VizBiz helps small and local businesses turn real-world trust into AI-readable signals so they can build a stronger footprint in their town, city, ZIP code, or postal code.
             </p>
             <Link href="#free-mini-report" className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-7 py-4 font-bold text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.28)] transition hover:scale-[1.01]">
-              Run my free local AI visibility report <ArrowRight className="h-5 w-5" />
+              Email me my free AI visibility snapshot <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
 

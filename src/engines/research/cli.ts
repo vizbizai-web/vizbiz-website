@@ -1,4 +1,9 @@
 #!/usr/bin/env tsx
+// Developer-only archived audit CLI.
+// This can still be used for local debugging/research snapshots, but it is not
+// part of the production client intake pipeline. Client-facing report work must
+// enter through /api/mini-audit/run or paid intake and be processed by
+// `npm run worker:reports` so the queue/report service remains the source of truth.
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { runAudit } from "./runner";
@@ -9,6 +14,7 @@ main().catch((error) => {
 });
 
 async function main() {
+  console.warn("[dev-only] Archived direct audit CLI: do not use for production intake; use the report queue/worker instead.");
   const args = parseArgs(process.argv.slice(2));
 
   if (!args.name || !args.city) {

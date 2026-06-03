@@ -19,13 +19,13 @@ export function buildPromptPlan(input: ClientInput): PromptTemplate[] {
     const make = clean(input.primaryMake, "car");
     const vehicle = clean(input.vehicle, make);
     return [
-      prompt("1", "discovery", "perplexity", `best ${make} dealer in ${city}`),
-      prompt("2", "discovery", "tavily", `top-rated car dealership in ${city}`),
-      prompt("3", "discovery", "perplexity", `most trusted car dealership in ${city}`),
-      prompt("4", "trust", "perplexity", `which dealership has the best reviews in ${city}`),
-      prompt("5", "trust", "tavily", `most reputable car dealer in ${city}`),
-      prompt("6", "service", "tavily", `best ${make} service center in ${city}`),
-      prompt("7", "service", "tavily", `where to get ${make} serviced in ${city}`),
+      prompt("1", "discovery", "perplexity", `I'm in ${city} and looking for a ${make} dealership. Who should I consider?`, promptMeta("conversational_recommendation", "ai_native_variant", `I'm in ${city} and looking for a ${make} dealership. Who should I consider?`, true)),
+      prompt("2", "discovery", "tavily", `top-rated car dealership in ${city}`, promptMeta("category_discovery", "search_backed", `Which car dealerships in ${city} have strong reviews and are worth visiting?`, true)),
+      prompt("3", "discovery", "perplexity", `Which dealership near ${city} seems trustworthy for buying a ${vehicle}?`, promptMeta("trust_review_comparison", "ai_native_variant", `Which dealership near ${city} seems trustworthy for buying a ${vehicle}?`, true)),
+      prompt("4", "trust", "perplexity", `Where should I go near ${city} if I want a dealership with good reviews and low-pressure service?`, promptMeta("trust_review_comparison", "ai_native_variant", `Where should I go near ${city} if I want a dealership with good reviews and low-pressure service?`, true)),
+      prompt("5", "trust", "tavily", `most reputable car dealer in ${city}`, promptMeta("category_discovery", "search_backed", `What local dealerships should I compare before choosing where to visit in ${city}?`, true)),
+      prompt("6", "service", "tavily", `Where should I take my ${make} for service or repairs near ${city}?`, promptMeta("menu_service_intent", "search_backed", `Where should I take my ${make} for service or repairs near ${city}?`)),
+      prompt("7", "service", "tavily", `Which ${make} dealer near ${city} is good for parts, maintenance, brakes, or warranty service?`, promptMeta("trust_review_comparison", "search_backed", `Which ${make} dealer near ${city} is good for parts, maintenance, brakes, or warranty service?`)),
       prompt("8", "inventory", "tavily", `best place to buy a used ${make} in ${city}`),
       prompt("9", "inventory", "tavily", `affordable used cars in ${city}`),
       prompt("10", "finance", "openai", `where can I finance a ${vehicle} in ${city}`),
@@ -49,6 +49,22 @@ export function buildPromptPlan(input: ClientInput): PromptTemplate[] {
     return healthySnackPromptUniverse(input);
   }
 
+  if (type === "tax_service") {
+    return [
+      prompt("1", "discovery", "perplexity", `I'm in ${city} and need help with taxes. Which tax services should I consider?`, promptMeta("conversational_recommendation", "ai_native_variant", `I'm in ${city} and need help with taxes. Which tax services should I consider?`, true)),
+      prompt("2", "discovery", "tavily", `top-rated tax services in ${city}`, promptMeta("category_discovery", "search_backed", `Which tax preparation services in ${city} have strong reviews?`, true)),
+      prompt("3", "trust", "perplexity", `Which tax accountant near ${city} seems trustworthy for personal or small business taxes?`, promptMeta("trust_review_comparison", "ai_native_variant", `Which tax accountant near ${city} seems trustworthy for personal or small business taxes?`, true)),
+      prompt("4", "service", "perplexity", `Where can I get personal tax returns, corporate tax filing, or bookkeeping help near ${city}?`, promptMeta("menu_service_intent", "ai_native_variant", `Where can I get personal tax returns, corporate tax filing, or bookkeeping help near ${city}?`, true)),
+      prompt("5", "finance", "tavily", `tax preparation cost in ${city}`, promptMeta("trust_review_comparison", "search_backed", `How much should tax preparation cost near ${city}?`)),
+      prompt("6", "service", "tavily", `bookkeeping and HST filing services in ${city}`, promptMeta("menu_service_intent", "search_backed", `Who offers bookkeeping and HST filing services near ${city}?`)),
+      prompt("7", "trust", "openai", `How should I compare tax services near ${city} before choosing one?`, promptMeta("trust_review_comparison", "ai_native_variant", `How should I compare tax services near ${city} before choosing one?`)),
+    ];
+  }
+
+  if ((type === "generic_local_service" || type === "local_service") && isSpecificPromptService(primaryService)) {
+    return dynamicLocalServicePromptUniverse({ city, service: primaryService });
+  }
+
   return [
     prompt("1", "discovery", "perplexity", `I'm looking for a ${labels.core} in ${city}. Who should I consider?`),
     prompt("2", "discovery", "tavily", `top-rated ${labels.core} in ${city}`),
@@ -62,6 +78,28 @@ export function buildPromptPlan(input: ClientInput): PromptTemplate[] {
     prompt("10", "finance", "openai", `${labels.finance} in ${city}`),
     prompt("11", "finance", "openai", `best value ${labels.core} near ${city}`),
   ];
+}
+
+function dynamicLocalServicePromptUniverse(input: { city: string; service: string }): PromptTemplate[] {
+  const service = cleanPromptService(input.service);
+  const city = input.city;
+  return [
+    prompt("1", "discovery", "perplexity", `I'm in ${city} and need help with ${service}. Who should I consider?`, promptMeta("conversational_recommendation", "ai_native_variant", `I'm in ${city} and need help with ${service}. Who should I consider?`, true)),
+    prompt("2", "discovery", "tavily", `top-rated ${service} in ${city}`, promptMeta("category_discovery", "search_backed", `Which ${service} providers in ${city} have strong reviews?`, true)),
+    prompt("3", "trust", "perplexity", `Which ${service} provider near ${city} seems trustworthy?`, promptMeta("trust_review_comparison", "ai_native_variant", `Which ${service} provider near ${city} seems trustworthy?`, true)),
+    prompt("4", "service", "perplexity", `Where can I get ${service} help near ${city}?`, promptMeta("menu_service_intent", "ai_native_variant", `Where can I get ${service} help near ${city}?`, true)),
+    prompt("5", "finance", "tavily", `${service} pricing in ${city}`, promptMeta("trust_review_comparison", "search_backed", `How much should ${service} cost near ${city}?`)),
+    prompt("6", "trust", "openai", `How should I compare ${service} providers near ${city} before choosing one?`, promptMeta("trust_review_comparison", "ai_native_variant", `How should I compare ${service} providers near ${city} before choosing one?`)),
+  ];
+}
+
+function cleanPromptService(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9&/ +.-]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function isSpecificPromptService(value: string) {
+  const cleaned = cleanPromptService(value);
+  return cleaned.length >= 4 && !/^(local service|service|services|consultation|appointment|quote|business|local business|generic local service)$/.test(cleaned);
 }
 
 function mexicanRestaurantPromptUniverse(input: ClientInput, city: string): PromptTemplate[] {

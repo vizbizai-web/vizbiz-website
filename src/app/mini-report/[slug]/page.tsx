@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowRight, CheckCircle2, DollarSign, FileText, Lock, Mail, Search, Share2, ShieldCheck, TrendingUp, Trophy } from "lucide-react";
-import type { MiniAuditReport } from "@/engines/research/mini-audit";
+import type { BuyerQuestionTest, MiniAuditReport } from "@/engines/research/mini-audit";
 import { listJson, readJson, saveJsonWithKey } from "@/lib/file-store";
 import { appendStatus, type MiniLeadRecord } from "@/lib/lead-pipeline";
 import { findSupabaseMiniReportBySlug, markSupabaseMiniReportViewed } from "@/lib/supabase-crm";
@@ -25,13 +25,19 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
     inventory: "Offer Visibility",
     finance: "Value & Pricing Visibility",
   };
-  const missedPrompts = report.buyerQuestionTest.prompts
+  const buyerQuestionTest = report.buyerQuestionTest ?? createBuyerQuestionFallback(report);
+  const missedPrompts = buyerQuestionTest.prompts
     .filter((prompt) => prompt.outcome === "missed" || prompt.competitorMentioned)
     .slice(0, 3);
-  const promptPreview = missedPrompts.length ? missedPrompts : report.buyerQuestionTest.prompts.slice(0, 3);
-  const competitorSnapshot = report.leaderboard.slice(0, 3);
-  const competitorTeasers = report.leaderboard.filter((row) => row.kind === "competitor").slice(0, 2);
-  const topGap = report.topVisibilityGaps[0];
+  const promptPreview = missedPrompts.length ? missedPrompts : buyerQuestionTest.prompts.slice(0, 3);
+  const leaderboard = report.leaderboard ?? createLeaderboardFallback(report);
+  const competitorSnapshot = leaderboard.slice(0, 3);
+  const competitorTeasers = leaderboard.filter((row) => row.kind === "competitor").slice(0, 2);
+  const topVisibilityGaps = report.topVisibilityGaps ?? createVisibilityGapsFallback(report, categoryLabels);
+  const topGap = topVisibilityGaps[0];
+  const lockedSections = report.lockedSections ?? createLockedSectionsFallback();
+  const paidDeliverables = report.paidDeliverables ?? createPaidDeliverablesFallback();
+  const ctas = report.ctas ?? createCtasFallback();
   const revenueLeakSnapshot = report.revenueLeakSnapshot?.length ? report.revenueLeakSnapshot : createRevenueLeakFallback(report, categoryLabels);
   const evidenceCards = (report.evidenceCards?.length ? report.evidenceCards : createEvidenceFallback(report)).map((card) => ({
     ...card,
@@ -42,6 +48,8 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
   const revenueScenarios = report.revenueScenarios ? [report.revenueScenarios.conservative, report.revenueScenarios.likely, report.revenueScenarios.aggressive] : [];
   const isProductBrand = report.businessProfile?.serviceAreaType === "national" || report.businessProfile?.niche.includes("ecommerce") || report.businessProfile?.niche.includes("skincare");
   const isSpanishReport = report.language === "es";
+  const instantPreview = report.instantPreview ?? createInstantPreviewFallback(report);
+  const emailMiniReport = report.emailMiniReport ?? createEmailMiniReportFallback(report);
   const reportHeadline = isSpanishReport
     ? `${report.client.name} aparece poco en recomendaciones populares de IA.`
     : `${report.client.name} is ${report.band.toLowerCase()} in popular AI recommendations.`;
@@ -75,10 +83,10 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                 </p>
               )}
               <div className="mt-5 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <h2 className="font-serif text-2xl">{report.instantPreview.headline}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{report.instantPreview.subheadline}</p>
+                <h2 className="font-serif text-2xl">{instantPreview.headline}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{instantPreview.subheadline}</p>
                 <div className="mt-4 grid gap-2">
-                  {report.instantPreview.checklist.map((item) => (
+                  {instantPreview.checklist.map((item) => (
                     <div key={item.label} className="flex items-center gap-2 text-sm text-slate-200">
                       <CheckCircle2 className={item.status === "complete" ? "h-4 w-4 text-cyan-200" : "h-4 w-4 text-slate-500"} />
                       <span>{item.label}</span>
@@ -90,7 +98,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                 <div className="mt-5 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                     <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">{isSpanishReport ? "Nicho detectado" : "Detected niche"}</span>
-                    <span className="mt-1 block font-semibold text-white">{report.businessProfile.niche.replaceAll("_", " ")}</span>
+                    <span className="mt-1 block font-semibold text-white">{report.businessProfile.displayNiche ?? report.businessProfile.niche.replaceAll("_", " ")}</span>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                     <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">{isSpanishReport ? "Productos principales" : "Primary services"}</span>
@@ -172,6 +180,28 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 py-12 sm:px-6 lg:px-8" style={{ backgroundImage: "linear-gradient(180deg,#0F172A 0%,#020617 100%)" }}>
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-cyan-300/[0.12] via-white/[0.045] to-white/[0.02] p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)] sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div>
+              <p className="inline-flex rounded-full border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-cyan-100">Why this matters early</p>
+              <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">Build your AI reputation before competitors do.</h2>
+              <p className="mt-4 text-base leading-7 text-slate-200">
+                Google still matters, but it is no longer the only discovery path. Customers are starting to ask popular AI assistants and AI-powered search tools for recommendations, comparisons, and shortcuts before they choose who to call, visit, or buy from.
+              </p>
+              <p className="mt-3 text-base leading-7 text-cyan-50">
+                Businesses that prepare early can make their services, reviews, proof, FAQs, and local trust signals easier for AI systems to understand and cite. That early reputation can compound before the AI search wave gets crowded.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <EarlySignal title="Traditional SEO" body="Help Google understand your pages, services, and local relevance." />
+              <EarlySignal title="AI visibility" body="Help AI assistants explain why your business is a trustworthy recommendation." />
+              <EarlySignal title="Early advantage" body="The clearer your proof is now, the harder it may be for slower competitors to catch up later." />
             </div>
           </div>
         </div>
@@ -259,7 +289,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
         <div className="mx-auto max-w-6xl rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-300/[0.10] via-white/[0.045] to-white/[0.025] p-6 shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-              <p className="inline-flex rounded-full border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]">{isProductBrand ? "4 · Product discovery growth" : "4 · Local community domination"}</p>
+              <p className="inline-flex rounded-full border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]">{isProductBrand ? "4 · Product discovery growth" : "4 · AI reputation growth"}</p>
               <h2 className="mt-3 font-serif text-3xl">{localDominationPlan.title}</h2>
               <p className="mt-3 text-base leading-7 text-slate-200">{localDominationPlan.thesis}</p>
               <p className="mt-4 rounded-2xl border border-cyan-300/20 bg-[#020617]/60 p-4 text-sm leading-6 text-cyan-50">{localDominationPlan.queryFanOutBrief}</p>
@@ -326,10 +356,10 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="mb-3 inline-flex rounded-full border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]">7 · AI recommendation preview</p>
-            <h2 className="font-serif text-3xl">{report.buyerQuestionTest.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">{isSpanishReport ? `Vista previa de ${Math.min(6, report.buyerQuestionTest.prompts.length)} de ${report.buyerQuestionTest.prompts.length} momentos de recomendación en IA. El reporte completo desbloquea evidencia por plataforma y prioridades de fix.` : `Preview showing ${Math.min(6, report.buyerQuestionTest.prompts.length)} of ${report.buyerQuestionTest.prompts.length} AI recommendation moments. The full report unlocks platform-by-platform evidence and fix priorities.`}</p>
+            <h2 className="font-serif text-3xl">{buyerQuestionTest.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{isSpanishReport ? `Vista previa de ${Math.min(6, buyerQuestionTest.prompts.length)} de ${buyerQuestionTest.prompts.length} momentos de recomendación en IA. El reporte completo desbloquea evidencia por plataforma y prioridades de fix.` : `Preview showing ${Math.min(6, buyerQuestionTest.prompts.length)} of ${buyerQuestionTest.prompts.length} AI recommendation moments. The full report unlocks platform-by-platform evidence and fix priorities.`}</p>
             <div className="mt-6 grid gap-3">
-              {report.buyerQuestionTest.prompts.slice(0, 6).map((prompt, index) => (
+              {buyerQuestionTest.prompts.slice(0, 6).map((prompt, index) => (
                 <div key={`${prompt.category}-${index}`} className="rounded-2xl border border-white/10 bg-[#0F172A] p-4">
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-semibold text-white">{humanizeQuestionText(prompt.question, report)}</p>
@@ -352,10 +382,10 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
       >
         <div className="mx-auto max-w-6xl rounded-3xl border border-cyan-300/20 bg-[#0F172A] p-6">
           <p className="inline-flex rounded-full border border-cyan-200/20 bg-white/[0.05] px-4 py-2 text-sm font-black uppercase tracking-[0.16em] text-cyan-100">Email mini report preview</p>
-          <h2 className="mt-3 font-serif text-3xl">{report.emailMiniReport.subject}</h2>
-          <p className="mt-2 text-slate-300">{report.emailMiniReport.previewText}</p>
+          <h2 className="mt-3 font-serif text-3xl">{emailMiniReport.subject}</h2>
+          <p className="mt-2 text-slate-300">{emailMiniReport.previewText}</p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {report.emailMiniReport.bullets.map((bullet) => (
+            {emailMiniReport.bullets.map((bullet) => (
               <div key={bullet} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-200">
                 {bullet}
               </div>
@@ -370,7 +400,7 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
             <p className="mb-3 inline-flex rounded-full border border-cyan-500/20 bg-cyan-100 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-[#0891B2] shadow-sm">{isSpanishReport ? "8 · Qué desbloquea el plan pagado" : "8 · What the paid plan unlocks"}</p>
             <h2 className="font-serif text-4xl">{isSpanishReport ? "Qué se desbloquea en el reporte completo" : "What unlocks in the full report"}</h2>
             <div className="mt-6 grid gap-3">
-              {report.lockedSections.map((section) => (
+              {lockedSections.map((section) => (
                 <div key={section} className="flex items-center gap-3 rounded-2xl bg-white/70 p-4 shadow-sm">
                   <Lock className="h-5 w-5 text-[#06B6D4]" />
                   <span className="font-semibold">{section}</span>
@@ -385,20 +415,20 @@ export default async function MiniReportPage({ params }: { params: Promise<{ slu
             <p className="mt-4 text-slate-300">{isSpanishReport ? "Compra el reporte completo + fix de $88 una vez, o el plan de crecimiento de $188/mes para monitoreo mensual y movimiento competitivo." : "Buy the $88 full report + fix once, or subscribe to the $188/month growth plan for monthly monitoring and local competitor movement updates."}</p>
             <div className="mt-5 grid gap-3 text-sm text-slate-300">
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="font-semibold text-white">{report.paidDeliverables.oneTimeFix.title}</p>
-                <p className="mt-1">{report.paidDeliverables.oneTimeFix.description}</p>
+                <p className="font-semibold text-white">{paidDeliverables.oneTimeFix.title}</p>
+                <p className="mt-1">{paidDeliverables.oneTimeFix.description}</p>
               </div>
               <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4">
-                <p className="font-semibold text-white">{report.paidDeliverables.monthlyGrowthPlan.title}</p>
+                <p className="font-semibold text-white">{paidDeliverables.monthlyGrowthPlan.title}</p>
                 <p className="mt-1">$188/month for 30 / 60 / 90 day monitoring, local competitor movement, and action planning beyond the first fix.</p>
               </div>
             </div>
             <div className="mt-6 grid gap-3">
               <Link href={`/api/mini-audit/cta?slug=${encodeURIComponent(report.slug)}&product=fix_package`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-5 py-4 font-bold text-[#020617]">
-                {report.ctas.fullReport.label} <ArrowRight className="h-5 w-5" />
+                {ctas.fullReport.label} <ArrowRight className="h-5 w-5" />
               </Link>
               <Link href={`/api/mini-audit/cta?slug=${encodeURIComponent(report.slug)}&product=monthly_plan`} className="inline-flex items-center justify-center rounded-xl border border-cyan-200/70 bg-[#E0F7FA] px-5 py-4 font-black text-[#020617] shadow-[0_0_28px_rgba(34,211,238,0.22)] transition hover:bg-white">
-                {report.ctas.monthlyMonitoring.label}
+                {ctas.monthlyMonitoring.label}
               </Link>
             </div>
           </div>
@@ -418,6 +448,15 @@ async function markReportViewed(slug: string) {
   } catch {
     // Vercel production has a read-only app filesystem; Supabase remains the durable event store.
   }
+}
+
+function EarlySignal({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-cyan-200/20 bg-[#020617]/60 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+      <p className="text-sm font-black uppercase tracking-[0.14em] text-cyan-200">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-300">{body}</p>
+    </div>
+  );
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -463,7 +502,7 @@ function PromptPreview({ question, outcome }: { question: string; outcome: "foun
   const label = outcome === "found" ? "Appeared" : outcome === "pending" ? "Testing" : "Missed";
   return (
     <div className="rounded-2xl bg-white/65 px-3.5 py-3">
-      <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800">“{question}”</p>
+      <p className="whitespace-normal break-words text-sm font-semibold leading-snug text-slate-800">“{question}”</p>
       <p className="mt-1 text-[0.64rem] font-black uppercase tracking-[0.14em] text-[#0891B2]">{label}</p>
     </div>
   );
@@ -596,7 +635,7 @@ function humanizeQuestionText(question: string, report: MiniAuditReport) {
   const trimmed = question.trim();
   const normalized = trimmed.toLowerCase();
   const market = report.client.market ?? report.client.city;
-  const service = report.businessProfile?.primaryServices?.[0] ?? report.client.primaryMake ?? "this business";
+  const service = displayServiceForReport(report);
 
   if (/^(best|top|recommended)\s+.+\s+(in|near|around)\s+.+/.test(normalized)) {
     const article = /^[aeiou]/i.test(service) ? "an" : "a";
@@ -610,15 +649,152 @@ function humanizeQuestionText(question: string, report: MiniAuditReport) {
   return trimmed;
 }
 
+function displayServiceForReport(report: MiniAuditReport) {
+  const profile = report.businessProfile;
+  const clientBusinessType = (report.client as typeof report.client & { businessType?: string }).businessType;
+  if (profile?.niche === "auto_dealer" || clientBusinessType === "auto_dealer" || makeFromBusinessName(report.client.name)) {
+    const make = report.client.primaryMake ?? makeFromBusinessName(report.client.name) ?? "vehicle";
+    return `${make} dealership, service, repairs, and parts`;
+  }
+  if (profile?.niche && profile.niche !== "generic_local_service") {
+    return profile.promptLabels.core;
+  }
+  return report.client.primaryMake ?? profile?.primaryServices?.[0] ?? "local service provider";
+}
+
+function makeFromBusinessName(name: string) {
+  const match = name.match(/\b(Kia|Toyota|Honda|Hyundai|Ford|Chevrolet|Chevy|Nissan|Mazda|Subaru|Volkswagen|VW|BMW|Mercedes|Audi|Lexus|Acura|Jeep|Dodge|Ram|Chrysler|GMC|Cadillac|Volvo|Porsche|Mitsubishi|Buick|Lincoln|Genesis|Infiniti|Mini|Tesla)\b/i);
+  if (!match) return null;
+  const normalized = match[1];
+  return normalized.toUpperCase() === "VW" ? "Volkswagen" : normalized[0].toUpperCase() + normalized.slice(1).toLowerCase();
+}
+
+function createEmailMiniReportFallback(report: MiniAuditReport): MiniAuditReport["emailMiniReport"] {
+  return {
+    subject: `${report.client.name}: your AI visibility snapshot is ready`,
+    previewText: "See whether popular AI assistants can understand and recommend your business.",
+    openingLine: `We checked realistic AI recommendation moments for ${report.client.name}.`,
+    bullets: [
+      `${report.promptsAppeared}/${report.promptsTotal} sampled AI recommendation moments surfaced the business.`,
+      "Google still matters, but AI-powered discovery is becoming a new recommendation layer.",
+      "The full report unlocks platform-by-platform evidence, competitor reasoning, and exact fix priorities.",
+    ],
+    ctaLabel: "View My Free AI Visibility Report",
+  };
+}
+
+function createLeaderboardFallback(report: MiniAuditReport): MiniAuditReport["leaderboard"] {
+  return [
+    {
+      name: report.client.name,
+      websiteUrl: report.client.websiteUrl,
+      aviScore: report.aviScore,
+      aiRecommendationShare: report.aiRecommendationShare,
+      kind: "client",
+      rank: 1,
+    },
+  ];
+}
+
+function createVisibilityGapsFallback(report: MiniAuditReport, categoryLabels: Record<string, string>): MiniAuditReport["topVisibilityGaps"] {
+  const categories = Object.entries(categoryLabels).slice(0, 3);
+  return categories.map(([category, label], index) => ({
+    category: category as keyof MiniAuditReport["categoryLabels"],
+    score: Math.max(0, Math.min(100, report.aviScore - index * 8)),
+    label: `${label} needs stronger AI-readable evidence.`,
+  })) as MiniAuditReport["topVisibilityGaps"];
+}
+
+function createLockedSectionsFallback(): MiniAuditReport["lockedSections"] {
+  return [
+    "Platform-by-platform AI-answer evidence and citations",
+    "Exact page map, FAQ blocks, schema recommendations, and fix sequence",
+    "Competitor visibility reasoning and monthly monitoring priorities",
+  ];
+}
+
+function createPaidDeliverablesFallback(): MiniAuditReport["paidDeliverables"] {
+  return {
+    oneTimeFix: {
+      title: "$88 USD Full Report + Fix",
+      description: "A complete AI visibility report with evidence, competitor gaps, and prioritized website/schema/review fixes.",
+      includes: [],
+    },
+    monthlyGrowthPlan: {
+      title: "$188 USD/month AI Reputation Growth Plan",
+      description: "Monthly visibility refreshes, competitor movement, and action planning.",
+      includes: [],
+      timeline: ["30 days", "60 days", "90 days"],
+    },
+  };
+}
+
+function createCtasFallback(): MiniAuditReport["ctas"] {
+  return {
+    fullReport: {
+      label: "Get the $88 Full Report + Fix",
+      product: "full_report_fix_package",
+    },
+    monthlyMonitoring: {
+      label: "Start Monthly Growth Monitoring",
+      product: "monthly_ai_visibility_monitoring",
+      recommended: true,
+    },
+  };
+}
+
+function createInstantPreviewFallback(report: MiniAuditReport): MiniAuditReport["instantPreview"] {
+  return {
+    headline: `Initial AI Visibility Score: ${report.aviScore}/100`,
+    subheadline: `${report.client.name} appeared in ${report.promptsAppeared}/${report.promptsTotal} sampled AI recommendation moments. This free report is a directional snapshot; the full report unlocks deeper evidence and fixes.`,
+    checklist: [
+      { label: "Popular AI recommendation sample reviewed", status: "complete" },
+      { label: "Local trust and proof signals checked", status: "complete" },
+      { label: "Full platform evidence and fix sequence", status: "pending" },
+    ],
+  };
+}
+
+function createBuyerQuestionFallback(report: MiniAuditReport): BuyerQuestionTest {
+  const market = report.client.market ?? report.client.city;
+  const service = displayServiceForReport(report);
+  const total = Math.max(report.promptsTotal || 3, report.promptsAppeared || 0, 3);
+  const appeared = Math.max(0, report.promptsAppeared || 0);
+  return {
+    title: `${Math.min(3, total)} AI Recommendation Moments Previewed`,
+    summary: `We previewed realistic AI recommendation moments for ${report.client.name}. The free report shows a small sample; the full report unlocks platform-by-platform evidence and fix priorities.`,
+    prompts: [
+      {
+        question: `I'm in ${market} and looking for ${service}. Who should I consider?`,
+        category: "discovery",
+        outcome: appeared > 0 ? "found" : "missed",
+        competitorMentioned: appeared === 0,
+      },
+      {
+        question: `Which ${service} options near ${market} have strong reviews and are worth checking first?`,
+        category: "trust",
+        outcome: appeared > 1 ? "found" : "missed",
+        competitorMentioned: appeared <= 1,
+      },
+      {
+        question: `How do I compare ${service} choices near ${market}?`,
+        category: "service",
+        outcome: appeared > 2 ? "found" : "pending",
+        competitorMentioned: false,
+      },
+    ],
+  };
+}
+
 function createRevenueLeakFallback(report: MiniAuditReport, categoryLabels: Record<string, string>): MiniAuditReport["revenueLeakSnapshot"] {
   const missed = Math.max(0, report.promptsTotal - report.promptsAppeared);
-  const topGap = report.topVisibilityGaps[0];
+  const topGap = createVisibilityGapsFallback(report, categoryLabels)[0];
   return [
     {
       title: `${missed} AI recommendation moments did not surface the business`,
       impact: report.promptsAppeared === 0 ? "High" : "Medium",
       leakType: "AI visibility",
-      summary: "AI/search answer visibility is the first leak: buyers can shortlist competitors before they ever reach the website.",
+      summary: "Popular AI assistants and AI-powered search tools are a new recommendation layer: buyers can shortlist competitors before they ever reach the website.",
       fix: "Build answer-ready service pages, FAQs, schema, and proof assets around the missed recommendation moments.",
     },
     {
@@ -653,9 +829,9 @@ function createLocalDominationFallback(report: MiniAuditReport): MiniAuditReport
   const market = report.client.market ?? report.client.city;
   const service = report.businessProfile?.primaryServices?.[0] ?? report.client.primaryMake ?? "local service";
   return {
-    title: "Local Community Domination Plan",
-    thesis: `You do not need to beat national corporations first. ${report.client.name} needs to become the most obvious local answer in ${market} when buyers ask AI/search who to trust nearby.`,
-    queryFanOutBrief: "AI does not just know who to recommend. For current local recommendations it often searches for service, city, review, comparison, and proof signals — then cites the business with the clearest evidence.",
+    title: "AI Reputation Growth Plan",
+    thesis: `You do not need to beat national corporations first. ${report.client.name} needs to build AI-readable local reputation early so popular AI assistants can trust it when buyers ask who to choose in ${market}.`,
+    queryFanOutBrief: "AI does not just know who to recommend. For current local recommendations it often looks for service, city, review, comparison, and proof signals — then cites the business with the clearest evidence.",
     recommendedPages: [`/services/${slugifyDisplay(service)}-${slugifyDisplay(market)}`, `/faq/${slugifyDisplay(service)}-${slugifyDisplay(market)}`],
     faqOpportunities: [`What should buyers know before choosing ${service} in ${market}?`, `How do I compare ${service} providers near ${market}?`],
     reviewSyndicationActions: ["Turn one strong review into a website proof block, Google Business Profile response, social post, short video, and FAQ proof snippet."],

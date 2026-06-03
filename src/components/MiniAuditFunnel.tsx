@@ -23,7 +23,7 @@ export default function MiniAuditFunnel() {
         ...captureAttribution(),
       }),
     });
-    const payload = (await response.json()) as { error?: string; reportUrl?: string };
+    const payload = (await response.json()) as { error?: string; reportUrl?: string; thankYouUrl?: string; emailDelivery?: { status?: string } };
 
     if (!response.ok || !payload.reportUrl) {
       setStatus("error");
@@ -31,7 +31,15 @@ export default function MiniAuditFunnel() {
       return;
     }
 
-    window.location.href = payload.reportUrl;
+    if (payload.thankYouUrl) {
+      window.location.href = payload.thankYouUrl;
+      return;
+    }
+
+    const email = String(formData.get("email") ?? "");
+    const params = new URLSearchParams({ email });
+    if (payload.emailDelivery?.status) params.set("delivery", payload.emailDelivery.status);
+    window.location.href = `/intake/thank-you?${params.toString()}`;
   }
 
   return (
@@ -45,9 +53,9 @@ export default function MiniAuditFunnel() {
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[#0F172A]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#0F172A]">
             <Sparkles className="h-3.5 w-3.5 text-[#06B6D4]" /> Free local AI visibility report
           </div>
-          <h2 className="font-serif text-xl leading-tight sm:text-3xl">See if AI recommends your business locally.</h2>
+          <h2 className="font-serif text-xl leading-tight sm:text-3xl">Build your AI reputation before competitors do.</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            Enter your website and two nearby competitors. We’ll check the AI answers local buyers are likely to see before they call you.
+            Share your website and two nearby competitors. We’ll email a free snapshot showing whether popular AI assistants and AI-powered search tools can understand, trust, and recommend your business.
           </p>
         </div>
         <div className="hidden shrink-0 rounded-2xl bg-[#0F172A] p-2 shadow-[0_0_24px_rgba(15,23,42,0.16)] sm:block" aria-hidden="true">
@@ -102,7 +110,7 @@ export default function MiniAuditFunnel() {
         className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F172A] px-6 py-4 font-bold text-white transition hover:bg-[#020617] disabled:cursor-not-allowed disabled:opacity-70"
       >
         {status === "loading" ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
-        {status === "loading" ? "Building your free local AI visibility report..." : "Run my free local AI visibility report"}
+        {status === "loading" ? "Preparing your snapshot and email link..." : "Email me my free AI visibility snapshot"}
         {status !== "loading" && <ArrowRight className="h-5 w-5" />}
       </button>
 

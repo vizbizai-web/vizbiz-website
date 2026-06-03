@@ -29,6 +29,10 @@ export function buildMiniReportEmailHtml(input: { email: MiniReportEmailContent;
         <p style="margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.16em;font-size:12px;color:#0f766e;font-weight:700;">VizBiz.ai mini report</p>
         <h1 style="margin:0 0 16px 0;font-size:30px;line-height:1.1;color:#020617;">${escapeHtml(input.email.subject)}</h1>
         <p style="font-size:16px;line-height:1.6;color:#334155;">${escapeHtml(input.email.openingLine)}</p>
+        <div style="margin:18px 0;padding:16px;border-radius:18px;background:rgba(2,6,23,0.08);color:#0f172a;">
+          <p style="margin:0 0 8px 0;font-weight:800;">Search is changing. Build your AI reputation early.</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#334155;">Google still matters, but buyers are also asking popular AI assistants and AI-powered search tools who to trust, where to go, and which business to choose. Businesses that organize their proof early may be easier to recommend later.</p>
+        </div>
         <ul style="padding-left:20px;color:#0f172a;font-size:15px;line-height:1.6;">${bulletHtml}</ul>
         <a href="${escapeAttribute(input.reportUrl)}" style="display:inline-block;margin-top:18px;background:#020617;color:#ffffff;text-decoration:none;border-radius:14px;padding:14px 20px;font-weight:700;">${escapeHtml(input.email.ctaLabel)}</a>
         <p style="margin-top:18px;font-size:12px;line-height:1.5;color:#475569;">Directional estimates are not revenue guarantees. The full report unlocks AI-answer evidence, competitor gaps, and the fix plan.</p>
@@ -44,6 +48,7 @@ export async function sendMiniReportEmail(input: {
   reportUrl: string;
   apiKey?: string;
   from?: string;
+  replyTo?: string;
 }): Promise<EmailSendResult> {
   if (!input.apiKey) {
     return { status: "dry_run", provider: "dry_run" };
@@ -61,6 +66,7 @@ export async function sendMiniReportEmail(input: {
         to: input.to,
         subject: input.email.subject,
         html: buildMiniReportEmailHtml({ email: input.email, reportUrl: input.reportUrl }),
+        ...(input.replyTo ? { reply_to: input.replyTo } : {}),
       }),
     });
 

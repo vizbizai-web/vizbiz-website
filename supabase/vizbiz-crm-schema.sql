@@ -17,7 +17,7 @@ create table if not exists public.leads (
   competitor_2_name text,
   competitor_2_url text,
   competitor_source text not null default 'submitted' check (competitor_source in ('submitted','auto_discovered','mixed','missing')),
-  status text not null default 'new' check (status in ('new','site_intelligence_running','site_intelligence_complete','report_generating','report_sent','report_viewed','cta_clicked','paid_one_time','paid_monthly','not_fit')),
+  status text not null default 'new' check (status in ('new','report_queued','site_intelligence_running','site_intelligence_complete','report_generating','needs_operator_review','report_sent','report_viewed','cta_clicked','paid_one_time','paid_monthly','not_fit')),
   source text not null default 'website_intake',
   raw_intake jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
@@ -117,6 +117,23 @@ create table if not exists public.crm_sync_logs (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.report_jobs (
+  id text primary key,
+  type text not null check (type in ('free_mini_report','paid_full_report','paid_monthly_baseline','rerun_report')),
+  status text not null default 'queued' check (status in ('queued','processing','completed','needs_operator_review','failed_retryable','failed_permanent')),
+  lead_id uuid references public.leads(id) on delete set null,
+  paid_order_id uuid,
+  payload jsonb not null default '{}'::jsonb,
+  attempts integer not null default 0 check (attempts >= 0),
+  max_attempts integer not null default 3 check (max_attempts >= 1),
+  locked_at timestamptz,
+  locked_by text,
+  last_error text,
+  result jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.telegram_alert_logs (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid references public.leads(id) on delete cascade,
@@ -167,6 +184,9 @@ create index if not exists mini_reports_lead_id_idx on public.mini_reports(lead_
 create index if not exists mini_reports_slug_idx on public.mini_reports(slug);
 create index if not exists lead_events_lead_id_idx on public.lead_events(lead_id);
 create index if not exists lead_events_type_idx on public.lead_events(event_type);
+create index if not exists report_jobs_status_created_idx on public.report_jobs(status, created_at);
+create index if not exists report_jobs_lead_id_idx on public.report_jobs(lead_id);
+create index if not exists report_jobs_paid_order_id_idx on public.report_jobs(paid_order_id);
 create index if not exists telegram_alert_logs_lead_id_idx on public.telegram_alert_logs(lead_id);
 create index if not exists paid_orders_lead_id_idx on public.paid_orders(lead_id);
 create index if not exists paid_fulfillment_tasks_lead_id_idx on public.paid_fulfillment_tasks(lead_id);
@@ -194,6 +214,10 @@ drop trigger if exists set_mini_reports_updated_at on public.mini_reports;
 create trigger set_mini_reports_updated_at before update on public.mini_reports
 for each row execute function public.set_updated_at();
 
+drop trigger if exists set_report_jobs_updated_at on public.report_jobs;
+create trigger set_report_jobs_updated_at before update on public.report_jobs
+for each row execute function public.set_updated_at();
+
 drop trigger if exists set_paid_orders_updated_at on public.paid_orders;
 create trigger set_paid_orders_updated_at before update on public.paid_orders
 for each row execute function public.set_updated_at();
@@ -210,6 +234,7 @@ alter table public.competitor_candidates enable row level security;
 alter table public.mini_reports enable row level security;
 alter table public.lead_events enable row level security;
 alter table public.crm_sync_logs enable row level security;
+alter table public.report_jobs enable row level security;
 alter table public.telegram_alert_logs enable row level security;
 alter table public.paid_orders enable row level security;
 alter table public.paid_fulfillment_tasks enable row level security;

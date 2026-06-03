@@ -31,6 +31,7 @@ export interface MiniAuditReport {
   llmReadiness: AuditReport["seoSiteIntelligence"]["llmReadiness"];
   topVisibilityGaps: MiniVisibilityGap[];
   businessProfile?: AuditReport["businessProfile"];
+  businessIntelligenceProfile?: AuditReport["businessIntelligenceProfile"];
   googlePlaces: AuditReport["googlePlaces"];
   categoryLabels: Record<BusinessCategory, string>;
   leaderboard: MiniLeaderboardRow[];
@@ -229,6 +230,7 @@ export function createMiniReportFromAudit(audit: AuditReport): MiniAuditReport {
       .slice(0, 3)
       .map((gap) => ({ category: gap.category, score: gap.score, label: labelForGap(gap.category, audit.businessProfile?.reportLabels) })),
     businessProfile: audit.businessProfile,
+    businessIntelligenceProfile: audit.businessIntelligenceProfile,
     googlePlaces: audit.googlePlaces,
     categoryLabels: categoryLabelsFor(audit.businessProfile?.reportLabels),
     leaderboard,
@@ -292,13 +294,14 @@ function createEmailMiniReport(audit: AuditReport, leaderboard: MiniLeaderboardR
       ? `Your site scored ${audit.aviScore}/100. ${topCompetitor.name} appears stronger in the benchmark.`
       : `Your site scored ${audit.aviScore}/100. Your free AI visibility mini report is ready.`,
     openingLine: isNationalOrEcommerce(audit)
-      ? `We checked whether AI/search answers are likely to recommend ${audit.client.name} when shoppers ask for products like yours.`
-      : `We checked whether AI/search answers are likely to recommend ${audit.client.name} when buyers ask for businesses like yours in ${audit.client.city}.`,
+      ? `We checked whether popular AI assistants and AI-powered search tools can understand, trust, and recommend ${audit.client.name} when shoppers ask for products like yours.`
+      : `We checked whether popular AI assistants and AI-powered search tools can understand, trust, and recommend ${audit.client.name} when buyers ask who to choose in ${audit.client.city}.`,
     bullets: [
       `AI Visibility Score: ${audit.aviScore}/100 (${audit.band})`,
       clientRank ? `Competitor benchmark rank: #${clientRank}` : "Competitor benchmark rank: pending competitor data",
       opportunity,
-      "The expanded free report shows the AI recommendation moments tested, competitor context, and the locked sections available in the full fix plan.",
+      "Why this matters now: businesses that build AI-readable reputation early may be easier to recommend as AI search becomes a normal discovery path.",
+      "The free report shows a snapshot. The full fix plan unlocks platform-by-platform evidence, competitor gaps, exact pages, schema, FAQs, and priority order.",
     ],
     ctaLabel: "View My Free AI Visibility Report",
   };
@@ -340,10 +343,10 @@ function createLocalDominationPlan(audit: AuditReport): LocalDominationPlan {
   const productBrand = isNationalOrEcommerce(audit);
 
   return {
-    title: productBrand ? "Product Discovery Growth Plan" : "Local Community Domination Plan",
+    title: productBrand ? "Product Discovery Growth Plan" : "AI Reputation Growth Plan",
     thesis: productBrand
-      ? `${brand} does not need to beat every brand at once. It needs to become easier for AI systems to trust and cite when shoppers ask for product recommendations.`
-      : `${brand} does not need to beat every national brand first. It needs stronger signals when buyers ask AI/search who to trust in ${market}.`,
+      ? `${brand} does not need to beat every brand at once. It needs to build AI-readable reputation early so popular AI assistants can trust and cite it when shoppers ask for product recommendations.`
+      : `${brand} does not need to beat every national brand first. It needs to build AI-readable local reputation early so AI-powered discovery can trust it when buyers ask who to choose in ${market}.`,
     queryFanOutBrief: productBrand
       ? "The free report gives you the first read: where AI may miss the brand, what kind of product proof is thin, and which comparison moments deserve attention. The full report turns that into the exact page map, evidence, and implementation sequence."
       : "The free report gives you the first read: where AI may miss the business, what local trust proof is thin, and which competitor comparison moments deserve attention. The full report turns that into the exact page map, evidence, and implementation sequence.",

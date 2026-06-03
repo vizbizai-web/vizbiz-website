@@ -1,6 +1,8 @@
 import type { ClientInput } from "@/engines/research/types";
+export { resolveBusinessIntelligenceProfile } from "./business-intelligence-profile";
+export type { BusinessIntelligenceProfile } from "@/engines/research/business-intelligence-types";
 
-export type BusinessNiche = "auto_dealer" | "dentist" | "roofer" | "med_spa" | "lawyer" | "hvac" | "plumber" | "mexican_restaurant" | "natural_skincare_ecommerce" | "healthy_snack_ecommerce" | "generic_local_service";
+export type BusinessNiche = "auto_dealer" | "dentist" | "roofer" | "med_spa" | "lawyer" | "hvac" | "plumber" | "mexican_restaurant" | "tax_service" | "natural_skincare_ecommerce" | "healthy_snack_ecommerce" | "generic_local_service";
 
 export interface BusinessProfile {
   businessName: string;
@@ -8,6 +10,9 @@ export interface BusinessProfile {
   city: string;
   industry: string;
   niche: BusinessNiche;
+  displayNiche: string;
+  profileMode: "known" | "dynamic" | "needs_review";
+  classificationEvidence: string[];
   confidence: number;
   serviceAreaType: "local" | "regional" | "national";
   primaryServices: string[];
@@ -39,7 +44,7 @@ export interface WebsiteSignals {
   primaryService?: string | null;
 }
 
-type NicheDefinition = Omit<BusinessProfile, "businessName" | "websiteUrl" | "city" | "confidence" | "primaryServices" | "competitorQueries"> & {
+type NicheDefinition = Omit<BusinessProfile, "businessName" | "websiteUrl" | "city" | "displayNiche" | "profileMode" | "classificationEvidence" | "confidence" | "primaryServices" | "competitorQueries"> & {
   keywords: string[];
   services: string[];
 };
@@ -50,11 +55,11 @@ const NICHES: Record<BusinessNiche, NicheDefinition> = {
     niche: "auto_dealer",
     serviceAreaType: "local",
     schemaType: "AutoDealer",
-    keywords: ["dealership", "dealer", "used cars", "new cars", "vehicle", "trade-in", "finance a car"],
-    services: ["vehicle sales", "used cars", "trade-in", "auto financing", "service center"],
-    buyerIntentCategories: ["discovery", "trust", "service", "inventory", "finance"],
-    promptLabels: { core: "car dealership", service: "service center", product: "used cars", finance: "finance a vehicle", urgency: "same day service" },
-    reportLabels: { discovery: "Buyer Discovery", trust: "Trust & Review Signals", service: "Service Visibility", inventory: "Inventory Visibility", finance: "Finance & Trade-In Visibility" },
+    keywords: ["dealership", "dealer", "used cars", "new cars", "vehicle", "trade-in", "finance a car", "service department", "service center", "auto repair", "auto repairs", "car repair", "parts department", "oil change", "brakes", "tires", "warranty service", "kia", "toyota", "honda", "hyundai", "ford", "chevrolet", "nissan", "mazda", "subaru", "volkswagen", "bmw", "mercedes", "audi", "lexus", "acura", "jeep", "dodge", "ram", "gmc"],
+    services: ["service department", "auto repairs", "parts department", "vehicle sales", "used cars", "auto financing", "trade-in", "oil changes", "brake service", "tire service", "warranty service"],
+    buyerIntentCategories: ["discovery", "trust", "service", "repairs", "parts", "inventory", "finance"],
+    promptLabels: { core: "car dealership", service: "dealership service and repairs", product: "parts department", finance: "finance a vehicle", urgency: "same day service or repair" },
+    reportLabels: { discovery: "Buyer Discovery", trust: "Trust & Review Signals", service: "Service & Repair Visibility", inventory: "Parts & Maintenance Visibility", finance: "Finance & Trade-In Visibility" },
   },
   dentist: {
     industry: "healthcare",
@@ -133,6 +138,17 @@ const NICHES: Record<BusinessNiche, NicheDefinition> = {
     promptLabels: { core: "Mexican restaurant", service: "Mexican food", product: "tacos and burritos", finance: "Mexican restaurant prices", urgency: "Mexican food near me" },
     reportLabels: { discovery: "Restaurant Discovery", trust: "Review & Trust Signals", service: "Cuisine Visibility", inventory: "Menu Visibility", finance: "Value & Price Visibility" },
   },
+  tax_service: {
+    industry: "professional_services",
+    niche: "tax_service",
+    serviceAreaType: "local",
+    schemaType: "AccountingService",
+    keywords: ["tax", "taxes", "tax service", "tax services", "tax preparation", "tax filing", "tax return", "tax consultant", "tax accountant", "bookkeeping", "accounting", "accountant", "payroll", "cra", "hst", "gst", "corporate tax", "personal tax"],
+    services: ["tax preparation", "personal tax returns", "corporate tax filing", "bookkeeping", "payroll", "HST/GST filing"],
+    buyerIntentCategories: ["discovery", "trust", "service", "deadline", "price"],
+    promptLabels: { core: "tax service", service: "tax preparation", product: "bookkeeping and tax filing", finance: "tax preparation cost", urgency: "last-minute tax filing" },
+    reportLabels: { discovery: "Tax Service Discovery", trust: "Trust & Credential Signals", service: "Tax Preparation Visibility", inventory: "Bookkeeping & Filing Visibility", finance: "Pricing & Deadline Visibility" },
+  },
   natural_skincare_ecommerce: {
     industry: "consumer_products",
     niche: "natural_skincare_ecommerce",
@@ -182,8 +198,12 @@ export async function createBusinessProfile(input: ClientInput): Promise<Busines
 export function inferBusinessProfileFromSignals(signals: WebsiteSignals): BusinessProfile {
   const override = normalizeNiche(signals.categoryOverride);
   const detected = override ? { niche: override, confidence: 0.95 } : detectNiche(signals.text);
-  const definition = NICHES[detected.niche];
+  const dynamicService = !override && detected.niche === "generic_local_service" ? extractSpecificService(signals) : null;
+  const definition = dynamicService ? dynamicDefinition(dynamicService) : NICHES[detected.niche];
   const primaryServices = servicesFromSignals(signals, definition);
+  const profileMode = dynamicService ? "dynamic" : detected.niche === "generic_local_service" ? "needs_review" : "known";
+  const displayNiche = dynamicService ? `${dynamicService} service` : definition.promptLabels.core;
+  const classificationEvidence = buildClassificationEvidence(signals, definition, dynamicService);
 
   return {
     businessName: signals.businessName.trim(),
@@ -191,7 +211,10 @@ export function inferBusinessProfileFromSignals(signals: WebsiteSignals): Busine
     city: signals.city.trim(),
     industry: definition.industry,
     niche: definition.niche,
-    confidence: override ? Math.max(0.9, detected.confidence) : detected.confidence,
+    displayNiche,
+    profileMode,
+    classificationEvidence,
+    confidence: dynamicService ? 0.72 : override ? Math.max(0.9, detected.confidence) : detected.confidence,
     serviceAreaType: definition.serviceAreaType,
     primaryServices,
     buyerIntentCategories: definition.buyerIntentCategories,
@@ -224,8 +247,78 @@ function detectNiche(text: string): { niche: BusinessNiche; confidence: number }
 function servicesFromSignals(signals: WebsiteSignals, definition: NicheDefinition) {
   const text = signals.text.toLowerCase();
   const extracted = definition.services.filter((service) => text.includes(service.toLowerCase()));
+  const autoDealerRevenueServices = definition.niche === "auto_dealer"
+    ? [
+        ...(text.includes("repair") ? ["auto repairs"] : []),
+        ...(text.includes("parts") ? ["parts department"] : []),
+        ...(text.includes("service") ? ["service department"] : []),
+      ]
+    : [];
   const primaryService = signals.primaryService?.trim();
-  return [...new Set([...(primaryService ? [primaryService] : []), ...extracted, ...definition.services])].slice(0, 6);
+  return Array.from(new Set([...(primaryService ? [primaryService] : []), ...autoDealerRevenueServices, ...extracted, ...definition.services])).slice(0, 6);
+}
+
+function dynamicDefinition(service: string): NicheDefinition {
+  const core = cleanServiceLabel(service);
+  const title = titleCase(core);
+  return {
+    industry: "local_services",
+    niche: "generic_local_service",
+    serviceAreaType: "local",
+    schemaType: "LocalBusiness",
+    keywords: [core],
+    services: [core, `${core} consultation`, `${core} appointment`, `${core} quote`],
+    buyerIntentCategories: ["discovery", "trust", "service", "comparison", "pricing"],
+    promptLabels: { core, service: core, product: `${core} options`, finance: `${core} pricing`, urgency: `urgent ${core}` },
+    reportLabels: { discovery: `${title} Discovery`, trust: "Trust & Review Signals", service: `${title} Visibility`, inventory: "Offer & Service Visibility", finance: "Pricing & Comparison Visibility" },
+  };
+}
+
+function extractSpecificService(signals: WebsiteSignals) {
+  const explicit = cleanServiceLabel(signals.primaryService ?? "");
+  if (isSpecificService(explicit)) return explicit;
+
+  const haystack = cleanServiceLabel(signals.text);
+  const knownService = [
+    "landscaping", "lawn care", "snow removal", "pest control", "chiropractor", "physiotherapy", "massage therapy", "insurance broker",
+    "mortgage broker", "real estate agent", "property management", "cleaning service", "house cleaning", "carpet cleaning", "moving company",
+    "electrician", "painting contractor", "concrete contractor", "pool service", "tutoring", "daycare", "veterinary clinic", "pet grooming",
+    "photography", "wedding photography", "catering", "personal training", "fitness coaching", "therapy", "counselling", "consulting",
+  ].find((term) => haystack.includes(term));
+  if (knownService) return knownService;
+
+  const servicePattern = haystack.match(/\b([a-z][a-z ]{2,45}?\s(?:service|services|clinic|studio|contractor|company|consultant|consulting|repair|installation|cleaning|coaching|therapy))\b/i)?.[1];
+  const cleaned = cleanServiceLabel(servicePattern ?? "");
+  return isSpecificService(cleaned) ? cleaned : null;
+}
+
+function buildClassificationEvidence(signals: WebsiteSignals, definition: NicheDefinition, dynamicService: string | null) {
+  const evidence = [
+    dynamicService ? `Dynamic service inferred from intake/site terms: ${dynamicService}.` : `Known niche matched: ${definition.promptLabels.core}.`,
+    signals.primaryService ? `Submitted service: ${signals.primaryService}.` : null,
+    signals.categoryOverride ? `Submitted category: ${signals.categoryOverride}.` : null,
+  ].filter(Boolean) as string[];
+  return evidence.slice(0, 5);
+}
+
+function cleanServiceLabel(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[^a-z0-9&/ +.-]+/g, " ")
+    .replace(/\b(inc|llc|ltd|corp|corporation|company|co|the|best|top|near|oakville|toronto|mississauga|scarborough)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isSpecificService(value: string) {
+  if (!value || value.length < 4) return false;
+  if (/\b(with|customers?|appointments?|quotes?|trusted)\b/.test(value)) return false;
+  return !/^(local service|trusted service|service|services|consultation|appointment|quote|business|local business|undefined|null|generic local service)$/.test(value);
+}
+
+function titleCase(value: string) {
+  return value.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function buildCompetitorQueries(core: string, services: string[], city: string) {
@@ -257,6 +350,16 @@ function normalizeNiche(value: string | undefined | null): BusinessNiche | null 
     attorney: "lawyer",
     hvac_company: "hvac",
     plumbing: "plumber",
+    tax: "tax_service",
+    taxes: "tax_service",
+    tax_service: "tax_service",
+    tax_services: "tax_service",
+    tax_preparation: "tax_service",
+    tax_filing: "tax_service",
+    tax_accountant: "tax_service",
+    accounting: "tax_service",
+    accountant: "tax_service",
+    bookkeeping: "tax_service",
     restaurant: "mexican_restaurant",
     mexican: "mexican_restaurant",
     mexican_grill: "mexican_restaurant",

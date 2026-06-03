@@ -1,4 +1,5 @@
 import type { BusinessProfile } from "@/engines/business-profile/profile";
+import type { BusinessIntelligenceProfile, CompetitorEvidence, WebsiteCrawlEvidence } from "./business-intelligence-types";
 
 export type BusinessCategory = "discovery" | "trust" | "service" | "inventory" | "finance";
 export type AviBand = "Strong" | "Moderate" | "Weak" | "Not Visible";
@@ -272,6 +273,9 @@ export interface AuditReport {
   machineReadiness: MachineReadiness;
   seoSiteIntelligence: SeoSiteIntelligence;
   googlePlaces: GooglePlacesEnrichment;
+  websiteCrawlEvidence?: WebsiteCrawlEvidence;
+  competitorEvidence?: CompetitorEvidence[];
+  businessIntelligenceProfile?: BusinessIntelligenceProfile;
   clientDeliverables?: import("@/engines/deliverables/client-output").ClientDeliverables;
   businessProfile?: BusinessProfile;
   revenueOpportunity: RevenueOpportunityProjection | null;

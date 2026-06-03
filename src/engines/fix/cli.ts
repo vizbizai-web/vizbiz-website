@@ -1,4 +1,8 @@
 #!/usr/bin/env tsx
+// Developer-only archived fix CLI.
+// This can still generate local implementation assets from a saved audit for
+// debugging, but it is not a production fulfillment path. Paid/client work must
+// come from the intake queue and report worker/operator review flow.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { generateFixPackage } from "./pipeline";
@@ -10,6 +14,7 @@ main().catch((error) => {
 });
 
 async function main() {
+  console.warn("[dev-only] Archived direct fix CLI: do not use for production fulfillment; use paid intake jobs and the report worker instead.");
   const args = parseArgs(process.argv.slice(2));
   if (!args.audit) {
     console.error("Usage: npm run fix -- --audit path/to/audit.json --output-dir ./output/fixes");

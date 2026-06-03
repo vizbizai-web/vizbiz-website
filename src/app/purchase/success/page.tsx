@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -130,28 +131,91 @@ async function confirmPaidOrder(input: { slug: string; product: PaidProduct; pay
 }
 
 function PaidIntakeForm({ order, lead }: { order: PaidOrderRecord; lead: MiniLeadRecord }) {
+  const client = lead.client as { name?: string; websiteUrl?: string; city?: string } | null;
   return (
-    <form action="/api/purchase/intake" method="post" className="mt-6 grid gap-3">
+    <form action="/api/purchase/intake" method="post" className="mt-6 grid max-h-[68vh] gap-4 overflow-y-auto pr-1">
       <input type="hidden" name="orderId" value={order.id} />
       <input type="hidden" name="slug" value={order.reportSlug} />
       <input type="hidden" name="product" value={order.product} />
-      <Field label="Best contact name" name="contactName" placeholder="Alex Cadena" required />
-      <Field label="Your role" name="role" placeholder="Owner, marketing manager, office manager..." />
-      <Field label="Google Business Profile URL" name="googleBusinessProfileUrl" placeholder="https://business.google.com/..." />
-      <label className="grid gap-2 text-sm font-bold text-cyan-50">
-        Social profile links
-        <textarea name="socialProfiles" rows={3} placeholder="Instagram, Facebook, LinkedIn, TikTok — one per line" className="rounded-2xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-normal text-white outline-none ring-cyan-300/30 placeholder:text-slate-500 focus:ring-2" />
-      </label>
-      <Field label="Priority services to win for" name="priorityServices" placeholder="Emergency dental, Invisalign, implants..." />
-      <label className="grid gap-2 text-sm font-bold text-cyan-50">
-        What do you want fixed first?
-        <textarea name="urgentGoal" rows={3} placeholder="Tell us the most important visibility goal or urgent problem." className="rounded-2xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-normal text-white outline-none ring-cyan-300/30 placeholder:text-slate-500 focus:ring-2" />
-      </label>
-      <Field label="Anything else we should know?" name="notes" placeholder={`Best contact email: ${lead.email}`} />
-      <button className="mt-2 rounded-2xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-5 py-4 font-black text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.22)]" type="submit">
+
+      <FormSection title="Business confirmation">
+        <Field label="Best contact name" name="contactName" placeholder="Alex Cadena" required />
+        <Field label="Your role" name="role" placeholder="Owner, marketing manager, office manager..." />
+        <Field label="Business display name" name="businessDisplayName" placeholder={client?.name ?? order.clientName} />
+        <Field label="Primary location" name="primaryLocation" placeholder={client?.city ?? "City, state/province"} />
+        <Field label="Country" name="country" placeholder="United States, Canada, UK..." />
+        <Field label="Confirmed niche/category" name="confirmedNiche" placeholder="Family dentist, med spa, roofer..." />
+        <Field label="Google Business Profile URL" name="googleBusinessProfileUrl" placeholder="https://business.google.com/..." />
+        <TextArea label="Social profile links" name="socialProfiles" placeholder="Instagram, Facebook, LinkedIn, TikTok — one per line" />
+      </FormSection>
+
+      <FormSection title="Competitor confirmation">
+        <Field label="Competitor 1 name" name="competitor1Name" placeholder="Main competitor" />
+        <Field label="Competitor 1 website" name="competitor1Website" placeholder="https://competitor.com" />
+        <Field label="Competitor 1 Google/Maps URL" name="competitor1GoogleUrl" placeholder="https://maps.google.com/..." />
+        <Field label="Why this competitor matters" name="competitor1Reason" placeholder="Outranks us, wins premium jobs..." />
+        <Field label="Competitor 2 name" name="competitor2Name" placeholder="Second competitor" />
+        <Field label="Competitor 2 website" name="competitor2Website" placeholder="https://competitor.com" />
+        <Field label="Competitor 2 Google/Maps URL" name="competitor2GoogleUrl" placeholder="https://maps.google.com/..." />
+        <Field label="Why this competitor matters" name="competitor2Reason" placeholder="Visible in AI, more reviews..." />
+        <TextArea label="Additional competitors" name="additionalCompetitors" placeholder="One competitor per line" />
+        <Checkbox label="VizBiz may research additional local competitors if needed" name="additionalResearchPermission" />
+      </FormSection>
+
+      <FormSection title="Services/products to win">
+        <TextArea label="Top services/products to win" name="topServicesToWin" placeholder="One per line: emergency dental, implants, Invisalign..." />
+        <Field label="Highest-value service" name="highestValueService" placeholder="Dental implants, roof replacement..." />
+        <Field label="Average customer value" name="averageCustomerValue" placeholder="$500, $2,500, $10k+..." />
+        <Field label="Primary conversion action" name="primaryConversionAction" placeholder="Phone call, booking form, quote request..." />
+        <Field label="Primary phone" name="primaryPhone" placeholder="Best public tracking/booking phone" />
+        <Field label="Customer types" name="customerTypes" placeholder="Families, homeowners, commercial buyers..." />
+      </FormSection>
+
+      <FormSection title="Fix/access details">
+        <Field label="Website platform" name="websitePlatform" placeholder="WordPress, Squarespace, Shopify, custom..." />
+        <Field label="Who edits the website?" name="websiteEditor" placeholder="You, agency, developer, unknown..." />
+        <Field label="Implementation permission" name="implementationPermission" placeholder="Recommend only, can edit with approval, full access..." />
+        <Field label="Google Business Profile access" name="googleBusinessProfileAccess" placeholder="Owner, manager, can invite, no access..." />
+        <Field label="Analytics/Search Console access" name="analyticsAccess" placeholder="GA4/GSC available, not sure, no access..." />
+        <Field label="Booking/CRM platform" name="bookingCrmPlatform" placeholder="Calendly, Jane, HubSpot, ServiceTitan..." />
+        <Field label="Schema/SEO tools already installed" name="schemaTools" placeholder="Yoast, RankMath, LocalBusiness schema..." />
+      </FormSection>
+
+      <FormSection title="Proof/reviews/content">
+        <TextArea label="Common questions customers ask" name="commonQuestions" placeholder="One question per line" />
+        <TextArea label="Common objections" name="commonObjections" placeholder="Price, timing, trust, insurance..." />
+        <TextArea label="Differentiators/proof points" name="differentiators" placeholder="Awards, guarantees, years in business, specialties..." />
+        <TextArea label="Review links" name="reviewLinks" placeholder="Google, Yelp, Trustpilot — one per line" />
+        <TextArea label="Proof/case study links" name="proofLinks" placeholder="Before/after, testimonials, case studies — one per line" />
+        <TextArea label="Existing FAQs" name="existingFaqs" placeholder="Paste FAQs or link to FAQ pages" />
+        <TextArea label="Languages served" name="languagesServed" placeholder="English, Spanish, French..." rows={2} />
+      </FormSection>
+
+      <FormSection title="Urgency/approval constraints">
+        <TextArea label="What do you want fixed first?" name="urgentGoal" placeholder="Most important visibility goal or urgent problem." />
+        <Field label="Deadline or launch date" name="deadline" placeholder="No rush, before June 15, this week..." />
+        <Field label="Seasonal priorities" name="seasonalPriorities" placeholder="Summer rush, tax season, back-to-school..." />
+        <TextArea label="Known AI search issues" name="knownAiSearchIssues" placeholder="ChatGPT names competitors, wrong address, missing services..." />
+        <TextArea label="Approval/legal/brand constraints" name="approvalConstraints" placeholder="Claims to avoid, review process, compliance notes..." />
+        <TextArea label="Monthly monitoring markets" name="monthlyMonitoringMarkets" placeholder="For monthly plan: one city/neighborhood per line" />
+        <Field label="Monthly update preference" name="monthlyUpdatePreference" placeholder="Email summary, call, Loom walkthrough..." />
+        <Field label="Legacy priority services" name="priorityServices" placeholder="Optional: services from earlier checkout notes" />
+        <Field label="Anything else we should know?" name="notes" placeholder={`Best contact email: ${lead.email}. Website: ${client?.websiteUrl ?? ""}`} />
+      </FormSection>
+
+      <button className="sticky bottom-0 mt-2 rounded-2xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-5 py-4 font-black text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.22)]" type="submit">
         Send Intake & Queue My Work
       </button>
     </form>
+  );
+}
+
+function FormSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <fieldset className="grid gap-3 rounded-3xl border border-white/10 bg-[#020617]/45 p-4">
+      <legend className="px-2 text-xs font-black uppercase tracking-[0.16em] text-cyan-200">{title}</legend>
+      {children}
+    </fieldset>
   );
 }
 
@@ -160,6 +224,24 @@ function Field({ label, name, placeholder, required = false }: { label: string; 
     <label className="grid gap-2 text-sm font-bold text-cyan-50">
       {label}
       <input required={required} name={name} placeholder={placeholder} className="rounded-2xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-normal text-white outline-none ring-cyan-300/30 placeholder:text-slate-500 focus:ring-2" />
+    </label>
+  );
+}
+
+function TextArea({ label, name, placeholder, rows = 3 }: { label: string; name: string; placeholder: string; rows?: number }) {
+  return (
+    <label className="grid gap-2 text-sm font-bold text-cyan-50">
+      {label}
+      <textarea name={name} rows={rows} placeholder={placeholder} className="rounded-2xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-normal text-white outline-none ring-cyan-300/30 placeholder:text-slate-500 focus:ring-2" />
+    </label>
+  );
+}
+
+function Checkbox({ label, name }: { label: string; name: string }) {
+  return (
+    <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-bold text-cyan-50">
+      <input type="checkbox" name={name} className="mt-1 h-4 w-4 rounded border-white/20 bg-[#020617] accent-cyan-300" />
+      <span>{label}</span>
     </label>
   );
 }

@@ -35,7 +35,7 @@ export default function OfferStack() {
                 <div>
                   <p className="font-bold text-[#0F172A]">Risk reversal</p>
                   <p className="mt-1 text-sm leading-6 text-slate-700">
-                    The $88 one-time report is designed to give a concrete fix list, not a vague scorecard. We guarantee the depth of the diagnosis — not impossible-to-control AI rankings.
+                    If we don’t uncover at least 10 clear AI visibility gaps or local competitor advantages, we refund the report. We guarantee the depth of the diagnosis — not impossible-to-control AI rankings.
                   </p>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export default function OfferStack() {
             </div>
 
             <Link href="#free-mini-report" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#22D3EE] to-[#06B6D4] px-6 py-4 font-bold text-[#020617] shadow-[0_0_32px_rgba(34,211,238,0.26)]">
-              Run my free local AI visibility report <ArrowRight className="h-5 w-5" />
+              Email me my free AI visibility snapshot <ArrowRight className="h-5 w-5" />
             </Link>
             <p className="mt-3 text-center text-xs text-slate-400">Free report first. Then choose the $88 one-time report if you want the full fix list.</p>
           </div>

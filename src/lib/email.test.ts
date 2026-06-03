@@ -14,6 +14,8 @@ describe("mini report email", () => {
     const html = buildMiniReportEmailHtml({ email, reportUrl: "https://vizbiz.ai/mini-report/abc" });
 
     expect(html).toContain("Oakville Family Dental: your AI Visibility Score is ready");
+    expect(html).toContain("Search is changing. Build your AI reputation early.");
+    expect(html).toContain("popular AI assistants and AI-powered search tools");
     expect(html).toContain("AI Visibility Score: 42/100");
     expect(html).toContain("https://vizbiz.ai/mini-report/abc");
   });

@@ -122,8 +122,8 @@ describe("createMiniReportFromAudit", () => {
     expect(report.paidDeliverables.oneTimeFix.includes).toContain("Clear fix list for website, schema, GBP, reviews, and local trust signals");
     expect(report.paidDeliverables.monthlyGrowthPlan.title).toContain("$188 USD/month");
     expect(report.paidDeliverables.monthlyGrowthPlan.timeline).toEqual(["30 days", "60 days", "90 days"]);
-    expect(report.localDominationPlan.title).toBe("Local Community Domination Plan");
-    expect(report.localDominationPlan.thesis).toContain("stronger signals");
+    expect(report.localDominationPlan.title).toBe("AI Reputation Growth Plan");
+    expect(report.localDominationPlan.thesis).toContain("build AI-readable local reputation early");
     expect(report.localDominationPlan.queryFanOutBrief).toContain("The free report gives you the first read");
     expect(report.localDominationPlan.recommendedPages).toContain("Make service/city pages answer real local recommendation questions, not just keywords.");
     expect(report.localDominationPlan.faqOpportunities).toContain("Answer who-to-choose questions buyers would ask an AI assistant.");
