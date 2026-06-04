@@ -13,6 +13,16 @@
 # testing
 /coverage
 
+# generated VizBiz engine artifacts
+/output
+/.data
+
+# local Mission Control sqlite databases
+mission-control.db
+mission-control.db-*
+*.db-shm
+*.db-wal
+
 # next.js
 /.next/
 /out/
