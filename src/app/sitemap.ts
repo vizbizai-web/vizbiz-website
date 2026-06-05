@@ -112,6 +112,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    {
+      url: `${BASE_URL}/best-ai-visibility-tools-for-local-businesses/`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/geo-tools/`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
     // About and Insights
     {
       url: `${BASE_URL}/about/`,
