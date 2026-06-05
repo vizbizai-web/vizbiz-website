@@ -1,0 +1,60 @@
+Vercel CLI 50.22.0
+Vercel CLI 50.22.0
+Retrieving project…
+Retrieving project…
+Deploying vizbizai-4875s-projects/vizbiz-landing-fresh-gkux
+Deploying vizbizai-4875s-projects/vizbiz-landing-fresh-gkux
+Uploading [--------------------] (0.0B/11.7KB)
+Uploading [--------------------] (0.0B/11.7KB)
+Uploading [===================-] (11.5KB/11.7KB)
+Uploading [===================-] (11.5KB/11.7KB)
+Uploading [====================] (11.7KB/11.7KB)
+Uploading [====================] (11.7KB/11.7KB)
+Inspect: https://vercel.com/vizbizai-4875s-projects/vizbiz-landing-fresh-gkux/C3kTXavtLvMe5uKcKtYaAgwPGsY8 [4s]
+Inspect: https://vercel.com/vizbizai-4875s-projects/vizbiz-landing-fresh-gkux/C3kTXavtLvMe5uKcKtYaAgwPGsY8 [4s]
+Production: https://vizbiz-landing-fresh-gkux-rataqlxy7-vizbizai-4875s-projects.vercel.app [4s]
+Production: https://vizbiz-landing-fresh-gkux-rataqlxy7-vizbizai-4875s-projects.vercel.app [4s]
+Building...
+Building...
+Building...
+Building...
+Building: Running build in Washington, D.C., USA (East) – iad1
+Building: Running build in Washington, D.C., USA (East) – iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Retrieving list of deployment files...
+Building: Downloading 273 deployment files...
+Building: Downloading 273 deployment files...
+Building: Restored build cache from previous deployment (63qudzznCFqPUGygwdRNqXpDqUKc)
+Building: Restored build cache from previous deployment (63qudzznCFqPUGygwdRNqXpDqUKc)
+Building: Running "vercel build"
+Building: Vercel CLI 54.9.0
+Building: Running "vercel build"
+Building: Vercel CLI 54.9.0
+Building: Installing dependencies...
+Building: Installing dependencies...
+Building: up to date in 1s
+Building: up to date in 1s
+Building: 229 packages are looking for funding
+Building: run `npm fund` for details
+Building: 229 packages are looking for funding
+Building: run `npm fund` for details
+Building: Detected Next.js version: 16.1.6
+Building: Detected Next.js version: 16.1.6
+Building: Running "next build"
+Building: Running "next build"
+Building: ▲ Next.js 16.1.6 (Turbopack)
+Building: ▲ Next.js 16.1.6 (Turbopack)
+Building: - Environments: .env.production
+Building: - Environments: .env.production
+Building: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+Building: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+Building: Creating an optimized production build ...
+Building: Creating an optimized production build ...
+Building: ✓ Compiled successfully in 18.5s
+Building: ✓ Compiled successfully in 18.5s
+Building: Running TypeScript ...
+Building: Running TypeScript ...
+Error: Command "next build" exited with 1
+Error: Command "next build" exited with 1
