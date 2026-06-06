@@ -10,12 +10,14 @@ import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
 import { sendVizBizEmail } from "@/lib/resend-mailer";
+import { assertClientSafeCopy } from "@/lib/client-copy-qa";
 
 async function sendSnapshotEmail(
   to: string,
   data: SnapshotEmailData
 ): Promise<void> {
   const html = buildSnapshotEmailHtml(data);
+  assertClientSafeCopy(html, "free snapshot email");
 
   await sendVizBizEmail({
     to,

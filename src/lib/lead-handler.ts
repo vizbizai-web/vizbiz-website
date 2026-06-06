@@ -3,6 +3,7 @@ import path from "node:path";
 import { buildMiniSnapshot } from "@/lib/mini-snapshot";
 import { buildResearchBrief } from "@/lib/research-brief";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
+import { assertClientSafeCopy } from "@/lib/client-copy-qa";
 
 export type LeadInput = {
   timestamp: string;
@@ -186,6 +187,7 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
       "https://calendly.com/vizbiz-ai/avi-assessment",
   };
   const emailHtml = buildSnapshotEmailHtml(emailHtmlData).slice(0, 10000);
+  assertClientSafeCopy(emailHtml, "lead note email HTML preview");
 
   return [
     `Intake submission for ${input.dealershipName}`,
@@ -662,6 +664,7 @@ export async function handleNewLead(data: LeadInput) {
     };
 
     const html = buildSnapshotEmailHtml(emailData);
+    assertClientSafeCopy(html, "stored snapshot email draft");
 
     if (process.env.NODE_ENV !== "production") {
       const timestamp = new Date()

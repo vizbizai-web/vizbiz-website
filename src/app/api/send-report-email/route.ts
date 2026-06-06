@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildReportUrl } from '@/lib/report-token';
 import { sendVizBizEmail } from '@/lib/resend-mailer';
 import { getLeadByLeadId } from '@/lib/google-sheets';
+import { assertClientSafeCopy } from '@/lib/client-copy-qa';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 async function sendEmail(to: string, subject: string, html: string): Promise<string> {
+  assertClientSafeCopy(`${subject}\n${html}`, 'report email');
   return sendVizBizEmail({ to, subject, html });
 }
 
