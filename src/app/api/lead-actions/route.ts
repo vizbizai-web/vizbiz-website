@@ -2,22 +2,37 @@ import { NextResponse } from "next/server";
 import { getAllLeads, updateLeadResearchResults } from "@/lib/google-sheets";
 import type { LeadRow } from "@/lib/google-sheets";
 
-
-
 // GET /api/lead-actions — list all leads with their available actions
 export async function GET() {
   try {
     const leads = await getAllLeads();
-
     const leadsWithActions = leads.map((lead) => ({
       ...lead,
       availableActions: getAvailableActions(lead.status),
     }));
-
     return NextResponse.json({ leads: leadsWithActions });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
+}
+
+function scoreFromLead(lead: LeadRow) {
+  const [appearedRaw, totalRaw] = (lead.snapshotAppeared || "0 of 5").split(/\s+of\s+/i);
+  const appearedCount = Number.parseInt(appearedRaw || "0", 10) || 0;
+  const totalPrompts = Number.parseInt(totalRaw || "5", 10) || 5;
+  const statusBand = lead.visibilityBand || "Pending";
+  const aviScore = statusBand === "Strong" ? 72 : statusBand === "Moderate" ? 42 : 18;
+  return { appearedCount, totalPrompts, statusBand, aviScore };
+}
+
+async function proxyReviewAction(request: Request, leadId: string, action: string) {
+  const origin = new URL(request.url).origin;
+  const res = await fetch(`${origin}/api/operator-review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ leadId, action }),
+  });
+  return res.json();
 }
 
 // POST /api/lead-actions — execute a pipeline action on a lead
@@ -27,85 +42,96 @@ export async function POST(request: Request) {
     const { leadId, action, data } = body;
 
     if (!leadId || !action) {
-      return NextResponse.json(
-        { error: "leadId and action are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "leadId and action are required" }, { status: 400 });
     }
 
     const leads = await getAllLeads();
     const lead = leads.find((l) => l.leadId === leadId);
-    if (!lead) {
-      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-    }
+    if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
 
     const allowed = getAvailableActions(lead.status);
     if (!allowed.includes(action)) {
-      return NextResponse.json(
-        { error: `Action "${action}" not allowed for status "${lead.status}"` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Action "${action}" not allowed for status "${lead.status}"` }, { status: 400 });
     }
 
     switch (action) {
       case "run_research": {
-        // Trigger process-lead for this specific lead
-        const res = await fetch(
-          `https://vizbiz.ai/api/process-lead/?leadId=${leadId}`,
-          { method: "GET" }
-        );
-        const result = await res.json();
-        return NextResponse.json({
-          success: true,
-          action: "run_research",
-          leadId,
-          result,
+        const origin = new URL(request.url).origin;
+        const res = await fetch(`${origin}/api/pipeline/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId, researchMode: data?.researchMode || "free", force: Boolean(data?.force) }),
         });
+        const result = await res.json();
+        return NextResponse.json({ success: true, action: "run_research", leadId, result });
       }
 
       case "approve": {
-        const res = await fetch("https://vizbiz.ai/api/vlad-review", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ leadId, action: "approve" }),
-        });
-        const result = await res.json();
-        return NextResponse.json({
-          success: true,
-          action: "approve",
-          leadId,
-          result,
-        });
+        const result = await proxyReviewAction(request, leadId, "approve");
+        return NextResponse.json({ success: true, action: "approve", leadId, result });
       }
 
       case "hold": {
-        const res = await fetch("https://vizbiz.ai/api/vlad-review", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ leadId, action: "hold" }),
-        });
-        const result = await res.json();
-        return NextResponse.json({
-          success: true,
-          action: "hold",
-          leadId,
-          result,
-        });
+        const result = await proxyReviewAction(request, leadId, "hold");
+        return NextResponse.json({ success: true, action: "hold", leadId, result });
       }
 
       case "rerun": {
-        const res = await fetch("https://vizbiz.ai/api/vlad-review", {
+        const result = await proxyReviewAction(request, leadId, "rerun");
+        return NextResponse.json({ success: true, action: "rerun", leadId, result });
+      }
+
+      case "approve_and_send": {
+        const reportType = data?.reportType === "paid" ? "paid" : "free";
+        const { appearedCount, totalPrompts, statusBand, aviScore } = scoreFromLead(lead);
+        const origin = new URL(request.url).origin;
+        const sendRes = await fetch(`${origin}/api/send-report-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ leadId, action: "rerun" }),
+          body: JSON.stringify({
+            to: lead.email,
+            leadId,
+            businessName: lead.dealershipName,
+            contactName: lead.contactName,
+            city: lead.city,
+            aviScore,
+            statusBand,
+            appearedCount,
+            totalPrompts,
+            competitorName: lead.competitor.split(",")[0]?.trim() || "your local competitors",
+            competitorScore: 0,
+            niche: "local_business",
+          }),
         });
-        const result = await res.json();
-        return NextResponse.json({
-          success: true,
-          action: "rerun",
-          leadId,
-          result,
+        const sendResult = await sendRes.json().catch(() => ({}));
+        if (!sendRes.ok) {
+          return NextResponse.json({ success: false, error: sendResult?.error || "Email send failed" }, { status: 502 });
+        }
+        await updateLeadResearchResults(leadId, {
+          status: reportType === "paid" ? "paid_report_delivered" : "contacted",
+          emailSentAt: new Date().toISOString(),
+          notes: `${lead.notes || ""}\n[APPROVED_AND_SENT ${reportType.toUpperCase()} via MC ${new Date().toISOString()}]`,
         });
+        return NextResponse.json({ success: true, action: "approve_and_send", leadId, reportType, sendResult });
+      }
+
+      case "needs_revision": {
+        const reason = String(data?.reason || "").trim();
+        if (!reason) return NextResponse.json({ error: "Revision reason is required" }, { status: 400 });
+        await updateLeadResearchResults(leadId, {
+          status: "needs_revision",
+          notes: `${lead.notes || ""}\n[NEEDS_REVISION ${new Date().toISOString()}] ${reason}`,
+        });
+        return NextResponse.json({ success: true, action: "needs_revision", leadId, reason });
+      }
+
+      case "do_not_send": {
+        const reason = String(data?.reason || "Operator marked do not send").trim();
+        await updateLeadResearchResults(leadId, {
+          status: "do_not_send",
+          notes: `${lead.notes || ""}\n[DO_NOT_SEND ${new Date().toISOString()}] ${reason}`,
+        });
+        return NextResponse.json({ success: true, action: "do_not_send", leadId, reason });
       }
 
       case "mark_junk": {
@@ -113,43 +139,24 @@ export async function POST(request: Request) {
           status: "closed_lost",
           notes: (lead.notes || "") + "\n[MARKED JUNK via MC]",
         });
-        return NextResponse.json({
-          success: true,
-          action: "mark_junk",
-          leadId,
-        });
+        return NextResponse.json({ success: true, action: "mark_junk", leadId });
       }
 
       case "update_status": {
-        if (!data?.status) {
-          return NextResponse.json(
-            { error: "data.status is required" },
-            { status: 400 }
-          );
-        }
+        if (!data?.status) return NextResponse.json({ error: "data.status is required" }, { status: 400 });
         await updateLeadResearchResults(leadId, {
           status: data.status,
-          notes: data.notes
-            ? (lead.notes || "") + "\n" + data.notes
-            : lead.notes,
+          notes: data.notes ? (lead.notes || "") + "\n" + data.notes : lead.notes,
         });
-        return NextResponse.json({
-          success: true,
-          action: "update_status",
-          leadId,
-          newStatus: data.status,
-        });
+        return NextResponse.json({ success: true, action: "update_status", leadId, newStatus: data.status });
       }
 
       default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("[lead-actions] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -158,17 +165,29 @@ function getAvailableActions(status: string): string[] {
     case "new":
       return ["run_research", "mark_junk", "update_status"];
     case "researching":
+    case "research_complete":
       return ["update_status"];
     case "pending_review":
-      return ["approve", "hold", "rerun", "update_status"];
+      return ["approve", "approve_and_send", "needs_revision", "do_not_send", "hold", "rerun", "update_status"];
     case "approved":
-      return ["update_status"];
+      return ["approve_and_send", "needs_revision", "do_not_send", "update_status"];
     case "email_drafted":
-      return ["update_status", "mark_junk"];
+      return ["approve_and_send", "needs_revision", "update_status", "mark_junk"];
+    case "paid_checkout_complete":
+    case "paid_intake_pending":
+      return ["update_status"];
+    case "paid_intake_submitted":
+      return ["run_research", "update_status"];
+    case "paid_report_ready_for_review":
+      return ["approve_and_send", "needs_revision", "do_not_send", "update_status"];
+    case "needs_revision":
+      return ["rerun", "run_research", "update_status"];
     case "contacted":
+    case "paid_report_delivered":
       return ["update_status"];
     case "closed_won":
     case "closed_lost":
+    case "do_not_send":
       return ["update_status"];
     default:
       return ["update_status"];

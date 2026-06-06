@@ -9,29 +9,34 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
-import { generateReportToken } from "@/lib/report-token";
+import { sendVizBizEmail } from "@/lib/resend-mailer";
 
 async function sendSnapshotEmail(
   to: string,
   data: SnapshotEmailData
 ): Promise<void> {
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth: {
-      user: "vizbiz.ai@gmail.com",
-      pass: process.env.GMAIL_APP_PASS,
-    },
-  });
-
   const html = buildSnapshotEmailHtml(data);
 
-  await transporter.sendMail({
-    from: '"VizBiz" <vizbiz.ai@gmail.com>',
+  await sendVizBizEmail({
     to,
     subject: `Your AI Visibility Snapshot — ${data.dealershipName}`,
     html,
   });
+}
+
+function getStringValue(record: Record<string, unknown>, key: string, fallback: string): string {
+  const value = record[key];
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function getNumberValue(record: Record<string, unknown>, key: string): number | undefined {
+  const value = record[key];
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
 }
 
 export async function POST(request: Request) {
@@ -51,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     // Parse research data for email content
-    let researchData: any = {};
+    let researchData: Record<string, unknown> = {};
     try {
       const notesStr = lead.notes || "";
       const jsonStart = notesStr.lastIndexOf('{"preflight"');
@@ -65,7 +70,7 @@ export async function POST(request: Request) {
         }
         if (jsonEnd > 0) {
           const parsed = JSON.parse(notesStr.substring(jsonStart, jsonEnd));
-          researchData = parsed.research || {};
+          researchData = typeof parsed.research === "object" && parsed.research ? parsed.research : {};
         }
       }
     } catch { /* use defaults */ }
@@ -82,14 +87,14 @@ export async function POST(request: Request) {
             month: "long",
             day: "numeric",
           }),
-          appearedIn: lead.snapshotAppeared || `${researchData.appearedCount || 0} of ${researchData.totalPrompts || 0} prompts`,
+          appearedIn: lead.snapshotAppeared || `${getNumberValue(researchData, "appearedCount") || 0} of ${getNumberValue(researchData, "totalPrompts") || 0} prompts`,
           overallVisibility: String(researchData.statusBand === "Strong" ? 70 : researchData.statusBand === "Moderate" ? 45 : 15),
           serviceDeptVisibility: lead.serviceVisibility || "Not surfaced",
-          competitorName: researchData.competitorMention || "nearby competitors",
-          competitorCategories: researchData.niche || "local business",
+          competitorName: getStringValue(researchData, "competitorMention", "nearby competitors"),
+          competitorCategories: getStringValue(researchData, "niche", "local business"),
           bookingUrl: "https://vizbiz.ai/book-call",
-          profitAtRiskLow: researchData.revenueLoss,
-          profitAtRiskHigh: researchData.leadsLost,
+          profitAtRiskLow: getNumberValue(researchData, "revenueLoss"),
+          profitAtRiskHigh: getNumberValue(researchData, "leadsLost"),
         };
 
         await sendSnapshotEmail(lead.email, emailData);
@@ -100,7 +105,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update Sheets
+    // Update CRM
     await updateLead(leadId, {
       emailSentAt: new Date().toISOString(),
       notes: `${lead.notes}\n[Delivered at ${new Date().toISOString()}]`,
@@ -108,7 +113,7 @@ export async function POST(request: Request) {
 
     // Telegram alert
     await sendPipelineAlert(
-      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}?token=${generateReportToken(leadId)}`
+      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}`
     );
 
     console.info(`[pipeline/deliver] Complete for ${leadId}`);

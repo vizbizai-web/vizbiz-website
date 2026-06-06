@@ -1,18 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-
-export async function GET(_req: NextRequest) {
-  // TODO: Replace with real cron status integration
-  return NextResponse.json({
-    crons: [
-      {
-        name: 'Dogfood Audit',
-        schedule: 'Mon/Thu 2:00 PM',
-        lastRun: null,
-        status: 'scheduled',
-      },
-    ],
-    followUps: [],
-    content: [],
-  });
+export async function GET() {
+  return NextResponse.json(
+    {
+      source: 'not-configured',
+      status: 'unavailable',
+      message: 'Mission Control cron/task status is not wired to an approved VizBiz scheduling source yet.',
+      missingIntegration: 'approved-task-or-calendar-store',
+      crons: [],
+      followUps: [],
+      content: [],
+    },
+    { status: 503 }
+  );
 }

@@ -1,14 +1,14 @@
 /**
  * Pipeline Phase 1: INTAKE — Fast (< 3s)
  *
- * Validates input, writes to Google Sheets, returns immediately.
+ * Validates input, writes to the primary CRM, returns immediately.
  * Fires preflight in the background.
  */
 
 import { NextResponse } from "next/server";
 import { appendLead, isSheetsConfigured } from "@/lib/google-sheets";
 import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
-import { generateReportToken } from "@/lib/report-token";
+import { buildPostIntakeRedirect } from "@/lib/funnel-logic";
 
 type IntakePayload = {
   name: string;
@@ -106,11 +106,11 @@ export async function POST(request: Request) {
 
   // Always generate a leadId upfront — even if Sheets fails, we have a reference
   let leadId = `VZB-${Date.now().toString(36).toUpperCase()}`;
-  let sheetsOk = false;
+  let dataStored = false;
 
   if (isSheetsConfigured()) {
     try {
-      leadId = await appendLead({
+      const crmLead = {
         timestamp: new Date().toISOString(),
         dealershipName: cleanPayload.dealershipName,
         website: cleanPayload.websiteUrl,
@@ -127,18 +127,30 @@ export async function POST(request: Request) {
         emailSentAt: "",
         notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""} | CompetitorMode: ${cleanPayload.competitorMode}.`,
         source: cleanPayload.source,
-      });
-      sheetsOk = true;
-      console.info("[pipeline/intake] lead stored in Sheets", { leadId, email: cleanPayload.email });
+        originalCta: cleanPayload.originalCta,
+        originalPage: cleanPayload.originalPage,
+        utmSource: cleanPayload.utmSource,
+        utmMedium: cleanPayload.utmMedium,
+        utmCampaign: cleanPayload.utmCampaign,
+        utmTerm: cleanPayload.utmTerm,
+        utmContent: cleanPayload.utmContent,
+        referrer: cleanPayload.referrer,
+        timezone: cleanPayload.timezone,
+        utcOffset: cleanPayload.utcOffset,
+        locale: cleanPayload.locale,
+      } as Parameters<typeof appendLead>[0] & Record<string, string | number | undefined>;
+
+      leadId = await appendLead(crmLead);
+      dataStored = true;
+      console.info("[pipeline/intake] lead stored in CRM", { leadId, email: cleanPayload.email });
     } catch (error) {
-      console.error("[pipeline/intake] Sheets write failed", error);
+      console.error("[pipeline/intake] CRM write failed", error);
     }
   } else {
-    console.warn("[pipeline/intake] Google Sheets not configured — lead NOT stored");
+    console.warn("[pipeline/intake] Supabase/CRM not configured — lead NOT stored");
   }
 
   // Send Telegram alert — MUST await on serverless (Vercel kills process after response)
-  let alertSent = false;
   try {
     await sendLeadAlertTelegram({
       leadId,
@@ -149,7 +161,7 @@ export async function POST(request: Request) {
       website: cleanPayload.websiteUrl,
       appeared: "Pending",
       band: "Pending",
-      sheetsOk,
+      dataStored,
       utmSource: cleanPayload.utmSource,
       utmMedium: cleanPayload.utmMedium,
       utmCampaign: cleanPayload.utmCampaign,
@@ -157,16 +169,23 @@ export async function POST(request: Request) {
       competitorMode: cleanPayload.competitorMode,
       competitors: [cleanPayload.competitor, cleanPayload.competitor2].filter(Boolean).join(", ") || undefined,
     });
-    alertSent = true;
   } catch (err) {
     console.error("[pipeline/intake] Telegram alert failed", err);
   }
 
-  // Fire preflight in background — even if Sheets failed, we have a leadId
+  if (!dataStored) {
+    return NextResponse.json(
+      { success: false, error: "CRM write failed; intake was not stored. Please try again." },
+      { status: 503 }
+    );
+  }
+
+  // Fire preflight in background only after the lead is durably stored.
   if (leadId) {
+    const requestOrigin = new URL(request.url).origin;
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      : requestOrigin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     fetch(`${baseUrl}/api/pipeline/preflight`, {
       method: "POST",
@@ -177,16 +196,14 @@ export async function POST(request: Request) {
     });
   }
 
-  // Return immediately — fast response
-  // Generate a client token so the lead can view their own report immediately
-  const clientToken = generateReportToken(leadId);
-  const redirectUrl = clientToken
-    ? `/report/${leadId}?token=${clientToken}`
-    : `/report/${leadId}`;
+  // Return immediately — fast response.
+  // Do not expose a report link here: the evidence pipeline/quality gate must finish first.
+  const redirectUrl = buildPostIntakeRedirect(leadId);
 
   return NextResponse.json({
     success: true,
     leadId,
     redirectUrl,
+    reportReady: false,
   });
 }

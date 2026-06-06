@@ -28,11 +28,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip auth for login page and API routes
-  // Next may normalize routes with a trailing slash in dev, so allow both
-  // /mission-control/login and /mission-control/login/.
-  if (request.nextUrl.pathname.startsWith('/mission-control/login') ||
-      request.nextUrl.pathname.startsWith('/mission-control/api')) {
+  // Skip auth for login page plus auth/logout API routes only.
+  // Data/action APIs under /mission-control/api must stay protected.
+  const pathname = request.nextUrl.pathname;
+  const isLoginPage = pathname.startsWith('/mission-control/login');
+  const isPublicMissionControlApi =
+    pathname === '/mission-control/api/auth' ||
+    pathname === '/mission-control/api/auth/' ||
+    pathname === '/mission-control/api/logout' ||
+    pathname === '/mission-control/api/logout/';
+
+  if (isLoginPage || isPublicMissionControlApi) {
     return NextResponse.next();
   }
 

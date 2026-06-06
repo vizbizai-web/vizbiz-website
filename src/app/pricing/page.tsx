@@ -2,7 +2,10 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing | VizBiz.ai',
-  description: 'Simple, transparent pricing for AI Visibility Intelligence services',
+  description: 'Simple, transparent pricing for AI visibility reports, fixes, and local business recommendation readiness.',
+  alternates: {
+    canonical: 'https://vizbiz.ai/pricing/',
+  },
 };
 
 export default function PricingPage() {

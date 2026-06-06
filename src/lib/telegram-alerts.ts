@@ -20,7 +20,7 @@ type LeadAlert = {
   website: string;
   appeared: string;
   band: string;
-  sheetsOk: boolean;
+  dataStored: boolean;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -72,7 +72,7 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
     lead.googleWebsiteMatch !== undefined && lead.googleWebsiteMatch !== null ? `🔗 Website match: ${lead.googleWebsiteMatch ? 'yes' : 'no'}` : null,
     lead.localEntityTrustScore !== undefined && lead.localEntityTrustScore !== null ? `🏆 Local trust: ${lead.localEntityTrustScore}/100` : null,
     lead.googleProfileFound !== undefined ? "" : null,
-    lead.sheetsOk ? "✅ Captured in Sheets CRM" : "⚠️ Sheets not configured — lead NOT stored",
+    lead.dataStored ? "✅ Captured in Supabase CRM" : "⚠️ CRM storage failed — lead NOT stored",
     "",
     `ID: ${lead.leadId || "N/A"}`,
     lead.utmSource ? `🔗 Source: ${lead.utmSource}${lead.utmMedium ? ` / ${lead.utmMedium}` : ""}${lead.utmCampaign ? ` / ${lead.utmCampaign}` : ""}` : "",
@@ -93,9 +93,9 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
   );
 
   // -- 2. DM alert (Vlad talking to Alex with context and next steps) --
-  // Sent ONLY when lead is confirmed in Sheets (sheetsOk=true)
-  if (!lead.sheetsOk) {
-    console.warn("[telegram-alert] Skipping DM alert — lead not stored in Sheets", { dealership: lead.dealershipName });
+  // Sent ONLY when lead is confirmed in the CRM (dataStored=true)
+  if (!lead.dataStored) {
+    console.warn("[telegram-alert] Skipping DM alert — lead not stored in CRM", { dealership: lead.dealershipName });
     return;
   }
 

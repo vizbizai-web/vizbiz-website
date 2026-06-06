@@ -1,28 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 import { buildReportUrl } from '@/lib/report-token';
+import { sendVizBizEmail } from '@/lib/resend-mailer';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 async function sendEmail(to: string, subject: string, html: string): Promise<string> {
-  const user = process.env.GMAIL_USER || 'vizbiz.ai@gmail.com';
-  const pass = process.env.GMAIL_APP_PASS;
-  if (!pass) throw new Error('GMAIL_APP_PASS not configured');
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
-
-  const result = await transporter.sendMail({
-    from: `"VizBiz" <${user}>`,
-    to,
-    subject,
-    html,
-  });
-
-  return result.messageId;
+  return sendVizBizEmail({ to, subject, html });
 }
 
 export async function POST(req: NextRequest) {

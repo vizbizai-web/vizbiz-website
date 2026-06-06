@@ -1,20 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
+export const revalidate = 0;
 
-export async function POST(req: NextRequest) {
+function canonicalUrl(request: Request, path: string) {
+  return new URL(path, new URL(request.url).origin).toString();
+}
+
+async function forwardJson(request: Request, path: string, init: RequestInit = {}) {
+  const response = await fetch(canonicalUrl(request, path), {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init.headers || {}),
+    },
+    cache: 'no-store',
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  return NextResponse.json(payload, { status: response.status });
+}
+
+export async function GET(request: Request) {
+  return forwardJson(request, '/api/lead-actions');
+}
+
+export async function POST(request: Request) {
+  let body: unknown;
   try {
-    const body = await req.json();
-    const { leadId, action, data } = body;
-
-    if (!leadId || !action) {
-      return NextResponse.json({ error: 'leadId and action required' }, { status: 400 });
-    }
-
-    // TODO: Wire to real CRM integration
-    console.log('[lead-actions]', { leadId, action, data });
-
-    return NextResponse.json({ ok: true, leadId, action, data });
+    body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON request' }, { status: 400 });
   }
+
+  return forwardJson(request, '/api/lead-actions', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }

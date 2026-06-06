@@ -66,7 +66,7 @@ const HUBSPOT_STAGE_ID = process.env.HUBSPOT_STAGE_NEW_LEAD || process.env.HUBSP
 const HUBSPOT_PIPELINE_LABEL = process.env.HUBSPOT_PIPELINE_LABEL || "VizBiz Pipeline";
 const HUBSPOT_STAGE_LABEL = process.env.HUBSPOT_STAGE_LABEL || "New Lead";
 const HUBSPOT_DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_SEND_FROM = "vizbiz.ai@gmail.com";
+const DEFAULT_SEND_FROM = process.env.RESEND_FROM_EMAIL || "reports@vizbiz.ai";
 
 function normalizeWebsiteUrl(value: string) {
   const trimmed = value.trim();
@@ -155,7 +155,7 @@ function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredS
       "",
       "Best,",
       "Alex",
-      "VizBiz.ai | vizbiz.ai@gmail.com",
+      "VizBiz.ai | reports@vizbiz.ai",
     ].join("\n"),
   };
 }

@@ -6,8 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getLeadByLeadId } from "@/lib/google-sheets";
-import { runPreflightStage, runResearchStage } from "@/lib/pipeline-controller";
+import { runPreflightStage } from "@/lib/pipeline-controller";
 
 // Preflight takes 30-60s (Firecrawl scrape + LLM classification + SEO audit)
 export const maxDuration = 120;
@@ -34,9 +33,10 @@ export async function POST(request: Request) {
   }
 
   // Trigger research in background
+  const requestOrigin = new URL(request.url).origin;
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    : requestOrigin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   fetch(`${baseUrl}/api/pipeline/research`, {
     method: "POST",

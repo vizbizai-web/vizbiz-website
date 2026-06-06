@@ -1,7 +1,7 @@
 /**
  * Shared junk competitor filter list
  * 
- * Used by process-lead, vlad-review, competitor-analyzer, and competitor-discovery
+ * Used by process-lead, operator-review, competitor-analyzer, and competitor-discovery
  * to filter out directory listings, platforms, and generic terms that aren't real competitors.
  */
 

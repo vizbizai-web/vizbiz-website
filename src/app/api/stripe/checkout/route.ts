@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 
 // Price IDs from the existing Stripe Payment Links
 const PRICE_IDS: Record<string, string> = {
-  fix: "price_1RQbJ2gzd3g275ifzy24002",       // $88 one-time Fix
-  fix_and_monitor: "price_1RQ7sMdn103Q2P22MM24003", // $188/mo Fix + Monitor
+  fix: "price_1TVjaVLnxAAOKS2rEA54a968",       // $88 one-time Fix
+  fix_and_monitor: "price_1TVjblLnxAAOKS2rfvaHDltS", // $188/mo Fix + Monitor
 };
 
 export async function POST(request: NextRequest) {
@@ -42,10 +43,11 @@ export async function POST(request: NextRequest) {
         "mode": mode,
         "line_items[0][price]": priceId,
         "line_items[0][quantity]": "1",
-        "success_url": `https://vizbiz.ai/report/${leadId}/full?paid=1`,
+        "success_url": buildStripeCheckoutSuccessUrl(leadId, tier),
         "cancel_url": `https://vizbiz.ai/report/${leadId}?cancelled=1`,
         "metadata[leadId]": leadId,
         "metadata[tier]": tier,
+        "metadata[paidPlan]": stripeTierToPaidPlan(tier),
         "client_reference_id": leadId,
         "allow_promotion_codes": "true",
       }),

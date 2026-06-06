@@ -8,13 +8,21 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-/* ─── TICKER WORDS ─── */
+/* ─── HERO INDUSTRY SIGNALS ─── */
 const tickerWords = [
   'dentists.', 'law firms.', 'car dealerships.', 'solopreneurs.',
   'immigration lawyers.', 'coaches.', 'mortgage brokers.', 'PI attorneys.',
   'consultants.', 'med spas.', 'accountants.', 'real estate agents.',
   'chiropractors.', 'financial advisors.', 'auto retailers.', 'career coaches.',
   'insurance brokers.', 'nutritionists.', 'therapists.', 'your business.',
+];
+
+const industryTickerItems = [
+  'Auto dealers', 'Dental clinics', 'Med spas', 'Roofers', 'HVAC companies',
+  'Plumbers', 'Family lawyers', 'Immigration attorneys', 'Personal injury firms',
+  'Real estate agents', 'Mortgage brokers', 'Accountants', 'Chiropractors',
+  'Veterinary clinics', 'Restaurants', 'Home inspectors', 'Landscapers',
+  'Insurance brokers', 'Fitness studios', 'Local consultants',
 ];
 
 /* ─── ZIP/POSTAL TICKER ─── */
@@ -89,6 +97,27 @@ function Ticker() {
         {tickerWords[idx]}
       </span>
     </span>
+  );
+}
+
+function IndustryMarquee() {
+  const repeatedItems = [...industryTickerItems, ...industryTickerItems];
+
+  return (
+    <div className="mt-8 max-w-4xl overflow-hidden rounded-2xl border border-cyan-200/15 bg-white/[0.035] py-3 shadow-[0_0_40px_rgba(34,211,238,0.08)] backdrop-blur" aria-label="VizBiz works across local business categories">
+      <div className="mb-2 px-4 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-100/60">
+        Built for the businesses people ask AI to recommend
+      </div>
+      <div className="industry-marquee-mask">
+        <div className="industry-marquee-track">
+          {repeatedItems.map((item, index) => (
+            <span key={`${item}-${index}`} className="industry-marquee-pill">
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -206,8 +235,7 @@ function IntakeForm() {
       const res = await fetch('/api/pipeline/intake', { method: 'POST', body: payload });
       if (res.ok) {
         const data = await res.json().catch(() => null);
-        if (data?.leadId) { window.location.href = `/report/${data.leadId}${data.redirectUrl?.includes('token=') ? '?token=' + data.redirectUrl.split('token=')[1] : ''}`; }
-        else { window.location.href = '/thank-you?submitted=1'; }
+        window.location.href = data?.redirectUrl || '/thank-you?submitted=1';
       } else {
         console.error('Intake failed:', res.status);
         setIsSubmitting(false);
@@ -236,7 +264,7 @@ function IntakeForm() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm font-semibold">Business name <span className="text-red-400">*</span>
-          <input required placeholder="Oakville Family Dental" className={fieldClass} name="name" />
+          <input required placeholder="Oakville Dental" className={fieldClass} name="name" />
         </label>
         <label className="space-y-1 text-sm font-semibold">Email to unlock summary <span className="text-red-400">*</span>
           <input type="email" required placeholder="you@business.com" className={fieldClass} name="email" />
@@ -254,10 +282,10 @@ function IntakeForm() {
           <p className="text-sm font-semibold">Top 2 competitors recommended</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-1 text-sm font-semibold">Competitor 1
-              <input placeholder="Competitor name or website" className={fieldClass} name="competitorOne" />
+              <input placeholder="Competitor name/site" className={fieldClass} name="competitorOne" />
             </label>
             <label className="space-y-1 text-sm font-semibold">Competitor 2
-              <input placeholder="Competitor name or website" className={fieldClass} name="competitorTwo" />
+              <input placeholder="Competitor name/site" className={fieldClass} name="competitorTwo" />
             </label>
           </div>
           <span className="block text-xs text-slate-600">Add the two businesses customers compare you against. Names or websites are fine. If you leave one blank, we can research likely competitors later, but your own picks are more accurate.</span>
@@ -304,9 +332,13 @@ export default function HomeContent() {
 
               <h1 className="max-w-full font-sans text-[clamp(2.1rem,9.5vw,5.125rem)] font-semibold leading-[1.06] tracking-[-0.03em] sm:text-[clamp(3rem,6vw,5.125rem)]">
                 <span className="block sm:whitespace-nowrap">Be the business</span>
-                <span className="block sm:whitespace-nowrap">AI recommends <span className="hero-cursor" aria-hidden="true" /></span>
-                <Ticker />
+                <span className="block sm:whitespace-nowrap text-[#22D3EE]">AI recommends.</span>
               </h1>
+
+              <div className="mt-4 max-w-full font-sans font-semibold leading-[1.06] tracking-[-0.03em] text-white/90" aria-label="Built for local businesses including dentists, law firms, car dealerships, consultants, med spas, and other service businesses.">
+                <span className="block text-[clamp(1.55rem,8vw,3.875rem)] sm:text-[clamp(2.4rem,4.1vw,3.875rem)]">Built for</span>
+                <Ticker />
+              </div>
 
               <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-xl sm:leading-8">
                 See whether ChatGPT, Gemini, Claude, Perplexity, and Google AI are more likely to recommend you or the two competitors customers already compare you with.
@@ -355,6 +387,8 @@ export default function HomeContent() {
                   View full report options
                 </a>
               </div>
+
+              <IndustryMarquee />
             </div>
 
             {/* Right: intake */}
@@ -662,6 +696,9 @@ export default function HomeContent() {
                 <Link href="/blog" className="hover:text-white">Blog</Link>
                 <Link href="/faq-ai-visibility-for-car-dealerships" className="hover:text-white">FAQ</Link>
                 <Link href="/about" className="hover:text-white">About</Link>
+                <Link href="/contact" className="hover:text-white">Contact</Link>
+                <Link href="/privacy" className="hover:text-white">Privacy</Link>
+                <Link href="/terms" className="hover:text-white">Terms</Link>
                 <Link href="/intake/?utm_source=site&utm_medium=home-link&utm_campaign=conversion" className="font-semibold text-[#22D3EE] hover:text-white">Get My Snapshot</Link>
               </div>
             </div>

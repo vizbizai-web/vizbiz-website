@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { sendRevenueAlert } from "@/lib/telegram-alerts";
+import { sendVizBizEmail } from "@/lib/resend-mailer";
 
 async function sendPaidReportEmail(
   to: string,
@@ -15,14 +16,6 @@ async function sendPaidReportEmail(
   leadId: string,
   tier: string
 ): Promise<void> {
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth: {
-      user: "vizbiz.ai@gmail.com",
-      pass: process.env.GMAIL_APP_PASS,
-    },
-  });
 
   const reportUrl = `https://vizbiz.ai/report/${leadId}/full`;
   const tierLabel = tier === "fix_and_monitor" ? "Fix + Monthly Monitoring" : "Full Audit Fix";
@@ -56,8 +49,7 @@ async function sendPaidReportEmail(
     </div>
   `;
 
-  await transporter.sendMail({
-    from: '"VizBiz" <vizbiz.ai@gmail.com>',
+  await sendVizBizEmail({
     to,
     subject: `Your VizBiz Implementation Pack is Ready — ${businessName}`,
     html,

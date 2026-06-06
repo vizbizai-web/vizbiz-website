@@ -112,11 +112,7 @@ export default function SnapshotIntakeForm({
 
       if (response.ok) {
         const data = await response.json().catch(() => null);
-        if (data?.leadId) {
-          window.location.href = `/report/${data.leadId}${data.redirectUrl?.includes('token=') ? '?token=' + data.redirectUrl.split('token=')[1] : ''}`;
-        } else {
-          window.location.href = '/thank-you?submitted=1';
-        }
+        window.location.href = data?.redirectUrl || '/thank-you?submitted=1';
       } else {
         console.error("Pipeline intake failed:", response.status);
         setIsSubmitting(false);

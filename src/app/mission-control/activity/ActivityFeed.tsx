@@ -21,7 +21,7 @@ interface Props {
   agentsUsed: number;
 }
 
-const FILTERS = ['All', 'Vlad', 'Forge', 'Reko', 'Pulse', 'Gekko'] as const;
+const FILTERS = ['All'] as const;
 
 export function ActivityFeed({ days, totalEvents, totalFiles, agentsUsed }: Props) {
   const [filter, setFilter] = useState<string>('All');
@@ -32,7 +32,7 @@ export function ActivityFeed({ days, totalEvents, totalFiles, agentsUsed }: Prop
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -48,7 +48,7 @@ export function ActivityFeed({ days, totalEvents, totalFiles, agentsUsed }: Prop
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {FILTERS.map((f) => (
           <button
             key={f}

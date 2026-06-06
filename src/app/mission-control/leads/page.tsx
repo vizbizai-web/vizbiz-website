@@ -67,7 +67,7 @@ function usePipeline() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/pipeline-status');
+      const res = await fetch('/mission-control/api/pipeline-status');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setLeads(json.leads || []);
@@ -93,7 +93,7 @@ function useLeadAction() {
     setErrorId(null);
     setSuccessId(null);
     try {
-      const res = await fetch('/api/lead-actions', {
+      const res = await fetch('/mission-control/api/lead-actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId, action, data }),

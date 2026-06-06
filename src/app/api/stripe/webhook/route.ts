@@ -10,11 +10,22 @@
 
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
+import { updateLead } from "@/lib/google-sheets";
 import { sendRevenueAlert } from "@/lib/telegram-alerts";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+type StripeWebhookEvent = {
+  type?: string;
+  data?: {
+    object?: {
+      metadata?: Record<string, string | undefined>;
+      amount_total?: number;
+      customer_details?: { email?: string };
+    };
+  };
+};
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Parse the event
-    let event: any;
+    let event: StripeWebhookEvent;
     try {
       // In production with Stripe SDK:
       // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -49,7 +60,7 @@ export async function POST(request: Request) {
 
     switch (event.type) {
       case "checkout.session.created": {
-        const session = event.data.object;
+        const session = event.data?.object;
         const leadId = session?.metadata?.leadId;
         const tier = session?.metadata?.tier || "unknown";
         const amount = session?.amount_total;
@@ -67,7 +78,7 @@ export async function POST(request: Request) {
       }
 
       case "checkout.session.completed": {
-        const session = event.data.object;
+        const session = event.data?.object;
         const leadId = session?.metadata?.leadId;
         const tier = session?.metadata?.tier || "fix";
         const amount = session?.amount_total;
@@ -81,14 +92,14 @@ export async function POST(request: Request) {
 
         console.info(`[stripe/webhook] Payment confirmed for ${leadId}, tier=${tier}, amount=${amount}`);
 
-        // Update Sheets: mark as paid
+        // Update CRM: mark as paid
         try {
           await updateLead(leadId, {
             status: "closed_won",
             notes: `PAID at ${new Date().toISOString()}. Tier: ${tier}. Amount: $${(amount || 0) / 100}. Customer email: ${customerEmail || "N/A"}`,
           });
-        } catch (sheetsErr) {
-          console.error("[stripe/webhook] Sheets update failed:", sheetsErr);
+        } catch (crmErr) {
+          console.error("[stripe/webhook] CRM update failed:", crmErr);
         }
 
         // Telegram alert — PAID

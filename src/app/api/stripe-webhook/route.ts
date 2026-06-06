@@ -8,73 +8,63 @@
 
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { sendVizBizEmail } from "@/lib/resend-mailer";
+import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
+import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Stripe webhook secret — set in Vercel env vars
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
+type StripeWebhookEvent = {
+  type?: string;
+  data?: {
+    object?: {
+      metadata?: Record<string, string | undefined>;
+      customer_details?: { email?: string };
+    };
+  };
+};
 
-// Import email sender
-async function sendDeliveryEmail(
+// Send paid-intake next-step email. Paid delivery still requires intake + manual approval.
+async function sendPaidIntakeEmail(
   to: string,
   businessName: string,
   leadId: string,
   tier: string
 ) {
-  const reportUrl = `https://vizbiz.ai/report/${leadId}/full`;
-  const subject = `Your VizBiz Implementation Pack is Ready — ${businessName}`;
+  const paidPlan = stripeTierToPaidPlan(tier);
+  const intakeUrl = buildStripeCheckoutSuccessUrl(leadId, tier);
+  const planLabel = paidPlan === "monthly_growth" ? "Monthly Growth Plan" : "Full Report + Fix Pack";
+  const subject = `Next step: complete your VizBiz paid report intake — ${businessName}`;
 
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #02091F; color: #F5F5F7;">
-      <div style="padding: 32px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <h1 style="color: #25D1F2; font-size: 24px; margin: 0;">VizBiz</h1>
-        <p style="color: #F5F5F7; font-size: 16px; margin: 8px 0 0;">Implementation Pack Ready</p>
+    <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #020617; color: #F8FAFC; border-radius: 20px; overflow: hidden;">
+      <div style="padding: 34px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(135deg,#020617,#0F172A);">
+        <h1 style="color: #FFFFFF; font-size: 26px; margin: 0;">VizBiz<span style="color:#22D3EE;">.ai</span></h1>
+        <p style="color: #94A3B8; font-size: 14px; margin: 10px 0 0;">${planLabel} intake</p>
       </div>
-      <div style="padding: 32px;">
-        <p style="font-size: 16px; line-height: 1.6; color: #F5F5F7;">
-          Hi there,
+      <div style="padding: 34px;">
+        <p style="font-size: 16px; line-height: 1.7; color: #E2E8F0;">Hi there,</p>
+        <p style="font-size: 16px; line-height: 1.7; color: #E2E8F0;">
+          Payment is confirmed for <strong>${businessName}</strong>. The next step is a short 5-minute intake so we can make the paid report specific to your services, customers, competitors, and proof signals.
         </p>
-        <p style="font-size: 16px; line-height: 1.6; color: #F5F5F7;">
-          Your ${tier === "monitor" ? "monthly monitoring" : "full audit"} implementation pack for <strong>${businessName}</strong> is ready.
-        </p>
-        <p style="font-size: 16px; line-height: 1.6; color: #F5F5F7;">
-          Your pack includes: schema markup, llms.txt, FAQ content, technical fixes, revenue impact analysis, ${tier === "monitor" ? "and ongoing monthly monitoring" : "and copy optimization recommendations"}.
+        <p style="font-size: 15px; line-height: 1.7; color: #CBD5E1;">
+          We keep competitors to two, use your real customer questions, then manually review the report before delivery.
         </p>
         <div style="text-align: center; margin: 32px 0;">
-          <a href="${reportUrl}" style="display: inline-block; background: linear-gradient(to right, #06B6D4, #25D1F2); color: #051018; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
-            View Full Report + Download Pack
+          <a href="${intakeUrl}" style="display: inline-block; background: linear-gradient(to right, #22D3EE, #06B6D4); color: #020617; text-decoration: none; padding: 16px 30px; border-radius: 14px; font-weight: 700; font-size: 16px;">
+            Complete Paid Report Intake
           </a>
         </div>
-        <p style="font-size: 14px; color: rgba(245,245,247,0.6); line-height: 1.5;">
-          You can also download all implementation files as a ZIP from the full report page.
-        </p>
+        ${paidPlan === "full_report_fix" ? `<p style="font-size: 14px; color: #67E8F9; line-height: 1.6;">After the one-time fix, you can still upgrade to monthly monitoring if you want fresh competitor movement and recurring visibility fixes.</p>` : ""}
       </div>
-      <div style="padding: 24px 32px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
-        <p style="font-size: 12px; color: rgba(245,245,247,0.4); margin: 0;">
-          VizBiz.ai — AI Visibility Intelligence<br/>
-          Questions? Reply to this email or book a call at vizbiz.ai/book-call
-        </p>
+      <div style="padding: 22px 34px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
+        <p style="font-size: 12px; color: rgba(248,250,252,0.48); margin: 0;">VizBiz.ai — AI Visibility Intelligence</p>
       </div>
     </div>
   `;
 
-  // Use the same nodemailer setup from send-report-email
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth: {
-      user: "vizbiz.ai@gmail.com",
-      pass: process.env.GMAIL_APP_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: '"VizBiz" <vizbiz.ai@gmail.com>',
-    to,
-    subject,
-    html,
-  });
+  await sendVizBizEmail({ to, subject, html });
 }
 
 export async function POST(request: Request) {
@@ -91,7 +81,7 @@ export async function POST(request: Request) {
     }
 
     // Parse the event
-    let event: any;
+    let event: StripeWebhookEvent;
     try {
       // In production, verify with Stripe SDK:
       // event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
@@ -105,9 +95,9 @@ export async function POST(request: Request) {
 
     // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
+      const session = event.data?.object;
       const leadId = session?.metadata?.leadId;
-      const tier = session?.metadata?.tier || "full";
+      const tier = session?.metadata?.tier || "fix";
       const customerEmail = session?.customer_details?.email;
       const businessName = session?.metadata?.businessName || "Your Business";
 
@@ -123,37 +113,19 @@ export async function POST(request: Request) {
         `[stripe-webhook] Payment confirmed for lead ${leadId}, tier: ${tier}`
       );
 
-      // Trigger the delivery pipeline
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
+      const existingLead = await getLeadByLeadId(leadId).catch(() => null);
+      await updateLead(leadId, {
+        status: "paid_intake_pending",
+        lastStage: "paid_intake",
+        notes: `${existingLead?.notes || ""}\n[PAYMENT_CONFIRMED ${new Date().toISOString()}] tier=${tier}; paid intake pending`,
+      }).catch((error) => console.warn("[stripe-webhook] lead update failed", error));
 
-      const deliverResponse = await fetch(`${baseUrl}/api/deliver-audit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId, tier }),
-      });
-
-      const deliverResult = await deliverResponse.json();
-
-      if (!deliverResult.success) {
-        console.error(
-          `[stripe-webhook] Delivery failed for ${leadId}:`,
-          deliverResult.error
-        );
-        // Still return 200 to Stripe — we'll retry delivery separately
-      }
-
-      // Send delivery confirmation email
       if (customerEmail) {
         try {
-          await sendDeliveryEmail(customerEmail, businessName, leadId, tier);
-          console.info(
-            `[stripe-webhook] Delivery email sent to ${customerEmail}`
-          );
+          await sendPaidIntakeEmail(customerEmail, businessName, leadId, tier);
+          console.info(`[stripe-webhook] Paid intake email sent to ${customerEmail}`);
         } catch (emailErr) {
-          console.error("[stripe-webhook] Email send failed:", emailErr);
-          // Non-blocking — delivery happened, email is secondary
+          console.error("[stripe-webhook] Paid intake email send failed:", emailErr);
         }
       }
 
@@ -161,8 +133,9 @@ export async function POST(request: Request) {
         received: true,
         leadId,
         tier,
-        delivered: deliverResult.success,
-        filesGenerated: deliverResult.filesGenerated?.length || 0,
+        paidPlan: stripeTierToPaidPlan(tier),
+        intakeUrl: buildStripeCheckoutSuccessUrl(leadId, tier),
+        deliveryBlockedUntilApproval: true,
       });
     }
 
