@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'VizBiz vs Metricus vs Scope: Which AI Visibility Tool for Dealerships?',
   description: 'A head-to-head comparison of AI visibility tools for car dealerships. See how VizBiz, Metricus, and Scope stack up on dealership-specific data, pricing, and actionable insights.',
   alternates: {
-    canonical: "https://vizbiz.ai/blog/vizbiz-vs-metricus-vs-scope",
+    canonical: "https://vizbiz.ai/blog/vizbiz-vs-metricus-vs-scope/",
   },
 };
 
@@ -312,13 +312,13 @@ export default function Page() {
             <h2 className="text-2xl font-bold mb-4 text-white">Related Reading</h2>
             <ul className="space-y-3 text-slate-300">
               <li>
-                <a href="/blog/ai-visibility-tools-for-car-dealerships-compared" className="text-blue-400 hover:text-blue-300 underline">
+                <a href="/ai-visibility-tools-compared/" className="text-blue-400 hover:text-blue-300 underline">
                   AI Visibility Tools for Car Dealerships Compared (2026)
                 </a>
                 <span className="text-slate-500"> — A broader comparison of traditional SEO, reputation management, and AI visibility intelligence tools.</span>
               </li>
               <li>
-                <a href="/blog/free-ai-visibility-check-for-your-dealership" className="text-blue-400 hover:text-blue-300 underline">
+                <a href="/free-ai-visibility-test/" className="text-blue-400 hover:text-blue-300 underline">
                   Free AI Visibility Check for Your Dealership
                 </a>
                 <span className="text-slate-500"> — How to run a manual AI visibility audit using free tools before investing in a platform.</span>

@@ -5,6 +5,14 @@ import { getLeadByLeadId } from '@/lib/google-sheets';
 import { normalizePaidPlan } from '@/lib/paid-intake-logic';
 import PaidIntakeForm from './PaidIntakeForm';
 
+const PAID_INTAKE_ALLOWED_STATUSES = new Set([
+  'paid_checkout_complete',
+  'paid_intake_pending',
+  'paid_intake_submitted',
+  'paid_report_drafting',
+  'paid_report_ready_for_review',
+]);
+
 export const metadata: Metadata = {
   title: 'Paid Report Intake | VizBiz.ai',
   description: 'Share the business context VizBiz needs to prepare a sharper paid AI visibility report and action plan.',
@@ -29,6 +37,18 @@ export default async function PaidIntakePage({
         <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
           <h1 className="text-3xl font-semibold">Paid intake link not found</h1>
           <p className="mt-4 text-slate-300">If you just purchased a report, reply to your VizBiz email and we’ll resend the correct private intake link.</p>
+          <Link href="/" className="premium-button mt-8 inline-flex rounded-2xl px-6 py-3 text-sm font-semibold">Back to VizBiz</Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!PAID_INTAKE_ALLOWED_STATUSES.has(lead.status)) {
+    return (
+      <main className="min-h-screen bg-[#020617] px-4 py-16 text-white">
+        <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
+          <h1 className="text-3xl font-semibold">Paid intake is not active yet</h1>
+          <p className="mt-4 text-slate-300">This private intake opens after checkout is confirmed. If you already paid, reply to your VizBiz email and we’ll resend the correct link.</p>
           <Link href="/" className="premium-button mt-8 inline-flex rounded-2xl px-6 py-3 text-sm font-semibold">Back to VizBiz</Link>
         </div>
       </main>

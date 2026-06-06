@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildReportUrl } from '@/lib/report-token';
 import { sendVizBizEmail } from '@/lib/resend-mailer';
+import { getLeadByLeadId } from '@/lib/google-sheets';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -18,7 +19,29 @@ export async function POST(req: NextRequest) {
       competitorName, competitorScore, niche,
     } = body;
 
-    const reportUrl = buildReportUrl(leadId);
+    if (!leadId || !to) {
+      return NextResponse.json({ error: 'Missing leadId or recipient email' }, { status: 400 });
+    }
+
+    const lead = await getLeadByLeadId(leadId);
+    if (!lead) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
+    const isPaidSend = lead.status === 'paid_report_ready_for_review' || lead.status === 'paid_report_delivered';
+    const isFreeApprovedSend = lead.status === 'approved' && lead.researchStatus === 'complete';
+    if (!isPaidSend && !isFreeApprovedSend) {
+      return NextResponse.json(
+        { error: 'Report email is blocked until the report is ready and operator-approved.', currentStatus: lead.status, researchStatus: lead.researchStatus },
+        { status: 409 }
+      );
+    }
+
+    if (isPaidSend && !lead.reportUrl) {
+      return NextResponse.json({ error: 'Paid report delivery requires a stored reportUrl.' }, { status: 409 });
+    }
+
+    const reportUrl = lead.reportUrl || buildReportUrl(leadId);
     const scoreColor = statusBand === 'Strong' ? '#22C55E' : statusBand === 'Moderate' ? '#F59E0B' : '#EF4444';
     const invisibleCount = totalPrompts - appearedCount;
 

@@ -48,8 +48,11 @@ Allow: /
 User-agent: *
 Allow: /
 
-# Internal tools — keep out
+# Internal/private tools — keep out
 Disallow: /mission-control/
+Disallow: /report/
+Disallow: /paid-intake/
+Disallow: /thank-you/
 
 # Sitemap
 Sitemap: https://vizbiz.ai/sitemap.xml

@@ -589,6 +589,17 @@ async function supabaseUpdateLead(leadId: string, updates: Record<string, string
   const patchBody: JsonRecord = { raw_intake: { ...existing, ...rawUpdates } };
   if (updates.status) patchBody.status = updates.status;
   if (updates.source) patchBody.source = updates.source;
+  if (updates.competitor || updates.clientProvidedCompetitors || updates.competitorMode) {
+    const competitorValue = updates.clientProvidedCompetitors || updates.competitor || existing.clientProvidedCompetitors || existing.competitor || "";
+    const [competitor1 = "", competitor2 = ""] = competitorValue
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .slice(0, 2);
+    patchBody.competitor_1_name = competitor1 || null;
+    patchBody.competitor_2_name = competitor2 || null;
+    patchBody.competitor_source = competitor1 && competitor2 ? "submitted" : "missing";
+  }
 
   await supabaseFetch(`/leads?id=eq.${encodeURIComponent(leadId)}`, {
     method: "PATCH",

@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     "appear in AI recommendations",
   ],
   alternates: {
-    canonical: "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations",
+    canonical: "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations/",
   },
   openGraph: {
     title: "How to Show Up in ChatGPT Recommendations (2026 Playbook)",
     description:
       "Practical steps to get your local business recommended by ChatGPT, Gemini, and Perplexity. Based on real audit data from businesses across multiple industries.",
-    url: "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations",
+    url: "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations/",
     type: "article",
     siteName: "VizBiz",
   },
@@ -38,7 +38,7 @@ export default function ChatGPTRecommendationsPost() {
     publisher: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations",
+      "@id": "https://vizbiz.ai/blog/how-to-show-up-in-chatgpt-recommendations/",
     },
   };
 
@@ -173,7 +173,7 @@ export default function ChatGPTRecommendationsPost() {
             </h2>
             <div className="space-y-5 text-zinc-300 leading-relaxed">
               <p>
-                At VizBiz, we run an <Link href="/blog/ai-visibility-audit-what-it-measures" className="text-blue-400 hover:text-blue-300 transition-colors">AI Visibility Audit</Link> that tests each business against 84 real buyer-intent prompts across ChatGPT, Gemini, and Perplexity. Here&apos;s what the data revealed across industries — from dental practices and law firms to auto repair shops and home service providers:
+                At VizBiz, we run an <Link href="/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures" className="text-blue-400 hover:text-blue-300 transition-colors">AI Visibility Audit</Link> that tests each business against 84 real buyer-intent prompts across ChatGPT, Gemini, and Perplexity. Here&apos;s what the data revealed across industries — from dental practices and law firms to auto repair shops and home service providers:
               </p>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="border border-zinc-800 rounded-xl p-5 bg-zinc-900/50 text-center">
@@ -248,7 +248,7 @@ export default function ChatGPTRecommendationsPost() {
                   When someone asks ChatGPT &quot;What should I look for in a roofing contractor?&quot; or &quot;Is Invisalign worth it?&quot;, the AI pulls from websites that have actually answered those questions. Most local business websites don&apos;t. They have a services page, a contact form, and maybe a generic About page.
                 </p>
                 <p>
-                  <span className="text-blue-400 font-medium">Action:</span> Create dedicated pages or FAQ sections for the questions your customers actually ask: service comparisons, pricing guides, process explainers, and seasonal tips. These serve your real customers AND give AI systems rich content to cite. Businesses with monthly content are <Link href="/blog/not-showing-up-in-chatgpt" className="text-blue-400 hover:text-blue-300 transition-colors">3.7× more likely to be cited by AI</Link>.
+                  <span className="text-blue-400 font-medium">Action:</span> Create dedicated pages or FAQ sections for the questions your customers actually ask: service comparisons, pricing guides, process explainers, and seasonal tips. These serve your real customers AND give AI systems rich content to cite. Businesses with monthly content are <Link href="/blog/how-to-show-up-in-chatgpt-recommendations/" className="text-blue-400 hover:text-blue-300 transition-colors">3.7× more likely to be cited by AI</Link>.
                 </p>
               </div>
 
@@ -410,10 +410,10 @@ export default function ChatGPTRecommendationsPost() {
           <section className="mt-16 border-t border-zinc-800 pt-10">
             <h2 className="font-['Space_Grotesk'] text-lg font-semibold mb-4">Related Reading</h2>
             <div className="space-y-3">
-              <Link href="/blog/not-showing-up-in-chatgpt" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+              <Link href="/blog/how-to-show-up-in-chatgpt-recommendations/" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → Not Showing Up in ChatGPT? Here&apos;s Why (And What to Do About It)
               </Link>
-              <Link href="/blog/ai-visibility-audit-what-it-measures" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+              <Link href="/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → AI Visibility Audit: What It Measures and Why It Matters
               </Link>
               <Link href="/free-ai-visibility-test/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">

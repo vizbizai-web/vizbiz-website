@@ -3,11 +3,11 @@
  *
  * Sends two messages:
  * 1. Group topic 355 (Leads) — structured lead data
- * 2. Alex's DM — Vlad's conversational alert with next steps
+ * 2. Alex's DM — operator alert with next steps
  */
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const VLAD_HQ_GROUP = "-1003708779177";
+const VIZBIZ_HQ_GROUP = "-1003708779177";
 const LEADS_TOPIC_ID = 355;
 const ALEX_DM = "6960754854";
 
@@ -85,14 +85,14 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: VLAD_HQ_GROUP,
+        chat_id: VIZBIZ_HQ_GROUP,
         message_thread_id: LEADS_TOPIC_ID,
         text: groupMessage,
       }),
     },
   );
 
-  // -- 2. DM alert (Vlad talking to Alex with context and next steps) --
+  // -- 2. DM alert (operator context and next steps) --
   // Sent ONLY when lead is confirmed in the CRM (dataStored=true)
   if (!lead.dataStored) {
     console.warn("[telegram-alert] Skipping DM alert — lead not stored in CRM", { dealership: lead.dealershipName });
@@ -147,7 +147,7 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
 /**
  * Secondary alert — report is live and outreach email is ready
  *
- * Fires when Vlad approves a lead and the report + email are ready to go.
+ * Fires when the operator approves a lead and the report + email are ready to go.
  * Sent to Alex's DM only (the group already got the research-done alert).
  */
 type ReportReadyAlert = {
@@ -228,7 +228,7 @@ export async function sendRevenueAlert(message: string): Promise<void> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      chat_id: VLAD_HQ_GROUP,
+      chat_id: VIZBIZ_HQ_GROUP,
       message_thread_id: REVENUE_TOPIC_ID,
       text: message,
     }),

@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import { getLeadByLeadId, isSheetsConfigured } from '@/lib/google-sheets';
 import { validateReportToken } from '@/lib/report-token';
 import { getClientReportAccessState } from '@/lib/funnel-logic';
 import ReportContent from './report-content';
 import ReportPending from './report-pending';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export const revalidate = 0;
 

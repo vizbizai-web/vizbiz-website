@@ -7,7 +7,7 @@ describe('paid intake logic', () => {
     expect(getPaidIntakeNextStepUrl('lead-123', 'full_report_fix')).toBe('/paid-intake/lead-123?plan=full_report_fix');
   });
 
-  it('keeps paid intake to two competitors maximum', () => {
+  it('requires exactly two named competitors for paid intake', () => {
     const payload = buildPaidIntakePayload({
       plan: 'monthly_growth',
       businessCategory: 'Med spa',
@@ -30,22 +30,23 @@ describe('paid intake logic', () => {
       { name: 'Competitor Two', website: 'https://competitor-two.com' },
     ]);
     expect(payload.customerQuestions).toEqual(['Is Endermologie safe?', 'How many sessions do I need?']);
+    expect(payload.requiredComplete).toBe(true);
   });
 
-  it('requires only the fields needed for a 5-minute paid intake', () => {
+  it('blocks paid intake when either competitor name is missing', () => {
     const payload = buildPaidIntakePayload({
       plan: 'full_report_fix',
       businessCategory: 'Restaurant',
       mainServices: 'Private dining, catering',
       idealCustomer: 'Local families and corporate events',
       differentiator: '',
-      competitor1Name: '',
+      competitor1Name: 'Competitor One',
       competitor2Name: '',
       customerQuestions: '',
       goal: 'Understand visibility gaps',
     });
 
-    expect(payload.requiredComplete).toBe(true);
+    expect(payload.requiredComplete).toBe(false);
     expect(payload.estimatedMinutes).toBe(5);
   });
 });

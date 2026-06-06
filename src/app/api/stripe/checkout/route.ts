@@ -18,12 +18,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!STRIPE_SECRET_KEY) {
-      // Fallback: redirect to static payment links if no Stripe key configured
-      const staticLinks: Record<string, string> = {
-        fix: "https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002",
-        fix_and_monitor: "https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003",
-      };
-      return NextResponse.json({ url: staticLinks[tier] || staticLinks.fix });
+      return NextResponse.json(
+        {
+          error: "Stripe checkout is not configured",
+          message: "STRIPE_SECRET_KEY is required so checkout can preserve lead metadata and paid intake routing.",
+        },
+        { status: 503 }
+      );
     }
 
     // Create a Stripe Checkout Session with metadata
@@ -57,12 +58,13 @@ export async function POST(request: NextRequest) {
 
     if (session.error) {
       console.error("[stripe/checkout] Stripe error:", session.error.message);
-      // Fallback to static link
-      const staticLinks: Record<string, string> = {
-        fix: "https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002",
-        fix_and_monitor: "https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003",
-      };
-      return NextResponse.json({ url: staticLinks[tier] || staticLinks.fix });
+      return NextResponse.json(
+        {
+          error: "Stripe checkout session creation failed",
+          message: session.error.message,
+        },
+        { status: sessionRes.status || 502 }
+      );
     }
 
     console.info(`[stripe/checkout] Session created for ${leadId} — ${tier} → ${session.url}`);

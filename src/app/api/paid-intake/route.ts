@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { getLeadByLeadId, updateLead } from '@/lib/google-sheets';
 import { buildPaidIntakePayload, paidIntakeNotesBlock } from '@/lib/paid-intake-logic';
 
+const PAID_INTAKE_ALLOWED_STATUSES = new Set([
+  'paid_checkout_complete',
+  'paid_intake_pending',
+  'paid_intake_submitted',
+  'paid_report_drafting',
+  'paid_report_ready_for_review',
+]);
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -15,11 +23,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
     }
 
+    if (!PAID_INTAKE_ALLOWED_STATUSES.has(lead.status)) {
+      return NextResponse.json({ success: false, error: 'Paid intake is only available after confirmed checkout.' }, { status: 403 });
+    }
+
     const payload = buildPaidIntakePayload(body);
     if (!payload.requiredComplete) {
       return NextResponse.json({
         success: false,
-        error: 'Please complete business category, main services, ideal customer, and goal.',
+        error: 'Please complete business category, main services, ideal customer, goal, and exactly two competitor names.',
       }, { status: 400 });
     }
 
@@ -34,7 +46,7 @@ export async function POST(request: Request) {
       notes,
       competitor: competitors || lead.competitor || '',
       clientProvidedCompetitors: competitors || lead.clientProvidedCompetitors || '',
-      competitorMode: competitors ? 'client_provided' : 'client_only',
+      competitorMode: 'client_provided',
       lastStage: 'paid_intake',
     });
 

@@ -55,6 +55,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Lead not found" }, { status: 404 });
     }
 
+    if (lead.status !== "approved") {
+      return NextResponse.json(
+        { success: false, error: "Free report delivery requires operator-approved status", currentStatus: lead.status },
+        { status: 409 }
+      );
+    }
+
     // Parse research data for email content
     let researchData: Record<string, unknown> = {};
     try {
@@ -75,50 +82,57 @@ export async function POST(request: Request) {
       }
     } catch { /* use defaults */ }
 
-    // Send email if lead has an email address
-    if (lead.email) {
-      try {
-        const emailData: SnapshotEmailData = {
-          dealershipName: lead.dealershipName,
-          contactName: lead.contactName,
-          city: lead.city,
-          snapshotDate: new Date().toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          appearedIn: lead.snapshotAppeared || `${getNumberValue(researchData, "appearedCount") || 0} of ${getNumberValue(researchData, "totalPrompts") || 0} prompts`,
-          overallVisibility: String(researchData.statusBand === "Strong" ? 70 : researchData.statusBand === "Moderate" ? 45 : 15),
-          serviceDeptVisibility: lead.serviceVisibility || "Not surfaced",
-          competitorName: getStringValue(researchData, "competitorMention", "nearby competitors"),
-          competitorCategories: getStringValue(researchData, "niche", "local business"),
-          bookingUrl: "https://vizbiz.ai/book-call",
-          profitAtRiskLow: getNumberValue(researchData, "revenueLoss"),
-          profitAtRiskHigh: getNumberValue(researchData, "leadsLost"),
-        };
+    if (lead.researchStatus !== "complete" || Object.keys(researchData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Free report delivery requires completed research data" },
+        { status: 409 }
+      );
+    }
 
-        await sendSnapshotEmail(lead.email, emailData);
-        console.info(`[pipeline/deliver] Snapshot email sent to ${lead.email}`);
-      } catch (emailErr) {
-        console.error(`[pipeline/deliver] Email send failed:`, emailErr);
-        // Non-blocking — still mark as delivered
-      }
+    // Send email if lead has an email address
+    let emailSent = false;
+    if (lead.email) {
+      const emailData: SnapshotEmailData = {
+        dealershipName: lead.dealershipName,
+        contactName: lead.contactName,
+        city: lead.city,
+        snapshotDate: new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        appearedIn: lead.snapshotAppeared || `${getNumberValue(researchData, "appearedCount") || 0} of ${getNumberValue(researchData, "totalPrompts") || 0} prompts`,
+        overallVisibility: String(researchData.statusBand === "Strong" ? 70 : researchData.statusBand === "Moderate" ? 45 : 15),
+        serviceDeptVisibility: lead.serviceVisibility || "Not surfaced",
+        competitorName: getStringValue(researchData, "competitorMention", "nearby competitors"),
+        competitorCategories: getStringValue(researchData, "niche", "local business"),
+        bookingUrl: "https://vizbiz.ai/book-call/",
+        profitAtRiskLow: getNumberValue(researchData, "revenueLoss"),
+        profitAtRiskHigh: getNumberValue(researchData, "leadsLost"),
+      };
+
+      await sendSnapshotEmail(lead.email, emailData);
+      emailSent = true;
+      console.info(`[pipeline/deliver] Snapshot email sent to ${lead.email}`);
+    } else {
+      return NextResponse.json({ success: false, error: "Lead has no email address" }, { status: 409 });
     }
 
     // Update CRM
     await updateLead(leadId, {
+      status: "contacted",
       emailSentAt: new Date().toISOString(),
       notes: `${lead.notes}\n[Delivered at ${new Date().toISOString()}]`,
     });
 
     // Telegram alert
     await sendPipelineAlert(
-      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}`
+      `✅ Report delivered to ${lead.dealershipName} — ${lead.email}\nLead ID: ${leadId}\nReport: https://vizbiz.ai/report/${leadId}/`
     );
 
     console.info(`[pipeline/deliver] Complete for ${leadId}`);
 
-    return NextResponse.json({ success: true, leadId, emailSent: !!lead.email });
+    return NextResponse.json({ success: true, leadId, emailSent });
   } catch (error) {
     console.error(`[pipeline/deliver] Failed for ${leadId}:`, error);
     return NextResponse.json({ success: false, error: "Delivery failed", leadId }, { status: 500 });

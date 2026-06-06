@@ -9,11 +9,11 @@ export const metadata: Metadata = {
     title: "What Is AI Visibility Scoring?",
     description:
       "AI Visibility Scoring measures how often your business appears in AI-powered search results. Learn what it is and how to improve yours.",
-    url: "https://vizbiz.ai/what-is-ai-visibility-scoring",
+    url: "https://vizbiz.ai/what-is-ai-visibility-scoring/",
     type: "article",
   },
   alternates: {
-    canonical: "https://vizbiz.ai/what-is-ai-visibility-scoring",
+    canonical: "https://vizbiz.ai/what-is-ai-visibility-scoring/",
   },
 };
 

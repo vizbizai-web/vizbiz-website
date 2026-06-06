@@ -1,7 +1,7 @@
 /**
  * Lead Processing API Route
  *
- * Status flow: new → researching → pending_review → approved (by Vlad)
+ * Status flow: new → researching → pending_review → approved by operator
  * On error: new → researching → new (retry)
  *
  * This endpoint is deliberately slow — it runs multiple API stages sequentially
@@ -21,9 +21,9 @@ import { isJunkCompetitor, JUNK_COMPETITOR_PATTERNS } from "@/lib/junk-filter";
 import { preflightScan } from "@/lib/preflight-engine";
 
 /**
- * Send Vlad a Telegram review alert with research summary
+ * Send an operator Telegram review alert with research summary
  */
-async function sendVladReviewAlert(
+async function sendOperatorReviewAlert(
   leadId: string,
   businessName: string,
   city: string,
@@ -49,7 +49,7 @@ async function sendVladReviewAlert(
     return [...compNames].some(cn => cn.toLowerCase().includes(key));
   });
 
-  const reportUrl = `https://vizbiz.ai/report/${leadId}?token=owner_vlad`;
+  const reportUrl = `https://vizbiz.ai/report/${leadId}/`;
   const mcUrl = `https://vizbiz.ai/mission-control/leads/${leadId}`;
   const isWeak = result.statusBand === 'Weak';
   const nicheLabel = nicheOk ? result.niche.replace(/_/g, ' ') : `${result.niche} ⚠️`;
@@ -78,7 +78,7 @@ async function sendVladReviewAlert(
   msg += `\n📋 View report: ${reportUrl}\n`;
   msg += `📊 Mission Control: ${mcUrl}\n\n`;
 
-  // Vlad's recommendation
+  // Operator recommendation
   if (isWeak && nicheOk) {
     msg += `My take: approve this one. Zero visibility in a clear niche — textbook prospect. I'll draft the outreach email as soon as you say go.`;
   } else if (!nicheOk) {
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
           socialVsVisibility: researchResult.socialVsVisibility,
         });
 
-        // Save as pending_review — Vlad must approve before report goes live
+        // Save as pending_review — operator must approve before report goes live
         await updateLeadResearchResults(lead.leadId, {
           status: "pending_review",
           researchStatus: "complete",
@@ -253,10 +253,10 @@ export async function POST(request: Request) {
           notes: `RESEARCH_DATA:${researchJson}`,
         });
 
-        console.info(`[process-lead] Lead ${lead.leadId} research complete — awaiting Vlad review`);
+        console.info(`[process-lead] Lead ${lead.leadId} research complete — awaiting operator review`);
 
-        // Send Vlad review alert
-        try { await sendVladReviewAlert(lead.leadId, lead.dealershipName, lead.city, lead.competitor, researchResult); } catch (e) { console.error('[process-lead] Review alert failed:', e); }
+        // Send operator review alert
+        try { await sendOperatorReviewAlert(lead.leadId, lead.dealershipName, lead.city, lead.competitor, researchResult); } catch (e) { console.error('[process-lead] Review alert failed:', e); }
 
         processedCount++;
       } catch (error) {

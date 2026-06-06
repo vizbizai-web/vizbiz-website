@@ -7,7 +7,7 @@ export const metadata = {
     description: 'AI visibility is the new SEO — but most business owners have never heard of it. Learn what it is, why it matters, and how to check your score for free.',
   },
   alternates: {
-    canonical: "https://vizbiz.ai/blog/what-is-ai-visibility-car-dealerships",
+    canonical: "https://vizbiz.ai/blog/what-is-ai-visibility-car-dealerships/",
   },
 };
 

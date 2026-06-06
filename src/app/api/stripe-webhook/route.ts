@@ -8,6 +8,7 @@
 
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { sendVizBizEmail } from "@/lib/resend-mailer";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
@@ -24,6 +25,23 @@ type StripeWebhookEvent = {
     };
   };
 };
+
+function verifyStripeSignature(body: string, signatureHeader: string, secret: string): boolean {
+  const parts = Object.fromEntries(
+    signatureHeader.split(',').map((part) => {
+      const [key, value] = part.split('=');
+      return [key, value];
+    })
+  );
+  const timestamp = parts.t;
+  const signature = parts.v1;
+  if (!timestamp || !signature) return false;
+
+  const expected = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex');
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const signatureBuffer = Buffer.from(signature, 'hex');
+  return expectedBuffer.length === signatureBuffer.length && timingSafeEqual(expectedBuffer, signatureBuffer);
+}
 
 // Send paid-intake next-step email. Paid delivery still requires intake + manual approval.
 async function sendPaidIntakeEmail(
@@ -80,11 +98,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    if (!webhookSecret) {
+      return NextResponse.json(
+        { error: 'STRIPE_WEBHOOK_SECRET is not configured' },
+        { status: 500 }
+      );
+    }
+
+    if (!verifyStripeSignature(body, signature, webhookSecret)) {
+      return NextResponse.json(
+        { error: 'Invalid Stripe webhook signature' },
+        { status: 400 }
+      );
+    }
+
     // Parse the event
     let event: StripeWebhookEvent;
     try {
-      // In production, verify with Stripe SDK:
-      // event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
       event = JSON.parse(body);
     } catch {
       return NextResponse.json(

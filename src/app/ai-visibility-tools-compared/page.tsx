@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   description:
     "Honest comparison of AI visibility platforms for car dealerships: VizBiz, Metricus, AEO Vantage, and AI Rank Checker. See which tool fits your dealership's needs.",
   alternates: {
-    canonical: "https://vizbiz.ai/ai-visibility-tools-compared",
+    canonical: "https://vizbiz.ai/ai-visibility-tools-compared/",
   },
   openGraph: {
     title: "AI Visibility Tools for Car Dealerships Compared (2026) | VizBiz",
     description:
       "Honest comparison of AI visibility platforms for car dealerships. Features, pricing, and fit — so you can pick the right tool.",
-    url: "https://vizbiz.ai/ai-visibility-tools-compared",
+    url: "https://vizbiz.ai/ai-visibility-tools-compared/",
     siteName: "VizBiz",
     type: "article",
   },
@@ -134,7 +134,7 @@ export default function AIVisibilityToolsComparedPage() {
     dateModified: "2026-04-23",
     author: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
     publisher: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
-    mainEntityOfPage: "https://vizbiz.ai/ai-visibility-tools-compared",
+    mainEntityOfPage: "https://vizbiz.ai/ai-visibility-tools-compared/",
   };
 
   const faqJsonLd = {

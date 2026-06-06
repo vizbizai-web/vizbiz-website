@@ -607,20 +607,20 @@ export default function HomeContent() {
             <div id="blog-track" className="mt-10 flex gap-4 overflow-x-auto pb-4 scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               {[
-                { title: '90-Day AI Visibility Playbook for Car Dealerships', slug: '90-day-ai-visibility-playbook-car-dealerships', desc: 'Step-by-step plan to go from invisible to AI-recommended in 90 days.' },
+                { title: '90-Day AI Visibility Playbook for Car Dealerships', slug: 'geo-is-the-new-playbook-car-dealerships', desc: 'Step-by-step plan to go from invisible to AI-recommended in 90 days.' },
                 { title: 'AI Visibility Audit: What It Measures and Why Your Dealership Needs One', slug: 'ai-visibility-audit-what-it-measures-dealership', desc: 'Breakdown of what the AVI score actually measures and how to use it.' },
                 { title: 'We Scored 50 Ontario Dealerships on AI Visibility', slug: 'ai-visibility-score-ontario-car-dealerships', desc: 'The results were brutal. Most scored below 30/100.' },
                 { title: '35+ AI Visibility Statistics Every Dealership Needs to Know', slug: 'ai-visibility-statistics-car-dealerships', desc: 'The data behind why AI visibility matters — traffic, buyer behavior, local impact.' },
-                { title: 'AI Visibility Tools for Car Dealerships Compared (2026)', slug: 'ai-visibility-tools-for-car-dealerships-compared', desc: 'Side-by-side comparison of every tool that measures AI visibility.' },
+                { title: 'AI Visibility Tools for Car Dealerships Compared (2026)', slug: 'vizbiz-vs-metricus-vs-scope', desc: 'Side-by-side comparison of every tool that measures AI visibility.' },
                 { title: 'ChatGPT vs Gemini vs Perplexity: Which Recommends More Dealerships?', slug: 'chatgpt-vs-gemini-vs-perplexity-dealerships', desc: 'We tested all three. The differences are bigger than you think.' },
-                { title: 'Free AI Visibility Check for Your Dealership', slug: 'free-ai-visibility-check-for-your-dealership', desc: 'How to run a quick self-audit before investing in a full report.' },
+                { title: 'Free AI Visibility Check for Your Dealership', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'How to run a quick self-audit before investing in a full report.' },
                 { title: 'GEO for Car Dealerships: The Complete Guide', slug: 'generative-engine-optimization-car-dealerships', desc: 'Everything about Generative Engine Optimization — the new SEO.' },
                 { title: 'How to Get Your Dealership Recommended by ChatGPT in 2026', slug: 'how-to-get-dealership-recommended-by-chatgpt', desc: 'Specific steps to make ChatGPT mention your dealership.' },
-                { title: 'Not Showing Up in ChatGPT? Here\'s Why', slug: 'not-showing-up-in-chatgpt', desc: 'The most common reasons AI skips your store and what to fix first.' },
-                { title: 'We Audited 50 Ontario Dealerships — Here\'s What We Found', slug: 'ontario-dealership-ai-visibility-audit-results', desc: 'Full results from our Ontario dealership audit with scores and takeaways.' },
+                { title: 'Not Showing Up in ChatGPT? Here\'s Why', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'The most common reasons AI skips your store and what to fix first.' },
+                { title: 'We Audited 50 Ontario Dealerships — Here\'s What We Found', slug: 'ai-visibility-score-ontario-car-dealerships', desc: 'Full results from our Ontario dealership audit with scores and takeaways.' },
                 { title: 'VizBiz vs Metricus vs Scope: Which AI Visibility Tool?', slug: 'vizbiz-vs-metricus-vs-scope', desc: 'Honest comparison of the three tools built for dealership AI visibility.' },
                 { title: 'What Is AI Visibility for Car Dealerships? (Complete Guide)', slug: 'what-is-ai-visibility-car-dealerships', desc: 'The fundamentals — what AI visibility is, why it matters, and where to start.' },
-                { title: 'Why Your Dealership Isn\'t Showing Up in ChatGPT', slug: 'why-car-dealership-not-showing-up-chatgpt', desc: 'Diagnosing the visibility gap and the fixes that move the needle fastest.' },
+                { title: 'Why Your Dealership Isn\'t Showing Up in ChatGPT', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'Diagnosing the visibility gap and the fixes that move the needle fastest.' },
               ].map((post, i) => (
                 <a key={i} href={`/blog/${post.slug}`}
                   className="group flex w-[300px] shrink-0 flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all hover:border-[#22D3EE]/30 hover:bg-white/[0.04]">

@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     "AI visibility local business 2026",
   ],
   alternates: {
-    canonical: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships",
+    canonical: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships/",
   },
   openGraph: {
     title: "Why GEO Is the New Playbook for Local Businesses in 2026",
     description:
       "a16z just called GEO the successor to SEO. Here's what that means for local businesses — and why most are already behind.",
-    url: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships",
+    url: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships/",
     type: "article",
     siteName: "VizBiz",
   },
@@ -36,7 +36,7 @@ export default function GEOPlaybookPost() {
     author: { "@type": "Organization", name: "VizBiz" },
     publisher: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
     datePublished: "2026-05-11",
-    url: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships",
+    url: "https://vizbiz.ai/blog/geo-is-the-new-playbook-car-dealerships/",
   };
 
   return (

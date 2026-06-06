@@ -31,40 +31,6 @@ const TASK_TYPES = {
 };
 
 const STORAGE_KEY = 'vizbiz-tasks-v2';
-const SEEN_DEFAULTS_KEY = 'vizbiz-tasks-defaults-version';
-
-// Default tasks that mirror ACTIVE-PRIORITIES and morning report items
-const DEFAULT_TASKS: Omit<Task, 'id' | 'createdAt'>[] = [
-  // Critical — Revenue
-  { title: 'Approve outreach emails for 8 drafted leads', description: '8 leads have emails ready in the Email Hub. Zero sent, Day 46. Go to Emails → approve → send.', type: 'approve_email', dueDate: 'today', priority: 'critical', source: 'morning_report', done: false },
-  { title: 'Review RAAD lead (pending)', description: 'RAAD home fragrance, NZ. Score 0/20. Free report ready. Approve or rerun?', type: 'review_lead', leadName: 'RAAD', leadId: 'VZB-MP1TK3NM', dueDate: 'today', priority: 'critical', source: 'pipeline', done: false },
-
-  // Critical — Site
-  { title: 'Request GSC indexing for all 22 pages', description: 'Only homepage indexed. 8 blog posts + 13 landing pages invisible to Google. Single biggest lever for dogfood score.', type: 'fix_indexing', dueDate: 'today', priority: 'critical', source: 'morning_report', done: false },
-
-  // High — X/Twitter
-  { title: 'Fresh X login — session 23+ days old', description: 'Browser session about to expire. Log in at x.com to refresh cookies, otherwise posting dies.', type: 'daily_check', dueDate: 'today', priority: 'high', source: 'morning_report', done: false },
-  { title: 'Post 5 Sage reply drafts', description: 'Reply drafts ready for @AiBizit, @RiverCitiesHub, others. Session must be fresh first.', type: 'post_content', dueDate: 'today', priority: 'high', source: 'standing', done: false },
-
-  // High — Pipeline
-  { title: 'Draft emails for 5 approved leads', description: 'Bolton Kia, Network Logistics, Alchemy & Stone, Fleurish, Broken Bay — all approved, no emails drafted yet.', type: 'send_report', dueDate: 'tomorrow', priority: 'high', source: 'pipeline', done: false },
-
-  // Normal — Site improvements
-  { title: 'VizBiz Visibility Engine daily block', description: 'Top priority beside client intake and reports: move SEO/GEO/AEO forward with one concrete audit, page, schema, llms.txt, internal-link, or measurement improvement.', type: 'daily_check', dueDate: 'today', priority: 'critical', source: 'standing', done: false },
-  { title: 'Baseline SEO/GEO/AEO audit for vizbiz.ai', description: 'Check Search Console/indexation assumptions, sitemap, robots, canonicals, schema, llms.txt, mobile health, core routes, and AI-citability gaps.', type: 'fix_indexing', dueDate: 'today', priority: 'critical', source: 'standing', done: false },
-  { title: 'Create VizBiz keyword and answer-engine map', description: 'Map SEO keywords, AI-style buyer questions, target pages, CTAs, schema type, and priority for the first authority/vertical pages.', type: 'custom', dueDate: 'tomorrow', priority: 'high', source: 'standing', done: false },
-  { title: 'Build first authority page: AI Visibility Audit', description: 'Create the first indexable/citable commercial page and route visitors into the free mini report.', type: 'custom', dueDate: '3days', priority: 'high', source: 'standing', done: false },
-  { title: 'Add FAQ section to homepage with structured data', description: 'Homepage FAQ schema can strengthen AI citations and answer-engine understanding for buyer-intent questions.', type: 'custom', dueDate: '3days', priority: 'normal', source: 'standing', done: false },
-  { title: 'Build "VizBiz vs Competitors" comparison page', description: 'Not on any "best AI visibility tools" list. Comparison page = citability.', type: 'custom', dueDate: '5days', priority: 'normal', source: 'standing', done: false },
-  { title: 'Submit VizBiz to AI tool directories', description: 'Third-party mentions are the strongest AI visibility signal. Submit to directories + reach comparison article authors.', type: 'custom', dueDate: '5days', priority: 'normal', source: 'standing', done: false },
-
-  // Standing — recurring
-  { title: 'Check cron health', description: 'Check Hermes/Vercel/Supabase pipeline health. Fix any errors before moving on.', type: 'daily_check', dueDate: 'today', priority: 'normal', source: 'standing', done: false },
-  { title: 'Check X notifications and mentions', description: 'Respond to any new interactions on @VizBizAI.', type: 'daily_check', dueDate: 'today', priority: 'normal', source: 'standing', done: false },
-  { title: 'Wire Gmail API for hello@vizbiz.ai', description: 'Currently all emails are manual drafts. Gmail API = actual sending from MC.', type: 'custom', dueDate: '7days', priority: 'normal', source: 'standing', done: false },
-];
-
-const DEFAULTS_VERSION = '2026-06-05-visibility-engine-v1';
 
 function loadTasks(): Task[] {
   if (typeof window === 'undefined') return [];
@@ -81,25 +47,9 @@ function saveTasks(tasks: Task[]) {
 }
 
 function injectDefaults(existing: Task[]): Task[] {
-  if (typeof window === 'undefined') return existing;
-  const seen = localStorage.getItem(SEEN_DEFAULTS_KEY);
-  if (seen === DEFAULTS_VERSION) return existing;
-
-  // Add defaults that don't already exist (by title match)
-  const existingTitles = new Set(existing.map(t => t.title));
-  const newTasks: Task[] = DEFAULT_TASKS
-    .filter(d => !existingTitles.has(d.title))
-    .map((d, i) => ({
-      ...d,
-      dueDate: resolveDue(d.dueDate),
-      id: `default-${Date.now()}-${i}`,
-      createdAt: new Date().toISOString(),
-    }));
-
-  const merged = [...newTasks, ...existing];
-  saveTasks(merged);
-  localStorage.setItem(SEEN_DEFAULTS_KEY, DEFAULTS_VERSION);
-  return merged;
+  // No canned production tasks. Until a durable task/calendar source exists,
+  // Mission Control only shows tasks the operator manually creates in this browser.
+  return existing;
 }
 
 function resolveDue(due: string): string {

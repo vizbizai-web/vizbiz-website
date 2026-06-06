@@ -31,7 +31,7 @@ const dailyRhythm = [
 ];
 
 const firstBuilds = [
-  '/ai-visibility-audit/',
+  '/ai-visibility-audit-for-car-dealerships//',
   '/ai-visibility-for-local-businesses/',
   '/generative-engine-optimization/',
   '/answer-engine-optimization/',

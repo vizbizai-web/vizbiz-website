@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Learn what AI visibility means for dealerships, which signals matter most, and how automotive retailers can improve how often they appear in AI-driven search.",
   alternates: {
-    canonical: "https://vizbiz.ai/ai-visibility-for-car-dealerships",
+    canonical: "https://vizbiz.ai/ai-visibility-for-car-dealerships/",
   },
 };
 

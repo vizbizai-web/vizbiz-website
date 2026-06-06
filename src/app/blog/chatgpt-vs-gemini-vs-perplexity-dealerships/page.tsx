@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'ChatGPT vs Gemini vs Perplexity: Which AI Recommends More Dealerships?',
   description: 'We ran the same 84 buyer-intent prompts across ChatGPT, Gemini, and Perplexity for 50 Ontario dealerships. The platform that recommends the most dealerships might surprise you.',
   alternates: {
-    canonical: "https://vizbiz.ai/blog/chatgpt-vs-gemini-vs-perplexity-dealerships",
+    canonical: "https://vizbiz.ai/blog/chatgpt-vs-gemini-vs-perplexity-dealerships/",
   },
 };
 
@@ -55,7 +55,7 @@ export default function Page() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-white">What We Actually Tested</h2>
           <p className="text-slate-400 leading-relaxed mb-4">
-            We used our <a href="/blog/ai-visibility-audit-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">v2.2 audit engine</a> to run 84 buyer-intent prompts across three AI platforms for 50 Ontario car dealerships. The prompts covered five categories:
+            We used our <a href="/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">v2.2 audit engine</a> to run 84 buyer-intent prompts across three AI platforms for 50 Ontario car dealerships. The prompts covered five categories:
           </p>
           <ul className="list-disc list-inside text-slate-400 space-y-2 mb-6 ml-4">
             <li>Dealer discovery ("best Honda dealer in Ottawa")</li>
@@ -267,7 +267,7 @@ export default function Page() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-400 mt-1">→</span>
-              <a href="/blog/ai-visibility-audit-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">AI Visibility Audit: What It Measures and Why Dealerships Need One</a>
+              <a href="/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures" className="text-blue-400 hover:text-blue-300 underline">AI Visibility Audit: What It Measures and Why Dealerships Need One</a>
               <span>— How we score dealerships across the five visibility categories</span>
             </li>
             <li className="flex items-start gap-2">

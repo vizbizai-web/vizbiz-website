@@ -72,7 +72,7 @@ export function buildPaidIntakePayload(input: PaidIntakeInput, now = new Date())
   const competitors = [
     { name: clean(input.competitor1Name), website: normalizeUrl(input.competitor1Website) },
     { name: clean(input.competitor2Name), website: normalizeUrl(input.competitor2Website) },
-  ].filter((competitor) => competitor.name || competitor.website);
+  ];
 
   const payload: PaidIntakePayload = {
     plan: normalizePaidPlan(input.plan),
@@ -94,7 +94,12 @@ export function buildPaidIntakePayload(input: PaidIntakeInput, now = new Date())
   };
 
   payload.requiredComplete = Boolean(
-    payload.businessCategory && payload.mainServices && payload.idealCustomer && payload.goal
+    payload.businessCategory &&
+    payload.mainServices &&
+    payload.idealCustomer &&
+    payload.goal &&
+    payload.competitors.length === 2 &&
+    payload.competitors.every((competitor) => competitor.name)
   );
 
   return payload;

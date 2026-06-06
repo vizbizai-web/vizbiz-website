@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "See a sample AI visibility report for dealerships with score breakdowns, competitor insights, and practical recommendations tied to inventory, service, and trust.",
   alternates: {
-    canonical: "https://vizbiz.ai/sample-ai-visibility-report-for-car-dealerships",
+    canonical: "https://vizbiz.ai/sample-ai-visibility-report-for-car-dealerships/",
   },
 };
 

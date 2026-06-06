@@ -85,19 +85,19 @@ export default function PaidIntakeForm({ lead, plan }: { lead: LeadRow; plan?: s
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white">Local competitors to compare</h2>
-            <p className="mt-1 text-sm text-slate-400">Add the two businesses you are most often compared against. If you are not sure, leave one blank and we will work from the best available evidence.</p>
+            <p className="mt-1 text-sm text-slate-400">Add the two businesses you are most often compared against so the paid report can compare the right local options.</p>
           </div>
-          <span className="inline-flex min-w-16 shrink-0 items-center justify-center rounded-full bg-[#22D3EE]/10 px-3 py-1 text-center text-xs font-semibold leading-none text-[#67E8F9]">Up to 2</span>
+          <span className="inline-flex min-w-16 shrink-0 items-center justify-center rounded-full bg-[#22D3EE]/10 px-3 py-1 text-center text-xs font-semibold leading-none text-[#67E8F9]">Exactly 2</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={labelClass} htmlFor="competitor1Name">Competitor 1</label>
-            <input id="competitor1Name" name="competitor1Name" className={fieldClass} defaultValue={lead.competitor.split(',')[0]?.trim() || ''} placeholder="Competitor business name" />
+            <label className={labelClass} htmlFor="competitor1Name">Competitor 1 *</label>
+            <input id="competitor1Name" name="competitor1Name" required className={fieldClass} defaultValue={lead.competitor.split(',')[0]?.trim() || ''} placeholder="Competitor business name" />
             <input name="competitor1Website" className={fieldClass} placeholder="Competitor website, if known" />
           </div>
           <div>
-            <label className={labelClass} htmlFor="competitor2Name">Competitor 2</label>
-            <input id="competitor2Name" name="competitor2Name" className={fieldClass} defaultValue={lead.competitor.split(',')[1]?.trim() || ''} placeholder="Competitor business name" />
+            <label className={labelClass} htmlFor="competitor2Name">Competitor 2 *</label>
+            <input id="competitor2Name" name="competitor2Name" required className={fieldClass} defaultValue={lead.competitor.split(',')[1]?.trim() || ''} placeholder="Competitor business name" />
             <input name="competitor2Website" className={fieldClass} placeholder="Competitor website, if known" />
           </div>
         </div>

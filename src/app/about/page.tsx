@@ -13,10 +13,10 @@ export const metadata: Metadata = {
     description:
       "VizBiz helps car dealerships measure and improve how they appear in AI-powered search results.",
     type: "website",
-    url: "https://vizbiz.ai/about",
+    url: "https://vizbiz.ai/about/",
   },
   alternates: {
-    canonical: "https://vizbiz.ai/about",
+    canonical: "https://vizbiz.ai/about/",
   },
 };
 
@@ -26,7 +26,7 @@ export default function AboutPage() {
     "@type": "Organization",
     name: "VizBiz",
     url: "https://vizbiz.ai",
-    logo: "https://vizbiz.ai/logo.jpg",
+    logo: "https://vizbiz.ai/logo.jpg/",
     description:
       "VizBiz helps car dealerships measure and improve how they appear in AI-powered search results like ChatGPT, Google AI Overviews, and Gemini.",
     email: "hello@vizbiz.ai",

@@ -7,7 +7,7 @@ export const metadata = {
     description: 'A real AI visibility audit tells you exactly why AI recommends your competitors instead of you. Here\'s what the methodology actually measures.',
   },
   alternates: {
-    canonical: "https://vizbiz.ai/blog/ai-visibility-audit-what-it-measures-dealership",
+    canonical: "https://vizbiz.ai/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures-dealership/",
   },
 };
 

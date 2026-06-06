@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Submit your business details to generate your AI visibility snapshot, then move straight into booking a 15-minute review call.",
   alternates: {
-    canonical: "https://vizbiz.ai/intake",
+    canonical: "https://vizbiz.ai/intake/",
   },
 };
 

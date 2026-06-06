@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Practical guides and insights on how car dealerships can improve their visibility in AI-powered search like ChatGPT, Google AI Overviews, and Gemini.",
   alternates: {
-    canonical: "https://vizbiz.ai/blog",
+    canonical: "https://vizbiz.ai/blog/",
   },
 };
 
