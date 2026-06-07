@@ -877,6 +877,7 @@ async function scanWebsite(website: string): Promise<{
       beauty_salon: ['hair salon', 'haircut', 'hair color', 'blowout', 'keratin', 'balayage', 'highlights', 'barber', 'beauty salon'],
       nail_salon: ['nail art', 'manicure', 'pedicure', 'gel nails', 'acrylic nails', 'nail salon'],
       med_spa: ['botox', 'filler', 'laser', 'chemical peel', 'microneedling', 'med spa', 'injectables'],
+      electrical_contractor: ['electrician', 'electrical contractor', 'electrical contractors', 'electrical services', 'niceic', 'chas', 'safe contractor', 'electrical installations', 'electrical maintenance', 'commercial electrical', 'industrial electrical'],
       car_dealership: ['dealership', 'inventory', 'financing', 'lease', 'trade-in', 'service center', 'certified pre-owned', 'test drive'],
       venue_wedding: ['wedding venue', 'reception', 'ballroom', 'ceremony space', 'catering', 'event venue', 'banquet'],
       dance_studio: ['dance class', 'ballet', 'salsa', 'hip hop', 'choreography', 'dance studio', 'dance lessons'],

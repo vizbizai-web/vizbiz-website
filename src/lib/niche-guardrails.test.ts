@@ -16,4 +16,16 @@ describe('niche guardrails', () => {
     expect(source).toContain('endermologie_clinic');
     expect(source).toContain('Google Places beauty/wellness types block unrelated car-dealership classification');
   });
+
+  it('prevents electrical contractor signals from becoming car dealership reports', () => {
+    const preflight = readFileSync('src/lib/preflight-engine.ts', 'utf8');
+    const research = readFileSync('src/lib/research-runner.ts', 'utf8');
+    const economics = readFileSync('src/lib/niche-economics.ts', 'utf8');
+
+    expect(preflight).toContain('electrical_contractor');
+    expect(preflight).toContain('website/schema/Google Places electrical-contractor signals override unrelated car-dealership classification');
+    expect(preflight).toContain("['electrician']");
+    expect(research).toContain('electrical_contractor');
+    expect(economics).toContain('Electrical Contractor');
+  });
 });

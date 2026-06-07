@@ -148,6 +148,7 @@ const LANG_CODE_MAP: Record<string, string> = {
  * Keyword-based niche detection fallback (used when LLM is unavailable)
  */
 const NICHE_KEYWORDS: Record<string, string[]> = {
+  electrical_contractor: ["electrician", "electrical contractor", "electrical contractors", "electrical services", "niceic", "chas", "safe contractor", "24/7 service", "electrical needs", "electrical installations", "electrical maintenance", "commercial electrical", "industrial electrical"],
   car_dealership: ["dealer", "auto", "cars", "automotive", "honda", "toyota", "ford", "chevrolet", "inventory", "financing", "trade-in", "certified pre-owned", "test drive"],
   endermologie_clinic: ["endermologie", "lpg endermologie", "cellulite", "body sculpting", "body contouring", "lymphatic drainage", "non-invasive treatment", "skin toning", "smooth tone and revitalise", "smooth tone and revitalize"],
   fine_jewelry: ["jewelry store", "jeweller", "jeweler", "diamond", "engagement ring", "lab grown", "gemstone", "bridal jewelry"],
@@ -215,7 +216,18 @@ function applyNicheGuardrails(input: {
     };
   }
 
+  const isElectricalContractor = /\belectrician\b|electrical\s+contract(or|ors)|electrical\s+(service|services|installation|installations|maintenance)|\bniceic\b|\bchas\b|safe\s+contractor/.test(signal);
   const placeTypes = input.googlePlaceEnrichment?.types || [];
+  const placeSuggestsElectrical = placeTypes.some((type) => ['electrician'].includes(type));
+  if (isElectricalContractor || placeSuggestsElectrical) {
+    return {
+      niche: 'electrical_contractor',
+      businessType: input.businessType && input.businessType !== 'car dealership' ? input.businessType : 'electrical contractor',
+      services: input.services?.length ? input.services : ['electrical contracting', 'electrical installations', 'electrical maintenance', 'emergency electrical service'],
+      confidenceReason: 'Deterministic guardrail: website/schema/Google Places electrical-contractor signals override unrelated car-dealership classification.',
+    };
+  }
+
   const placeSuggestsBeauty = placeTypes.some((type) => ['beauty_salon', 'wellness_center', 'spa', 'health'].includes(type));
   if (input.niche === 'car_dealership' && placeSuggestsBeauty && !/\bdealer(ship)?\b|\bautomotive\b|\bcar\s+(sales|service|dealer)/.test(signal)) {
     return {
@@ -243,7 +255,7 @@ Extract:
 4. "siteLanguage": The primary language of the website content (e.g. "Romanian", "English", "French").
 5. "searchLanguage": What language their potential customers would use to search for this type of business. Same as siteLanguage for local businesses, but might differ for international businesses.
 6. "market": The geographic market they serve (e.g. "Romania", "Ontario, Canada", "United States", "Cluj Napoca, Romania").
-7. "niche": Pick the CLOSEST match from this list: car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, local_business. This is for internal categorization only — your businessType is what we actually use.
+7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, local_business. This is for internal categorization only — your businessType is what we actually use.
 8. "valueProposition": One sentence: what they do for their clients, in their own words (translate if not in English).
 9. "pricing": Any pricing information found (translate if needed), or null.
 10. "quality": "high", "medium", or "low" — is the site well-written with original content?
