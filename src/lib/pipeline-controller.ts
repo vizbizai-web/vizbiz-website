@@ -76,6 +76,58 @@ export function getResearchModeConfig(mode: ResearchMode): ResearchModeConfig {
   return PIPELINE_LIMITS[mode];
 }
 
+function normalizeClientDeclaredNiche(value?: string | null): { niche: string; nicheLabel: string; businessType: string } | null {
+  const label = (value || "").trim();
+  if (!label) return null;
+  const lower = label.toLowerCase();
+  if (/endermologie|\blpg\b|body\s+contour|cellulite|lymphatic|skin\s+ton/.test(lower)) {
+    return {
+      niche: "endermologie_clinic",
+      nicheLabel: "Endermologie / Body Contouring Clinic",
+      businessType: label,
+    };
+  }
+  return {
+    niche: lower.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "local_business",
+    nicheLabel: label.replace(/\s+/g, " "),
+    businessType: label,
+  };
+}
+
+function parseClientDeclaredNiche(notes?: string | null): string {
+  const notesStr = notes || "";
+  const paidIntakeMatch = notesStr.match(/PAID_INTAKE:(\{[\s\S]*?\})(?=\n[A-Z_]+:|$)/);
+  if (paidIntakeMatch) {
+    try {
+      const parsed = JSON.parse(paidIntakeMatch[1]);
+      if (typeof parsed.businessCategory === "string" && parsed.businessCategory.trim()) {
+        return parsed.businessCategory.trim();
+      }
+    } catch {
+      // Fall through to lightweight note parsing.
+    }
+  }
+  const noteMatch = notesStr.match(/ClientBusinessCategory:\s*([^|\n]+)/i);
+  return noteMatch?.[1]?.trim() || "";
+}
+
+function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
+  profile: T,
+  declaredNiche: string,
+): T {
+  const normalized = normalizeClientDeclaredNiche(declaredNiche);
+  if (!normalized) return profile;
+  return {
+    ...profile,
+    niche: normalized.niche,
+    nicheLabel: normalized.nicheLabel,
+    businessType: normalized.businessType,
+    services: profile.services?.length ? profile.services : [normalized.businessType],
+    nicheConfidence: 100,
+    confidenceReason: `Client-declared business category overrides automated classification: ${normalized.nicheLabel}`,
+  };
+}
+
 // ─── Stage Result ─────────────────────────────────────────────────────
 
 export interface StageResult {
@@ -132,7 +184,12 @@ export async function runPreflightStage(
 
     // 5. Run preflight
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
-    const preflightResult = await preflightScan(lead.website, lead.city);
+    const declaredNiche = parseClientDeclaredNiche(lead.notes);
+    const rawPreflightResult = await preflightScan(lead.website, lead.city);
+    const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche);
+    if (declaredNiche) {
+      console.warn(`[pipeline] Client-declared niche override for ${leadId}: "${declaredNiche}" → ${preflightResult.niche}`);
+    }
 
     // 6. Parse competitors from the durable lead field. Force reruns may replace
     // notes, so notes-only competitor mode detection loses submitted competitors.
@@ -164,6 +221,7 @@ export async function runPreflightStage(
       searchLangCode: preflightResult.searchLangCode,
       suggestedSearchQueries: preflightResult.suggestedSearchQueries,
       competitorSearchQueries: preflightResult.competitorSearchQueries,
+      clientDeclaredNiche: declaredNiche || null,
       socialLinks: preflightResult.socialLinks,
       contactInfo: preflightResult.contactInfo,
       schemaOrg: preflightResult.schemaOrg,

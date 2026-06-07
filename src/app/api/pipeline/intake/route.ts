@@ -21,6 +21,7 @@ type IntakePayload = {
   competitor?: string;
   competitor2?: string;
   competitorMode?: string;
+  businessCategory?: string;
   selectedPlan?: string;
   source: string;
   originalCta?: string;
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
     competitor: payload.competitor?.trim() || undefined,
     competitor2: payload.competitor2?.trim() || undefined,
     competitorMode,
+    businessCategory: (payload.businessCategory || payload.niche || payload.industry || payload.category)?.trim() || undefined,
     selectedPlan: payload.selectedPlan?.trim() || undefined,
     source: payload.source?.trim() || "snapshot funnel",
     originalCta: payload.originalCta?.trim() || undefined,
@@ -126,7 +128,7 @@ export async function POST(request: Request) {
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""} | CompetitorMode: ${cleanPayload.competitorMode}.`,
+        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.businessCategory ? ` ClientBusinessCategory: ${cleanPayload.businessCategory}.` : ""}${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""} | CompetitorMode: ${cleanPayload.competitorMode}.`,
         source: cleanPayload.source,
         originalCta: cleanPayload.originalCta,
         originalPage: cleanPayload.originalPage,
