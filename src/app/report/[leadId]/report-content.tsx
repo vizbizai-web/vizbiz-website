@@ -751,31 +751,14 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
               </div>
             )}
 
-            {/* Discovered competitors */}
-            {compData.filter(c => !c.isYou && !c.isYours).length > 0 && (
-              <div className="pt-2">
-                <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.textMuted, marginBottom: 12 }}>Competitors AI recommends instead of you</p>
-                {compData.filter(c => !c.isYou && !c.isYours).map((entry, i) => (
-                  <div key={entry.name} style={{ marginBottom: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                      <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: t.textPrimary }}>{entry.name}</span>
-                      <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: compColors[i % compColors.length], fontVariantNumeric: 'tabular-nums' }}>{entry.score}/{totalQ}</span>
-                    </div>
-                    <div style={{ height: 4, background: t.barTrack, width: '100%' }}>
-                      <div style={{ height: '100%', width: `${entry.pct}%`, background: compColors[i % compColors.length], transition: 'width 0.8s ease' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Gap callout */}
           {maxScore > yourScore && yourScore > 0 && (
             <div className="mt-6 p-4 rounded-xl text-sm" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
               {compData.some(c => c.isYours && c.score > 0)
-                ? `Your competitor appeared ${maxScore - yourScore} more times than you in AI recommendations. When a buyer asks ChatGPT for a recommendation, they're getting your competitor's name instead of yours.`
-                : `You appeared in only ${yourScore} out of ${totalQ} AI recommendations. There's significant room to improve your AI visibility.`
+                ? `Your named comparison target appeared ${maxScore - yourScore} more times than you in this visibility test. Treat this as a signal to strengthen your website, reviews, and proof — not as a guaranteed AI ranking claim.`
+                : `You appeared in only ${yourScore} out of ${totalQ} tested visibility scenarios. There is clear room to improve how easily AI-powered search can understand and verify your business.`
               }
             </div>
           )}
@@ -785,122 +768,13 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   );
 }
 
-/* ── AI Discovery Analysis (Edward Sturm Playbook) ─── */
+/* ── Internal AI discovery data is not rendered client-side until provenance is public-safe. ─── */
 function AIDiscoveryAnalysis({ data, theme }: { data: LeadData; theme: Theme }) {
-  const t = getThemeStyles(theme);
-  const discovery = data.aiDiscovery;
-  
-  if (!discovery) return null;
-
-  const readiness = discovery.contentReadiness;
-  const readinessCategories = [
-    { name: 'QFO Coverage', score: readiness.qfoCoverage, desc: 'How many query fan-out paths mention your business' },
-    { name: 'Grounding Queries', score: readiness.groundingQueryReadiness, desc: 'Whether your site matches AI search patterns' },
-    { name: 'Citation Authority', score: readiness.citationCompetitiveness, desc: 'How often AI models cite you vs competitors' },
-    { name: 'Content Depth', score: readiness.contentDepth, desc: 'llms.txt, schema, reviews, and blog presence' },
-  ];
-
-  return (
-    <FadeIn>
-      <section className="py-12">
-        <div className="max-w-4xl mx-auto">
-          <SectionTitle style={{ color: t.textPrimary }}>
-            AI Discovery Analysis
-          </SectionTitle>
-          <p className="text-xs sm:text-sm mt-2 mb-8" style={{ color: t.textMuted }}>
-            How AI models discover, evaluate, and recommend your business — based on real AI behavior patterns.
-          </p>
-
-          {/* Content Readiness Score */}
-          <div className="mb-8 p-5 rounded-xl" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium" style={{ color: t.textPrimary }}>AI Content Readiness Score</h3>
-              <span className="text-2xl font-light tabular-nums" style={{ color: getScoreAccent(readiness.overall) }}>{readiness.overall}/100</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {readinessCategories.map((cat) => (
-                <div key={cat.name} className="p-3 rounded-lg" style={{ background: t.barTrack }}>
-                  <p className="text-xs mb-1" style={{ color: t.textMuted }}>{cat.name}</p>
-                  <p className="text-lg font-semibold tabular-nums" style={{ color: getScoreAccent(cat.score) }}>{cat.score}</p>
-                  <p className="text-[10px] leading-tight mt-1" style={{ color: t.textMuted }}>{cat.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* QFO Results Table */}
-          {discovery.qfoResults.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>Query Fan-Out Results</h3>
-              <p className="text-xs mb-4" style={{ color: t.textMuted }}>
-                When AI models research your business, they perform follow-up searches. Here's what they find:
-              </p>
-              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${t.borderSubtle}` }}>
-                <table className="w-full">
-                  <thead>
-                    <tr style={{ background: t.barTrack, borderBottom: `1px solid ${t.borderSubtle}` }}>
-                      <th className="text-left py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted }}>Query</th>
-                      <th className="text-center py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted, width: 80 }}>Status</th>
-                      <th className="text-left py-2.5 px-3 text-xs font-medium" style={{ color: t.textMuted }}>Top Source Cited</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {discovery.qfoResults.slice(0, 10).map((qfo, i) => (
-                      <tr key={i} className={i > 0 ? 'border-t' : ''} style={{ borderColor: t.borderSubtle }}>
-                        <td className="py-2.5 px-3 text-sm" style={{ color: t.textSecondary }}>{qfo.query}</td>
-                        <td className="py-2.5 px-3 text-center">
-                          {qfo.appeared ? (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: '#22C55E', background: 'rgba(34,197,94,0.1)' }}>Found</span>
-                          ) : (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: '#EF4444', background: 'rgba(239,68,68,0.1)' }}>Missing</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-xs truncate max-w-[200px]" style={{ color: t.textMuted }}>
-                          {qfo.sourcesCited[0] || '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {discovery.qfoResults.length > 10 && (
-                  <p className="text-xs py-2 px-3 text-center" style={{ color: t.textMuted, borderTop: `1px solid ${t.borderSubtle}` }}>
-                    + {discovery.qfoResults.length - 10} more queries
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* AI Discovery Recommendations */}
-          {discovery.recommendations.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>AI Discovery Recommendations</h3>
-              <div className="space-y-3">
-                {discovery.recommendations.map((rec, i) => {
-                  const impactColor = getImpactColor(rec.impact);
-                  const impactBg = getImpactBg(rec.impact);
-                  return (
-                    <div key={i} className="flex items-start gap-3 p-4 rounded-xl" style={{ background: t.barTrack, border: `1px solid ${t.borderSubtle}` }}>
-                      <span className="text-lg flex-shrink-0">{rec.impact === 'High' ? '🔴' : rec.impact === 'Medium' ? '🟡' : '🟢'}</span>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-sm font-medium" style={{ color: t.textPrimary }}>{rec.title}</h4>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ color: impactColor, background: impactBg }}>
-                            {rec.impact}
-                          </span>
-                        </div>
-                        <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>{rec.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-    </FadeIn>
-  );
+  // Hidden from client-facing reports until AI/search provenance is split into
+  // validated public claims. Raw fan-out/search/citation data remains useful
+  // internally, but it must not be framed as AI trust, competitor dominance,
+  // or model-cited proof without source validation.
+  return null;
 }
 
 /* ── Revenue at Risk ─────────────────────────── */
@@ -932,14 +806,14 @@ function RevenueImpact({ data, theme }: { data: LeadData; theme: Theme }) {
           </p>
           <p className="text-sm mt-3" style={{ color: t.textSecondary }}>
             {hasCompetitors
-              ? `Based on your ${missedPct}% miss rate, that's revenue going to competitors who appear in AI recommendations`
-              : `Your business is invisible in ${missedPct}% of AI-driven searches — that's real buyer traffic you're not capturing`
+              ? `Based on your ${missedPct}% miss rate in this visibility test, this is a directional opportunity range against named comparison targets.`
+              : `Your business was not found in ${missedPct}% of the tested visibility scenarios. This is a directional opportunity signal, not a revenue guarantee.`
             }
           </p>
           <div className="mt-6 inline-block rounded-xl px-5 py-3" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
             <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
-              You appeared in only <strong style={{ color: t.textPrimary }}>{promptsAppeared}/{totalPrompts}</strong> AI recommendation scenarios.{' '}
-              <strong style={{ color: '#EF4444' }}>{missedPct}%</strong> of the time, AI is sending buyers elsewhere.
+              You appeared in <strong style={{ color: t.textPrimary }}>{promptsAppeared}/{totalPrompts}</strong> tested recommendation scenarios.{' '}
+              <strong style={{ color: '#EF4444' }}>{missedPct}%</strong> of the test set shows a visibility gap to improve.
             </p>
           </div>
         </div>
@@ -971,7 +845,7 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
 
           {/* Editorial finding statement */}
           <p className="text-sm mt-2 mb-8" style={{ color: t.textSecondary }}>
-            In {invisibleCount} of {totalCount} queries tested, AI platforms recommended competitors instead of {data.businessName}. Here's the breakdown.
+            In {invisibleCount} of {totalCount} queries tested, {data.businessName} was not clearly found. Here's the breakdown.
           </p>
 
           <div className={isMobile ? 'space-y-10' : 'grid grid-cols-2 gap-8'}>
@@ -1017,7 +891,7 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
                 </h3>
               </div>
               <p className="text-xs mb-4" style={{ color: t.textMuted }}>
-                {invisibleCount} queries where competitors appear instead
+                {invisibleCount} queries where your business was not clearly found
               </p>
               <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${t.borderSubtle}`, background: t.barTrack }}>
                 <table className="w-full">
@@ -1862,7 +1736,8 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
             { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
           ];
         }
-        // Client-provided mode: show client competitors + discovered ones
+        // Client-provided mode: show only the client-supplied comparison targets.
+        // Raw/search-discovered names are internal evidence only until validated.
         const userCompetitors = getSeparateCompetitorNames(leadData?.competitor || '');
         const userCompWithScores = userCompetitors.map((uc: string) => {
           const ucKey = uc.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
@@ -1874,16 +1749,9 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           }
           return { name: uc, score: appearances, isYours: true } as Competitor;
         });
-        const discoveredNames = new Set(realCompetitors.map(([n]) => n.toLowerCase()));
-        const uniqueUserComps = userCompWithScores.filter(uc =>
-          !discoveredNames.has(uc.name.toLowerCase()) &&
-          !discoveredNames.has(uc.name.toLowerCase().split('.')[0])
-        );
         return [
           { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },
-          ...uniqueUserComps,
-          ...realCompetitors.slice(0, 3).map(([name, count]) => ({ name, score: count as number })),
-          ...(realCompetitors.length === 0 && uniqueUserComps.length === 0 ? [{ name: competitorDisplay, score: compScore }] : []),
+          ...userCompWithScores,
         ];
       })(),
       recommendations: [
@@ -1955,7 +1823,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         ? [{ name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true }]
         : [
             { name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true },
-            ...fallbackCompetitors.map((name) => ({ name, score: Math.min(promptsAppeared + 5, totalPrompts) })),
+            ...fallbackCompetitors.map((name) => ({ name, score: 0, isYours: true })),
           ],
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },
@@ -2041,7 +1909,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           {/* 5. Revenue at Risk */}
           <RevenueImpact data={data} theme={theme} />
 
-          {/* 6. AI Discovery Analysis (Edward Sturm Playbook) */}
+          {/* 6. Internal AI discovery data intentionally hidden from client report */}
           <AIDiscoveryAnalysis data={data} theme={theme} />
 
           {/* 7. Priority Actions */}
