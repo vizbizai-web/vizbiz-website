@@ -206,19 +206,28 @@ export default function PipelinePage() {
 
                       {lead.status === 'pending_review' && (
                         <>
-                          <ActionBtn label="✓ Free Report" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve', { reportType: 'free' })} />
-                          <ActionBtn label="✓ Paid Report" color="#25D1F2" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve', { reportType: 'paid' })} />
+                          <ActionBtn label="✓ Send Free" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve_and_send', { reportType: 'free' })} />
+                          <Link href={`/paid-intake/${lead.leadId}?plan=full_report_fix`} target="_blank" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                            Paid Intake
+                          </Link>
+                          <ActionBtn label="Needs Fix" color="#F97316" loading={isLoading} onClick={() => {
+                            const reason = window.prompt('What needs fixing before this free report goes out?');
+                            if (reason?.trim()) handleAction(lead.leadId, 'needs_revision', { reportType: 'free', reason: reason.trim() });
+                          }} />
                           <ActionBtn label="Rerun" color="#3B82F6" loading={isLoading} onClick={() => handleAction(lead.leadId, 'rerun')} />
-                          <ActionBtn label="Hold" color="#F59E0B" loading={isLoading} onClick={() => handleAction(lead.leadId, 'hold')} />
+                          <ActionBtn label="Hold" color="#F59E0B" loading={isLoading} onClick={() => {
+                            const reason = window.prompt('Why should this stay held for review?');
+                            handleAction(lead.leadId, 'hold', { reason: reason?.trim() || 'Held from pipeline tab' });
+                          }} />
                         </>
                       )}
 
                       {lead.status === 'approved' && (
                         <>
-                          <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
-                            View Report
+                          <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                            Preview
                           </Link>
-                          <ActionBtn label="Draft Email" color="#A855F7" loading={isLoading} onClick={() => handleAction(lead.leadId, 'draft_email')} />
+                          <ActionBtn label="Send Free" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve_and_send', { reportType: 'free' })} />
                         </>
                       )}
 
@@ -227,14 +236,13 @@ export default function PipelinePage() {
                           <Link href="/mission-control/emails" className="text-sm px-3 py-2 rounded-lg border transition-colors" style={{ background: 'rgba(168, 85, 247, 0.08)', color: '#A855F7', borderColor: 'rgba(168, 85, 247, 0.2)' }}>
                             View Email
                           </Link>
-                          <ActionBtn label="Approve Email" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve_email')} />
+                          <ActionBtn label="Send Free" color="#22C55E" loading={isLoading} onClick={() => handleAction(lead.leadId, 'approve_and_send', { reportType: 'free' })} />
                           <ActionBtn label="Mark Sent" color="#8B5CF6" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'contacted' })} />
                         </>
                       )}
 
                       {lead.status === 'contacted' && (
                         <>
-                          <ActionBtn label="Follow Up" color="#F59E0B" loading={isLoading} onClick={() => handleAction(lead.leadId, 'follow_up')} />
                           <ActionBtn label="Won 🎉" color="#10B981" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'closed_won' })} />
                           <ActionBtn label="Lost" color="#EF4444" loading={isLoading} onClick={() => handleAction(lead.leadId, 'update_status', { status: 'closed_lost' })} />
                         </>

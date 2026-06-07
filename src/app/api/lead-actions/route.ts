@@ -73,8 +73,23 @@ export async function POST(request: Request) {
       }
 
       case "hold": {
-        const result = await proxyReviewAction(request, leadId, "hold");
-        return NextResponse.json({ success: true, action: "hold", leadId, result });
+        const reason = String(data?.reason || "Mission Control hold requested").trim();
+        await updateLeadResearchResults(leadId, {
+          status: "pending_review",
+          notes: `${lead.notes || ""}\n[HOLD via MC ${new Date().toISOString()}] ${reason}`,
+        });
+        try {
+          await sendPipelineAlert([
+            `⏸️ Report held — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Reason: ${reason}`,
+            `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] hold alert failed (non-blocking):", alertErr);
+        }
+        return NextResponse.json({ success: true, action: "hold", leadId, reason });
       }
 
       case "rerun": {

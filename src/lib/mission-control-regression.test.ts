@@ -126,15 +126,23 @@ describe('Mission Control production integrity', () => {
   it('keeps Mission Control action buttons wired for approve/send, rerun, needs-fix, do-not-send, and revision recovery', () => {
     const leadActions = repoFile('src/app/api/lead-actions/route.ts');
     const leadDetail = repoFile('src/app/mission-control/leads/[leadId]/page.tsx');
+    const pipelinePage = repoFile('src/app/mission-control/leads/page.tsx');
 
     expect(leadActions).toContain('APPROVED_FOR_FREE_SEND');
     expect(leadActions).toContain('/api/send-report-email');
     expect(leadActions).toContain('/api/pipeline/process');
     expect(leadActions).toContain('Research rerun started');
     expect(leadActions).toContain('Do not send —');
+    expect(leadActions).toContain('Report held —');
     expect(leadDetail).toContain("leadStatus === 'needs_revision'");
     expect(leadDetail).toContain('canRecoverRevision');
     expect(leadDetail).toContain('Needs revision fix requested from Mission Control');
+    expect(pipelinePage).toContain('approve_and_send');
+    expect(pipelinePage).toContain('Needs Fix');
+    expect(pipelinePage).toContain('Paid Intake');
+    expect(pipelinePage).not.toContain("'draft_email'");
+    expect(pipelinePage).not.toContain("'approve_email'");
+    expect(pipelinePage).not.toContain("'follow_up'");
   });
 
   it('uses honest unavailable state for unwired MC task/cron integrations', () => {
