@@ -349,7 +349,7 @@ export default function AIVisibilityAuditWhatItMeasuresPost() {
                 If your business doesn&apos;t appear — or if competitors show up instead — you&apos;ve found the gap. But manual testing only scratches the surface. A proper audit runs 84 prompts across three platforms, scores your results objectively, and identifies the specific signals you need to improve.
               </p>
               <p>
-                That&apos;s what VizBiz does. We run the full audit, give you your AVI score, map your competitors, and deliver a prioritized action plan. You can <Link href="/free-ai-visibility-test" className="text-blue-400 hover:text-blue-300 transition-colors">start with a free test</Link> to see where you stand — no sales call, no commitment, just the data.
+                That&apos;s what VizBiz does. We run the full audit, give you your AVI score, map your competitors, and deliver a prioritized action plan. You can <Link href="/intake" className="text-blue-400 hover:text-blue-300 transition-colors">start with a free test</Link> to see where you stand — no sales call, no commitment, just the data.
               </p>
             </div>
           </section>
@@ -363,7 +363,7 @@ export default function AIVisibilityAuditWhatItMeasuresPost() {
               We&apos;ll run 84 customer-intent prompts across ChatGPT, Gemini, and Perplexity for your business. You&apos;ll get your AVI score, see who&apos;s beating you, and know exactly what to fix.
             </p>
             <Link
-              href="/free-ai-visibility-test"
+              href="/intake"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
             >
               Run Your Free AI Visibility Test
@@ -414,7 +414,7 @@ export default function AIVisibilityAuditWhatItMeasuresPost() {
               <Link href="/blog/how-to-show-up-in-chatgpt-recommendations/" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → Not Showing Up in ChatGPT? Here&apos;s Why (And What to Do About It)
               </Link>
-              <Link href="/free-ai-visibility-test" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+              <Link href="/intake" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → Free AI Visibility Test for Your Business
               </Link>
             </div>

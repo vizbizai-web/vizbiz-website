@@ -446,7 +446,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
                 <h3 className="text-lg font-semibold text-white">Why Traditional SEO Tools Aren't Enough</h3>
                 <p className="mt-2 text-base leading-7 text-[var(--text-secondary)]">
                   Tools like Semrush and BrightLocal are excellent at what they do — traditional search optimization. But they don't query AI platforms directly, they don't test conversational customer questions, and they don't measure whether your business gets recommended by ChatGPT. The signals overlap, but the measurement is different.{" "}
-                  <Link href="/free-ai-visibility-test" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
+                  <Link href="/intake" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
                     A proper AI visibility audit
                   </Link>{" "}
                   covers ground that SEO tools simply don't.
@@ -485,7 +485,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
               Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Google AI Overviews.
             </p>
             <Link
-              href="/free-ai-visibility-test"
+              href="/intake"
               className="mt-8 inline-flex items-center rounded-full bg-[var(--neon-cyan)] px-8 py-4 text-base font-semibold text-black transition-transform hover:scale-105 sm:text-lg"
             >
               Get Your Free AI Visibility Audit →

@@ -284,7 +284,7 @@ export default function ChatGPTRecommendationsPost() {
                   You can&apos;t improve what you don&apos;t measure. Run an AI visibility audit to get your baseline AVI score, make changes, and re-test every 60-90 days. The audit tells you exactly which prompts you&apos;re appearing for, which competitors are beating you, and which signals to strengthen next.
                 </p>
                 <p>
-                  <span className="text-blue-400 font-medium">Action:</span> Start with a <Link href="/free-ai-visibility-test/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="text-blue-400 hover:text-blue-300 transition-colors">free AI visibility test</Link> to see where you stand. Then build a quarterly rhythm of audit → fix → re-test.
+                  <span className="text-blue-400 font-medium">Action:</span> Start with a <Link href="/intake/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="text-blue-400 hover:text-blue-300 transition-colors">free AI visibility test</Link> to see where you stand. Then build a quarterly rhythm of audit → fix → re-test.
                 </p>
               </div>
             </div>
@@ -348,7 +348,7 @@ export default function ChatGPTRecommendationsPost() {
                 While ChatGPT gets the most attention, customers are also asking the same questions on Google AI Overviews, Gemini, and Perplexity. Each platform has slightly different sources and weighting, but the core signals are the same: entity consistency, review quality, structured data, and topical content.
               </p>
               <p>
-                Our <Link href="/free-ai-visibility-test/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="text-blue-400 hover:text-blue-300 transition-colors">AI visibility audits</Link> test all three platforms simultaneously because appearing on ChatGPT but missing from Google AI Overviews — or vice versa — leaves gaps in your coverage. A comprehensive audit catches those gaps.
+                Our <Link href="/intake/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="text-blue-400 hover:text-blue-300 transition-colors">AI visibility audits</Link> test all three platforms simultaneously because appearing on ChatGPT but missing from Google AI Overviews — or vice versa — leaves gaps in your coverage. A comprehensive audit catches those gaps.
               </p>
               <p>
                 The encouraging part: the work you do for ChatGPT visibility improves your standing across all AI platforms. Fix your listings once, add schema once, improve your reviews once — the benefits cascade everywhere AI looks.
@@ -365,7 +365,7 @@ export default function ChatGPTRecommendationsPost() {
               Run a free AI visibility test. We&apos;ll check 84 customer-intent prompts across ChatGPT, Gemini, and Perplexity — and show you exactly where you stand, who your AI competitors are, and what to fix first.
             </p>
             <Link
-              href="/free-ai-visibility-test/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations"
+              href="/intake/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
             >
               Get Your Free AI Visibility Test
@@ -416,7 +416,7 @@ export default function ChatGPTRecommendationsPost() {
               <Link href="/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → AI Visibility Audit: What It Measures and Why It Matters
               </Link>
-              <Link href="/free-ai-visibility-test/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+              <Link href="/intake/?utm_source=blog&utm_medium=cta-button&utm_campaign=chatgpt-recommendations" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → Free AI Visibility Test for Your Business
               </Link>
             </div>

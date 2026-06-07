@@ -318,7 +318,7 @@ export default function Page() {
                 <span className="text-slate-500"> — A broader comparison of traditional SEO, reputation management, and AI visibility intelligence tools.</span>
               </li>
               <li>
-                <a href="/free-ai-visibility-test/" className="text-blue-400 hover:text-blue-300 underline">
+                <a href="/intake/" className="text-blue-400 hover:text-blue-300 underline">
                   Free AI Visibility Check for Your Dealership
                 </a>
                 <span className="text-slate-500"> — How to run a manual AI visibility audit using free tools before investing in a platform.</span>

@@ -429,7 +429,7 @@ export default function GEOToolsPage() {
               Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Google AI Overviews.
             </p>
             <Link
-              href="/free-ai-visibility-test"
+              href="/intake"
               className="mt-8 inline-flex items-center rounded-full bg-[var(--neon-cyan)] px-8 py-4 text-base font-semibold text-black transition-transform hover:scale-105 sm:text-lg"
             >
               Get Your Free AI Visibility Audit →
