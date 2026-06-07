@@ -45,6 +45,34 @@ const NICHE_STRATEGIES: Record<string, PromptSet> = {
       "top rated dealerships for first-time car buyers in {city}"
     ]
   },
+  endermologie_clinic: {
+    niche: "endermologie_clinic",
+    label: "Endermologie / Body Contouring Clinic",
+    avgLeadValue: 180,
+    estimatedMonthlyVolume: 120,
+    prompts: [
+      "best endermologie clinic in {city}",
+      "LPG endermologie near me in {city}",
+      "top rated endermologie treatment in {city}",
+      "best cellulite reduction treatment in {city}",
+      "body contouring clinic with good reviews in {city}",
+      "non-invasive cellulite treatment in {city}",
+      "best lymphatic drainage massage in {city}",
+      "skin toning treatment near me in {city}",
+      "endermologie for cellulite in {city}",
+      "body sculpting and skin tightening in {city}",
+      "wellness clinic for LPG treatment in {city}",
+      "best place for endermologie massage in {city}",
+      "endermologie treatment reviews in {city}",
+      "natural cellulite treatment clinic in {city}",
+      "body smoothing treatment in {city}",
+      "endermologie clinic open on weekends in {city}",
+      "trusted LPG endermologie provider in {city}",
+      "endermologie appointment booking in {city}",
+      "best endermologie for skin firming in {city}",
+      "endermologie clinic for women in {city}"
+    ]
+  },
   fine_jewelry: {
     niche: "fine_jewelry",
     label: "Fine Jewelry Store",

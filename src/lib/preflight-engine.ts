@@ -149,6 +149,7 @@ const LANG_CODE_MAP: Record<string, string> = {
  */
 const NICHE_KEYWORDS: Record<string, string[]> = {
   car_dealership: ["dealer", "auto", "cars", "automotive", "honda", "toyota", "ford", "chevrolet", "inventory", "financing", "trade-in", "certified pre-owned", "test drive"],
+  endermologie_clinic: ["endermologie", "lpg endermologie", "cellulite", "body sculpting", "body contouring", "lymphatic drainage", "non-invasive treatment", "skin toning", "smooth tone and revitalise", "smooth tone and revitalize"],
   fine_jewelry: ["jewelry store", "jeweller", "jeweler", "diamond", "engagement ring", "lab grown", "gemstone", "bridal jewelry"],
   spray_tanning: ["spray tan", "tanning", "sunless", "bronze", "glow", "airbrush tan"],
   beauty_salon: ["salon", "beauty", "hair", "nails", "facial", "spa", "barber"],
@@ -186,6 +187,46 @@ function detectNicheByKeywords(text: string): string {
     }
   }
   return bestNiche;
+}
+
+function applyNicheGuardrails(input: {
+  niche: string;
+  businessType: string;
+  services: string[];
+  valueProposition: string;
+  allSignals: string;
+  googlePlaceEnrichment: GooglePlaceEnrichment | null;
+}): { niche: string; businessType: string; services: string[]; confidenceReason?: string } {
+  const signal = [
+    input.businessType,
+    input.valueProposition,
+    ...(input.services || []),
+    input.allSignals,
+    ...(input.googlePlaceEnrichment?.types || []),
+  ].join(' ').toLowerCase();
+
+  const isEndermologie = /\bendermologie\b|\blpg\b|cellulite|body\s+sculpt|body\s+contour|lymphatic\s+drain|skin\s+ton|non[-\s]?invasive/.test(signal);
+  if (isEndermologie) {
+    return {
+      niche: 'endermologie_clinic',
+      businessType: 'endermologie and body contouring clinic',
+      services: input.services?.length ? input.services : ['LPG Endermologie', 'body contouring', 'cellulite reduction', 'skin toning'],
+      confidenceReason: 'Deterministic guardrail: Endermologie/LPG/body-contouring signals override unrelated broad categories.',
+    };
+  }
+
+  const placeTypes = input.googlePlaceEnrichment?.types || [];
+  const placeSuggestsBeauty = placeTypes.some((type) => ['beauty_salon', 'wellness_center', 'spa', 'health'].includes(type));
+  if (input.niche === 'car_dealership' && placeSuggestsBeauty && !/\bdealer(ship)?\b|\bautomotive\b|\bcar\s+(sales|service|dealer)/.test(signal)) {
+    return {
+      niche: 'beauty_salon',
+      businessType: input.businessType && input.businessType !== 'car dealership' ? input.businessType : 'beauty and wellness clinic',
+      services: input.services?.length ? input.services : ['beauty and wellness treatments'],
+      confidenceReason: 'Deterministic guardrail: Google Places beauty/wellness types block unrelated car-dealership classification.',
+    };
+  }
+
+  return { niche: input.niche, businessType: input.businessType, services: input.services };
 }
 
 /**
@@ -582,6 +623,23 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     niche = detectNicheByKeywords(allText);
     contentQuality = rawText.length > 3000 ? "medium" : "low";
     businessType = niche.replace(/_/g, ' ');
+  }
+
+  const guardedProfile = applyNicheGuardrails({
+    niche,
+    businessType,
+    services,
+    valueProposition,
+    allSignals,
+    googlePlaceEnrichment,
+  });
+  if (guardedProfile.niche !== niche || guardedProfile.businessType !== businessType) {
+    console.warn(`[preflight] Niche guardrail override: ${niche}/${businessType || 'unknown'} → ${guardedProfile.niche}/${guardedProfile.businessType}. ${guardedProfile.confidenceReason || ''}`);
+    niche = guardedProfile.niche;
+    businessType = guardedProfile.businessType;
+    services = guardedProfile.services;
+    if (guardedProfile.confidenceReason) confidenceReason = guardedProfile.confidenceReason;
+    nicheConfidence = Math.max(nicheConfidence, 90);
   }
 
   // -- Derive search language code --
