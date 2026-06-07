@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { QuickActions } from './QuickActions';
 
 export function MCShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const isLoginRoute = pathname?.startsWith('/mission-control/login');
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -19,6 +22,26 @@ export function MCShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isDesktop) setSidebarOpen(false);
   }, [typeof window !== 'undefined' ? window.location.pathname : '']);
+
+  if (isLoginRoute) {
+    return (
+      <div className="min-h-screen text-slate-200 relative overflow-x-hidden" style={{ background: '#06070F' }}>
+        <div className="fixed inset-0 pointer-events-none z-0" aria-hidden>
+          <div
+            className="absolute -top-10 -left-10 w-[700px] h-[700px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(37, 209, 242, 0.30) 0%, rgba(37, 209, 242, 0.08) 40%, transparent 70%)' }}
+          />
+          <div
+            className="absolute bottom-[-5%] right-[-10%] w-[760px] h-[760px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, rgba(139, 92, 246, 0.04) 40%, transparent 70%)' }}
+          />
+        </div>
+        <main className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-slate-200 relative overflow-x-hidden" style={{ background: '#06070F' }}>

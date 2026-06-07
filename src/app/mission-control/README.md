@@ -1,6 +1,19 @@
-# Mission Control Dashboard
+# VizBiz Mission Control
 
-Internal operations dashboard for VizBiz.ai
+Internal operator dashboard for VizBiz.ai.
+
+Mission Control is for verified VizBiz operations only:
+
+- Lead pipeline from the real VizBiz lead adapter (`getAllLeads`).
+- Report review and lead actions through the production VizBiz action routes.
+- Email draft counts generated from real lead statuses.
+- Honest unavailable states when a source is not connected.
+
+## Non-negotiable integrity rule
+
+Do not ship, demo, or describe Mission Control as working if a panel is backed by placeholder arrays, canned demo rows, legacy project files, or a TODO stub.
+
+If data is unavailable, show an explicit unavailable state and the missing integration. Do not silently return empty dashboards.
 
 ## Development
 
@@ -11,44 +24,28 @@ npm run dev
 
 ## Authentication
 
-Set `MISSION_CONTROL_PASSWORD` in your `.env.local` file:
+Set `MISSION_CONTROL_PASSWORD` in `.env.local` and in Vercel production before exposing the route.
 
-```
+```bash
 MISSION_CONTROL_PASSWORD=your-secure-password-here
 ```
 
-## Structure
+## Current production routes
 
-```
-app/mission-control/
-├── page.tsx              # Main dashboard (Command Center)
-├── layout.tsx            # Auth wrapper + dark theme
-├── kanban/page.tsx       # Missions Kanban board
-├── agents/page.tsx       # Agent Roster
-├── schedule/page.tsx     # Cron/Schedule Center
-├── api/
-│   ├── missions/route.ts # CRUD for missions
-│   ├── tasks/route.ts    # Task management
-│   └── schedule/route.ts # Schedule/cron data
-├── components/
-│   ├── CommandCenter.tsx # Today's priorities + alerts
-│   ├── KanbanBoard.tsx   # Drag-drop kanban
-│   ├── AgentCard.tsx     # Agent status cards
-│   ├── ScheduleView.tsx  # Cron schedule viewer
-│   └── Sidebar.tsx       # Navigation
-├── lib/
-│   ├── db.ts             # SQLite connection
-│   └── auth.ts           # Auth utilities
-└── data/
-    └── init.sql          # Database schema
-```
+- `/mission-control/` — VizBiz control center
+- `/mission-control/leads` — real lead pipeline
+- `/mission-control/leads/[leadId]` — individual lead review/action surface
+- `/mission-control/emails` — email hub generated from real lead statuses
+- `/mission-control/calendar` — local operator task list
+- `/mission-control/visibility-engine` — VizBiz SEO/GEO/AEO operating surface
+- `/mission-control/settings` — internal settings/status
 
-## Phase 1 Features
+## API contract
 
-- [x] Command Center dashboard
-- [x] Missions Kanban (5 columns)
-- [x] Agent Roster with status
-- [x] Schedule/Cron Center
-- [x] Dark theme (Aionic-inspired)
-- [x] Mobile responsive
-- [x] Password protection
+Mission Control APIs are allowed to be wrappers, but they must terminate in real VizBiz sources:
+
+- `/mission-control/api/pipeline-status` → `@/lib/google-sheets#getAllLeads`
+- `/mission-control/api/lead-actions` → production `/api/lead-actions`
+- `/mission-control/api/email-drafts` → real lead statuses from `getAllLeads`
+
+No legacy SQLite mission schema. No generic agent roster. No old workspace memory feed.

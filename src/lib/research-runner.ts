@@ -825,8 +825,8 @@ export async function runResearch(
 
   // Override competitor messaging for client_only mode
   if (competitorMode === "client_only") {
-    finalResult.competitorMention = "auto-discovered competitors (internal only)";
-    finalResult.competitorLine = "Your competitors were identified from search data but not specified by you.";
+    finalResult.competitorMention = "Focused competitor benchmark available after you name the two businesses you are most often compared with";
+    finalResult.competitorLine = "This snapshot focuses on your business first. Add two named competitors for a focused comparison in the full benchmark.";
     finalResult.competitorCategories = [];
   }
 

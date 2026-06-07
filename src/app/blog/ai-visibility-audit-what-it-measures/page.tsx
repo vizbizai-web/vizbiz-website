@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     "ChatGPT business audit",
   ],
   alternates: {
-    canonical: "https://vizbiz.ai/blog/ai-visibility-audit-what-it-measures",
+    canonical: "https://vizbiz.ai/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures/",
   },
   openGraph: {
     title: "AI Visibility Audit: What It Measures and Why It Matters",
     description:
       "What an AI visibility audit actually measures for local businesses — and why most are scoring below 60 on AI visibility.",
-    url: "https://vizbiz.ai/blog/ai-visibility-audit-what-it-measures",
+    url: "https://vizbiz.ai/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures/",
     type: "article",
     siteName: "VizBiz",
   },
@@ -38,7 +38,7 @@ export default function AIVisibilityAuditWhatItMeasuresPost() {
     publisher: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": "https://vizbiz.ai/blog/ai-visibility-audit-what-it-measures",
+      "@id": "https://vizbiz.ai/blog/ai-visibility-audit-for-car-dealerships/-what-it-measures/",
     },
   };
 
@@ -411,7 +411,7 @@ export default function AIVisibilityAuditWhatItMeasuresPost() {
               <Link href="/blog/how-to-show-up-in-chatgpt-recommendations" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → How to Show Up in ChatGPT Recommendations (2026 Playbook)
               </Link>
-              <Link href="/blog/not-showing-up-in-chatgpt" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+              <Link href="/blog/how-to-show-up-in-chatgpt-recommendations/" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">
                 → Not Showing Up in ChatGPT? Here&apos;s Why (And What to Do About It)
               </Link>
               <Link href="/free-ai-visibility-test" className="block text-blue-400 hover:text-blue-300 transition-colors text-sm">

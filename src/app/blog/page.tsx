@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Practical guides and insights on how car dealerships can improve their visibility in AI-powered search like ChatGPT, Google AI Overviews, and Gemini.",
   alternates: {
-    canonical: "https://vizbiz.ai/blog",
+    canonical: "https://vizbiz.ai/blog/",
   },
 };
 
@@ -16,15 +16,29 @@ const posts = [
     slug: "geo-is-the-new-playbook-car-dealerships",
     title: "Why GEO Is the New Playbook for Car Dealerships in 2026",
     description:
-      "a16z just called GEO the successor to SEO. Here's what that means for car dealerships — and why 84% of Ontario dealers are already behind.",
+      "a16z just called GEO the successor to SEO. Here's what that means for car dealerships — and why AI visibility now decides who gets recommended.",
     date: "2026-05-11",
   },
   {
-    slug: "90-day-ai-visibility-playbook-car-dealerships",
-    title: "90-Day AI Visibility Playbook for Car Dealerships",
+    slug: "vizbiz-vs-metricus-vs-scope",
+    title: "VizBiz vs. Metricus vs. Scope",
     description:
-      "A step-by-step 90-day playbook to improve your dealership's AI visibility. Week-by-week actions you can implement without hiring a new team — based on data from 50 real Ontario dealerships.",
+      "A practical comparison of AI visibility tools and what local businesses should look for before choosing an audit platform.",
+    date: "2026-05-09",
+  },
+  {
+    slug: "chatgpt-vs-gemini-vs-perplexity-dealerships",
+    title: "ChatGPT vs. Gemini vs. Perplexity for Dealership Visibility",
+    description:
+      "How major AI assistants surface dealership recommendations differently — and why broad AI visibility matters more than one-tool optimization.",
     date: "2026-05-08",
+  },
+  {
+    slug: "how-to-show-up-in-chatgpt-recommendations",
+    title: "How to Show Up in ChatGPT Recommendations",
+    description:
+      "The trust signals, entity clarity, and content patterns that make a business easier for AI assistants to understand and recommend.",
+    date: "2026-05-07",
   },
   {
     slug: "ai-visibility-audit-what-it-measures-dealership",
@@ -34,31 +48,38 @@ const posts = [
     date: "2026-04-24",
   },
   {
-    slug: "what-is-ai-visibility-car-dealerships",
-    title: "What Is AI Visibility for Car Dealerships? (The Complete Guide)",
+    slug: "ai-visibility-audit-what-it-measures",
+    title: "AI Visibility Audit: What It Measures",
     description:
-      "AI visibility is the new SEO — but most dealership owners have never heard of it. This guide explains what it is, why it matters, and how to check your score for free.",
+      "A business-friendly breakdown of the signals that affect whether AI systems can understand, verify, and recommend a local business.",
+    date: "2026-04-24",
+  },
+  {
+    slug: "what-is-ai-visibility-car-dealerships",
+    title: "What Is AI Visibility for Car Dealerships?",
+    description:
+      "AI visibility is the new discovery layer. This guide explains what it is, why it matters, and how to check your score for free.",
     date: "2026-04-24",
   },
   {
     slug: "ai-visibility-score-ontario-car-dealerships",
-    title: "We Scored 50 Ontario Dealerships on AI Visibility — The Results Were Brutal",
+    title: "We Scored 50 Ontario Dealerships on AI Visibility",
     description:
-      "We ran 84 buyer-intent prompts across ChatGPT, Gemini, and Perplexity for 50 Ontario dealerships. The average score was 11 out of 100.",
+      "We ran buyer-intent prompts across major AI assistants for Ontario dealerships. The visibility gap is real — and fixable.",
     date: "2026-04-22",
   },
   {
     slug: "generative-engine-optimization-car-dealerships",
-    title: "Generative Engine Optimization (GEO) for Car Dealerships: The Complete Guide",
+    title: "Generative Engine Optimization (GEO) for Car Dealerships",
     description:
-      "The complete guide to GEO for car dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.",
+      "The complete guide to GEO for dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.",
     date: "2026-04-22",
   },
   {
     slug: "how-to-get-dealership-recommended-by-chatgpt",
     title: "How to Get Your Car Dealership Recommended by ChatGPT in 2026",
     description:
-      "Step-by-step guide to making your car dealership appear in ChatGPT recommendations, Gemini results, and Google AI Overviews.",
+      "Step-by-step guide to making your car dealership easier for ChatGPT, Gemini, Google AI Overviews, and other AI systems to recommend.",
     date: "2026-04-22",
   },
   {
@@ -66,13 +87,6 @@ const posts = [
     title: "35+ AI Visibility Statistics Every Car Dealership Needs to Know in 2026",
     description:
       "Data-driven insights on how AI search is reshaping automotive retail and what it means for your dealership.",
-    date: "2026-04-21",
-  },
-  {
-    slug: "why-car-dealership-not-showing-up-chatgpt",
-    title: "Why Your Car Dealership Isn't Showing Up in ChatGPT (And How to Fix It)",
-    description:
-      "Learn the 5 most common reasons your dealership isn't appearing in ChatGPT and get a step-by-step fix.",
     date: "2026-04-21",
   },
 ];

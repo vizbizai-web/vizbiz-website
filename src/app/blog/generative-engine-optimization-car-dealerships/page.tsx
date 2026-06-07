@@ -7,7 +7,7 @@ export const metadata = {
     description: 'The complete guide to GEO for local businesses — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.',
   },
   alternates: {
-    canonical: "https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships",
+    canonical: "https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships/",
   },
 };
 
@@ -20,7 +20,7 @@ export default function GEOGuide() {
     author: { '@type': 'Organization', name: 'VizBiz' },
     publisher: { '@type': 'Organization', name: 'VizBiz', url: 'https://vizbiz.ai' },
     datePublished: '2026-04-20',
-    url: 'https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships',
+    url: 'https://vizbiz.ai/blog/generative-engine-optimization-car-dealerships/',
   };
 
   return (

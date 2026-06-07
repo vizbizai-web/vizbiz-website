@@ -19,6 +19,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://vizbiz.ai"),
   verification: {
     google: "UsciMz9QyGJczouaUP3mPrVVWUlGnTLQkU9EOQiMDF8",
   },
@@ -27,15 +28,11 @@ export const metadata: Metadata = {
     "VizBiz helps local businesses measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, Gemini, and Perplexity. Get your free AI visibility mini report.",
   keywords:
     "AI visibility for local businesses, AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, AI visibility report, local SEO, schema markup, llms.txt, competitor benchmarking",
-  alternates: {
-    canonical: "https://vizbiz.ai",
-  },
   openGraph: {
     title: "VizBiz — AI Visibility Intelligence for Local Businesses",
     description:
       "See whether AI recommends your business or your two closest competitors. Free AI visibility mini report.",
     type: "website",
-    url: "https://vizbiz.ai",
     siteName: "VizBiz.ai",
     locale: "en_CA",
   },

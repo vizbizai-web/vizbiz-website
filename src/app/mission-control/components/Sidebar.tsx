@@ -8,6 +8,7 @@ const navItems = [
   { id: 'pipeline', label: 'Pipeline', icon: '📋', href: '/mission-control/leads' },
   { id: 'emails', label: 'Emails', icon: '✉️', href: '/mission-control/emails', badge: 'draftCount' },
   { id: 'calendar', label: 'Tasks', icon: '📅', href: '/mission-control/calendar' },
+  { id: 'visibility', label: 'Visibility Engine', icon: '🔭', href: '/mission-control/visibility-engine' },
   { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
 ];
 
@@ -19,7 +20,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   useEffect(() => {
     async function fetchDrafts() {
       try {
-        const res = await fetch('/api/email-drafts');
+        const res = await fetch('/mission-control/api/email-drafts');
         if (!res.ok) return;
         const json = await res.json();
         setDraftCount(json.total || 0);
@@ -100,7 +101,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
             V
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Vlad</p>
+            <p className="text-sm font-medium text-white truncate">Alex</p>
             <p className="text-[10px] text-slate-600 flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-emerald-500" />
               Online

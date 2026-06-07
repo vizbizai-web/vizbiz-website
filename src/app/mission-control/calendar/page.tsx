@@ -31,42 +31,13 @@ const TASK_TYPES = {
 };
 
 const STORAGE_KEY = 'vizbiz-tasks-v2';
-const SEEN_DEFAULTS_KEY = 'vizbiz-tasks-defaults-version';
-
-// Default tasks that mirror ACTIVE-PRIORITIES and morning report items
-const DEFAULT_TASKS: Omit<Task, 'id' | 'createdAt'>[] = [
-  // Critical — Revenue
-  { title: 'Approve outreach emails for 8 drafted leads', description: '8 leads have emails ready in the Email Hub. Zero sent, Day 46. Go to Emails → approve → send.', type: 'approve_email', dueDate: 'today', priority: 'critical', source: 'morning_report', done: false },
-  { title: 'Review RAAD lead (pending)', description: 'RAAD home fragrance, NZ. Score 0/20. Free report ready. Approve or rerun?', type: 'review_lead', leadName: 'RAAD', leadId: 'VZB-MP1TK3NM', dueDate: 'today', priority: 'critical', source: 'pipeline', done: false },
-
-  // Critical — Site
-  { title: 'Request GSC indexing for all 22 pages', description: 'Only homepage indexed. 8 blog posts + 13 landing pages invisible to Google. Single biggest lever for dogfood score.', type: 'fix_indexing', dueDate: 'today', priority: 'critical', source: 'morning_report', done: false },
-
-  // High — X/Twitter
-  { title: 'Fresh X login — session 23+ days old', description: 'Browser session about to expire. Log in at x.com to refresh cookies, otherwise posting dies.', type: 'daily_check', dueDate: 'today', priority: 'high', source: 'morning_report', done: false },
-  { title: 'Post 5 Sage reply drafts', description: 'Reply drafts ready for @AiBizit, @RiverCitiesHub, others. Session must be fresh first.', type: 'post_content', dueDate: 'today', priority: 'high', source: 'standing', done: false },
-
-  // High — Pipeline
-  { title: 'Draft emails for 5 approved leads', description: 'Bolton Kia, Network Logistics, Alchemy & Stone, Fleurish, Broken Bay — all approved, no emails drafted yet.', type: 'send_report', dueDate: 'tomorrow', priority: 'high', source: 'pipeline', done: false },
-
-  // Normal — Site improvements
-  { title: 'Add FAQ section to homepage with structured data', description: 'Dogfood score 39/100. FAQ block with schema markup will help AI citations.', type: 'custom', dueDate: '3days', priority: 'normal', source: 'morning_report', done: false },
-  { title: 'Build "VizBiz vs Competitors" comparison page', description: 'Not on any "best AI visibility tools" list. Comparison page = citability.', type: 'custom', dueDate: '5days', priority: 'normal', source: 'standing', done: false },
-  { title: 'Submit VizBiz to AI tool directories', description: 'Third-party mentions are the strongest AI visibility signal. Submit to directories + reach comparison article authors.', type: 'custom', dueDate: '5days', priority: 'normal', source: 'standing', done: false },
-
-  // Standing — recurring
-  { title: 'Check cron health', description: 'Run openclaw cron list. Fix any errors before moving on.', type: 'daily_check', dueDate: 'today', priority: 'normal', source: 'standing', done: false },
-  { title: 'Check X notifications and mentions', description: 'Respond to any new interactions on @VizBizAI.', type: 'daily_check', dueDate: 'today', priority: 'normal', source: 'standing', done: false },
-  { title: 'Wire Gmail API for hello@vizbiz.ai', description: 'Currently all emails are manual drafts. Gmail API = actual sending from MC.', type: 'custom', dueDate: '7days', priority: 'normal', source: 'standing', done: false },
-];
-
-const DEFAULTS_VERSION = '2026-05-12-v2';
 
 function loadTasks(): Task[] {
   if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsed: Task[] = stored ? JSON.parse(stored) : [];
+    return parsed.map((task) => ({ ...task, dueDate: resolveDue(task.dueDate) }));
   } catch { return []; }
 }
 
@@ -76,24 +47,9 @@ function saveTasks(tasks: Task[]) {
 }
 
 function injectDefaults(existing: Task[]): Task[] {
-  if (typeof window === 'undefined') return existing;
-  const seen = localStorage.getItem(SEEN_DEFAULTS_KEY);
-  if (seen === DEFAULTS_VERSION) return existing;
-
-  // Add defaults that don't already exist (by title match)
-  const existingTitles = new Set(existing.map(t => t.title));
-  const newTasks: Task[] = DEFAULT_TASKS
-    .filter(d => !existingTitles.has(d.title))
-    .map((d, i) => ({
-      ...d,
-      id: `default-${Date.now()}-${i}`,
-      createdAt: new Date().toISOString(),
-    }));
-
-  const merged = [...newTasks, ...existing];
-  saveTasks(merged);
-  localStorage.setItem(SEEN_DEFAULTS_KEY, DEFAULTS_VERSION);
-  return merged;
+  // No canned production tasks. Until a durable task/calendar source exists,
+  // Mission Control only shows tasks the operator manually creates in this browser.
+  return existing;
 }
 
 function resolveDue(due: string): string {
@@ -198,7 +154,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
@@ -258,7 +214,7 @@ export default function CalendarPage() {
       )}
 
       {/* Filter Tabs */}
-      <div className="flex gap-1 glass-card rounded-lg p-1 w-fit" style={{ background: 'rgba(10,11,20,0.2)' }}>
+      <div className="grid grid-cols-2 gap-1 glass-card rounded-lg p-1 sm:flex sm:w-fit" style={{ background: 'rgba(10,11,20,0.2)' }}>
         {(['all', 'critical', 'today', 'upcoming', 'done'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`text-sm px-3 py-2 rounded-md transition-colors ${filter === f ? 'bg-slate-800/50 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
@@ -281,7 +237,7 @@ export default function CalendarPage() {
           const isCritical = task.priority === 'critical';
           const src = sourceBadge(task.source);
           return (
-            <div key={task.id} className={`glass-card rounded-xl p-4 flex items-start gap-3 transition-all ${task.done ? 'opacity-40' : isCritical ? 'ring-1 ring-red-500/30' : isOverdue ? 'ring-1 ring-amber-500/20' : ''}`}>
+            <div key={task.id} className={`glass-card rounded-xl p-4 flex items-start gap-3 transition-all min-w-0 overflow-hidden ${task.done ? 'opacity-40' : isCritical ? 'ring-1 ring-red-500/30' : isOverdue ? 'ring-1 ring-amber-500/20' : ''}`}>
               {/* Checkbox */}
               <button onClick={() => toggleDone(task.id)}
                 className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors border ${task.done ? 'bg-emerald-500/20 border-emerald-500/40' : 'bg-slate-800/50 border-slate-600 hover:border-slate-400'}`}>
@@ -292,7 +248,7 @@ export default function CalendarPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-base">{typeInfo.icon}</span>
-                  <p className={`text-base ${task.done ? 'line-through text-slate-600' : 'text-white font-medium'}`}>{task.title}</p>
+                  <p className={`min-w-0 break-words text-base ${task.done ? 'line-through text-slate-600' : 'text-white font-medium'}`}>{task.title}</p>
                   {isCritical && !task.done && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/20 font-medium">CRITICAL</span>}
                   {task.priority === 'high' && !task.done && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20 font-medium">HIGH</span>}
                   {src && !task.done && <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: `${src.color}15`, color: src.color, border: `1px solid ${src.color}25` }}>{src.label}</span>}

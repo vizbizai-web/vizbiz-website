@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   description:
     "Get your dealership's AI visibility score. See how often ChatGPT, Gemini, and Perplexity recommend your dealership — and what to fix. Free snapshot, paid deep-dive audit.",
   alternates: {
-    canonical: "https://vizbiz.ai/ai-visibility-audit-for-car-dealerships",
+    canonical: "https://vizbiz.ai/ai-visibility-audit-for-car-dealerships/-for-car-dealerships/",
   },
   openGraph: {
     title: "AI Visibility Audit for Car Dealerships | Free Score & Report",
     description:
       "See how often AI recommends your dealership. Free AI visibility snapshot with competitor comparison and fix plan.",
     type: "website",
-    url: "https://vizbiz.ai/ai-visibility-audit-for-car-dealerships",
+    url: "https://vizbiz.ai/ai-visibility-audit-for-car-dealerships/-for-car-dealerships/",
   },
 };
 

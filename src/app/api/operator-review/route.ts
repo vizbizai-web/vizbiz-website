@@ -1,11 +1,11 @@
 /**
- * Vlad Review Endpoint
+ * Operator Review Endpoint
  *
- * Called by Vlad (COS) after reviewing research results.
+ * Called by Mission Control after operator review of research results.
  * Actions:
  *  - approve: Flip status from pending_review → approved → report goes live
  *  - hold: Keep pending_review, add notes about why
- *  - rerun: Reset to new so process-lead picks it up again
+ *  - rerun: Reset to new so pipeline/process picks it up again
  *  - fix: Accept JSON patches to research data, then approve
  */
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       leadId: string;
       action: "approve" | "hold" | "rerun" | "fix";
       notes?: string;
-      patches?: Record<string, any>;
+      patches?: Record<string, unknown>;
     };
 
     if (!leadId || !action) {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSheetsConfigured()) {
-      return NextResponse.json({ success: false, error: "Sheets not configured" }, { status: 500 });
+      return NextResponse.json({ success: false, error: "CRM not configured" }, { status: 500 });
     }
 
     const lead = await getLeadByLeadId(leadId);
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         await updateLeadResearchResults(leadId, {
           status: "approved",
         });
-        console.info(`[vlad-review] ✅ Approved ${leadId}: ${lead.dealershipName}`);
+        console.info(`[operator-review] ✅ Approved ${leadId}: ${lead.dealershipName}`);
 
         // Trigger deep competitor analysis for approved leads (paid reports)
         try {
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
               3
             );
             if (compResults.length > 0) {
-              console.info(`[vlad-review] Competitor analysis complete: ${compResults.length} profiles for ${leadId}`);
+              console.info(`[operator-review] Competitor analysis complete: ${compResults.length} profiles for ${leadId}`);
             }
           }
         } catch (compErr) {
-          console.warn(`[vlad-review] Competitor analysis failed (non-blocking):`, compErr);
+          console.warn(`[operator-review] Competitor analysis failed (non-blocking):`, compErr);
         }
 
         // Send secondary alert to Alex: report is live + email is ready
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
             statusBand,
           });
         } catch (alertErr) {
-          console.warn(`[vlad-review] Report-ready alert failed (non-blocking):`, alertErr);
+          console.warn(`[operator-review] Report-ready alert failed (non-blocking):`, alertErr);
         }
 
         return NextResponse.json({ success: true, action: "approved", leadId });
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
       case "hold": {
         await updateLeadResearchResults(leadId, {
           status: "pending_review",
-          notes: notes ? `VLAD_HOLD: ${notes}` : "VLAD_HOLD: Manual review needed",
+          notes: notes ? `OPERATOR_HOLD: ${notes}` : "OPERATOR_HOLD: Manual review needed",
         });
-        console.info(`[vlad-review] 🚫 Held ${leadId}: ${notes || "no reason given"}`);
+        console.info(`[operator-review] 🚫 Held ${leadId}: ${notes || "no reason given"}`);
         return NextResponse.json({ success: true, action: "held", leadId });
       }
 
@@ -113,18 +113,18 @@ export async function POST(request: NextRequest) {
         await updateLeadResearchResults(leadId, {
           status: "new",
           researchStatus: "pending",
-          notes: notes ? `VLAD_RERUN: ${notes}` : "VLAD_RERUN: Requested re-research",
+          notes: notes ? `OPERATOR_RERUN: ${notes}` : "OPERATOR_RERUN: Requested re-research",
         });
-        console.info(`[vlad-review] 🔄 Rerun requested for ${leadId}: ${notes || "no reason"}`);
+        console.info(`[operator-review] 🔄 Rerun requested for ${leadId}: ${notes || "no reason"}`);
 
         // Trigger re-processing (fire and forget)
         const baseUrl = process.env.VERCEL_URL
           ? `https://${process.env.VERCEL_URL}`
           : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-        fetch(`${baseUrl}/api/process-lead`, {
+        fetch(`${baseUrl}/api/pipeline/process`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ leadId }),
+          body: JSON.stringify({ leadId, force: true, researchMode: 'free' }),
         }).catch(() => {});
 
         return NextResponse.json({ success: true, action: "rerun", leadId });
@@ -158,8 +158,7 @@ export async function POST(request: NextRequest) {
 
         // Strip junk competitors from promptResults if requested
         if (patches?.stripJunkCompetitors) {
-          const JUNK = [/./.source]; // kept for stripJunkCompetitors — actual check uses isJunkCompetitor
-          rd.promptResults = rd.promptResults.map((p: any) => {
+          rd.promptResults = rd.promptResults.map((p: { competitorName?: string; competitorAppeared?: boolean }) => {
             if (p.competitorName && isJunkCompetitor(p.competitorName)) {
               return { ...p, competitorAppeared: false, competitorName: undefined };
             }
@@ -171,7 +170,7 @@ export async function POST(request: NextRequest) {
           status: "approved",
           notes: `RESEARCH_DATA:${JSON.stringify(rd)}`,
         });
-        console.info(`[vlad-review] 🔧 Fixed + approved ${leadId}`);
+        console.info(`[operator-review] 🔧 Fixed + approved ${leadId}`);
         return NextResponse.json({ success: true, action: "fixed_and_approved", leadId });
       }
 
@@ -179,7 +178,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: `Unknown action: ${action}` }, { status: 400 });
     }
   } catch (error) {
-    console.error("[vlad-review] Error:", error);
+    console.error("[operator-review] Error:", error);
     return NextResponse.json({ success: false, error: "Internal error" }, { status: 500 });
   }
 }
@@ -204,3 +203,4 @@ export async function GET(request: NextRequest) {
     researchStatus: lead.researchStatus,
   });
 }
+

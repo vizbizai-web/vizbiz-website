@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { getLeadByLeadId, isSheetsConfigured } from '@/lib/google-sheets';
 import { validateReportToken } from '@/lib/report-token';
+import { getClientReportAccessState } from '@/lib/funnel-logic';
 import ReportContent from './report-content';
 import ReportPending from './report-pending';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export const revalidate = 0;
 
@@ -137,7 +143,7 @@ export default async function ReportPage({
                     ...parsed.research,
                     competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
                     internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
-                  } as any;
+                  } as ResearchData;
                 }
               }
             }
@@ -151,7 +157,7 @@ export default async function ReportPage({
         }
       }
     } catch (err) {
-      console.error('[report] Failed to fetch lead from Sheets:', err);
+      console.error('[report] Failed to fetch lead from CRM:', err);
     }
   }
 
@@ -160,21 +166,24 @@ export default async function ReportPage({
     return <ReportPending leadId={leadId} status="not_found" />;
   }
 
-  // Gate 2: Token required only for unapproved leads (pending_review, researching, etc)
-  // Approved+ leads are accessible WITHOUT a token — prevents dead links to clients
-  const isApproved = ['approved', 'email_drafted', 'contacted', 'closed_won'].includes(leadData.status);
-  const researchComplete = leadData.researchStatus === 'complete';
+  // Gate 2: Never show a fallback/mock report to clients.
+  // A public report needs approval, completed research, and parsed research data.
+  const accessState = getClientReportAccessState({
+    status: leadData.status,
+    researchStatus: leadData.researchStatus,
+    hasResearchData: Boolean(researchData),
+  });
 
-  if (!isApproved || !researchComplete) {
-    // Not yet approved or still researching — require a valid token (staff/internal access)
-    if (!token) {
+  if (accessState !== 'ready') {
+    return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
+  }
+
+  // Approved+ leads are accessible without a token. If a token is present, validate it
+  // to avoid treating expired/stale private links as successful report views.
+  if (token && !token.startsWith('owner_')) {
+    const tokenResult = validateReportToken(leadId, token);
+    if (!tokenResult.valid) {
       return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
-    }
-    if (!token.startsWith('owner_')) {
-      const tokenResult = validateReportToken(leadId, token);
-      if (!tokenResult.valid) {
-        return <ReportPending leadId={leadId} status="processing" businessName={leadData.businessName} />;
-      }
     }
   }
 

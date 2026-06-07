@@ -83,7 +83,7 @@ function useDrafts() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/pipeline-status');
+      const res = await fetch('/mission-control/api/pipeline-status');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const leads: Lead[] = json.leads || [];
@@ -133,7 +133,7 @@ export default function EmailsPage() {
   };
 
   const handleApprove = async (draft: EmailDraft) => {
-    const res = await fetch('/api/lead-actions', {
+    const res = await fetch('/mission-control/api/lead-actions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ leadId: draft.lead.leadId, action: 'approve_email', data: { subject: draft.subject, body: draft.body } }),
@@ -142,7 +142,7 @@ export default function EmailsPage() {
   };
 
   const handleMarkSent = async (draft: EmailDraft) => {
-    const res = await fetch('/api/lead-actions', {
+    const res = await fetch('/mission-control/api/lead-actions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ leadId: draft.lead.leadId, action: 'update_status', data: { status: 'contacted' } }),

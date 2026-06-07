@@ -14,10 +14,10 @@ export const metadata: Metadata = {
     description:
       "Real data on how dealerships show up in AI search. Scores, benchmarks, and what actually changes your results.",
     type: "website",
-    url: "https://vizbiz.ai/insights",
+    url: "https://vizbiz.ai/insights/",
   },
   alternates: {
-    canonical: "https://vizbiz.ai/insights",
+    canonical: "https://vizbiz.ai/insights/",
   },
 };
 
@@ -54,7 +54,7 @@ export default function InsightsPage() {
     "@context": "https://schema.org",
     "@graph": tweets.map((tweet) => ({
       "@type": "SocialMediaPosting",
-      "@id": `https://vizbiz.ai/insights#tweet-${tweet.id}`,
+      "@id": `https://vizbiz.ai/insights/#tweet-${tweet.id}`,
       author: {
         "@type": "Organization",
         name: "VizBiz",

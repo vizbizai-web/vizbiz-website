@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LiquidGlass, GlassCard, GlassButton } from './components/LiquidGlass';
+import { LiquidGlass, GlassCard } from './components/LiquidGlass';
 
 interface Lead {
   timestamp: string;
@@ -88,12 +88,12 @@ function usePipelineData() {
   useEffect(() => {
     async function doFetch() {
       try {
-        const res = await fetch('/api/pipeline-status');
+        const res = await fetch('/mission-control/api/pipeline-status');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         setData(json);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load');
       } finally {
         setLoading(false);
       }
@@ -106,6 +106,7 @@ function usePipelineData() {
 
 export default function MissionControlDashboard() {
   const { data, loading, error } = usePipelineData();
+  const [now] = useState(() => Date.now());
   const stats = data?.stats;
   const leads = data?.leads || [];
 
@@ -119,7 +120,7 @@ export default function MissionControlDashboard() {
   // Days since last outreach
   const contactedLeads = leads.filter(l => l.emailSentAt);
   const daysSinceOutreach = contactedLeads.length > 0
-    ? Math.floor((Date.now() - new Date(contactedLeads.sort((a,b) => new Date(b.emailSentAt).getTime() - new Date(a.emailSentAt).getTime())[0].emailSentAt).getTime()) / 86400000)
+    ? Math.floor((now - new Date(contactedLeads.sort((a,b) => new Date(b.emailSentAt).getTime() - new Date(a.emailSentAt).getTime())[0].emailSentAt).getTime()) / 86400000)
     : null;
 
   // Attention items
@@ -222,22 +223,19 @@ export default function MissionControlDashboard() {
           {/* Pipeline Flow */}
           <div>
             <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-3">Pipeline Flow</h2>
-            <div className="glass-card rounded-xl p-3 sm:p-5 overflow-x-auto">
-              <div className="flex items-center gap-1 min-w-[500px] sm:min-w-0">
-                {PIPELINE_FLOW.map((status, i) => {
+            <div className="glass-card rounded-xl p-3 sm:p-5">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+                {PIPELINE_FLOW.map((status) => {
                   const count = stats[status as keyof PipelineStats] || 0;
                   const color = STATUS_COLORS[status];
                   const active = count > 0;
                   return (
-                    <div key={status} className="flex-1 flex flex-col items-center">
-                      <div className="text-lg sm:text-xl font-bold mb-2" style={{ color: active ? color : '#475569' }}>{count}</div>
-                      <div className="w-full h-10 sm:h-12 rounded-lg flex items-center justify-center transition-all" style={{ background: active ? `${color}25` : '#0F1019', border: active ? `1px solid ${color}40` : '1px solid #1E293B' }}>
-                        {active && <div className="w-2 h-2 rounded-full" style={{ background: color }} />}
+                    <div key={status} className="min-w-0 rounded-xl border p-3 text-center" style={{ background: active ? `${color}12` : '#0F1019', borderColor: active ? `${color}35` : '#1E293B' }}>
+                      <div className="text-lg sm:text-xl font-bold" style={{ color: active ? color : '#475569' }}>{count}</div>
+                      <div className="mt-2 flex h-7 items-center justify-center rounded-lg" style={{ background: active ? `${color}18` : '#0B0F1A' }}>
+                        {active ? <div className="h-2 w-2 rounded-full" style={{ background: color }} /> : <div className="h-1.5 w-1.5 rounded-full bg-slate-700" />}
                       </div>
-                      <div className="text-xs sm:text-sm mt-2 text-slate-300 text-center font-medium">{STATUS_LABELS[status]}</div>
-                      {i < PIPELINE_FLOW.length - 1 && (
-                        <div className="hidden">→</div>
-                      )}
+                      <div className="mt-2 break-words text-xs font-medium text-slate-300 sm:text-sm">{STATUS_LABELS[status]}</div>
                     </div>
                   );
                 })}
@@ -272,6 +270,46 @@ export default function MissionControlDashboard() {
               </Link>
             </div>
           </div>
+
+          {/* VizBiz Visibility Engine */}
+          <section className="rounded-2xl border border-cyan-300/20 bg-[#07111f]/80 p-4 shadow-[0_0_45px_rgba(34,211,238,0.07)] sm:p-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-red-400/30 bg-red-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-300">Top priority</span>
+                  <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-200">SEO • GEO • AEO</span>
+                </div>
+                <h2 className="mt-3 break-words text-xl font-bold text-white sm:text-2xl">VizBiz Visibility Engine</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                  Build VizBiz.ai into its own proof asset: indexable authority pages, AI-citable answers, schema, llms.txt, Search Console hygiene, and conversion paths into the free mini report.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:w-[440px] xl:shrink-0">
+                {[
+                  ['Phase', 'Foundation'],
+                  ['Today', 'Audit + map'],
+                  ['Cadence', 'Daily block'],
+                  ['Rank', 'Beside intake'],
+                ].map(([label, value]) => (
+                  <div key={label} className="min-w-0 rounded-xl border border-slate-800/60 bg-slate-950/40 p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>
+                    <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <Link href="/mission-control/visibility-engine" className="inline-flex items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/15">
+                Open project tracker
+              </Link>
+              <Link href="/mission-control/calendar" className="inline-flex items-center justify-center rounded-xl border border-slate-700/60 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white">
+                See calendar tasks
+              </Link>
+              <a href="/llms.txt" className="inline-flex items-center justify-center rounded-xl border border-slate-700/60 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white">
+                Check llms.txt
+              </a>
+            </div>
+          </section>
 
           {/* Recent Leads */}
           <div>
@@ -341,7 +379,7 @@ export default function MissionControlDashboard() {
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="text-xs text-slate-500">All systems operational</span>
             </div>
-            <span className="text-[10px] text-slate-700">Pipeline synced from Google Sheets</span>
+            <span className="text-[10px] text-slate-700">Pipeline synced from Supabase CRM</span>
           </div>
         </>
       )}
@@ -350,7 +388,6 @@ export default function MissionControlDashboard() {
 }
 
 function MetricCard({ label, value, accent }: { label: string; value: number | string; accent?: string }) {
-  const isString = typeof value === 'string';
   return (
     <GlassCard className='p-4' tint='rgba(255,255,255,0.02)' borderRadius={12}>
       <p className="text-3xl font-bold" style={{ color: accent || '#E2E8F0' }}>{value}</p>

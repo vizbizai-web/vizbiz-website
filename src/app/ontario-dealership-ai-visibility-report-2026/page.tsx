@@ -9,10 +9,10 @@ export const metadata: Metadata = {
     title: "Ontario Dealership AI Visibility Report — April 2026",
     description:
       "84% of dealership websites are basically invisible to AI search. Our data confirms it.",
-    url: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
+    url: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026/",
   },
   alternates: {
-    canonical: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
+    canonical: "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026/",
   },
 };
 
@@ -32,9 +32,9 @@ export default function OntarioReportPage() {
     "publisher": {
       "@type": "Organization",
       "name": "VizBiz",
-      "logo": { "@type": "ImageObject", "url": "https://vizbiz.ai/logo.jpg" }
+      "logo": { "@type": "ImageObject", "url": "https://vizbiz.ai/logo.jpg/" }
     },
-    "mainEntityOfPage": "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026",
+    "mainEntityOfPage": "https://vizbiz.ai/ontario-dealership-ai-visibility-report-2026/",
     "wordCount": 1200,
     "articleSection": "Original Research",
     "keywords": "AI visibility, car dealership, GEO, Ontario, AI search, ChatGPT recommendations",

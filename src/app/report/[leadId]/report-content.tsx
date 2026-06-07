@@ -6,6 +6,7 @@ import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/lib/use-mobile';
 import { isJunkCompetitor } from '@/lib/junk-filter';
+import { getSeparateCompetitorNames, hasVerifiedLocalTrustData } from '@/lib/funnel-logic';
 import {
   RadarChart,
   PolarGrid,
@@ -1163,17 +1164,20 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
     { label: 'Google Reviews', value: data.socialPresence.googleReviews, icon: 'google' },
   ].filter(p => p.value !== null && p.value !== undefined);
 
-  const hasSocialData = data.socialPresence.googleReviews !== null && data.socialPresence.googleReviews !== undefined;
-  const hasCompetitorSocialData = data.competitorSocial && data.competitorSocial.length > 0;
+  const hasLocalTrustData = hasVerifiedLocalTrustData({
+    googleReviews: data.socialPresence.googleReviews,
+    competitorSocial: data.competitorSocial,
+    competitorValidations: data.competitorValidations,
+  });
 
-  if (!hasSocialData && !hasCompetitorSocialData) return (
+  if (!hasLocalTrustData) return (
     <FadeIn>
       <section className="py-12">
         <div className="max-w-4xl mx-auto">
           <SectionTitle style={{ color: t.textPrimary }}>
             Social Media & AI Visibility
           </SectionTitle>
-          <p className="text-sm mt-2 mb-4" style={{ color: t.textMuted }}>What social media agencies won't tell you about AI recommendations</p>
+          <p className="text-sm mt-2 mb-4" style={{ color: t.textMuted }}>What social media agencies won&apos;t tell you about AI recommendations</p>
           <div className="rounded-xl p-5" style={{ background: t.barTrack, borderLeft: '3px solid #22D3EE' }}>
             <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
               Social media following is just <strong style={{ color: t.textPrimary }}>one signal</strong> among many that AI platforms use. Businesses with zero social presence regularly outrank competitors with thousands of followers — because AI recommendations are driven by <strong style={{ color: t.textPrimary }}>content quality, structured data, and local authority</strong>, not follower counts.
@@ -1907,10 +1911,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           ];
         }
         // Client-provided mode: show client competitors + discovered ones
-        const userCompetitors = (leadData?.competitor || '')
-          .split(',')
-          .map((c: string) => c.trim())
-          .filter((c: string) => c.length > 0);
+        const userCompetitors = getSeparateCompetitorNames(leadData?.competitor || '');
         const userCompWithScores = userCompetitors.map((uc: string) => {
           const ucKey = uc.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
           let appearances = 0;
@@ -1967,7 +1968,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
     const band = leadData.visibilityBand || 'Pending';
     const aviScore = band === 'Strong' ? 72 : band === 'Moderate' ? 42 : 18;
 
-    const competitorName = leadData.competitor || 'Top Competitor';
+    const fallbackCompetitors = getSeparateCompetitorNames(leadData.competitor);
     
     const fallbackAppearanceRate = totalPrompts > 0 ? promptsAppeared / totalPrompts : 0;
     const fallbackCategories = [
@@ -2002,7 +2003,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         ? [{ name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true }]
         : [
             { name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true },
-            { name: competitorName, score: Math.min(promptsAppeared + 5, totalPrompts) },
+            ...fallbackCompetitors.map((name) => ({ name, score: Math.min(promptsAppeared + 5, totalPrompts) })),
           ],
       recommendations: [
         { id: 1, title: 'Strengthen brand content', description: 'Create detailed guides and case studies about your services to improve visibility.', impact: 'High' as const },

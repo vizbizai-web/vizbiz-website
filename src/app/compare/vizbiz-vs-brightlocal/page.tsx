@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Honest comparison of VizBiz and BrightLocal for car dealerships. See where each platform excels — AI visibility intelligence vs traditional local SEO management.",
   alternates: {
-    canonical: "https://vizbiz.ai/compare/vizbiz-vs-brightlocal",
+    canonical: "https://vizbiz.ai/compare/vizbiz-vs-brightlocal/",
   },
 };
 
@@ -106,7 +106,7 @@ export default function VizBizVsBrightLocalPage() {
     "dateModified": "2026-04-12",
     "author": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
     "publisher": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
-    "mainEntityOfPage": "https://vizbiz.ai/compare/vizbiz-vs-brightlocal",
+    "mainEntityOfPage": "https://vizbiz.ai/compare/vizbiz-vs-brightlocal/",
   };
 
   return (

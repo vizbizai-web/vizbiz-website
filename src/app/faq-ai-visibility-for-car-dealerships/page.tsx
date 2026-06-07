@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Common questions about AI visibility for car dealerships — how ChatGPT recommends dealers, what affects your score, and how to improve.",
   alternates: {
-    canonical: "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships",
+    canonical: "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships/",
   },
 };
 
@@ -91,7 +91,7 @@ export default function FaqAiVisibilityForLocalBusinessesPage() {
     "dateModified": "2026-04-12",
     "author": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
     "publisher": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
-    "mainEntityOfPage": "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships",
+    "mainEntityOfPage": "https://vizbiz.ai/faq-ai-visibility-for-car-dealerships/",
   };
 
   return (

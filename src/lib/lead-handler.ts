@@ -3,6 +3,7 @@ import path from "node:path";
 import { buildMiniSnapshot } from "@/lib/mini-snapshot";
 import { buildResearchBrief } from "@/lib/research-brief";
 import { buildSnapshotEmailHtml, type SnapshotEmailData } from "@/lib/snapshot-email";
+import { assertClientSafeCopy } from "@/lib/client-copy-qa";
 
 export type LeadInput = {
   timestamp: string;
@@ -66,7 +67,7 @@ const HUBSPOT_STAGE_ID = process.env.HUBSPOT_STAGE_NEW_LEAD || process.env.HUBSP
 const HUBSPOT_PIPELINE_LABEL = process.env.HUBSPOT_PIPELINE_LABEL || "VizBiz Pipeline";
 const HUBSPOT_STAGE_LABEL = process.env.HUBSPOT_STAGE_LABEL || "New Lead";
 const HUBSPOT_DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_SEND_FROM = "vizbiz.ai@gmail.com";
+const DEFAULT_SEND_FROM = process.env.RESEND_FROM_EMAIL || "reports@vizbiz.ai";
 
 function normalizeWebsiteUrl(value: string) {
   const trimmed = value.trim();
@@ -155,7 +156,7 @@ function buildPlainTextEmailDraft(input: LeadInput, snapshotSummary: StructuredS
       "",
       "Best,",
       "Alex",
-      "VizBiz.ai | vizbiz.ai@gmail.com",
+      "VizBiz.ai | reports@vizbiz.ai",
     ].join("\n"),
   };
 }
@@ -186,6 +187,7 @@ function buildSnapshotNoteBody(input: LeadInput, snapshotSummary?: StructuredSna
       "https://calendly.com/vizbiz-ai/avi-assessment",
   };
   const emailHtml = buildSnapshotEmailHtml(emailHtmlData).slice(0, 10000);
+  assertClientSafeCopy(emailHtml, "lead note email HTML preview");
 
   return [
     `Intake submission for ${input.dealershipName}`,
@@ -662,6 +664,7 @@ export async function handleNewLead(data: LeadInput) {
     };
 
     const html = buildSnapshotEmailHtml(emailData);
+    assertClientSafeCopy(html, "stored snapshot email draft");
 
     if (process.env.NODE_ENV !== "production") {
       const timestamp = new Date()

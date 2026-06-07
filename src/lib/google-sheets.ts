@@ -1,8 +1,10 @@
 /**
- * Google Sheets CRM — VizBiz Lead Database (v2)
+ * VizBiz CRM compatibility adapter (Supabase primary, Google Sheets legacy fallback)
  *
- * Stores every intake submission as a row in a Google Sheet.
- * Extended with pipeline state tracking, locking, and idempotent stage control.
+ * Keeps the old google-sheets import surface alive for launch safety while routing
+ * the live pipeline through Supabase whenever Supabase env vars are configured.
+ * Google Sheets is now optional legacy/fallback only; it must not block intake,
+ * report lookup, payment updates, or operator review on the new pipeline.
  *
  * Columns A-Q: Original lead data (backward compatible)
  * Columns R-AF: Pipeline state tracking (v2 additions)
@@ -103,6 +105,14 @@ export type LeadStatus =
   | "rerun_completed"
   | "rerun_failed"
   | "pending_review"
+  | "needs_revision"
+  | "do_not_send"
+  | "paid_checkout_complete"
+  | "paid_intake_pending"
+  | "paid_intake_submitted"
+  | "paid_report_drafting"
+  | "paid_report_ready_for_review"
+  | "paid_report_delivered"
   | "approved"
   | "email_drafted"
   | "contacted"
@@ -169,7 +179,7 @@ export interface LeadRow {
 /** Lock duration in milliseconds (5 minutes) */
 const LOCK_DURATION_MS = 5 * 60 * 1000;
 
-// ─── Auth helpers (unchanged) ────────────────────────────────────────
+// ─── Legacy Google Sheets auth helpers ────────────────────────────────
 
 function getSheetId(): string {
   const id = (process.env.GOOGLE_SHEETS_ID || "").trim();
@@ -381,9 +391,241 @@ const FIELD_TO_COLUMN: Record<string, string> = {
   sonarValidationStatus: "AG",
 };
 
+
+// ─── Supabase CRM (primary source of truth) ───────────────────────────
+
+type JsonRecord = Record<string, unknown>;
+
+type SupabaseLeadRow = {
+  id: string;
+  business_name?: string | null;
+  email?: string | null;
+  website_url?: string | null;
+  submitted_location?: string | null;
+  submitted_niche?: string | null;
+  competitor_1_name?: string | null;
+  competitor_1_url?: string | null;
+  competitor_2_name?: string | null;
+  competitor_2_url?: string | null;
+  competitor_source?: string | null;
+  status?: string | null;
+  source?: string | null;
+  raw_intake?: JsonRecord | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+function isSupabaseConfigured(): boolean {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function getSupabaseUrl(): string {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+  if (!url) throw new Error("NEXT_PUBLIC_SUPABASE_URL not configured");
+  return url;
+}
+
+function getSupabaseServiceKey(): string {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
+  return key;
+}
+
+async function supabaseFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const key = getSupabaseServiceKey();
+  const response = await fetch(`${getSupabaseUrl()}/rest/v1${path}`, {
+    ...init,
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Supabase REST ${path} failed: ${response.status} ${text}`);
+  }
+
+  if (response.status === 204) return undefined as T;
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
+}
+
+function parseRawIntake(row: SupabaseLeadRow): JsonRecord {
+  const raw = row.raw_intake;
+  return raw && typeof raw === "object" ? raw : {};
+}
+
+function rawString(raw: JsonRecord, key: string): string {
+  const value = raw[key];
+  return typeof value === "string" ? value : "";
+}
+
+function rawNumber(raw: JsonRecord, key: string): number {
+  const value = raw[key];
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return Number(value || 0);
+  return 0;
+}
+
+function supabaseRowToLead(row: SupabaseLeadRow): LeadRow {
+  const raw = parseRawIntake(row);
+  const competitors = [row.competitor_1_name, row.competitor_2_name].filter(Boolean).join(", ");
+  return {
+    timestamp: row.created_at || rawString(raw, "timestamp"),
+    dealershipName: row.business_name || rawString(raw, "dealershipName"),
+    website: row.website_url || rawString(raw, "website"),
+    city: row.submitted_location || rawString(raw, "city"),
+    contactName: rawString(raw, "contactName") || rawString(raw, "name"),
+    email: row.email || rawString(raw, "email"),
+    phone: rawString(raw, "phone"),
+    competitor: competitors || rawString(raw, "competitor"),
+    snapshotAppeared: rawString(raw, "snapshotAppeared"),
+    visibilityBand: rawString(raw, "visibilityBand"),
+    serviceVisibility: rawString(raw, "serviceVisibility"),
+    status: (row.status || rawString(raw, "status") || "new") as LeadStatus,
+    researchStatus: (rawString(raw, "researchStatus") || "pending") as ResearchStatus,
+    emailSentAt: rawString(raw, "emailSentAt"),
+    notes: rawString(raw, "notes"),
+    source: row.source || rawString(raw, "source"),
+    leadId: row.id,
+    lockOwner: rawString(raw, "lockOwner"),
+    lockExpiresAt: rawString(raw, "lockExpiresAt"),
+    retryCount: rawNumber(raw, "retryCount"),
+    lastStage: rawString(raw, "lastStage"),
+    lastError: rawString(raw, "lastError"),
+    preflightStartedAt: rawString(raw, "preflightStartedAt"),
+    preflightCompletedAt: rawString(raw, "preflightCompletedAt"),
+    researchStartedAt: rawString(raw, "researchStartedAt"),
+    researchCompletedAt: rawString(raw, "researchCompletedAt"),
+    reportGeneratedAt: rawString(raw, "reportGeneratedAt"),
+    reportUrl: rawString(raw, "reportUrl"),
+    competitorMode: rawString(raw, "competitorMode") || (row.competitor_source === "submitted" ? "client_provided" : "client_only"),
+    clientProvidedCompetitors: rawString(raw, "clientProvidedCompetitors") || competitors,
+    internalCompetitorSuggestions: rawString(raw, "internalCompetitorSuggestions"),
+    placesValidationStatus: rawString(raw, "placesValidationStatus"),
+    sonarValidationStatus: rawString(raw, "sonarValidationStatus"),
+  };
+}
+
+function splitCompetitors(value: string | undefined): [string | null, string | null] {
+  const parts = (value || "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return [parts[0] || null, parts[1] || null];
+}
+
+async function supabaseAppendLead(lead: Partial<LeadRow> & Pick<LeadRow, "timestamp" | "dealershipName" | "website" | "city" | "email">): Promise<string> {
+  const [competitor1, competitor2] = splitCompetitors(lead.clientProvidedCompetitors || lead.competitor);
+  const rawIntake = {
+    ...lead,
+    timestamp: lead.timestamp || new Date().toISOString(),
+    status: lead.status || "new",
+    researchStatus: lead.researchStatus || "pending",
+    lastStage: lead.lastStage || "intake",
+    retryCount: lead.retryCount || 0,
+  };
+
+  const rows = await supabaseFetch<SupabaseLeadRow[]>("/leads", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      business_name: lead.dealershipName,
+      email: lead.email,
+      website_url: lead.website,
+      submitted_location: lead.city,
+      submitted_niche: (lead as Partial<LeadRow> & { niche?: string }).niche || "local_business",
+      competitor_1_name: competitor1,
+      competitor_2_name: competitor2,
+      competitor_source: competitor1 || competitor2 ? "submitted" : "missing",
+      status: lead.status || "new",
+      source: lead.source || "snapshot funnel",
+      raw_intake: rawIntake,
+    }),
+  });
+
+  const leadId = rows?.[0]?.id;
+  if (!leadId) throw new Error("Supabase lead insert did not return an id");
+
+  await supabaseFetch("/lead_events", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({
+      lead_id: leadId,
+      event_type: "intake_submitted",
+      event_payload: { source: lead.source || "snapshot funnel", competitorMode: lead.competitorMode || "client_only" },
+    }),
+  }).catch((error) => console.warn("[supabase-crm] lead event insert failed (non-fatal)", error));
+
+  console.info("[supabase-crm] lead appended", { leadId, email: lead.email });
+  return leadId;
+}
+
+async function supabaseGetAllLeads(): Promise<LeadRow[]> {
+  const rows = await supabaseFetch<SupabaseLeadRow[]>("/leads?select=*&order=created_at.desc");
+  return (rows || []).map(supabaseRowToLead);
+}
+
+async function supabaseGetLeadByLeadId(leadId: string): Promise<LeadRow | null> {
+  const id = encodeURIComponent(leadId);
+  const rows = await supabaseFetch<SupabaseLeadRow[]>(`/leads?select=*&id=eq.${id}&limit=1`);
+  return rows?.[0] ? supabaseRowToLead(rows[0]) : null;
+}
+
+async function supabaseUpdateLead(leadId: string, updates: Record<string, string>): Promise<boolean> {
+  const id = encodeURIComponent(leadId);
+  const existingRows = await supabaseFetch<SupabaseLeadRow[]>(`/leads?select=*&id=eq.${id}&limit=1`);
+  const existingRow = existingRows?.[0];
+  if (!existingRow) throw new Error(`Lead ${leadId} not found in Supabase`);
+
+  const existing = supabaseRowToLead(existingRow);
+
+  const rawUpdates: JsonRecord = { ...parseRawIntake(existingRow) };
+  for (const [field, value] of Object.entries(updates)) rawUpdates[field] = value;
+
+  const patchBody: JsonRecord = { raw_intake: { ...existing, ...rawUpdates } };
+  if (updates.status) patchBody.status = updates.status;
+  if (updates.source) patchBody.source = updates.source;
+  if (updates.competitor || updates.clientProvidedCompetitors || updates.competitorMode) {
+    const competitorValue = updates.clientProvidedCompetitors || updates.competitor || existing.clientProvidedCompetitors || existing.competitor || "";
+    const [competitor1 = "", competitor2 = ""] = competitorValue
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .slice(0, 2);
+    patchBody.competitor_1_name = competitor1 || null;
+    patchBody.competitor_2_name = competitor2 || null;
+    patchBody.competitor_source = competitor1 && competitor2 ? "submitted" : "missing";
+  }
+
+  await supabaseFetch(`/leads?id=eq.${encodeURIComponent(leadId)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(patchBody),
+  });
+
+  await supabaseFetch("/lead_events", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({
+      lead_id: leadId,
+      event_type: "lead_updated",
+      event_payload: { fields: Object.keys(updates) },
+    }),
+  }).catch((error) => console.warn("[supabase-crm] lead update event failed (non-fatal)", error));
+
+  console.info("[supabase-crm] lead updated", { leadId, fields: Object.keys(updates) });
+  return true;
+}
+
 // ─── Core CRUD ───────────────────────────────────────────────────────
 
 export async function appendLead(lead: Partial<LeadRow> & Pick<LeadRow, "timestamp" | "dealershipName" | "website" | "city" | "email">): Promise<string> {
+  if (isSupabaseConfigured()) return supabaseAppendLead(lead);
+
   const leadId = `VZB-${Date.now().toString(36).toUpperCase()}`;
   const now = new Date().toISOString();
 
@@ -436,6 +678,8 @@ export async function appendLead(lead: Partial<LeadRow> & Pick<LeadRow, "timesta
 }
 
 export async function getAllLeads(): Promise<LeadRow[]> {
+  if (isSupabaseConfigured()) return supabaseGetAllLeads();
+
   const data = await sheetsFetch<{ values: string[][] }>(`/values/${getSheetRange()}`);
   if (!data.values) return [];
 
@@ -445,6 +689,8 @@ export async function getAllLeads(): Promise<LeadRow[]> {
 }
 
 export async function getLeadByLeadId(leadId: string): Promise<LeadRow | null> {
+  if (isSupabaseConfigured()) return supabaseGetLeadByLeadId(leadId);
+
   const all = await getAllLeads();
   return all.find((lead) => lead.leadId === leadId) || null;
 }
@@ -457,6 +703,8 @@ export async function getLeadsByStatus(status: LeadStatus): Promise<LeadRow[]> {
 // ─── Generic update (supports all columns) ───────────────────────────
 
 export async function updateLead(leadId: string, updates: Record<string, string>): Promise<boolean> {
+  if (isSupabaseConfigured()) return supabaseUpdateLead(leadId, updates);
+
   const found = await findLeadRow(leadId);
   if (!found) throw new Error(`Lead ${leadId} not found in sheet`);
 
@@ -508,6 +756,7 @@ export async function updateLeadResearchResults(
     snapshotAppeared?: string;
     visibilityBand?: string;
     serviceVisibility?: string;
+    emailSentAt?: string;
     notes?: string;
   },
 ): Promise<void> {
@@ -517,6 +766,7 @@ export async function updateLeadResearchResults(
   if (updates.snapshotAppeared) updateMap.snapshotAppeared = updates.snapshotAppeared;
   if (updates.visibilityBand) updateMap.visibilityBand = updates.visibilityBand;
   if (updates.serviceVisibility) updateMap.serviceVisibility = updates.serviceVisibility;
+  if (updates.emailSentAt) updateMap.emailSentAt = updates.emailSentAt;
   if (updates.notes) updateMap.notes = updates.notes;
   await updateLead(leadId, updateMap);
 }
@@ -538,12 +788,12 @@ export async function acquireLock(leadId: string, owner: string, durationMs: num
     const expiresAt = new Date(lead.lockExpiresAt).getTime();
     if (expiresAt > now && lead.lockOwner !== owner) {
       // Lock is active and owned by someone else
-      console.warn(`[sheets] Lock contention: ${leadId} locked by ${lead.lockOwner} until ${lead.lockExpiresAt}`);
+      console.warn(`[crm-store] Lock contention: ${leadId} locked by ${lead.lockOwner} until ${lead.lockExpiresAt}`);
       return false;
     }
     // Lock expired or same owner — allow takeover
     if (expiresAt <= now && lead.lockOwner !== owner) {
-      console.info(`[sheets] Lock takeover: ${leadId} expired lock from ${lead.lockOwner}`);
+      console.info(`[crm-store] Lock takeover: ${leadId} expired lock from ${lead.lockOwner}`);
     }
   }
 
@@ -641,6 +891,11 @@ export function getNextStage(lead: LeadRow): PipelineStage | null {
 // ─── Sheet Initialization ────────────────────────────────────────────
 
 export async function initializeSheet(): Promise<void> {
+  if (isSupabaseConfigured()) {
+    console.info("[crm-store] Supabase configured; skipping legacy Google Sheets initialization");
+    return;
+  }
+
   const headers = [[
     "Timestamp",
     "Dealership Name",
@@ -687,5 +942,7 @@ export async function initializeSheet(): Promise<void> {
 }
 
 export function isSheetsConfigured(): boolean {
-  return !!(process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+  // Legacy name kept for existing imports. Supabase is now the primary CRM;
+  // Google Sheets is only an optional mirror/export path.
+  return isSupabaseConfigured() || !!(process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
 }

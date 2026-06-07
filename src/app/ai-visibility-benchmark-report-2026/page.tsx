@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     title: "2026 AI Visibility Benchmark Report for Local Businesses",
     description:
       "Original research: 84% of local businesses score below passing on AI visibility. Average score: 11/100. Data from 168 search results across 11 categories.",
-    url: "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
+    url: "https://vizbiz.ai/ai-visibility-benchmark-report-2026/",
   },
   alternates: {
-    canonical: "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
+    canonical: "https://vizbiz.ai/ai-visibility-benchmark-report-2026/",
   },
 };
 
@@ -142,7 +142,7 @@ export default function BenchmarkReportPage() {
     "dateModified": "2026-05-01",
     "author": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
     "publisher": { "@type": "Organization", "name": "VizBiz", "url": "https://vizbiz.ai" },
-    "mainEntityOfPage": "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
+    "mainEntityOfPage": "https://vizbiz.ai/ai-visibility-benchmark-report-2026/",
     "wordCount": 2500,
     "articleSection": "Original Research",
     "keywords": "AI visibility, local business, benchmark report, GEO, AEO, ChatGPT recommendations, AI search, small business",
@@ -158,7 +158,7 @@ export default function BenchmarkReportPage() {
     "license": "https://creativecommons.org/licenses/by/4.0/",
     "distribution": {
       "@type": "DataDownload",
-      "contentUrl": "https://vizbiz.ai/ai-visibility-benchmark-report-2026",
+      "contentUrl": "https://vizbiz.ai/ai-visibility-benchmark-report-2026/",
       "encodingFormat": "HTML",
     },
     "variableMeasured": "AI Visibility Index score (0–100)",
@@ -334,7 +334,7 @@ export default function BenchmarkReportPage() {
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-6 sm:p-8">
               <p className="text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                 VizBiz. (2026). <em>2026 AI Visibility Benchmark Report for Car Local businesses</em>. 
-                Retrieved from https://vizbiz.ai/ai-visibility-benchmark-report-2026
+                Retrieved from https://vizbiz.ai/ai-visibility-benchmark-report-2026/
               </p>
             </div>
             <div className="mt-8">
@@ -350,13 +350,13 @@ export default function BenchmarkReportPage() {
             </div>
             <div className="mt-8 flex flex-wrap gap-3 print:hidden">
               <a
-                href="https://vizbiz.ai/ai-visibility-benchmark-report-2026"
+                href="https://vizbiz.ai/ai-visibility-benchmark-report-2026/"
                 className="rounded-2xl border border-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/5"
               >
                 Copy stats to clipboard
               </a>
               <a
-                href="https://vizbiz.ai/ai-visibility-benchmark-report-2026"
+                href="https://vizbiz.ai/ai-visibility-benchmark-report-2026/"
                 className="rounded-2xl border border-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/5"
               >
                 Print / Save as PDF

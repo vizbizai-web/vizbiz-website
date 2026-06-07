@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description:
     "Book a 15-minute review call with VizBiz to review your dealership’s AI visibility snapshot and next steps.",
   alternates: {
-    canonical: "https://vizbiz.ai/book-call",
+    canonical: "https://vizbiz.ai/book-call/",
   },
 };
 

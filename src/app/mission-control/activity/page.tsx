@@ -1,108 +1,139 @@
+import Link from 'next/link';
+import { getAllLeads, type LeadRow } from '@/lib/google-sheets';
 
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
-import { ActivityFeed, ParsedDay } from './ActivityFeed';
-
-const AGENTS = ['Vlad', 'Forge', 'Reko', 'Pulse', 'Gekko'] as const;
-const AGENT_EMOJI: Record<string, string> = {
-  Vlad: '🏗️',
-  Forge: '🔨',
-  Reko: '🔍',
-  Pulse: '📢',
-  Gekko: '📈',
+type ActivityEvent = {
+  id: string;
+  title: string;
+  detail: string;
+  timestamp: string;
+  href?: string;
+  tone: 'cyan' | 'amber' | 'emerald' | 'rose' | 'slate';
 };
 
-interface Event {
-  time: string;
-  agent: string;
-  agentEmoji: string;
-  text: string;
-  files: string[];
-}
-
-function parseDailyLog(content: string, dateLabel: string): Event[] {
-  const lines = content.split('\n');
-  const events: Event[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-
-    // Look for agent mentions
-    let matchedAgent = '';
-    for (const agent of AGENTS) {
-      if (trimmed.includes(agent)) {
-        matchedAgent = agent;
-        break;
-      }
-    }
-
-    // Extract file paths
-    const fileMatches = trimmed.match(/[\w/.-]+\.(md|tsx?|json|css|py|sh)/g) || [];
-
-    // Only include lines that look like substantive events (bullets or numbered items with content)
-    if (trimmed.match(/^[-*•]\s/) || trimmed.match(/^\d+\.\s/) || trimmed.startsWith('##') || trimmed.startsWith('###')) {
-      const text = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '').replace(/^#+\s*/, '');
-      if (text.length > 5) {
-        events.push({
-          time: dateLabel,
-          agent: matchedAgent || 'System',
-          agentEmoji: matchedAgent ? AGENT_EMOJI[matchedAgent] : '⚙️',
-          text: text.length > 200 ? text.slice(0, 200) + '…' : text,
-          files: fileMatches,
-        });
-      }
-    }
-  }
-
-  return events;
-}
-
-function loadDays(): ParsedDay[] {
-  const memoryDir = join(process.cwd(), '..', '..', 'memory');
-  let files: string[];
-  try {
-    files = readdirSync(memoryDir)
-      .filter((f) => /^\d{4}-\d{2}-\d{2}\.md$/.test(f))
-      .sort()
-      .reverse()
-      .slice(0, 3);
-  } catch {
-    return [];
-  }
-
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-  return files.map((f) => {
-    const dateStr = f.replace('.md', '');
-    let label: string;
-    if (dateStr === today) label = 'Today';
-    else if (dateStr === yesterday) label = 'Yesterday';
-    else label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-    const content = readFileSync(join(memoryDir, f), 'utf-8');
-    return { label, date: dateStr, events: parseDailyLog(content, dateStr) };
+function eventTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Time unavailable';
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
-export default function ActivityPage() {
-  const days = loadDays();
-  const totalEvents = days.reduce((s, d) => s + d.events.length, 0);
-  const totalFiles = days.reduce(
-    (s, d) => s + d.events.reduce((e, ev) => e + ev.files.length, 0),
-    0
+function latestTimestamp(lead: LeadRow) {
+  return (
+    lead.emailSentAt ||
+    lead.reportGeneratedAt ||
+    lead.researchCompletedAt ||
+    lead.researchStartedAt ||
+    lead.preflightCompletedAt ||
+    lead.preflightStartedAt ||
+    lead.timestamp ||
+    ''
   );
-  const agentsUsed = new Set(days.flatMap((d) => d.events.map((e) => e.agent))).size;
+}
+
+function toneForStatus(status: string): ActivityEvent['tone'] {
+  if (['approved', 'sent', 'email_sent'].includes(status)) return 'emerald';
+  if (['pending_review', 'needs_operator_review', 'email_drafted'].includes(status)) return 'amber';
+  if (['failed', 'error', 'blocked'].includes(status)) return 'rose';
+  if (['researching', 'report_queued', 'preflight_queued'].includes(status)) return 'cyan';
+  return 'slate';
+}
+
+function buildEvents(leads: LeadRow[]): ActivityEvent[] {
+  return leads
+    .map((lead) => {
+      const timestamp = latestTimestamp(lead);
+      const name = lead.dealershipName || 'Unnamed business';
+      const status = lead.status || 'unknown';
+      const stage = lead.lastStage || lead.researchStatus || 'pipeline';
+      const detailParts = [
+        `Status: ${status}`,
+        stage ? `Stage: ${stage}` : '',
+        lead.source ? `Source: ${lead.source}` : '',
+        lead.reportUrl ? 'Report URL available' : 'Report URL not ready',
+        lead.lastError ? `Error: ${lead.lastError}` : '',
+      ].filter(Boolean);
+
+      return {
+        id: lead.leadId || `${name}-${timestamp}`,
+        title: name,
+        detail: detailParts.join(' · '),
+        timestamp,
+        href: lead.leadId ? `/mission-control/leads/${lead.leadId}` : '/mission-control/leads',
+        tone: toneForStatus(status),
+      } satisfies ActivityEvent;
+    })
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 30);
+}
+
+const toneClasses: Record<ActivityEvent['tone'], string> = {
+  cyan: 'border-cyan-300/20 bg-cyan-300/5 text-cyan-100',
+  amber: 'border-amber-300/20 bg-amber-300/5 text-amber-100',
+  emerald: 'border-emerald-300/20 bg-emerald-300/5 text-emerald-100',
+  rose: 'border-rose-300/20 bg-rose-300/5 text-rose-100',
+  slate: 'border-white/10 bg-white/[0.03] text-slate-100',
+};
+
+export default async function ActivityPage() {
+  let events: ActivityEvent[] = [];
+  let error = '';
+
+  try {
+    const leads = await getAllLeads();
+    events = buildEvents(leads);
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Unknown Mission Control activity error';
+  }
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Agent Activity</h1>
-        <p className="text-slate-400">Recent events from daily logs</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-200/70">Real VizBiz operations</p>
+        <h1 className="mt-2 text-3xl font-bold text-white">Activity</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+          Recent lead, report, email, and pipeline movement from the approved VizBiz lead source. No legacy agent logs, no demo feeds, no pretend cockpit noise.
+        </p>
       </div>
 
-      <ActivityFeed days={days} totalEvents={totalEvents} totalFiles={totalFiles} agentsUsed={agentsUsed} />
+      {error ? (
+        <div className="rounded-2xl border border-rose-300/20 bg-rose-300/5 p-5 text-rose-100">
+          <p className="text-sm font-semibold">Activity unavailable</p>
+          <p className="mt-2 text-sm leading-6 text-rose-100/75">{error}</p>
+          <p className="mt-3 text-xs text-rose-100/60">Missing or failing source: approved VizBiz CRM / Supabase lead adapter.</p>
+        </div>
+      ) : events.length === 0 ? (
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5 text-amber-100">
+          <p className="text-sm font-semibold">No activity to show yet</p>
+          <p className="mt-2 text-sm leading-6 text-amber-100/75">
+            Mission Control reached the VizBiz lead source, but no lead/report/email events are available. Submit a controlled intake smoke test to verify the launch path.
+          </p>
+          <Link href="/mission-control/leads" className="mt-4 inline-flex rounded-xl border border-amber-200/20 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-200/10">
+            Open Leads
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {events.map((event) => (
+            <Link
+              key={event.id}
+              href={event.href || '/mission-control/leads'}
+              className={`block rounded-2xl border p-4 transition hover:border-cyan-200/35 hover:bg-white/[0.055] ${toneClasses[event.tone]}`}
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white">{event.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-current/75">{event.detail}</p>
+                </div>
+                <time className="shrink-0 text-xs text-current/55">{eventTime(event.timestamp)}</time>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

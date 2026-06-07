@@ -1,14 +1,13 @@
 /**
  * Pipeline Phase 4: REVIEW (async)
  *
- * Sanity checks results, auto-classifies, sends Telegram alert.
- * Auto-approved leads trigger delivery. Manual review leads wait.
+ * Sanity checks results and sends an operator alert.
+ * Client delivery waits for explicit operator approval.
  */
 
 import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead, updateLeadResearchResults } from "@/lib/google-sheets";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
-import { generateReportToken } from "@/lib/report-token";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -78,9 +77,9 @@ export async function POST(request: Request) {
       warnings.push(`Weak niche detection: ${niche}`);
     }
 
-    // Auto-classify
+    // Classify for operator review. Never auto-send client delivery from research.
     const isConfident = appearedCount > 0 && niche !== "unknown";
-    const newStatus = isConfident ? "approved" : "pending_review";
+    const newStatus = "pending_review";
 
     // Update Sheets
     await updateLeadResearchResults(leadId, {
@@ -88,9 +87,9 @@ export async function POST(request: Request) {
       notes: lead.notes + `\n[Review: ${newStatus} at ${new Date().toISOString()}${warnings.length > 0 ? `. Warnings: ${warnings.join("; ")}` : ""}]`,
     });
 
-    // Send Telegram alert to Vlad
+    // Send operator alert
     const emoji = statusBand === "Strong" ? "🟢" : statusBand === "Moderate" ? "🟡" : "🔴";
-    const classificationLabel = isConfident ? "Auto-approved ✅" : "Needs review ⚠️";
+    const classificationLabel = isConfident ? "Ready for operator review ✅" : "Needs operator review ⚠️";
 
     const alertMessage = [
       `📋 New lead reviewed: ${lead.dealershipName}`,
@@ -107,26 +106,12 @@ export async function POST(request: Request) {
       ...(warnings.length > 0 ? [`⚠️ Warnings: ${warnings.join("; ")}`] : []),
       "",
       `Lead ID: ${leadId}`,
-      `Report: https://vizbiz.ai/report/${leadId}?token=${generateReportToken(leadId)}`,
+      `Report: https://vizbiz.ai/report/${leadId}/`,
       `MC: https://vizbiz.ai/mission-control/leads/${leadId}`,
+      "Client email: blocked until operator approval",
     ].join("\n");
 
     await sendPipelineAlert(alertMessage);
-
-    // If auto-approved, fire delivery
-    if (isConfident) {
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-      fetch(`${baseUrl}/api/pipeline/deliver`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId }),
-      }).catch((err) => {
-        console.error(`[pipeline/review] deliver trigger failed for ${leadId}:`, err);
-      });
-    }
 
     console.info(`[pipeline/review] ${leadId}: ${newStatus}${warnings.length > 0 ? ` [warnings: ${warnings.join(", ")}]` : ""}`);
 

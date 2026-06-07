@@ -7,7 +7,7 @@ export const metadata = {
     description: 'Data-driven insights on how AI search is reshaping automotive retail and what it means for your dealership.',
   },
   alternates: {
-    canonical: "https://vizbiz.ai/blog/ai-visibility-statistics-car-dealerships",
+    canonical: "https://vizbiz.ai/blog/ai-visibility-statistics-car-dealerships/",
   },
 };
 

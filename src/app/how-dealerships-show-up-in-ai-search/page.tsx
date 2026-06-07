@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Learn how AI systems choose which local businesses to mention, which signals shape visibility, and what you can improve first.",
   alternates: {
-    canonical: "https://vizbiz.ai/how-dealerships-show-up-in-ai-search",
+    canonical: "https://vizbiz.ai/how-dealerships-show-up-in-ai-search/",
   },
 };
 

@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Full AVI Audit Report - The Venue Experts | VizBiz.ai',
   description: 'Comprehensive AI Visibility Intelligence audit for The Venue Experts',
+  robots: { index: false, follow: false },
 };
 
 export default function VenueExpertsReport() {

@@ -9,7 +9,6 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId } from "@/lib/google-sheets";
 import { runResearchStage } from "@/lib/pipeline-controller";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
-import { generateReportToken } from "@/lib/report-token";
 
 // Research takes 60-120s (Sonar calls + competitor discovery + social signals)
 export const maxDuration = 300;
@@ -45,7 +44,7 @@ export async function POST(request: Request) {
       const alertMessage = [
         `${emoji} Research Complete (${mode} mode)`,
         `📊 ${lead.dealershipName} — ${result.data?.appeared}/${result.data?.total} appearances (${result.data?.band})`,
-        `🔗 Report: https://vizbiz.ai/report/${leadId}?token=${generateReportToken(leadId)}`,
+        `🔗 Report: https://vizbiz.ai/report/${leadId}/`,
         `📍 ${lead.city} | Mode: ${mode}`,
       ].join("\n");
 

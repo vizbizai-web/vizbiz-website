@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 /**
  * Full Report Page v3 — Loads research data + AI capture data
  */
@@ -9,6 +10,10 @@ import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { isJunkCompetitor } from "@/lib/junk-filter";
 
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export const revalidate = 0;
 

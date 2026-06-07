@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "GEO is the practice of optimizing your business's presence so AI platforms like ChatGPT, Google AI Overviews, and Perplexity recommend you. Learn what GEO is, how it differs from SEO, and how to get started.",
   alternates: {
-    canonical: "https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships",
+    canonical: "https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships/",
   },
 };
 
@@ -153,7 +153,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               If SEO is about ranking in Google's blue links, GEO is about being named when AI generates an answer. People are shifting from typing keywords into Google to asking conversational questions in AI chatbots — and <strong className="text-white">AI-driven search traffic is growing dramatically</strong>. GEO is how you make sure your business is part of those conversations.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              For a practical guide to improving your ChatGPT presence specifically, see <Link href="/how-to-show-up-in-chatgpt-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT</Link>. For the broader picture, visit our <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility overview</Link>.
+              For a practical guide to improving your ChatGPT presence specifically, see <Link href="/blog/how-to-show-up-in-chatgpt-recommendations/" className="text-[var(--neon-cyan)] hover:text-white">how to show up in ChatGPT</Link>. For the broader picture, visit our <Link href="/ai-visibility-for-car-dealerships/" className="text-[var(--neon-cyan)] hover:text-white">AI visibility overview</Link>.
             </p>
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Takeaways</h2>

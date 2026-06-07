@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   description:
     "Compare the top AI visibility and AI SEO tools for local businesses. See how VizBiz, BrightLocal, and others stack up for getting your business recommended by ChatGPT and AI search.",
   alternates: {
-    canonical: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses",
+    canonical: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses/",
   },
   openGraph: {
     title: "Best AI Visibility Tools for Local Businesses (2026 Comparison) | VizBiz",
     description:
       "Compare the top AI visibility and AI SEO tools for local businesses. Features, pricing, pros, and cons.",
-    url: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses",
+    url: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses/",
     siteName: "VizBiz",
     type: "article",
   },
@@ -198,7 +198,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
     dateModified: "2026-05-14",
     author: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
     publisher: { "@type": "Organization", name: "VizBiz", url: "https://vizbiz.ai" },
-    mainEntityOfPage: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses",
+    mainEntityOfPage: "https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses/",
   };
 
   const faqJsonLd = {
@@ -413,7 +413,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
             </h2>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               For years, the playbook was simple: rank on Google, get leads. You optimized your{" "}
-              <Link href="/ai-visibility-audit" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
+              <Link href="/ai-visibility-audit-for-car-dealerships/" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
                 Google Business Profile
               </Link>
               , bought some ads, and the phones rang.
@@ -429,7 +429,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               This isn't theoretical anymore.{" "}
-              <Link href="/blog/geo-is-the-new-playbook-for-local-businesses" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
+              <Link href="/blog/geo-is-the-new-playbook-car-dealerships/" className="text-[var(--neon-cyan)] underline underline-offset-4 hover:text-[var(--neon-cyan)]/80">
                 GEO (Generative Engine Optimization) is the new playbook for local businesses
               </Link>
               , and the businesses that start measuring and improving their AI visibility now will own a massive advantage as AI search adoption accelerates.

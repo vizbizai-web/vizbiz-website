@@ -24,28 +24,44 @@ interface Lead {
   leadId: string;
 }
 
-interface Draft {
-  leadId: string;
-  dealershipName: string;
-  email: string;
-  contactName: string;
-  city: string;
-  website: string;
-  status: string;
-  subject: string;
-  body: string;
-  templateName: string;
-}
+type PromptResult = {
+  prompt?: string;
+  businessAppeared?: boolean;
+  competitorAppeared?: boolean;
+};
+
+type ResearchData = {
+  promptResults?: PromptResult[];
+  appearedCount: number;
+  totalPrompts: number;
+  statusBand?: string;
+  competitorMention?: string;
+  competitorLine?: string;
+  whyThisMatters?: string;
+  competitorCategories?: string[];
+  niche?: string;
+};
+
+type PaidIntakeData = {
+  plan?: string;
+  goal?: string;
+  mainServices?: string;
+  idealCustomer?: string;
+};
 
 const STATUS_COLORS: Record<string, string> = {
   new: '#22D3EE', researching: '#3B82F6', pending_review: '#F59E0B',
   approved: '#22C55E', email_drafted: '#A855F7', contacted: '#8B5CF6',
+  needs_revision: '#F97316', do_not_send: '#EF4444', paid_intake_pending: '#F59E0B',
+  paid_intake_submitted: '#22D3EE', paid_report_ready_for_review: '#F59E0B', paid_report_delivered: '#10B981',
   closed_won: '#10B981', closed_lost: '#EF4444',
 };
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'New', researching: 'Researching', pending_review: 'Pending Review',
   approved: 'Approved', email_drafted: 'Email Drafted', contacted: 'Contacted',
+  needs_revision: 'Needs Revision', do_not_send: 'Do Not Send', paid_intake_pending: 'Paid Intake Pending',
+  paid_intake_submitted: 'Paid Intake Submitted', paid_report_ready_for_review: 'Paid Report Review', paid_report_delivered: 'Paid Delivered',
   closed_won: 'Won', closed_lost: 'Lost',
 };
 
@@ -58,13 +74,22 @@ const PIPELINE_STEPS = [
   { key: 'contacted', label: 'Contacted' },
 ];
 
-function parseResearchData(notes: string): any | null {
+function parseResearchData(notes: string): ResearchData | null {
   if (!notes) return null;
   try {
     if (notes.includes('RESEARCH_DATA:')) {
       const match = notes.match(/RESEARCH_DATA:\s*(\{[\s\S]*\})/);
       if (match) return JSON.parse(match[1]);
     }
+  } catch {}
+  return null;
+}
+
+function parsePaidIntake(notes: string): PaidIntakeData | null {
+  if (!notes) return null;
+  try {
+    const idx = notes.indexOf('PAID_INTAKE:');
+    if (idx >= 0) return JSON.parse(notes.slice(idx + 'PAID_INTAKE:'.length));
   } catch {}
   return null;
 }
@@ -76,13 +101,14 @@ function useLead(leadId: string) {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/pipeline-status');
+      const res = await fetch('/mission-control/api/pipeline-status');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      const json = (await res.json()) as { leads?: Lead[] };
       const found = json.leads?.find((l: Lead) => l.leadId === leadId);
-      found ? setLead(found) : setError('Lead not found');
-    } catch (err: any) {
-      setError(err.message || 'Failed to load');
+      if (found) setLead(found);
+      else setError('Lead not found');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
       setLoading(false);
     }
@@ -96,11 +122,11 @@ function useLeadAction() {
   const [loading, setLoading] = useState(false);
   const [lastResult, setLastResult] = useState<'success' | 'error' | null>(null);
 
-  const runAction = async (leadId: string, action: string, data?: any) => {
+  const runAction = async (leadId: string, action: string, data?: Record<string, unknown>) => {
     setLoading(true);
     setLastResult(null);
     try {
-      const res = await fetch('/api/lead-actions', {
+      const res = await fetch('/mission-control/api/lead-actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId, action, data }),
@@ -147,13 +173,26 @@ export default function LeadDetailPage() {
   const { lead, loading, error, refetch } = useLead(leadId);
   const { runAction, loading: actionLoading, lastResult } = useLeadAction();
 
-  const handleAction = async (action: string, data?: any) => {
+  const handleAction = async (action: string, data?: Record<string, unknown>) => {
     if (!lead) return;
     const ok = await runAction(lead.leadId, action, data);
     if (ok) refetch();
   };
 
+  const handleNeedsFix = async (reportType: 'free' | 'paid') => {
+    const reason = window.prompt(`What needs fixing before this ${reportType} report goes out?`);
+    if (!reason?.trim()) return;
+    await handleAction('needs_revision', { reportType, reason: reason.trim() });
+  };
+
+  const handleDoNotSend = async () => {
+    const reason = window.prompt('Why should this lead/report not be sent?');
+    if (!reason?.trim()) return;
+    await handleAction('do_not_send', { reason: reason.trim() });
+  };
+
   const research = lead ? parseResearchData(lead.notes) : null;
+  const paidIntake = lead ? parsePaidIntake(lead.notes) : null;
   const timeline = lead ? buildTimeline(lead) : [];
 
   return (
@@ -190,28 +229,31 @@ export default function LeadDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800/30">
-              {lead.status === 'pending_review' && (
-                <>
-                  <ActionBtn label="✓ Approve Free Report" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve', { reportType: 'free' })} />
-                  <ActionBtn label="✓ Approve Paid Report" color="#25D1F2" loading={actionLoading} onClick={() => handleAction('approve', { reportType: 'paid' })} />
-                  <ActionBtn label="Rerun Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('rerun')} />
-                  <ActionBtn label="Hold" color="#F59E0B" loading={actionLoading} onClick={() => handleAction('hold')} />
-                </>
-              )}
-              {lead.status === 'approved' && (
+              {['pending_review', 'approved', 'email_drafted'].includes(lead.status) && (
                 <>
                   <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
-                    View Live Report
+                    Preview Client Report
                   </Link>
-                  <ActionBtn label="Draft Email" color="#A855F7" loading={actionLoading} onClick={() => handleAction('draft_email')} />
+                  <ActionBtn label="✓ Approve & Send Free" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'free' })} />
+                  <ActionBtn label="Needs Fix" color="#F97316" loading={actionLoading} onClick={() => handleNeedsFix('free')} />
+                  <ActionBtn label="Do Not Send" color="#EF4444" loading={actionLoading} onClick={handleDoNotSend} />
+                  <ActionBtn label="Rerun Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('rerun')} />
                 </>
               )}
-              {lead.status === 'email_drafted' && (
+              {['paid_intake_submitted', 'paid_report_ready_for_review'].includes(lead.status) && (
                 <>
-                  <ActionBtn label="Approve Email → Drafts" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_email')} />
-                  <ActionBtn label="Mark Sent" color="#8B5CF6" loading={actionLoading} onClick={() => handleAction('update_status', { status: 'contacted' })} />
+                  <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                    Preview Paid Report
+                  </Link>
+                  <ActionBtn label="Run Paid Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('run_research', { researchMode: 'paid', force: true })} />
+                  <ActionBtn label="✓ Approve & Deliver Paid" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'paid' })} />
+                  <ActionBtn label="Needs Fix" color="#F97316" loading={actionLoading} onClick={() => handleNeedsFix('paid')} />
+                  <ActionBtn label="Do Not Send" color="#EF4444" loading={actionLoading} onClick={handleDoNotSend} />
                 </>
               )}
+              <Link href={`/paid-intake/${lead.leadId}?plan=full_report_fix`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(168, 85, 247, 0.08)', color: '#C084FC', borderColor: 'rgba(168, 85, 247, 0.2)' }}>
+                Paid Intake Link
+              </Link>
               {lead.status === 'contacted' && (
                 <>
                   <ActionBtn label="Follow Up" color="#F59E0B" loading={actionLoading} onClick={() => handleAction('follow_up')} />
@@ -244,6 +286,18 @@ export default function LeadDetailPage() {
               ))}
             </div>
           </div>
+
+          {paidIntake && (
+            <div className="glass-card rounded-xl p-5">
+              <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-3">Paid Intake</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <Info label="Plan" value={paidIntake.plan === 'monthly_growth' ? 'Monthly Growth Plan' : 'Full Report + Fix'} />
+                <Info label="Goal" value={paidIntake.goal || '—'} />
+                <Info label="Main Services" value={paidIntake.mainServices || '—'} />
+                <Info label="Ideal Customer" value={paidIntake.idealCustomer || '—'} />
+              </div>
+            </div>
+          )}
 
           {/* Score + Research Data */}
           {research && (
@@ -352,7 +406,7 @@ export default function LeadDetailPage() {
             <div className="glass-card rounded-xl p-5">
               <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-4">Prompt Results ({research.promptResults.length} queries)</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-y-auto">
-                {research.promptResults.map((pr: any, i: number) => (
+                {research.promptResults.map((pr: PromptResult, i: number) => (
                   <div key={i} className={`px-3 py-2 rounded-lg border text-xs ${pr.businessAppeared ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900/30 border-slate-800/30'}`}>
                     <p className="text-slate-400 truncate">{pr.prompt}</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -382,6 +436,15 @@ function ActionBtn({ label, color, loading, onClick }: { label: string; color: s
       style={{ background: `${color}10`, color, borderColor: `${color}30` }}>
       {loading ? '...' : label}
     </button>
+  );
+}
+
+function Info({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="rounded-lg border border-slate-800/60 bg-slate-950/30 p-3">
+      <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>
+      <p className="mt-1 text-sm text-slate-200">{value || '—'}</p>
+    </div>
   );
 }
 
