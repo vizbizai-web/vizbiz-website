@@ -17,4 +17,17 @@ Before marking this kind of work complete, agents must prove all of the followin
 9. **Subagent review required:** If subagents are used, their work is not accepted by default. Treat subagent output as a draft or lead, then independently inspect the changed files, routes, APIs, screenshots, tests, and claims before presenting anything to Alex.
 10. **“Check” means production-level QA:** When Alex says “check,” “make sure,” “verify,” or similar, that means detailed production-level testing, not a glance. Confirm real data, correct copy, responsive behavior, auth, error states, route accuracy, visual quality, and regression coverage where relevant.
 
+## Report/email visible-output QA rule
+
+Every VizBiz report, email, paid intake, client preview, sales artifact, and Alex-only QA draft must be treated as client-facing unless explicitly marked private.
+
+Before presenting or sending any such output, agents must prove all of the following:
+
+1. **Rendered text reviewed:** Inspect the actual visible subject/body/page/CTA the recipient will see, not just source code, test payloads, or a provider message ID.
+2. **No internal language:** Block internal notes, model thoughts, operator rationale, fulfillment mechanics, and phrases such as `the client named`, `paid report should`, `manual review`, `operator approval`, `human correction`, `auto-discovered competitors`, `internal only`, `client-ready deliverable`, fake slugs, and pipeline/debug wording.
+3. **Client-safe competitor framing:** User-supplied competitors may be named only in polished value language. Example: `LexHive should be positioned clearly against BridgeLegal and Broughton Partners so AI systems can understand where it fits, what makes it credible, and when it should be recommended.`
+4. **Fact provenance:** Do not invent contact names, cities, niches, scores, competitors, or market details from QA/test convenience payloads. Missing facts must use neutral fallback copy or block the send.
+5. **CTA verification:** Report CTAs must open real intended report content on the custom domain. Dead routes, fake slugs, `Report Not Found`, `Back to Home`, or processing pages block sending.
+6. **Regression required after leaks:** If internal/client-unsafe copy leaks, add or tighten a code-level or test-level gate before calling the issue fixed.
+
 If any item above is not verified, say it is not complete. Do not perfume the corpse. Fix the actual pipeline.
