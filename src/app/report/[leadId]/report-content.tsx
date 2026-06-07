@@ -871,38 +871,6 @@ function AIDiscoveryAnalysis({ data, theme }: { data: LeadData; theme: Theme }) 
             </div>
           )}
 
-          {/* Competitor Citations */}
-          {discovery.competitorCitations.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-sm font-medium mb-3" style={{ color: t.textPrimary }}>Who AI Trusts Instead of You</h3>
-              <p className="text-xs mb-4" style={{ color: t.textMuted }}>
-                These domains are cited by AI models when your business doesn't appear:
-              </p>
-              <div className="space-y-2">
-                {discovery.competitorCitations.map((citation, i) => (
-                  <div key={citation.domain} className="flex items-center justify-between p-3 rounded-lg" style={{ background: t.barTrack }}>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium tabular-nums" style={{ color: t.textMuted }}>#{i + 1}</span>
-                      <span className="text-sm" style={{ color: t.textPrimary }}>{citation.domain}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs" style={{ color: t.textMuted }}>Cited {citation.count} times</span>
-                      <div className="w-16 h-1.5 rounded-full" style={{ background: t.barTrack }}>
-                        <div 
-                          className="h-full rounded-full" 
-                          style={{ 
-                            width: `${Math.min((citation.count / discovery.competitorCitations[0].count) * 100, 100)}%`,
-                            background: ['#8B5CF6', '#F97316', '#EC4899', '#22D3EE', '#10B981'][i % 5]
-                          }} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* AI Discovery Recommendations */}
           {discovery.recommendations.length > 0 && (
             <div>

@@ -12,4 +12,10 @@ describe('free report client copy safety', () => {
     const source = readFileSync('src/lib/research-runner.ts', 'utf8');
     expect(source).not.toContain('Used Car Financing in Austin');
   });
+
+  it('does not show unvalidated citation domains as businesses AI trusts instead of the client', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).not.toContain('Who AI Trusts Instead of You');
+    expect(source).not.toContain("These domains are cited by AI models when your business doesn't appear");
+  });
 });

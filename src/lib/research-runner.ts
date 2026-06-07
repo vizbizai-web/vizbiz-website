@@ -268,6 +268,9 @@ function getTopCompetitorCitations(
     'trulia.com', 'cars.com', 'autotrader.com', 'edmunds.com', 'cargurus.com',
     'truecar.com', 'kbb.com', 'mapquest.com', 'whereis.com', 'f6s.com',
     'crunchbase.com', 'glassdoor.com', 'indeed.com', 'timeout.com',
+    'clutch.co', 'houzz.com', 'companydata.com', 'checkatrade.com',
+    'electricaltimes.co.uk', 'yell.com', 'trustatrader.com', 'ratedpeople.com',
+    'mybuilder.com', 'find-and-update.company-information.service.gov.uk',
   ]);
   
   const entries = Array.from(citationsByDomain.entries());
