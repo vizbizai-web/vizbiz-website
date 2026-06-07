@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { parseResearchDataFromNotes } from '@/lib/report-data';
 
 interface Lead {
   timestamp: string;
@@ -75,14 +76,7 @@ const PIPELINE_STEPS = [
 ];
 
 function parseResearchData(notes: string): ResearchData | null {
-  if (!notes) return null;
-  try {
-    if (notes.includes('RESEARCH_DATA:')) {
-      const match = notes.match(/RESEARCH_DATA:\s*(\{[\s\S]*\})/);
-      if (match) return JSON.parse(match[1]);
-    }
-  } catch {}
-  return null;
+  return parseResearchDataFromNotes(notes) as ResearchData | null;
 }
 
 function parsePaidIntake(notes: string): PaidIntakeData | null {
@@ -231,8 +225,8 @@ export default function LeadDetailPage() {
             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800/30">
               {['pending_review', 'approved', 'email_drafted'].includes(lead.status) && (
                 <>
-                  <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
-                    Preview Client Report
+                  <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                    Operator Report Preview
                   </Link>
                   <ActionBtn label="✓ Approve & Send Free" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'free' })} />
                   <ActionBtn label="Needs Fix" color="#F97316" loading={actionLoading} onClick={() => handleNeedsFix('free')} />
@@ -242,8 +236,8 @@ export default function LeadDetailPage() {
               )}
               {['paid_intake_submitted', 'paid_report_ready_for_review'].includes(lead.status) && (
                 <>
-                  <Link href={`/report/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
-                    Preview Paid Report
+                  <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                    Operator Paid Preview
                   </Link>
                   <ActionBtn label="Run Paid Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('run_research', { researchMode: 'paid', force: true })} />
                   <ActionBtn label="✓ Approve & Deliver Paid" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'paid' })} />

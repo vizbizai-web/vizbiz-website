@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getLeadByLeadId, isSheetsConfigured } from '@/lib/google-sheets';
 import { validateReportToken } from '@/lib/report-token';
 import { getClientReportAccessState } from '@/lib/funnel-logic';
+import { parseResearchDataFromNotes } from '@/lib/report-data';
 import ReportContent from './report-content';
 import ReportPending from './report-pending';
 
@@ -113,42 +114,7 @@ export default async function ReportPage({
           notes: lead.notes,
         };
 
-        // Try to extract research data from notes
-        const marker = 'RESEARCH_DATA:';
-        const idx = lead.notes.indexOf(marker);
-        if (idx >= 0) {
-          try {
-            researchData = JSON.parse(lead.notes.slice(idx + marker.length));
-          } catch { /* ignore parse errors */ }
-        }
-
-        // If researchData is null, try parsing the JSON blob from research route
-        // Research route stores: { preflight, competitorMode, competitors, research: {...} }
-        if (!researchData) {
-          try {
-            const notesStr = lead.notes || '';
-            const jsonStart = notesStr.lastIndexOf('{"preflight"');
-            if (jsonStart !== -1) {
-              let braceCount = 0;
-              let jsonEnd = -1;
-              for (let i = jsonStart; i < notesStr.length; i++) {
-                if (notesStr[i] === '{') braceCount++;
-                if (notesStr[i] === '}') braceCount--;
-                if (braceCount === 0) { jsonEnd = i + 1; break; }
-              }
-              if (jsonEnd > 0) {
-                const parsed = JSON.parse(notesStr.substring(jsonStart, jsonEnd));
-                if (parsed.research) {
-                  researchData = {
-                    ...parsed.research,
-                    competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
-                    internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
-                  } as ResearchData;
-                }
-              }
-            }
-          } catch { /* ignore parse errors */ }
-        }
+        researchData = parseResearchDataFromNotes(lead.notes);
 
         // Fallback: parse competitorMode from notes text if still not available
         if (researchData && !researchData.competitorMode) {
