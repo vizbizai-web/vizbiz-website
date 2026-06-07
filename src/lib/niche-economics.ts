@@ -46,6 +46,7 @@ export const NICHE_ECONOMICS: Record<string, NicheEconomics> = {
   marketing_agency: { label: "Marketing Agency", avgLeadValue: 1000, monthlyVolume: 20, currency: "USD", maxMonthlyGap: 50000 },
   plant_shop: { label: "Plant Shop & Plant Care", avgLeadValue: 120, monthlyVolume: 80, currency: "USD", maxMonthlyGap: 15000 },
   tourism_experience: { label: "Tourism Experience", avgLeadValue: 150, monthlyVolume: 80, currency: "USD", maxMonthlyGap: 25000 },
+  pro_audio_systems: { label: "Professional Audio / AV Systems", avgLeadValue: 1200, monthlyVolume: 40, currency: "USD", maxMonthlyGap: 90000 },
   artisan_workshop: { label: "Artisan Workshop & Studio", avgLeadValue: 200, monthlyVolume: 40, currency: "USD", maxMonthlyGap: 20000 },
   // Fallbacks
   local_business: { label: "Local Business", avgLeadValue: 200, monthlyVolume: 60, currency: "USD", maxMonthlyGap: 50000 },

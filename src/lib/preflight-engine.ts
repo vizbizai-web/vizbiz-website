@@ -172,6 +172,7 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   marketing_agency: ["marketing agency", "digital marketing", "social media management", "seo services"],
   auto_transport: ["auto transport", "car shipping", "car hauling", "vehicle transport", "vehicle shipping", "auto shipping", "car carrier", "vehicle logistics"],
   tourism_experience: ["pearl farm", "oyster farm", "farm tour", "guided tour", "scenic cruise", "winery tour", "brewery tour", "eco tour", "boat tour", "adventure tour", "day trip", "tourist attraction", "tourism", "nature tour", "cultural experience", "water activity", "river cruise", "seaplane", "food tour", "wine tasting", "cooking class", "kayak tour"],
+  pro_audio_systems: ["professional audio", "pro audio", "audio systems", "sound system", "sound reinforcement", "av systems", "audiovisual", "public address", "conference systems", "installation audio", "system integration", "audio distribution", "stage lighting", "broadcast audio", "recording studio equipment", "sound equipment", "loudspeakers", "mixing console", "microphones", "acoustics", "audio workshops", "system optimisation", "system optimization"],
   artisan_workshop: ["workshop", "studio", "class", "course", "lesson", "artisan", "craft", "maker", "metalwork", "silversmith", "goldsmith", "jewelry making", "ring making", "metalsmithing", "book a session", "reserve your spot"],
   plant_shop: ["plant shop", "plant care", "houseplant", "indoor plant", "plant rental", "greenhouse", "nursery", "garden center", "plant store", "plant delivery", "botanical", "plant nursery"],
 };
@@ -197,7 +198,7 @@ function applyNicheGuardrails(input: {
   valueProposition: string;
   allSignals: string;
   googlePlaceEnrichment: GooglePlaceEnrichment | null;
-}): { niche: string; businessType: string; services: string[]; confidenceReason?: string } {
+}): { niche: string; businessType: string; services: string[]; confidenceReason?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[] } {
   const signal = [
     input.businessType,
     input.valueProposition,
@@ -228,6 +229,35 @@ function applyNicheGuardrails(input: {
     };
   }
 
+  const placeSuggestsProAudio = placeTypes.some((type) => ['electronics_store', 'home_goods_store', 'store'].includes(type));
+  const isProAudio = /professional\s+audio|\bpro\s+audio\b|audio\s+(system|systems|equipment|distribution|installation)|sound\s+(system|systems|reinforcement|equipment)|\bav\s+(system|systems|integration)|audiovisual|public\s+address|conference\s+systems?|stage\s+lighting|broadcast\s+audio|recording\s+studio\s+equipment|loudspeakers?|mixing\s+consoles?|microphones?|acoustics|system\s+optimis|system\s+optimiz|audio\s+workshops?/.test(signal);
+  if (isProAudio || (input.niche === 'artisan_workshop' && placeSuggestsProAudio && /audio|sound|av|audiovisual|loudspeaker|microphone|acoustic|lighting/.test(signal))) {
+    return {
+      niche: 'pro_audio_systems',
+      businessType: 'professional audio systems distributor and integrator',
+      services: input.services?.length && !input.services.join(' ').toLowerCase().includes('jewelry')
+        ? input.services
+        : ['professional audio systems', 'AV system integration', 'sound reinforcement', 'audio equipment distribution', 'system optimisation workshops'],
+      suggestedSearchQueries: [
+        'professional audio system integrator in {city}',
+        'pro audio distributor in {city}',
+        'best sound reinforcement supplier in {city}',
+        'AV system integration company in {city}',
+        'professional loudspeaker and microphone supplier in {city}',
+        'conference audio installation company in {city}',
+        'trusted audio equipment distributor in {city}',
+        'professional sound system company with good reviews in {city}',
+      ],
+      competitorSearchQueries: [
+        'professional audio distributors {city}',
+        'pro audio system integrators {city}',
+        'AV system integration companies {city}',
+        'sound reinforcement suppliers {city}',
+      ],
+      confidenceReason: 'Deterministic guardrail: professional audio/AV/electronics signals override generic workshop or artisan classifications.',
+    };
+  }
+
   const placeSuggestsBeauty = placeTypes.some((type) => ['beauty_salon', 'wellness_center', 'spa', 'health'].includes(type));
   if (input.niche === 'car_dealership' && placeSuggestsBeauty && !/\bdealer(ship)?\b|\bautomotive\b|\bcar\s+(sales|service|dealer)/.test(signal)) {
     return {
@@ -239,6 +269,80 @@ function applyNicheGuardrails(input: {
   }
 
   return { niche: input.niche, businessType: input.businessType, services: input.services };
+}
+
+function humanizeBusinessType(input: string, fallback = 'local business'): string {
+  const cleaned = (input || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (!cleaned || ['unknown', 'local business', 'local_business', 'business'].includes(cleaned)) return fallback;
+  return cleaned;
+}
+
+function cleanQueryParts(parts: string[]): string[] {
+  const seen = new Set<string>();
+  return parts
+    .map((part) => part.replace(/\s+/g, ' ').trim())
+    .filter((part) => part.length > 2)
+    .filter((part) => {
+      const key = part.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+export function buildEvidenceFirstQueries(input: {
+  businessType: string;
+  services: string[];
+  market: string;
+  intakeCity?: string;
+}): { suggestedSearchQueries: string[]; competitorSearchQueries: string[] } {
+  const market = input.intakeCity?.trim() || input.market?.split(',')[0]?.trim() || '{city}';
+  const businessType = humanizeBusinessType(input.businessType);
+  const services = cleanQueryParts(input.services || [])
+    .map((service) => humanizeBusinessType(service, ''))
+    .filter(Boolean)
+    .slice(0, 4);
+  const primaryService = services[0] || businessType;
+
+  const suggestedSearchQueries = cleanQueryParts([
+    `I need a trusted ${businessType} in ${market}. Who should I choose?`,
+    `Which ${businessType}s near ${market} have good reviews and clear proof?`,
+    `best ${businessType} in ${market}`,
+    `trusted ${primaryService} provider in ${market}`,
+    `who offers ${primaryService} near ${market}`,
+    ...services.slice(1).map((service) => `${service} provider in ${market}`),
+    `${businessType} with good reviews in ${market}`,
+  ]).slice(0, 8);
+
+  const competitorSearchQueries = cleanQueryParts([
+    `${businessType} competitors ${market}`,
+    `best ${businessType}s ${market}`,
+    `${primaryService} companies ${market}`,
+    `${businessType} alternatives ${market}`,
+  ]).slice(0, 5);
+
+  return { suggestedSearchQueries, competitorSearchQueries };
+}
+
+export function shouldUseEvidenceFirstQueries(input: {
+  niche: string;
+  businessType: string;
+  services: string[];
+  suggestedSearchQueries: string[];
+  nicheConfidence: number;
+}): boolean {
+  const businessType = humanizeBusinessType(input.businessType, '');
+  const hasSpecificBusinessType = businessType.length > 4 && !['unknown', 'local business', 'business'].includes(businessType);
+  const hasServices = (input.services || []).some((service) => humanizeBusinessType(service, '').length > 4);
+  if (!hasSpecificBusinessType && !hasServices) return false;
+
+  const genericOrWeakNiche = ['local_business', 'unknown'].includes(input.niche) || input.nicheConfidence < 60;
+  const missingQueries = input.suggestedSearchQueries.length < 5;
+  const queryText = input.suggestedSearchQueries.join(' ').toLowerCase();
+  const staleVerticalLeak = /\b(car|dealer|dealership|inventory|trade[-\s]?in|jewelry|jewellery|diamond|ring making|silversmith|artisan workshop)\b/.test(queryText)
+    && !/\b(car|dealer|dealership|inventory|trade[-\s]?in|jewelry|jewellery|diamond|ring making|silversmith|artisan workshop)\b/.test(`${businessType} ${(input.services || []).join(' ')}`.toLowerCase());
+
+  return genericOrWeakNiche || missingQueries || staleVerticalLeak;
 }
 
 /**
@@ -651,7 +755,19 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     businessType = guardedProfile.businessType;
     services = guardedProfile.services;
     if (guardedProfile.confidenceReason) confidenceReason = guardedProfile.confidenceReason;
+    if (guardedProfile.suggestedSearchQueries?.length) suggestedSearchQueries = guardedProfile.suggestedSearchQueries;
+    if (guardedProfile.competitorSearchQueries?.length) competitorSearchQueries = guardedProfile.competitorSearchQueries;
     nicheConfidence = Math.max(nicheConfidence, 90);
+  }
+
+  if (shouldUseEvidenceFirstQueries({ niche, businessType, services, suggestedSearchQueries, nicheConfidence })) {
+    const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity });
+    console.warn(`[preflight] Evidence-first query safety gate: replacing weak/generic/stale queries for ${niche}/${businessType || 'unknown'}`);
+    suggestedSearchQueries = evidenceQueries.suggestedSearchQueries;
+    competitorSearchQueries = evidenceQueries.competitorSearchQueries;
+    if (niche === 'local_business' && businessType && businessType !== 'local business' && businessType !== 'unknown') {
+      confidenceReason = `${confidenceReason}; evidence-first query gate used scraped business type/services instead of generic local-business prompts.`;
+    }
   }
 
   // -- Derive search language code --

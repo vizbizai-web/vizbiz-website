@@ -518,6 +518,19 @@ export async function runResearch(
     console.info(`[research-runner] Using standard 20-prompt set (free tier)`);
   }
 
+  const deterministicPromptGate = rebuildPromptsFromScrapedProfileIfContaminated(prompts, {
+    businessType: preflightProfile?.businessType,
+    services: preflightProfile?.services,
+    niche: finalNiche,
+    city,
+    businessName: resolvedName,
+    suggestedSearchQueries: preflightProfile?.suggestedSearchQueries,
+  });
+  if (deterministicPromptGate.rebuilt) {
+    console.warn(`[research-runner] Prompt safety gate rebuilt prompt set: ${deterministicPromptGate.reason}`);
+    prompts = deterministicPromptGate.prompts;
+  }
+
   // Apply maxPrompts limit (free mode: 5, paid: 20, full: 30)
   if (prompts.length > maxPrompts) {
     console.info(`[research-runner] Limiting prompts: ${prompts.length} → ${maxPrompts} (mode: ${tier})`);
@@ -1114,6 +1127,92 @@ function extractMakeFromBusiness(businessName: string): string {
   }
   
   return "car"; // Generic fallback
+}
+
+const STALE_VERTICAL_TERMS = /\b(car|cars|dealer|dealers|dealership|dealerships|inventory|trade[-\s]?in|certified pre[-\s]?owned|test drive|vehicle|vehicles|jewelry|jewellery|jeweler|jeweller|diamond|engagement ring|ring making|silversmith|goldsmith|artisan workshop)\b/i;
+
+function normalizeProfileTerm(term: string | undefined, fallback = ''): string {
+  const cleaned = (term || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (!cleaned || ['unknown', 'local business', 'local_business', 'business'].includes(cleaned)) return fallback;
+  return cleaned;
+}
+
+function profileLegitimatelyMatchesStaleVertical(profileText: string): boolean {
+  return STALE_VERTICAL_TERMS.test(profileText);
+}
+
+function buildScrapeFirstPrompts(input: {
+  businessType?: string;
+  services?: string[];
+  city: string;
+  businessName: string;
+  suggestedSearchQueries?: string[];
+}): string[] {
+  const businessType = normalizeProfileTerm(input.businessType, 'local business');
+  const services = (input.services || [])
+    .map((service) => normalizeProfileTerm(service))
+    .filter(Boolean)
+    .slice(0, 5);
+  const primaryService = services[0] || businessType;
+  const seedQueries = (input.suggestedSearchQueries || [])
+    .map((query) => query.replace(/{city}/gi, input.city).replace(/{businessName}/gi, input.businessName).trim())
+    .filter((query) => query && !STALE_VERTICAL_TERMS.test(query));
+
+  const candidates = [
+    ...seedQueries,
+    `I need a trusted ${businessType} in ${input.city}. Who should I choose?`,
+    `Which ${businessType}s near ${input.city} have good reviews and clear proof?`,
+    `best ${businessType} in ${input.city}`,
+    `trusted ${primaryService} provider in ${input.city}`,
+    `who offers ${primaryService} near ${input.city}`,
+    `${businessType} with good reviews in ${input.city}`,
+    ...services.slice(1).map((service) => `${service} provider in ${input.city}`),
+    `${input.businessName} reviews`,
+    `${input.businessName} services`,
+  ];
+
+  const seen = new Set<string>();
+  return candidates
+    .map((prompt) => prompt.replace(/\s+/g, ' ').trim())
+    .filter((prompt) => prompt.length > 3)
+    .filter((prompt) => {
+      const key = prompt.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 20);
+}
+
+export function rebuildPromptsFromScrapedProfileIfContaminated(
+  prompts: string[],
+  profile: {
+    businessType?: string;
+    services?: string[];
+    niche?: string;
+    city: string;
+    businessName: string;
+    suggestedSearchQueries?: string[];
+  }
+): { rebuilt: boolean; prompts: string[]; reason: string } {
+  const profileText = `${profile.niche || ''} ${profile.businessType || ''} ${(profile.services || []).join(' ')}`.toLowerCase();
+  const specificBusinessType = normalizeProfileTerm(profile.businessType);
+  const hasSpecificEvidence = specificBusinessType.length > 4 || (profile.services || []).some((service) => normalizeProfileTerm(service).length > 4);
+  if (!hasSpecificEvidence) return { rebuilt: false, prompts, reason: '' };
+
+  const promptText = prompts.join(' ').toLowerCase();
+  const staleVerticalLeak = STALE_VERTICAL_TERMS.test(promptText) && !profileLegitimatelyMatchesStaleVertical(profileText);
+  const genericKnownFallback = ['local_business', 'unknown'].includes(profile.niche || '') && !prompts.some((prompt) => prompt.toLowerCase().includes(specificBusinessType));
+
+  if (!staleVerticalLeak && !genericKnownFallback) return { rebuilt: false, prompts, reason: '' };
+
+  return {
+    rebuilt: true,
+    prompts: buildScrapeFirstPrompts(profile),
+    reason: staleVerticalLeak
+      ? 'stale vertical terms conflicted with scraped business type/services'
+      : 'generic/unknown niche lacked scraped business type in prompts',
+  };
 }
 
 interface PromptResult {

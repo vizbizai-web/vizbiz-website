@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { getPromptSetForNiche } from './prompt-curator';
 import { detectNiche } from './niche-detector';
+import { buildEvidenceFirstQueries, shouldUseEvidenceFirstQueries } from './preflight-engine';
+import { rebuildPromptsFromScrapedProfileIfContaminated } from './research-runner';
 import { readFileSync } from 'node:fs';
 
 describe('niche guardrails', () => {
@@ -30,6 +32,17 @@ describe('niche guardrails', () => {
     expect(economics).toContain('Electrical Contractor');
   });
 
+  it('prevents professional audio and AV businesses from becoming artisan/jewelry workshop reports', () => {
+    const preflight = readFileSync('src/lib/preflight-engine.ts', 'utf8');
+    const economics = readFileSync('src/lib/niche-economics.ts', 'utf8');
+
+    expect(preflight).toContain('pro_audio_systems');
+    expect(preflight).toContain('professional audio/AV/electronics signals override generic workshop or artisan classifications');
+    expect(preflight).toContain('professional audio system integrator in {city}');
+    expect(preflight).toContain('pro audio distributor in {city}');
+    expect(economics).toContain('Professional Audio / AV Systems');
+  });
+
   it('does not let arbitrary new niches fall into car dealership through substring matches', () => {
     const careBusiness = detectNiche(
       'Bright Care Clinic',
@@ -45,5 +58,47 @@ describe('niche guardrails', () => {
     );
     expect(unknownBusiness.niche).toBe('local_business');
     expect(unknownBusiness.promptTemplates.join(' ')).not.toMatch(/car|dealer|dealership|inventory|trade-in/i);
+  });
+
+  it('uses scraped business type and services when a new niche is specific but taxonomy is generic', () => {
+    const shouldGate = shouldUseEvidenceFirstQueries({
+      niche: 'local_business',
+      businessType: 'marine upholstery repair studio',
+      services: ['boat seat repair', 'canvas enclosure fabrication'],
+      suggestedSearchQueries: [],
+      nicheConfidence: 55,
+    });
+    expect(shouldGate).toBe(true);
+
+    const queries = buildEvidenceFirstQueries({
+      businessType: 'marine upholstery repair studio',
+      services: ['boat seat repair', 'canvas enclosure fabrication'],
+      market: 'Halifax, Canada',
+    }).suggestedSearchQueries.join(' ');
+
+    expect(queries).toContain('marine upholstery repair studio');
+    expect(queries).toContain('boat seat repair');
+    expect(queries).not.toMatch(/car|dealer|dealership|inventory|trade-in|jewelry|diamond|silversmith/i);
+  });
+
+  it('rebuilds stale known-niche prompts from scraped profile evidence before research runs', () => {
+    const badPrompts = [
+      'best car dealer in Halifax',
+      'who has the most car inventory in Halifax',
+      'best place to buy a used car in Halifax',
+    ];
+
+    const gate = rebuildPromptsFromScrapedProfileIfContaminated(badPrompts, {
+      niche: 'local_business',
+      businessType: 'marine upholstery repair studio',
+      services: ['boat seat repair', 'canvas enclosure fabrication'],
+      city: 'Halifax',
+      businessName: 'Harbour Canvas Co',
+    });
+
+    expect(gate.rebuilt).toBe(true);
+    expect(gate.prompts.join(' ')).toContain('marine upholstery repair studio');
+    expect(gate.prompts.join(' ')).toContain('boat seat repair');
+    expect(gate.prompts.join(' ')).not.toMatch(/car dealer|inventory|used car|dealership|trade-in|diamond|silversmith/i);
   });
 });
