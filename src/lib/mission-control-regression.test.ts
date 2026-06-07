@@ -119,6 +119,9 @@ describe('Mission Control production integrity', () => {
 
     expect(leadActions).toContain('sendPipelineAlert');
     expect(leadActions).toContain('Needs fix —');
+    expect(leadActions).toContain('Needs fix + rerun started');
+    expect(leadActions).toContain('autoRerun');
+    expect(leadActions).toContain('revisionReason: reason');
     expect(leadActions).toContain('Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}');
     expect(leadActions).toContain('[NEEDS_REVISION ${reportType.toUpperCase()}');
   });
@@ -137,12 +140,26 @@ describe('Mission Control production integrity', () => {
     expect(leadDetail).toContain("leadStatus === 'needs_revision'");
     expect(leadDetail).toContain('canRecoverRevision');
     expect(leadDetail).toContain('Needs revision fix requested from Mission Control');
+    expect(leadDetail).toContain('autoRerun: true');
     expect(pipelinePage).toContain('approve_and_send');
     expect(pipelinePage).toContain('Needs Fix');
+    expect(pipelinePage).toContain('autoRerun: true');
+    expect(pipelinePage).toContain("payload?.success === false");
     expect(pipelinePage).toContain('Paid Intake');
     expect(pipelinePage).not.toContain("'draft_email'");
     expect(pipelinePage).not.toContain("'approve_email'");
     expect(pipelinePage).not.toContain("'follow_up'");
+  });
+
+  it('keeps professional-audio niche extraction available and fills evidence-first fallbacks', () => {
+    const preflight = repoFile('src/lib/preflight-engine.ts');
+
+    expect(preflight).toContain('pro_audio_systems, local_business');
+    expect(preflight).toContain("niche === 'pro_audio_systems'");
+    expect(preflight).toContain('audio professionals, venues, installers');
+    expect(preflight).toContain('Supplies and supports professional audio, AV');
+    expect(preflight).toContain('if (!targetAudience && businessType)');
+    expect(preflight).toContain('if (!valueProposition && businessType)');
   });
 
   it('uses honest unavailable state for unwired MC task/cron integrations', () => {

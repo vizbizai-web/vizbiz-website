@@ -125,7 +125,10 @@ function useLeadAction() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId, action, data }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || payload?.success === false) {
+        throw new Error(payload?.error || `HTTP ${res.status}`);
+      }
       setLastResult('success');
       setTimeout(() => setLastResult(null), 3000);
       return true;
@@ -176,7 +179,7 @@ export default function LeadDetailPage() {
   const handleNeedsFix = async (reportType: 'free' | 'paid') => {
     const reason = window.prompt(`What needs fixing before this ${reportType} report goes out?`);
     if (!reason?.trim()) return;
-    await handleAction('needs_revision', { reportType, reason: reason.trim() });
+    await handleAction('needs_revision', { reportType, reason: reason.trim(), autoRerun: true });
   };
 
   const handleDoNotSend = async () => {

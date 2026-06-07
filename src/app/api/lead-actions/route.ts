@@ -183,14 +183,43 @@ export async function POST(request: Request) {
       case "needs_revision": {
         const reason = String(data?.reason || "").trim();
         const reportType = data?.reportType === "paid" ? "paid" : "free";
+        const autoRerun = data?.autoRerun === true;
         if (!reason) return NextResponse.json({ error: "Revision reason is required" }, { status: 400 });
         await updateLeadResearchResults(leadId, {
           status: "needs_revision",
           notes: `${lead.notes || ""}\n[NEEDS_REVISION ${reportType.toUpperCase()} ${new Date().toISOString()}] ${reason}`,
         });
+        let rerunResult: { success?: boolean; error?: string; [key: string]: unknown } | null = null;
+        if (autoRerun) {
+          const origin = new URL(request.url).origin;
+          rerunResult = await fetch(`${origin}/api/pipeline/process`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              leadId,
+              force: true,
+              researchMode: reportType === "paid" ? "paid" : "free",
+              revisionReason: reason,
+            }),
+          }).then((res) => res.json().catch(() => ({ success: res.ok, status: res.status })));
+          if (rerunResult?.success === false) {
+            return NextResponse.json({
+              success: false,
+              action: "needs_revision",
+              leadId,
+              reportType,
+              reason,
+              autoRerun,
+              error: rerunResult.error || "Needs-fix rerun failed",
+              rerunResult,
+            }, { status: 502 });
+          }
+        }
         try {
           await sendPipelineAlert([
-            `🔧 Needs fix — ${lead.dealershipName || "Unknown business"}`,
+            autoRerun
+              ? `🔧 Needs fix + rerun started — ${lead.dealershipName || "Unknown business"}`
+              : `🔧 Needs fix — ${lead.dealershipName || "Unknown business"}`,
             "",
             `Lead ID: ${leadId}`,
             `Report type: ${reportType}`,
@@ -201,7 +230,7 @@ export async function POST(request: Request) {
         } catch (alertErr) {
           console.warn("[lead-actions] needs_revision alert failed (non-blocking):", alertErr);
         }
-        return NextResponse.json({ success: true, action: "needs_revision", leadId, reportType, reason });
+        return NextResponse.json({ success: true, action: "needs_revision", leadId, reportType, reason, autoRerun, rerunResult });
       }
 
       case "do_not_send": {

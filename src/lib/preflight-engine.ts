@@ -359,7 +359,7 @@ Extract:
 4. "siteLanguage": The primary language of the website content (e.g. "Romanian", "English", "French").
 5. "searchLanguage": What language their potential customers would use to search for this type of business. Same as siteLanguage for local businesses, but might differ for international businesses.
 6. "market": The geographic market they serve (e.g. "Romania", "Ontario, Canada", "United States", "Cluj Napoca, Romania").
-7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, local_business. This is for internal categorization only — your businessType is what we actually use.
+7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, pro_audio_systems, local_business. This is for internal categorization only — your businessType is what we actually use.
 8. "valueProposition": One sentence: what they do for their clients, in their own words (translate if not in English).
 9. "pricing": Any pricing information found (translate if needed), or null.
 10. "quality": "high", "medium", or "low" — is the site well-written with original content?
@@ -758,6 +758,24 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     if (guardedProfile.suggestedSearchQueries?.length) suggestedSearchQueries = guardedProfile.suggestedSearchQueries;
     if (guardedProfile.competitorSearchQueries?.length) competitorSearchQueries = guardedProfile.competitorSearchQueries;
     nicheConfidence = Math.max(nicheConfidence, 90);
+  }
+
+  if (niche === 'pro_audio_systems') {
+    targetAudience ||= 'audio professionals, venues, installers, broadcasters, studios, and organizations buying or integrating professional sound systems';
+    valueProposition ||= 'Supplies and supports professional audio, AV, sound reinforcement, and system integration solutions.';
+    market ||= intakeCity?.trim() || 'Poland';
+    siteLanguage = siteLanguage || 'English';
+    searchLanguage = searchLanguage || siteLanguage;
+  }
+
+  if (!targetAudience && businessType) {
+    targetAudience = `customers looking for a trusted ${businessType}${intakeCity ? ` in ${intakeCity}` : ''}`;
+  }
+  if (!valueProposition && businessType) {
+    valueProposition = `Provides ${businessType} services with enough website evidence for AI systems to understand the business category.`;
+  }
+  if (!market && intakeCity?.trim()) {
+    market = intakeCity.trim();
   }
 
   if (shouldUseEvidenceFirstQueries({ niche, businessType, services, suggestedSearchQueries, nicheConfidence })) {

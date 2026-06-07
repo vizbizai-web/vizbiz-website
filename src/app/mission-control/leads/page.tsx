@@ -98,7 +98,10 @@ function useLeadAction() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadId, action, data }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || payload?.success === false) {
+        throw new Error(payload?.error || `HTTP ${res.status}`);
+      }
       setSuccessId(leadId);
       setTimeout(() => setSuccessId(null), 2000);
       return true;
@@ -212,7 +215,7 @@ export default function PipelinePage() {
                           </Link>
                           <ActionBtn label="Needs Fix" color="#F97316" loading={isLoading} onClick={() => {
                             const reason = window.prompt('What needs fixing before this free report goes out?');
-                            if (reason?.trim()) handleAction(lead.leadId, 'needs_revision', { reportType: 'free', reason: reason.trim() });
+                            if (reason?.trim()) handleAction(lead.leadId, 'needs_revision', { reportType: 'free', reason: reason.trim(), autoRerun: true });
                           }} />
                           <ActionBtn label="Rerun" color="#3B82F6" loading={isLoading} onClick={() => handleAction(lead.leadId, 'rerun')} />
                           <ActionBtn label="Hold" color="#F59E0B" loading={isLoading} onClick={() => {
