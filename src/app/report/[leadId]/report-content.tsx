@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/lib/use-mobile';
 import { isJunkCompetitor } from '@/lib/junk-filter';
 import { getSeparateCompetitorNames, hasVerifiedLocalTrustData } from '@/lib/funnel-logic';
+import { getReportRankDisplay } from '@/lib/report-rank';
 import {
   RadarChart,
   PolarGrid,
@@ -421,16 +422,15 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
   const missedPct = Math.round(missedRate * 100);
 
   const topCompetitor = data.competitors.find(c => !c.isYou && !c.isYours && c.score > 0);
-  const compData = data.competitors.filter(c => !c.isYou && !c.isYours && !isJunkCompetitor(c.name));
-  const yourRank = [...data.competitors].sort((a, b) => b.score - a.score).findIndex(c => c.isYou) + 1;
+  const rankDisplay = getReportRankDisplay(data.competitors);
 
   const isClientOnly = data.competitorMode === "client_only";
 
   const summaryText = data.aviScore >= 60
-    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still return ${isClientOnly ? 'other businesses' : 'competitors'} first. Closing those gaps could unlock ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional revenue.`
+    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still do not clearly surface the business. Closing those gaps could support an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional opportunity.`
     : data.aviScore >= 35
-      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of AI recommendations go to ${isClientOnly ? 'other businesses' : 'competitors'}${!isClientOnly && topCompetitor ? `, led by ${topCompetitor.name}` : ''}. That's ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in revenue going elsewhere.`
-      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. When buyers in ${data.location} search for recommendations, they find ${isClientOnly ? 'other businesses' : 'your competitors'} instead — costing you an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo.`;
+      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of tested AI recommendation scenarios did not clearly surface the business${!isClientOnly && topCompetitor ? ` while ${topCompetitor.name} appeared more often` : ''}. That represents an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo visibility opportunity.`
+      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. In tested buyer-intent scenarios for ${data.location}, the business was not clearly surfaced — representing an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo visibility opportunity.`;
 
   return (
     <FadeIn>
@@ -522,9 +522,9 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
           }}>
             <p style={{ fontFamily: "'Lora', serif", fontSize: '1.5rem', fontWeight: 400, color: t.textPrimary, margin: 0, lineHeight: 1.2 }} className="sm:text-2xl">
-              #{yourRank || '—'}
+              {rankDisplay.value}
             </p>
-            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.textMuted, margin: '4px 0 0' }}>Your Rank</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.textMuted, margin: '4px 0 0' }}>{rankDisplay.label}</p>
           </div>
           <div style={{
             background: theme === 'dark' ? 'rgba(239,68,68,0.04)' : '#FFFFFF',
@@ -684,8 +684,8 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   const compData = compDataRaw.filter(c => c.isYou || c.isYours || !isJunkCompetitor(c.name));
 
   const maxScore = Math.max(...compData.map(c => c.score), 1);
-  const yourScore = compData.find(c => c.isYou)?.score || 0;
-  const yourRank = [...compData].sort((a, b) => b.score - a.score).findIndex(c => c.isYou) + 1;
+  const rankDisplay = getReportRankDisplay(compData);
+  const yourScore = rankDisplay.yourScore;
 
   const compColors = ['#8B5CF6', '#F97316', '#EC4899'];
 
@@ -703,8 +703,8 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
           {/* Rank summary */}
           <div className="grid grid-cols-3 gap-3 mb-8">
             <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
-              <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: yourRank === 1 ? '#22C55E' : '#EF4444' }}>#{yourRank}</p>
-              <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Your Rank</p>
+              <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: rankDisplay.colorState === 'positive' ? '#22C55E' : rankDisplay.colorState === 'negative' ? '#EF4444' : t.textPrimary }}>{rankDisplay.value}</p>
+              <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>{rankDisplay.label}</p>
             </div>
             <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
               <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: t.textPrimary }}>{yourScore}/{totalQ}</p>

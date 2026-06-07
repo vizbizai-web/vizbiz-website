@@ -28,4 +28,11 @@ describe('free report client copy safety', () => {
     expect(source).not.toContain('AI platforms recommended competitors instead');
     expect(source).not.toContain('AI is sending buyers elsewhere');
   });
+
+  it('does not make over-causal revenue loss claims in the free report hero', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).not.toContain('costing you an estimated');
+    expect(source).not.toContain('revenue going elsewhere');
+    expect(source).not.toContain('AI recommendations go to');
+  });
 });
