@@ -33,4 +33,21 @@ describe("report email", () => {
     expect(html).not.toMatch(/dealership|Does ChatGPT|AI-driven buyers|60 seconds|free-ai-visibility-test/i);
     expect(runClientCopyQA(html).ok).toBe(true);
   });
+
+  it("does not invent a contact name, city, or niche when those facts are not supplied", () => {
+    const html = buildReportEmailHtml({
+      businessName: "LexHive",
+      reportUrl: "https://vizbiz.ai/report/lexhive?preview=1",
+      aviScore: 42,
+      statusBand: "Moderate",
+      appearedCount: 2,
+      totalPrompts: 5,
+      competitors: ["BridgeLegal", "Broughton Partners"],
+    });
+
+    expect(html).toContain("Hi there,");
+    expect(html).toContain("when customers compare options in their market");
+    expect(html).not.toMatch(/Hi Alex|Toronto|legal marketing|legal referral|your market/i);
+    expect(runClientCopyQA(html).ok).toBe(true);
+  });
 });

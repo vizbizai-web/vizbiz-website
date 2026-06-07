@@ -98,9 +98,8 @@ export async function POST(request: Request) {
             statusBand,
             appearedCount,
             totalPrompts,
-            competitorName: lead.competitor.split(",")[0]?.trim() || "your local competitors",
+            competitorName: lead.competitor.split(",")[0]?.trim() || "",
             competitorScore: 0,
-            niche: "local_business",
           }),
         });
         const sendResult = await sendRes.json().catch(() => ({}));

@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const businessName = body.businessName || lead.dealershipName;
     const contactName = body.contactName || lead.contactName;
     const city = body.city || lead.city;
-    const niche = body.niche || 'local_business';
+    const niche = body.niche;
     const competitors = splitCompetitors(lead.clientProvidedCompetitors || lead.competitor || body.competitorName);
 
     const html = buildReportEmailHtml({

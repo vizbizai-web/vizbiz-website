@@ -82,12 +82,21 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
   const reportUrl = assertValidReportEmailCta(data.reportUrl);
   const businessName = escapeHtml(data.businessName.trim() || "your business");
   const firstName = escapeHtml((data.contactName || "there").trim().split(/\s+/)[0] || "there");
-  const city = escapeHtml((data.city || "your market").trim() || "your market");
+  const rawCity = (data.city || "").trim();
+  const rawNicheLabel = (data.nicheLabel || "").trim();
+  const comparisonScope = escapeHtml(
+    rawNicheLabel && rawCity
+      ? `${rawNicheLabel} options in ${rawCity}`
+      : rawNicheLabel
+        ? `${rawNicheLabel} options`
+        : rawCity
+          ? `options in ${rawCity}`
+          : "options in their market"
+  );
   const score = data.aviScore !== undefined && data.aviScore !== null ? escapeHtml(String(data.aviScore)) : "—";
   const statusBand = escapeHtml((data.statusBand || "Visibility review").trim());
   const count = escapeHtml(formatCount(data.appearedCount, data.totalPrompts));
   const context = escapeHtml(competitorContext(data.competitors || [], data.businessName.trim() || "Your business"));
-  const nicheLabel = escapeHtml((data.nicheLabel || "local business").trim());
   const ctaLabel = data.isPaid ? "View the full AI visibility report" : "View the private AI visibility snapshot";
   const preheader = escapeHtml(`A focused look at how clearly AI systems can understand, verify, and recommend ${data.businessName.trim() || "your business"}.`);
 
@@ -110,7 +119,7 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                 <img src="https://vizbiz.ai/logo.jpg" width="118" alt="VizBiz.ai" style="display:block;border-radius:8px;margin-bottom:30px;" />
                 <p style="margin:0 0 14px;color:#22d3ee;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;">AI Visibility Snapshot</p>
                 <h1 style="margin:0;color:#ffffff;font-size:34px;line-height:1.12;letter-spacing:-.035em;font-weight:750;">${businessName} visibility snapshot</h1>
-                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we reviewed how clearly ${businessName} can be understood and recommended by popular AI assistants when customers compare ${nicheLabel} options in ${city}.</p>
+                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we reviewed how clearly ${businessName} can be understood and recommended by popular AI assistants when customers compare ${comparisonScope}.</p>
               </td>
             </tr>
             <tr>
