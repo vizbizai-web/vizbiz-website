@@ -114,6 +114,29 @@ describe('Mission Control production integrity', () => {
     expect(operatorReview).not.toContain('[vlad-review]');
   });
 
+  it('alerts Alex when a Mission Control report is marked needs-fix', () => {
+    const leadActions = repoFile('src/app/api/lead-actions/route.ts');
+
+    expect(leadActions).toContain('sendPipelineAlert');
+    expect(leadActions).toContain('Needs fix —');
+    expect(leadActions).toContain('Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}');
+    expect(leadActions).toContain('[NEEDS_REVISION ${reportType.toUpperCase()}');
+  });
+
+  it('keeps Mission Control action buttons wired for approve/send, rerun, needs-fix, do-not-send, and revision recovery', () => {
+    const leadActions = repoFile('src/app/api/lead-actions/route.ts');
+    const leadDetail = repoFile('src/app/mission-control/leads/[leadId]/page.tsx');
+
+    expect(leadActions).toContain('APPROVED_FOR_FREE_SEND');
+    expect(leadActions).toContain('/api/send-report-email');
+    expect(leadActions).toContain('/api/pipeline/process');
+    expect(leadActions).toContain('Research rerun started');
+    expect(leadActions).toContain('Do not send —');
+    expect(leadDetail).toContain("leadStatus === 'needs_revision'");
+    expect(leadDetail).toContain('canRecoverRevision');
+    expect(leadDetail).toContain('Needs revision fix requested from Mission Control');
+  });
+
   it('uses honest unavailable state for unwired MC task/cron integrations', () => {
     const route = repoFile('src/app/mission-control/api/cron-status/route.ts');
 

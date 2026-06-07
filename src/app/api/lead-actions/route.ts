@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllLeads, updateLeadResearchResults } from "@/lib/google-sheets";
 import type { LeadRow } from "@/lib/google-sheets";
+import { sendPipelineAlert } from "@/lib/telegram-alerts";
 
 // GET /api/lead-actions — list all leads with their available actions
 export async function GET() {
@@ -77,7 +78,29 @@ export async function POST(request: Request) {
       }
 
       case "rerun": {
-        const result = await proxyReviewAction(request, leadId, "rerun");
+        const reason = String(data?.reason || "Mission Control rerun requested").trim();
+        const origin = new URL(request.url).origin;
+        await updateLeadResearchResults(leadId, {
+          status: "new",
+          researchStatus: "pending",
+          notes: `${lead.notes || ""}\n[RERUN_REQUESTED via MC ${new Date().toISOString()}] ${reason}`,
+        });
+        const result = await fetch(`${origin}/api/pipeline/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId, force: true, researchMode: data?.researchMode || "free" }),
+        }).then((res) => res.json().catch(() => ({ ok: res.ok, status: res.status })));
+        try {
+          await sendPipelineAlert([
+            `🔄 Research rerun started — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Reason: ${reason}`,
+            `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] rerun alert failed (non-blocking):", alertErr);
+        }
         return NextResponse.json({ success: true, action: "rerun", leadId, result });
       }
 
@@ -85,6 +108,16 @@ export async function POST(request: Request) {
         const reportType = data?.reportType === "paid" ? "paid" : "free";
         const { appearedCount, totalPrompts, statusBand, aviScore } = scoreFromLead(lead);
         const origin = new URL(request.url).origin;
+        const previousStatus = lead.status;
+        const approvalStamp = new Date().toISOString();
+
+        if (reportType === "free" && lead.status !== "approved") {
+          await updateLeadResearchResults(leadId, {
+            status: "approved",
+            notes: `${lead.notes || ""}\n[APPROVED_FOR_FREE_SEND via MC ${approvalStamp}]`,
+          });
+        }
+
         const sendRes = await fetch(`${origin}/api/send-report-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -104,24 +137,56 @@ export async function POST(request: Request) {
         });
         const sendResult = await sendRes.json().catch(() => ({}));
         if (!sendRes.ok) {
-          return NextResponse.json({ success: false, error: sendResult?.error || "Email send failed" }, { status: 502 });
+          if (reportType === "free" && previousStatus !== "approved") {
+            await updateLeadResearchResults(leadId, {
+              status: previousStatus,
+              notes: `${lead.notes || ""}\n[APPROVE_SEND_BLOCKED ${reportType.toUpperCase()} ${new Date().toISOString()}] ${sendResult?.error || "Email send failed"}`,
+            });
+          }
+          return NextResponse.json({ success: false, error: sendResult?.error || "Email send failed", details: sendResult }, { status: 502 });
         }
         await updateLeadResearchResults(leadId, {
           status: reportType === "paid" ? "paid_report_delivered" : "contacted",
           emailSentAt: new Date().toISOString(),
           notes: `${lead.notes || ""}\n[APPROVED_AND_SENT ${reportType.toUpperCase()} via MC ${new Date().toISOString()}]`,
         });
+        try {
+          await sendPipelineAlert([
+            `✅ Approved and sent — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Report type: ${reportType}`,
+            `Email: ${lead.email}`,
+            `Report: ${sendResult?.reportUrl || lead.reportUrl || `https://vizbiz.ai/report/${leadId}`}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] approve_and_send alert failed (non-blocking):", alertErr);
+        }
         return NextResponse.json({ success: true, action: "approve_and_send", leadId, reportType, sendResult });
       }
 
       case "needs_revision": {
         const reason = String(data?.reason || "").trim();
+        const reportType = data?.reportType === "paid" ? "paid" : "free";
         if (!reason) return NextResponse.json({ error: "Revision reason is required" }, { status: 400 });
         await updateLeadResearchResults(leadId, {
           status: "needs_revision",
-          notes: `${lead.notes || ""}\n[NEEDS_REVISION ${new Date().toISOString()}] ${reason}`,
+          notes: `${lead.notes || ""}\n[NEEDS_REVISION ${reportType.toUpperCase()} ${new Date().toISOString()}] ${reason}`,
         });
-        return NextResponse.json({ success: true, action: "needs_revision", leadId, reason });
+        try {
+          await sendPipelineAlert([
+            `🔧 Needs fix — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Report type: ${reportType}`,
+            `Reason: ${reason}`,
+            "",
+            `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] needs_revision alert failed (non-blocking):", alertErr);
+        }
+        return NextResponse.json({ success: true, action: "needs_revision", leadId, reportType, reason });
       }
 
       case "do_not_send": {
@@ -130,6 +195,17 @@ export async function POST(request: Request) {
           status: "do_not_send",
           notes: `${lead.notes || ""}\n[DO_NOT_SEND ${new Date().toISOString()}] ${reason}`,
         });
+        try {
+          await sendPipelineAlert([
+            `🛑 Do not send — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Reason: ${reason}`,
+            `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] do_not_send alert failed (non-blocking):", alertErr);
+        }
         return NextResponse.json({ success: true, action: "do_not_send", leadId, reason });
       }
 

@@ -188,6 +188,10 @@ export default function LeadDetailPage() {
   const research = lead ? parseResearchData(lead.notes) : null;
   const paidIntake = lead ? parsePaidIntake(lead.notes) : null;
   const timeline = lead ? buildTimeline(lead) : [];
+  const leadStatus = lead?.status || '';
+  const canReviewFree = ['pending_review', 'approved', 'email_drafted'].includes(leadStatus);
+  const canRecoverRevision = leadStatus === 'needs_revision';
+  const canReviewPaid = ['paid_intake_submitted', 'paid_report_ready_for_review'].includes(leadStatus);
 
   return (
     <div className="space-y-5">
@@ -223,7 +227,7 @@ export default function LeadDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800/30">
-              {['pending_review', 'approved', 'email_drafted'].includes(lead.status) && (
+              {canReviewFree && (
                 <>
                   <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
                     Operator Report Preview
@@ -234,7 +238,16 @@ export default function LeadDetailPage() {
                   <ActionBtn label="Rerun Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('rerun')} />
                 </>
               )}
-              {['paid_intake_submitted', 'paid_report_ready_for_review'].includes(lead.status) && (
+              {canRecoverRevision && (
+                <>
+                  <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
+                    Operator Report Preview
+                  </Link>
+                  <ActionBtn label="Rerun Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('rerun', { reason: 'Needs revision fix requested from Mission Control' })} />
+                  <ActionBtn label="Do Not Send" color="#EF4444" loading={actionLoading} onClick={handleDoNotSend} />
+                </>
+              )}
+              {canReviewPaid && (
                 <>
                   <Link href={`/mission-control/report-preview/${lead.leadId}`} target="_blank" className="text-sm px-4 py-2.5 rounded-lg border transition-colors" style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', borderColor: 'rgba(37, 209, 242, 0.2)' }}>
                     Operator Paid Preview
