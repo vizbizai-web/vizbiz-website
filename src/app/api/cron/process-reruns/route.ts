@@ -1,7 +1,7 @@
 /**
  * Cron Job: Process Queued Reruns
  * 
- * This endpoint is called by Vercel Cron or OpenClaw Cron.
+ * This endpoint is called by Vercel Cron.
  * It processes ONE lead at a time to avoid timeouts.
  * 
  * GET /api/cron/process-reruns
