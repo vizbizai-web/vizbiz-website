@@ -31,3 +31,51 @@ Before presenting or sending any such output, agents must prove all of the follo
 6. **Regression required after leaks:** If internal/client-unsafe copy leaks, add or tighten a code-level or test-level gate before calling the issue fixed.
 
 If any item above is not verified, say it is not complete. Do not perfume the corpse. Fix the actual pipeline.
+
+## Report quality architecture reset
+
+VizBiz report/email generation must follow the architecture in `docs/launch/report-quality-architecture-reset.md` and the model-routing standard in `docs/launch/subagent-model-strategy.md`.
+
+### Canonical data contract
+
+All client-facing report pages, report emails, paid intake previews, and Mission Control report previews must consume a client-safe `ClientReportPayload` produced after research and before rendering.
+
+Renderers may format approved facts. Renderers must not:
+
+1. derive AVI scores;
+2. derive rank;
+3. invent fallback competitors;
+4. generate monthly revenue ranges;
+5. map weak/fallback status bands to fake scores;
+6. read raw notes directly;
+7. display internal auto-discovery output.
+
+If a business appears in `0` AI questions/prompts, it is `Not ranked` / `AI Presence`. It must never render as `#1` because of array order or zero-score ties.
+
+### Canonical niche contract
+
+Prompt generation and report copy must use one `NicheResolution` object. Client-declared category/niche is the first source of truth. Automated classification may enrich it or flag a conflict, but must not silently overwrite it.
+
+If niche confidence is low, market scope is broad/ambiguous, or vertical terms conflict, the report status is `NEEDS_FIX`, `HOLD`, or `RERUN`. Do not ask Alex to catch wrong-vertical sludge.
+
+### Competitor/provenance contract
+
+Client-facing comparisons may include only client-supplied or operator-approved competitors. Auto-discovered/search-suggested competitors are internal suggestions until confirmed.
+
+Search/provider snippets are evidence inputs, not finished client claims. Do not convert raw domains, result titles, provider fallback text, or search artifacts into statements like “AI trusts/recommends this competitor instead.”
+
+### Dedicated QA roles
+
+Use subagents as narrow inspectors with pass/fail authority, not as general “make it better” helpers:
+
+1. Research/Data Provenance QA
+2. Niche/Market QA
+3. Client Copy QA
+4. Mechanical QA
+5. Rendered Preview QA
+6. Red-Team QA
+7. Release Captain final review
+
+Every subagent must report: role, model/provider used, artifacts reviewed, PASS/FAIL/HOLD, facts verified, claims blocked, missing evidence, required fixes, and whether the artifact can be shown to Alex/client.
+
+Subagent output is evidence, not approval. Final approval remains with the Release Captain after reading the exact rendered artifact.

@@ -10,6 +10,10 @@ Client-facing promise: VizBiz helps local businesses understand and improve visi
 
 Operational rule: if report evidence is weak, inconsistent, or generic, hold it for operator review. Do not auto-email questionable reports.
 
+Architecture rule: production launch must follow `docs/launch/report-quality-architecture-reset.md`. Report/email renderers should consume a client-safe payload, not raw research notes. The exact rendered output must be read before any test email, Alex preview, or client send.
+
+Subagent/model rule: use `docs/launch/subagent-model-strategy.md` for role/model routing. Subagents are inspectors only. Their output is not approval. Release Captain final visible-output review is mandatory.
+
 ## Current known readiness
 
 Green:
@@ -165,12 +169,16 @@ Pass:
 Open generated report slug.
 
 Check:
+- report is built from the approved `ClientReportPayload`, not raw research notes
 - popular AI visibility framing, not Perplexity-only
 - human-like AI question examples
 - no unsupported competitor claims
 - no stale vertical/dealership wording unless the business is a dealership
+- no internal/operator wording such as `the client named`, `paid report should`, `manual review`, `operator approval`, `auto-discovered competitors`, `internal only`, or pipeline/debug language
+- 0/N AI appearances displays `Not ranked` / `AI Presence`, never a flattering rank
 - paid CTA buttons visible
 - free report keeps exact fixes/details locked for paid
+- exact CTA route opens real intended content on `vizbiz.ai`
 
 ### 6. Stripe CTA smoke
 

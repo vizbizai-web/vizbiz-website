@@ -14,6 +14,28 @@ The current launch copy is usable for a controlled soft launch. It is strongest 
 
 Do not let the copy drift into guaranteed rankings, guaranteed revenue, or provider-specific claims.
 
+## Architecture reset dependency
+
+All launch copy QA now inherits the report-quality reset in `docs/launch/report-quality-architecture-reset.md`.
+
+That means launch copy is not approved just because it sounds better. It is approved only when the rendered report/email is backed by a client-safe payload, correct niche resolution, approved competitor provenance, verified CTA, and Release Captain visible-output review.
+
+Client-facing copy must not expose fulfillment mechanics or operator notes. Specifically block wording such as `the client named`, `paid report should`, `manual review`, `operator approval`, `human correction`, `auto-discovered competitors`, `internal only`, `client-ready deliverable`, fake slugs, QA/debug notes, and pipeline language.
+
+If competitor context must be mentioned, translate it into value language. Example:
+
+```txt
+LexHive should be positioned clearly against BridgeLegal and Broughton Partners so AI systems can understand where it fits, what makes it credible, and when it should be recommended.
+```
+
+Never write:
+
+```txt
+The client named BridgeLegal and Broughton Partners. That means the paid report should compare LexHive against those exact two...
+```
+
+That is internal operator logic and must never appear in an email, report, preview, or Alex QA artifact.
+
 ## Safe language to keep using
 
 Use:
@@ -114,6 +136,12 @@ Before sending a free or paid report to a real prospect, verify:
 [ ] Paid CTA copy is visible and understandable.
 [ ] Email link works.
 [ ] Mission Control/status reflects sent/held state.
+[ ] Rendered report/email body was personally read exactly as recipient will see it.
+[ ] No internal workflow/operator wording appears in visible output.
+[ ] 0/N AI appearances never displays a flattering rank; it displays Not ranked / AI Presence.
+[ ] Competitor claims include only client-supplied or operator-approved competitors.
+[ ] Search/API/provider fallback evidence is not rewritten as AI recommendation proof.
+[ ] Release Captain final review is recorded as APPROVED.
 ```
 
 ## Recommended Friday stance

@@ -8,6 +8,12 @@ Offers:
 
 Operating principle: paid deliverables must feel concrete, useful, and ethical. They should not be just “a better PDF.” They should show evidence, explain what it means, and give the business a realistic fix path.
 
+Architecture principle: paid reports must follow `docs/launch/report-quality-architecture-reset.md`. Use one approved `ClientReportPayload`, one approved `NicheResolution`, and confirmed competitor provenance before drafting or sending. The deliverable renderer should format approved facts, not invent rank, score, competitor claims, revenue ranges, or internal workflow narration.
+
+Visible-output principle: every paid report, delivery email, paid intake preview, and Alex-only QA artifact must be read exactly as the recipient will see it before sending. Block internal phrases such as `the client named`, `paid report should`, `manual review`, `operator approval`, `human correction`, `auto-discovered competitors`, `internal only`, `client-ready deliverable`, fake slugs, QA/debug notes, and pipeline wording.
+
+Subagent principle: use dedicated QA agents only as inspectors. Follow `docs/launch/subagent-model-strategy.md`; cheap/local models can lint, but final paid deliverable approval requires strong-model Release Captain review.
+
 ## Shared intake fields
 
 Collect before fulfillment:
