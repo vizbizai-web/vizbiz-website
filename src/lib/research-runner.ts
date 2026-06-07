@@ -1610,7 +1610,7 @@ function generateAIDiscoveryRecommendations(
   if (contentReadiness.groundingQueryReadiness < 70) {
     recs.push({
       title: 'Create Service-Specific Landing Pages',
-      description: 'AI models recommend businesses with dedicated pages for each service. Create location + service landing pages (e.g., "Used Car Financing in Austin") to match AI grounding queries.',
+      description: 'AI models recommend businesses with dedicated pages for each important service and location. Build focused service pages that answer real buyer questions, show proof, and make it easy for AI systems to understand when to recommend the business.',
       impact: 'High',
     });
   }

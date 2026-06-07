@@ -811,22 +811,6 @@ function AIDiscoveryAnalysis({ data, theme }: { data: LeadData; theme: Theme }) 
             How AI models discover, evaluate, and recommend your business — based on real AI behavior patterns.
           </p>
 
-          {/* Bing WMT Alert */}
-          {!discovery.bingWmtVerified && (
-            <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-              <div className="flex items-start gap-3">
-                <span className="text-lg">⚠️</span>
-                <div>
-                  <p className="text-sm font-medium mb-1" style={{ color: t.textSecondary }}>Bing Webmaster Tools Not Connected</p>
-                  <p className="text-xs leading-relaxed" style={{ color: t.textSecondary }}>
-                    Connecting Bing Webmaster Tools unlocks free AI visibility data including grounding queries. This is optional and does not affect your score.
-                    <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline ml-1" style={{ color: '#22D3EE' }}>Learn more →</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Content Readiness Score */}
           <div className="mb-8 p-5 rounded-xl" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
             <div className="flex items-center justify-between mb-4">
