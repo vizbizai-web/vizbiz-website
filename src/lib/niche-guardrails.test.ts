@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getPromptSetForNiche } from './prompt-curator';
+import { detectNiche } from './niche-detector';
 import { readFileSync } from 'node:fs';
 
 describe('niche guardrails', () => {
@@ -27,5 +28,22 @@ describe('niche guardrails', () => {
     expect(preflight).toContain("['electrician']");
     expect(research).toContain('electrical_contractor');
     expect(economics).toContain('Electrical Contractor');
+  });
+
+  it('does not let arbitrary new niches fall into car dealership through substring matches', () => {
+    const careBusiness = detectNiche(
+      'Bright Care Clinic',
+      'https://brightcare.example',
+      'We provide patient care, home care support, appointments, reviews, and trusted local health services.'
+    );
+    expect(careBusiness.niche).toBe('local_business');
+
+    const unknownBusiness = detectNiche(
+      'North Star Compliance',
+      'https://northstar.example',
+      'Risk assessment, ISO compliance, staff training, audit preparation, documentation, and advisory services.'
+    );
+    expect(unknownBusiness.niche).toBe('local_business');
+    expect(unknownBusiness.promptTemplates.join(' ')).not.toMatch(/car|dealer|dealership|inventory|trade-in/i);
   });
 });

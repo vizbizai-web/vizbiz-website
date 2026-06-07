@@ -449,17 +449,31 @@ const NICHES: NicheConfig[] = [
   }
 ];
 
+function keywordMatches(text: string, keyword: string): boolean {
+  const escaped = keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\s+/g, '\\s+');
+  // Match terms on word boundaries so "car" does not fire inside "care",
+  // "scarborough", or other unrelated words. That old behavior let the
+  // dealership branch steal arbitrary new niches.
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(text);
+}
+
 export function detectNiche(businessName: string, website: string, scrapedContent?: string): NicheConfig {
   const combinedText = `${businessName} ${website} ${scrapedContent || ""}`.toLowerCase();
   
-  // Check each niche for keyword matches
+  let best: { niche: NicheConfig; score: number } | null = null;
   for (const niche of NICHES) {
-    if (niche.keywords.some(keyword => combinedText.includes(keyword))) {
-      return niche;
+    const score = niche.keywords.filter(keyword => keywordMatches(combinedText, keyword)).length;
+    if (score > 0 && (!best || score > best.score)) {
+      best = { niche, score };
     }
   }
+
+  if (best) {
+    return best.niche;
+  }
   
-  // Default to local business with generic templates
+  // Unknown/new niches must degrade to a generic evidence-based local-business
+  // profile, never to a stale car-dealership default.
   return {
     niche: "local_business",
     keywords: [],

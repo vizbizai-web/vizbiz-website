@@ -5,7 +5,9 @@
  * when researching a business. Based on Edward Sturm's query fan-out methodology.
  *
  * Since we can't intercept AI model browser calls directly, we estimate fan-out
- * by running meta-prompts through Tavily and extracting search intent patterns.
+ * with deterministic, niche-aware buyer/research queries. Search-result titles
+ * are used later only as coverage evidence, not as new client-facing queries,
+ * because arbitrary titles like "Question Time - UK Parliament" are search noise.
  */
 
 import { tavilySearch as sharedTavilySearch, type TavilySearchResult } from "./tavily-client";
@@ -52,61 +54,143 @@ async function tavilySearch(query: string, maxResults = 5): Promise<TavilyResult
 // 1. Extract fan-out queries
 // ---------------------------------------------------------------------------
 
+const NICHE_QUERY_LABELS: Record<string, { singular: string; plural: string; trustSignals?: string[]; serviceIntents?: string[] }> = {
+  electrical_contractor: {
+    singular: "electrical contractor",
+    plural: "electrical contractors",
+    trustSignals: ["NICEIC", "CHAS", "Safe Contractor", "emergency electrical service"],
+    serviceIntents: ["electrical installations", "electrical maintenance", "commercial electrical work", "24/7 electrical callout"],
+  },
+  car_dealership: {
+    singular: "car dealership",
+    plural: "car dealerships",
+    trustSignals: ["reviews", "service department", "financing options"],
+    serviceIntents: ["used cars", "new cars", "trade-in", "certified pre-owned vehicles"],
+  },
+  local_business: { singular: "local business", plural: "local businesses" },
+};
+
+const BROAD_MARKETS = new Set([
+  "united kingdom", "uk", "great britain", "england", "scotland", "wales", "ireland",
+  "united states", "usa", "us", "canada", "australia", "new zealand", "europe",
+]);
+
+const SEARCH_NOISE_PATTERNS = [
+  /\bquestion time\b/i,
+  /\bparliament\b/i,
+  /\bnhs\b/i,
+  /\bpatients are asked\b/i,
+  /\blaundry questions\b/i,
+  /\bcustoms\b/i,
+  /\btripadvisor\b/i,
+  /^ask the\b/i,
+  /\bmessage board\b/i,
+  /\bforum\b/i,
+];
+
+function getNicheQueryLabel(niche: string) {
+  const fallback = niche.replace(/_/g, " ").trim().toLowerCase() || "local business";
+  return NICHE_QUERY_LABELS[niche] ?? { singular: fallback, plural: `${fallback}s` };
+}
+
+function isBroadMarket(city: string): boolean {
+  const normalized = city.trim().toLowerCase();
+  return !normalized || BROAD_MARKETS.has(normalized);
+}
+
+function significantBusinessTokens(businessName: string): string[] {
+  return businessName
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length >= 4 && !["ltd", "limited", "inc", "llc", "services", "service", "company", "group"].includes(token));
+}
+
+function uniqueOrdered(items: string[]): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+  for (const item of items) {
+    const cleaned = item.replace(/\s+/g, " ").trim();
+    const key = cleaned.toLowerCase();
+    if (!cleaned || seen.has(key)) continue;
+    seen.add(key);
+    output.push(cleaned);
+  }
+  return output;
+}
+
+function buildDeterministicFanoutQueries(businessName: string, city: string, niche: string): string[] {
+  const label = getNicheQueryLabel(niche);
+  const broadMarket = isBroadMarket(city);
+  const market = city.trim();
+  const localSuffix = broadMarket ? "" : ` in ${market}`;
+  const trustSignals = label.trustSignals ?? ["reviews", "credentials", "recommendations"];
+  const serviceIntents = label.serviceIntents ?? [label.singular, "pricing", "reviews"];
+
+  const brandAnchored = [
+    `Is ${businessName} a trusted ${label.singular}${localSuffix}?`,
+    `What do reviews say about ${businessName}?`,
+    `What services does ${businessName} offer?`,
+    `How does ${businessName} compare with other ${label.plural}${localSuffix}?`,
+    `Is ${businessName} recommended for ${serviceIntents[0]}?`,
+  ];
+
+  const localDiscovery = broadMarket ? [
+    `What proof should customers check before choosing a ${label.singular}?`,
+    `Does ${businessName} show clear ${label.singular} credentials and service coverage?`,
+  ] : [
+    `Which ${label.plural} are recommended in ${market}?`,
+    `Best reviewed ${label.plural} near ${market}`,
+  ];
+
+  const trustQueries = trustSignals.slice(0, 3).map((signal) => `${businessName} ${signal}`);
+  const serviceQueries = serviceIntents.slice(0, 3).map((intent) => `${businessName} ${intent}`);
+
+  return uniqueOrdered([...brandAnchored, ...localDiscovery, ...trustQueries, ...serviceQueries]).slice(0, 12);
+}
+
+export function isClientSafeFanoutQuery(query: string, businessName: string, city: string, niche: string): boolean {
+  const cleaned = query.replace(/\s+/g, " ").trim();
+  if (cleaned.length < 10 || cleaned.length > 180) return false;
+  if (SEARCH_NOISE_PATTERNS.some((pattern) => pattern.test(cleaned))) return false;
+  if (/[_{}]/.test(cleaned)) return false;
+
+  const lower = cleaned.toLowerCase();
+  const label = getNicheQueryLabel(niche);
+  const nicheWords = new Set(label.singular.split(/\s+/).filter((word) => word.length >= 4));
+  const hasNicheWord = [...nicheWords].some((word) => lower.includes(word));
+  const hasBusinessToken = significantBusinessTokens(businessName).some((token) => lower.includes(token));
+  const hasSpecificLocality = !isBroadMarket(city) && city.trim().length > 0 && lower.includes(city.trim().toLowerCase());
+
+  // Broad country markets create generic web noise. Require brand or niche proof,
+  // and never show unrelated country/question/forum titles as fan-out evidence.
+  return hasBusinessToken || hasNicheWord || hasSpecificLocality;
+}
+
 /**
  * Build the set of queries an AI model would likely search when asked about
  * a business in a given niche and city.
  *
- * Strategy: run several "meta-prompts" through Tavily, then extract unique
- * search intents from the returned result snippets.
+ * Strategy: build deterministic, niche-aware buyer/research queries. Search
+ * results are used in scoreFanoutCoverage to check visibility, but they do not
+ * create additional client-facing query rows. This keeps the pipeline relevant,
+ * cheaper, faster, and resistant to broad-market search sludge.
  */
 export async function extractFanoutQueries(
   businessName: string,
   city: string,
   niche: string
 ): Promise<QueryFanoutResult> {
-  const primaryQuery = `${niche} in ${city}`;
-
-  // Meta-prompts designed to surface the kinds of follow-up searches an AI
-  // would perform when researching a business.
-  const metaPrompts = [
-    `What questions do people ask about ${businessName} in ${city}`,
-    `What are the top ${niche} businesses in ${city}`,
-    `${businessName} ${city} reviews recommendations`,
-    `best ${niche} near ${city} 2025`,
-    `${niche} ${city} comparison alternatives ${businessName}`,
-  ];
-
-  // Run all meta-prompts in parallel
-  const allResults = await Promise.all(
-    metaPrompts.map((q) => tavilySearch(q, 5).catch(() => [] as TavilyResult[]))
-  );
-
-  // Collect unique fan-out queries from result titles/snippets.
-  // We also keep the meta-prompts themselves since they represent likely AI queries.
-  const querySet = new Set<string>(metaPrompts);
-
-  for (const results of allResults) {
-    for (const r of results) {
-      // Use the title as a proxy for the search intent the result answers
-      if (r.title) {
-        const normalised = r.title.trim();
-        if (normalised.length > 10 && normalised.length < 200) {
-          querySet.add(normalised);
-        }
-      }
-    }
-  }
-
-  // Derive confidence based on how many results came back
-  const totalResults = allResults.flat().length;
-  const confidence: QueryFanoutResult["confidence"] =
-    totalResults >= 15 ? "high" : totalResults >= 8 ? "medium" : "low";
+  const label = getNicheQueryLabel(niche);
+  const primaryQuery = `${label.singular} ${isBroadMarket(city) ? businessName : `in ${city}`}`;
+  const fanoutQueries = buildDeterministicFanoutQueries(businessName, city, niche)
+    .filter((q) => isClientSafeFanoutQuery(q, businessName, city, niche))
+    .slice(0, 12);
 
   return {
     primaryQuery,
-    fanoutQueries: Array.from(querySet),
+    fanoutQueries,
     source: "estimated", // We can't intercept actual AI browser calls yet
-    confidence,
+    confidence: "medium",
   };
 }
 
