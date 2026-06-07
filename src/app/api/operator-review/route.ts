@@ -5,7 +5,7 @@
  * Actions:
  *  - approve: Flip status from pending_review → approved → report goes live
  *  - hold: Keep pending_review, add notes about why
- *  - rerun: Reset to new so process-lead picks it up again
+ *  - rerun: Reset to new so pipeline/process picks it up again
  *  - fix: Accept JSON patches to research data, then approve
  */
 
@@ -121,10 +121,10 @@ export async function POST(request: NextRequest) {
         const baseUrl = process.env.VERCEL_URL
           ? `https://${process.env.VERCEL_URL}`
           : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-        fetch(`${baseUrl}/api/process-lead`, {
+        fetch(`${baseUrl}/api/pipeline/process`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ leadId }),
+          body: JSON.stringify({ leadId, force: true, researchMode: 'free' }),
         }).catch(() => {});
 
         return NextResponse.json({ success: true, action: "rerun", leadId });

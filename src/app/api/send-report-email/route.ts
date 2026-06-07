@@ -3,6 +3,7 @@ import { buildReportUrl } from '@/lib/report-token';
 import { sendVizBizEmail } from '@/lib/resend-mailer';
 import { getLeadByLeadId } from '@/lib/google-sheets';
 import { buildReportEmailHtml, buildReportEmailSubject } from '@/lib/report-email';
+import { verifyReportCta } from '@/lib/report-cta-verifier';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     const reportUrl = lead.reportUrl || buildReportUrl(leadId);
+    await verifyReportCta(reportUrl);
     const nicheLabels: Record<string, string> = {
       spray_tanning: 'spray tanning',
       beauty_salon: 'beauty & salon',
