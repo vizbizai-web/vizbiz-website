@@ -134,16 +134,18 @@ export async function runPreflightStage(
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
     const preflightResult = await preflightScan(lead.website, lead.city);
 
-    // 6. Parse competitorMode from notes
-    const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
-    const competitorMode = modeMatch?.[1] === "client_provided" ? "client_provided" : "client_only";
-
-    // 7. Parse competitors from notes
+    // 6. Parse competitors from the durable lead field. Force reruns may replace
+    // notes, so notes-only competitor mode detection loses submitted competitors.
     const competitors: string[] = (() => {
       const compStr = lead.competitor || "";
       if (!compStr) return [];
       return compStr.split(",").map((c: string) => c.trim()).filter((c: string) => c.length > 0);
     })();
+
+    // 7. Determine competitorMode. Prefer explicit stored metadata, but any
+    // submitted competitor names must keep the rerun in client_provided mode.
+    const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
+    const competitorMode = modeMatch?.[1] === "client_provided" || competitors.length > 0 ? "client_provided" : "client_only";
 
     // 8. Store preflight data in notes
     const preflightJson = JSON.stringify({
