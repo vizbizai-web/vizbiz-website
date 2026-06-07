@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free AI Visibility Test | VizBiz.ai",
+  title: "AI Visibility Snapshot Intake | VizBiz.ai",
   description:
-    "Run a free AI visibility test to see whether your business is clear, trusted, and recommendation-ready across popular AI search assistants.",
+    "Request an AI visibility snapshot to see whether your business is clear, trusted, and recommendation-ready across popular AI search assistants.",
   alternates: {
-    canonical: "https://vizbiz.ai/free-ai-visibility-test/",
+    canonical: "https://vizbiz.ai/intake/",
   },
 };
 

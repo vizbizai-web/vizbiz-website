@@ -40,10 +40,10 @@ export const links = {
   intakeFromBlog: (slug: string) => utmLink('/intake/', 'blog', 'cta-button', slug),
   /** Intake form from outreach emails */
   intakeFromEmail: (leadName: string) => utmLink('/intake/', 'email', 'outreach', leadName),
-  /** Free test from X posts */
-  freeTestFromX: (campaign: string) => utmLink('/free-ai-visibility-test/', 'x', 'post', campaign),
-  /** Free test from blog */
-  freeTestFromBlog: (slug: string) => utmLink('/free-ai-visibility-test/', 'blog', 'cta-button', slug),
+  /** Legacy free-test aliases now route to the real intake funnel. */
+  freeTestFromX: (campaign: string) => utmLink('/intake/', 'x', 'post', campaign, 'legacy-free-test'),
+  /** Legacy free-test aliases now route to the real intake funnel. */
+  freeTestFromBlog: (slug: string) => utmLink('/intake/', 'blog', 'cta-button', slug, 'legacy-free-test'),
   /** Homepage from X bio */
   homeBio: () => utmLink('/', 'x', 'bio', 'profile-link'),
   /** Book a call from any source */
