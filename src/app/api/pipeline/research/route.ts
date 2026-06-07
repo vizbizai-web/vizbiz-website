@@ -5,10 +5,11 @@
  * On success, fires review phase.
  */
 
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getLeadByLeadId } from "@/lib/google-sheets";
 import { runResearchStage } from "@/lib/pipeline-controller";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
+import { buildPipelineBaseUrl } from "@/lib/pipeline-url";
 
 // Research takes 60-120s (Sonar calls + competitor discovery + social signals)
 export const maxDuration = 300;
@@ -53,6 +54,25 @@ export async function POST(request: Request) {
   } catch (alertErr) {
     console.warn(`[pipeline/research] Alert failed (non-blocking):`, alertErr);
   }
+
+  // Trigger operator-review classification after the research response. This
+  // keeps client delivery blocked, but makes the next operator step happen.
+  const baseUrl = buildPipelineBaseUrl(request.url);
+  after(async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/pipeline/review/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId }),
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        console.error(`[pipeline/research] review trigger failed for ${leadId}`, { status: response.status, body: text.slice(0, 500) });
+      }
+    } catch (err) {
+      console.error(`[pipeline/research] review trigger failed for ${leadId}:`, err);
+    }
+  });
 
   return NextResponse.json({
     success: true,

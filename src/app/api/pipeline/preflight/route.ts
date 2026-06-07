@@ -5,8 +5,9 @@
  * On success, triggers research stage.
  */
 
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { runPreflightStage } from "@/lib/pipeline-controller";
+import { buildPipelineBaseUrl } from "@/lib/pipeline-url";
 
 // Preflight takes 30-60s (Firecrawl scrape + LLM classification + SEO audit)
 export const maxDuration = 120;
@@ -32,18 +33,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, leadId, skipped: true });
   }
 
-  // Trigger research in background
-  const requestOrigin = new URL(request.url).origin;
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : requestOrigin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  // Trigger research after the response using Next/Vercel's lifecycle hook.
+  // Plain un-awaited fetches were freezing before execution in production.
+  const baseUrl = buildPipelineBaseUrl(request.url);
 
-  fetch(`${baseUrl}/api/pipeline/research`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ leadId, researchMode: researchMode || "free" }),
-  }).catch((err) => {
-    console.error(`[pipeline/preflight] research trigger failed for ${leadId}:`, err);
+  after(async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/pipeline/research/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId, researchMode: researchMode || "free" }),
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        console.error(`[pipeline/preflight] research trigger failed for ${leadId}`, { status: response.status, body: text.slice(0, 500) });
+      }
+    } catch (err) {
+      console.error(`[pipeline/preflight] research trigger failed for ${leadId}:`, err);
+    }
   });
 
   return NextResponse.json({

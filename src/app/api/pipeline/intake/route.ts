@@ -5,10 +5,11 @@
  * Fires preflight in the background.
  */
 
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { appendLead, isSheetsConfigured } from "@/lib/google-sheets";
 import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
 import { buildPostIntakeRedirect } from "@/lib/funnel-logic";
+import { buildPipelineBaseUrl } from "@/lib/pipeline-url";
 
 type IntakePayload = {
   name: string;
@@ -180,19 +181,26 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fire preflight in background only after the lead is durably stored.
+  // Fire preflight after the response only after the lead is durably stored.
+  // Plain fire-and-forget fetches are unreliable in Vercel serverless runtimes:
+  // the invocation can freeze immediately after returning the intake response.
   if (leadId) {
-    const requestOrigin = new URL(request.url).origin;
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : requestOrigin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const baseUrl = buildPipelineBaseUrl(request.url);
 
-    fetch(`${baseUrl}/api/pipeline/preflight`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ leadId }),
-    }).catch((err) => {
-      console.error("[pipeline/intake] preflight trigger failed (non-blocking):", err);
+    after(async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/pipeline/preflight/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId }),
+        });
+        if (!response.ok) {
+          const text = await response.text().catch(() => "");
+          console.error("[pipeline/intake] preflight trigger failed", { leadId, status: response.status, body: text.slice(0, 500) });
+        }
+      } catch (err) {
+        console.error("[pipeline/intake] preflight trigger failed", err);
+      }
     });
   }
 
