@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 const pillars = [
   {
-    label: 'Technical SEO foundation',
-    status: 'Starting',
-    detail: 'Search Console, sitemap, canonicals, indexation, speed, mobile, schema, and route hygiene.',
+    label: 'Technical visibility foundation',
+    status: 'Active',
+    detail: 'Search Console, Bing Webmaster Tools, IndexNow, sitemap, llms.txt, canonicals, schema, speed, mobile, and route hygiene.',
   },
   {
     label: 'GEO / AEO authority pages',
@@ -27,11 +27,39 @@ const dailyRhythm = [
   'Protect client intake and report pipeline first.',
   'Spend one focused block on VizBiz.ai SEO/GEO/AEO visibility work.',
   'Ship or improve one indexable/citable asset whenever possible.',
-  'Track Search Console, sitemap, llms.txt, AI citability, and conversion path health.',
+  'Track Search Console, Bing Webmaster Tools, IndexNow, sitemap, llms.txt, AI citability, and conversion path health.',
+];
+
+const foundationTasks = [
+  {
+    label: 'Bing Webmaster Tools verification',
+    status: 'Todo',
+    detail: 'Verify vizbiz.ai in Bing Webmaster Tools and keep the verification proof out of client-facing report copy.',
+  },
+  {
+    label: 'Submit VizBiz sitemap to Bing',
+    status: 'Todo',
+    detail: 'Submit https://vizbiz.ai/sitemap.xml after verification and record the date/status in Mission Control.',
+  },
+  {
+    label: 'IndexNow setup',
+    status: 'Todo',
+    detail: 'Add an IndexNow key file and submission route if practical, then use it for new/updated authority pages.',
+  },
+  {
+    label: 'Broaden llms.txt positioning',
+    status: 'Done',
+    detail: 'Update llms.txt away from dealership-only positioning so AI systems understand VizBiz serves local businesses broadly.',
+  },
+  {
+    label: 'Internal dogfood checklist',
+    status: 'Todo',
+    detail: 'Show these as VizBiz Visibility Engine tasks, not client-report warnings or technical noise.',
+  },
 ];
 
 const firstBuilds = [
-  '/ai-visibility-audit-for-car-dealerships//',
+  '/ai-visibility-audit-for-car-dealerships/',
   '/ai-visibility-for-local-businesses/',
   '/generative-engine-optimization/',
   '/answer-engine-optimization/',
@@ -99,6 +127,31 @@ export default function VisibilityEnginePage() {
           <Link href="/mission-control/calendar" className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/15 sm:w-auto">
             View scheduled tasks
           </Link>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800/60 bg-[#0A0B14]/85 p-4 sm:p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-200">Dogfood foundation queue</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">VizBiz.ai must use the visibility stack we sell</h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-slate-400">
+            These are internal Visibility Engine tasks. They should strengthen VizBiz.ai and Mission Control, not leak as client-facing report warnings.
+          </p>
+        </div>
+        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {foundationTasks.map((task) => (
+            <article key={task.label} className="min-w-0 rounded-xl border border-slate-800/60 bg-slate-950/40 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="break-words text-sm font-semibold text-white">{task.label}</h3>
+                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${task.status === 'Done' ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' : 'border-amber-300/30 bg-amber-300/10 text-amber-200'}`}>
+                  {task.status}
+                </span>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-slate-400">{task.detail}</p>
+            </article>
+          ))}
         </div>
       </section>
 
