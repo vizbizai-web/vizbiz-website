@@ -5,7 +5,7 @@ import { parseResearchDataFromNotes } from './report-data';
 describe('Mission Control report preview', () => {
   it('parses current pipeline research JSON followed by review notes', () => {
     const notes = JSON.stringify({
-      preflight: { niche: 'beauty_salon' },
+      preflight: { niche: 'endermologie_clinic', nicheLabel: 'Endermologie / Body Contouring Clinic' },
       competitorMode: 'client_provided',
       competitors: ['Bayside Endermologie', 'Natural Health and Beauty with Endermologie'],
       research: {
@@ -14,7 +14,7 @@ describe('Mission Control report preview', () => {
         totalPrompts: 5,
         statusBand: 'Weak',
         promptResults: [{ prompt: 'best endermologie clinic in Melbourne', businessAppeared: false, competitorAppeared: true }],
-        niche: 'beauty_salon',
+        niche: 'endermologie_clinic',
         competitorValidations: [{ name: 'Bayside Endermologie', validationStatus: 'validated', rating: 5, userReviewCount: 37 }],
       },
     }) + '\n[Review: pending_review at 2026-06-07T03:41:17.196Z]';
@@ -24,6 +24,7 @@ describe('Mission Control report preview', () => {
     expect(parsed?.appearedCount).toBe(0);
     expect(parsed?.totalPrompts).toBe(5);
     expect(parsed?.competitorMode).toBe('client_provided');
+    expect(parsed?.nicheLabel).toBe('Endermologie / Body Contouring Clinic');
     expect(parsed?.competitorValidations?.[0]?.name).toBe('Bayside Endermologie');
   });
 

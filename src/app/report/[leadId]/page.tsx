@@ -20,6 +20,7 @@ export type ResearchData = {
   contactName: string;
   competitor: string;
   niche: string;
+  nicheLabel?: string;
   appearedCount: number;
   totalPrompts: number;
   statusBand: string;

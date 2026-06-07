@@ -76,6 +76,9 @@ export default async function MissionControlReportPreviewPage({
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div>
             <strong>Mission Control operator preview.</strong> This is visible for review before client approval. Do not send if niche, prompts, or evidence are wrong.
+            <div className="mt-1 text-xs text-amber-200/90">
+              Niche: {researchData.nicheLabel || researchData.niche || 'Unknown'} · Visibility: {researchData.appearedCount} of {researchData.totalPrompts} AI queries · Competitors: {lead.competitor || 'None supplied'}
+            </div>
           </div>
           <Link className="rounded-lg border border-cyan-300/30 px-3 py-1.5 text-cyan-200 hover:bg-cyan-300/10" href={`/mission-control/leads/${leadId}`}>
             Back to lead

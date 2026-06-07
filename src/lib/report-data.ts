@@ -41,6 +41,7 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
     if (!parsed?.research) return null;
     return {
       ...parsed.research,
+      nicheLabel: parsed.preflight?.nicheLabel,
       competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
       internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
       competitorValidations: parsed.research.competitorValidations,
