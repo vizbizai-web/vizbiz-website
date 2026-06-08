@@ -4,6 +4,7 @@ export type ReportEmailData = {
   businessName: string;
   contactName?: string;
   city?: string;
+  primaryMarket?: string;
   reportUrl: string;
   aviScore?: number | string;
   statusBand?: string;
@@ -62,7 +63,7 @@ function formatCount(appearedCount?: number, totalPrompts?: number): string {
   return "Ready";
 }
 
-function competitorContext(competitors: string[], businessName: string): string {
+function competitorContext(competitors: string[], businessName: string, businessType?: string, market?: string): string {
   const clean = competitors.map((name) => name.trim()).filter(Boolean).slice(0, 2);
   if (clean.length >= 2) {
     return `${businessName} should be positioned clearly against ${clean[0]} and ${clean[1]} so AI systems can understand where it fits, what makes it credible, and when it should be recommended.`;
@@ -70,35 +71,55 @@ function competitorContext(competitors: string[], businessName: string): string 
   if (clean.length === 1) {
     return `${businessName} should be positioned clearly against ${clean[0]} so AI systems can understand where it fits, what makes it credible, and when it should be recommended.`;
   }
-  return `${businessName} should be easier for AI systems to understand, verify, and recommend when customers compare options in your market.`;
+  const category = businessType?.trim() || "local business";
+  const scope = market?.trim() ? ` across ${market.trim()}` : " in its market";
+  return `The opportunity is to make ${businessName} easier to verify and recommend for ${category} searches${scope}.`;
 }
 
 export function buildReportEmailSubject(data: ReportEmailData): string {
   const businessName = data.businessName.trim() || "your business";
-  return `${businessName} AI visibility snapshot is ready`;
+  return `${businessName}: your AI visibility snapshot is ready`;
+}
+
+function metricSummary(appearedCount?: number, totalPrompts?: number, statusBand?: string): string {
+  if (typeof appearedCount === "number" && typeof totalPrompts === "number" && totalPrompts > 0) {
+    const band = statusBand?.trim() ? ` (${statusBand.trim()})` : "";
+    return `Appeared in ${appearedCount} of ${totalPrompts} AI recommendation checks${band}.`;
+  }
+  return statusBand?.trim() ? `Visibility band: ${statusBand.trim()}.` : "Your snapshot is ready to review.";
 }
 
 export function buildReportEmailHtml(data: ReportEmailData): string {
   const reportUrl = assertValidReportEmailCta(data.reportUrl);
-  const businessName = escapeHtml(data.businessName.trim() || "your business");
-  const firstName = escapeHtml((data.contactName || "there").trim().split(/\s+/)[0] || "there");
+  const rawBusinessName = data.businessName.trim() || "your business";
+  const businessName = escapeHtml(rawBusinessName);
+  const rawContactName = (data.contactName || "").trim();
+  const normalizedContact = rawContactName.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normalizedBusiness = rawBusinessName.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const safeContactName = normalizedContact && normalizedContact !== normalizedBusiness && !normalizedBusiness.includes(normalizedContact)
+    ? rawContactName
+    : "there";
+  const firstName = escapeHtml(safeContactName.trim().split(/\s+/)[0] || "there");
   const rawCity = (data.city || "").trim();
+  const rawPrimaryMarket = (data.primaryMarket || "").trim();
   const rawNicheLabel = (data.nicheLabel || "").trim();
+  const marketLabel = rawPrimaryMarket || rawCity;
   const comparisonScope = escapeHtml(
-    rawNicheLabel && rawCity
-      ? `${rawNicheLabel} options in ${rawCity}`
+    rawNicheLabel && marketLabel
+      ? `${rawNicheLabel} options in ${marketLabel}`
       : rawNicheLabel
         ? `${rawNicheLabel} options`
-        : rawCity
-          ? `options in ${rawCity}`
+        : marketLabel
+          ? `options in ${marketLabel}`
           : "options in their market"
   );
   const score = data.aviScore !== undefined && data.aviScore !== null ? escapeHtml(String(data.aviScore)) : "—";
   const statusBand = escapeHtml((data.statusBand || "Visibility review").trim());
   const count = escapeHtml(formatCount(data.appearedCount, data.totalPrompts));
-  const context = escapeHtml(competitorContext(data.competitors || [], data.businessName.trim() || "Your business"));
-  const ctaLabel = data.isPaid ? "View the full AI visibility report" : "View the private AI visibility snapshot";
-  const preheader = escapeHtml(`A focused look at how clearly AI systems can understand, verify, and recommend ${data.businessName.trim() || "your business"}.`);
+  const context = escapeHtml(competitorContext(data.competitors || [], data.businessName.trim() || "Your business", rawNicheLabel, marketLabel));
+  const ctaLabel = data.isPaid ? "Open the full AI visibility report" : "Open the private snapshot";
+  const metricLine = escapeHtml(metricSummary(data.appearedCount, data.totalPrompts, data.statusBand));
+  const preheader = escapeHtml(metricSummary(data.appearedCount, data.totalPrompts, data.statusBand));
 
   const html = `<!doctype html>
 <html lang="en">
@@ -117,9 +138,10 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
             <tr>
               <td style="padding:40px 34px 32px;border-bottom:1px solid rgba(255,255,255,.08);">
                 <img src="https://vizbiz.ai/logo.jpg" width="118" alt="VizBiz.ai" style="display:block;border-radius:8px;margin-bottom:30px;" />
-                <p style="margin:0 0 14px;color:#22d3ee;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;">AI Visibility Snapshot</p>
-                <h1 style="margin:0;color:#ffffff;font-size:34px;line-height:1.12;letter-spacing:-.035em;font-weight:750;">${businessName} visibility snapshot</h1>
-                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we reviewed how clearly ${businessName} can be understood and recommended by popular AI assistants when customers compare ${comparisonScope}.</p>
+                <p style="margin:0 0 14px;color:#22d3ee;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;">Private AI Visibility Snapshot</p>
+                <h1 style="margin:0;color:#ffffff;font-size:34px;line-height:1.12;letter-spacing:-.035em;font-weight:750;">Your snapshot for ${businessName} is ready.</h1>
+                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we checked how clearly popular AI assistants and AI-powered search tools can understand, verify, and recommend ${businessName} when people compare ${comparisonScope}.</p>
+                <p style="margin:16px 0 0;color:#e2e8f0;font-size:15px;line-height:1.65;font-weight:650;">${metricLine}</p>
               </td>
             </tr>
             <tr>
@@ -140,12 +162,12 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                   </tr>
                 </table>
 
-                <p style="margin:0 0 24px;color:#e2e8f0;font-size:16px;line-height:1.75;">The short version: ${businessName} needs to be easier for AI systems to explain, verify, and compare. The opportunity is not just “showing up.” It is becoming the business AI can confidently recommend when the question matches what you do.</p>
+                <p style="margin:0 0 24px;color:#e2e8f0;font-size:16px;line-height:1.75;">The short version: visibility is not only about whether your name appears. It is about whether AI can explain why ${businessName} is a credible choice when the customer is ready to pick someone.</p>
 
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 26px;">
                   <tr>
                     <td style="background:#0f172a;border:1px solid rgba(34,211,238,.18);border-radius:20px;padding:24px;">
-                      <p style="margin:0 0 10px;color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;">Comparison readiness</p>
+                      <p style="margin:0 0 10px;color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;">What this means</p>
                       <p style="margin:0;color:#ffffff;font-size:18px;line-height:1.65;font-weight:650;">${context}</p>
                     </td>
                   </tr>
@@ -154,11 +176,11 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 30px;">
                   <tr>
                     <td style="background:#081827;border-left:4px solid #22d3ee;border-radius:18px;padding:22px 24px;">
-                      <p style="margin:0 0 12px;color:#ffffff;font-size:15px;font-weight:750;">What the snapshot clarifies</p>
+                      <p style="margin:0 0 12px;color:#ffffff;font-size:15px;font-weight:750;">Inside the snapshot</p>
                       <ul style="margin:0;padding-left:20px;color:#cbd5e1;font-size:15px;line-height:1.8;">
-                        <li>Whether AI assistants can accurately describe what ${businessName} does.</li>
-                        <li>Which trust signals help you look credible beside named alternatives.</li>
-                        <li>Where your website, content, and structured authority need clearer proof.</li>
+                        <li>Which buyer-style AI questions surfaced ${businessName}, and which did not.</li>
+                        <li>How clearly your site explains your services, market, and trust signals.</li>
+                        <li>Where better proof could help AI systems recommend you with more confidence.</li>
                       </ul>
                     </td>
                   </tr>
@@ -177,7 +199,7 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
             </tr>
             <tr>
               <td style="padding:26px 34px;background:#020617;border-top:1px solid rgba(34,211,238,.16);">
-                <p style="margin:0;color:#cbd5e1;font-size:14px;line-height:1.7;">— Alex<br /><span style="color:#94a3b8;">VizBiz.ai</span></p>
+                <p style="margin:0;color:#cbd5e1;font-size:14px;line-height:1.7;">— Alex<br /><span style="color:#94a3b8;">Founder, VizBiz.ai</span></p>
               </td>
             </tr>
           </table>

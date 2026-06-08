@@ -25,6 +25,31 @@ function splitCompetitors(value: string | undefined): string[] {
     .slice(0, 2);
 }
 
+function parseLeadNotes(notes: string): { preflight: any; research: any } {
+  if (!notes?.trim()) return { preflight: null, research: null };
+  try {
+    const parsed = JSON.parse(notes);
+    return { preflight: parsed?.preflight || null, research: parsed?.research || null };
+  } catch {
+    return { preflight: null, research: null };
+  }
+}
+
+function parseAppearedSnapshot(value: string | undefined): { appearedCount?: number; totalPrompts?: number } {
+  const match = (value || '').match(/(\d+)\s*(?:of|\/)\s*(\d+)/i);
+  if (!match) return {};
+  return { appearedCount: Number(match[1]), totalPrompts: Number(match[2]) };
+}
+
+function scoreFromLead(snapshotAppeared: string | undefined, preflight: any, bodyScore: unknown): number | undefined {
+  const explicit = numberValue(bodyScore);
+  if (explicit !== undefined) return explicit;
+  const preflightScore = numberValue(preflight?.aiReadinessScore);
+  if (preflightScore !== undefined) return preflightScore;
+  const scoreMatch = (snapshotAppeared || '').match(/^(\d+)\s*\/\s*100$/);
+  return scoreMatch ? Number(scoreMatch[1]) : undefined;
+}
+
 async function sendEmail(to: string, subject: string, html: string): Promise<string> {
   return sendVizBizEmail({ to, subject, html });
 }
@@ -74,20 +99,25 @@ export async function POST(req: NextRequest) {
     const businessName = body.businessName || lead.dealershipName;
     const contactName = body.contactName || lead.contactName;
     const city = body.city || lead.city;
-    const niche = body.niche;
+    const { preflight, research } = parseLeadNotes(lead.notes || '');
+    const niche = body.niche || preflight?.niche || research?.niche;
+    const snapshotCounts = parseAppearedSnapshot(lead.snapshotAppeared);
+    const appearedCount = numberValue(body.appearedCount) ?? numberValue(research?.appearedCount) ?? snapshotCounts.appearedCount;
+    const totalPrompts = numberValue(body.totalPrompts) ?? numberValue(research?.totalPrompts) ?? snapshotCounts.totalPrompts;
     const competitors = splitCompetitors(lead.clientProvidedCompetitors || lead.competitor || body.competitorName);
 
     const html = buildReportEmailHtml({
       businessName,
       contactName,
       city,
+      primaryMarket: preflight?.primaryMarket,
       reportUrl,
-      aviScore: numberValue(body.aviScore ?? lead.snapshotAppeared),
+      aviScore: scoreFromLead(lead.snapshotAppeared, preflight, body.aviScore),
       statusBand: body.statusBand || lead.visibilityBand,
-      appearedCount: numberValue(body.appearedCount),
-      totalPrompts: numberValue(body.totalPrompts),
+      appearedCount,
+      totalPrompts,
       competitors,
-      nicheLabel: nicheLabels[niche] || 'local business',
+      nicheLabel: preflight?.businessType || preflight?.nicheLabel || nicheLabels[niche] || 'local business',
       isPaid: isPaidSend,
     });
 

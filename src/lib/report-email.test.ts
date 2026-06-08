@@ -16,6 +16,7 @@ describe("report email", () => {
       businessName: "LexHive",
       contactName: "Alex",
       city: "Toronto",
+      primaryMarket: "Greater Toronto Area",
       reportUrl: "https://vizbiz.ai/report/lexhive?preview=1",
       aviScore: 42,
       statusBand: "Moderate",
@@ -26,10 +27,12 @@ describe("report email", () => {
     });
 
     expect(buildReportEmailSubject({ businessName: "LexHive", reportUrl: "/report/lexhive" })).toBe(
-      "LexHive AI visibility snapshot is ready"
+      "LexHive: your AI visibility snapshot is ready"
     );
     expect(html).toContain("BridgeLegal and Broughton Partners");
-    expect(html).toContain("View the private AI visibility snapshot");
+    expect(html).toContain("legal referral and case-growth options in Greater Toronto Area");
+    expect(html).toContain("Open the private snapshot");
+    expect(html).toContain("Appeared in 2 of 5 AI recommendation checks");
     expect(html).not.toMatch(/dealership|Does ChatGPT|AI-driven buyers|60 seconds|free-ai-visibility-test/i);
     expect(runClientCopyQA(html).ok).toBe(true);
   });
@@ -37,6 +40,7 @@ describe("report email", () => {
   it("does not invent a contact name, city, or niche when those facts are not supplied", () => {
     const html = buildReportEmailHtml({
       businessName: "LexHive",
+      contactName: "LexHive",
       reportUrl: "https://vizbiz.ai/report/lexhive?preview=1",
       aviScore: 42,
       statusBand: "Moderate",
@@ -46,8 +50,8 @@ describe("report email", () => {
     });
 
     expect(html).toContain("Hi there,");
-    expect(html).toContain("when customers compare options in their market");
-    expect(html).not.toMatch(/Hi Alex|Toronto|legal marketing|legal referral|your market/i);
+    expect(html).toContain("when people compare options in their market");
+    expect(html).not.toMatch(/Hi LexHive|Hi Alex|Toronto|legal marketing|legal referral|your market/i);
     expect(runClientCopyQA(html).ok).toBe(true);
   });
 });
