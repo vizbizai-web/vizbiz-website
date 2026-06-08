@@ -85,7 +85,7 @@ export async function tavilySearch(
   // ── Fallback chain: Serper.dev → Bing → Brave ─────────────────
   const SERPER_API_KEY = process.env.SERPER_API_KEY;
   const BING_SEARCH_API_KEY = process.env.BING_SEARCH_API_KEY;
-  const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
+  const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY;
 
   // Fallback 1: Serper.dev
   if (SERPER_API_KEY) {

@@ -16,7 +16,7 @@ import { tavilySearch, type TavilySearchResult } from "./tavily-client";
 import { validateCompetitor } from "./competitor-discovery";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
-const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY || "BSA-c4QXtAspJh_Dgjd_XE0boqxdCJl";
+const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY;
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const PERPLEXITY_MODEL = process.env.PERPLEXITY_MODEL || "sonar";
 const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/v1/sonar"; // Verified May 2025

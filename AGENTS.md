@@ -32,6 +32,10 @@ Before presenting or sending any such output, agents must prove all of the follo
 
 If any item above is not verified, say it is not complete. Do not perfume the corpse. Fix the actual pipeline.
 
+## Provider/env status accuracy rule
+
+Never make broad provider claims from one warning stream. When reporting VizBiz provider readiness, distinguish raw test-process env, `.env.local`, Next-loaded env, and Vercel Production/Preview env. Say exactly which layer is configured, missing, or unverified.
+
 ## Report quality architecture reset
 
 VizBiz report/email generation must follow the architecture in `docs/launch/report-quality-architecture-reset.md` and the model-routing standard in `docs/launch/subagent-model-strategy.md`.

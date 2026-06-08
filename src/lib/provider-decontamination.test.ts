@@ -7,6 +7,11 @@ const bannedProvider = 'olla' + 'ma';
 const bannedModelA = 'kimi' + '-k2.6';
 const bannedModelB = 'gemma' + '3:4b';
 const bannedTokens = [bannedProvider, bannedModelA, bannedModelB];
+const hardcodedSecretPatterns = [
+  /BSA-[A-Za-z0-9_-]{12,}/,
+  /sk-[A-Za-z0-9_-]{20,}/,
+  /pplx-[A-Za-z0-9_-]{20,}/,
+];
 
 const ignoredDirs = new Set([
   '.git',
@@ -64,5 +69,21 @@ describe('provider decontamination', () => {
     expect(doc).toContain('taxonomy is optional');
     expect(doc).toContain('current configured model');
     expect(doc.toLowerCase()).not.toContain(bannedProvider);
+  });
+
+  it('does not ship hardcoded provider API keys in source or markdown', () => {
+    const matches: string[] = [];
+    for (const file of walk(repoRoot)) {
+      const relative = path.relative(repoRoot, file);
+      const content = readFileSync(file, 'utf8');
+      const lines = content.split(/\r?\n/);
+      lines.forEach((line, index) => {
+        if (hardcodedSecretPatterns.some((pattern) => pattern.test(line))) {
+          matches.push(`${relative}:${index + 1}: ${line.trim()}`);
+        }
+      });
+    }
+
+    expect(matches).toEqual([]);
   });
 });
