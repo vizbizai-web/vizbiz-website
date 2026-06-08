@@ -498,7 +498,7 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
         </span>
 
         {/* 3 KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div style={{
             background: t.bgCard,
             border: '1px solid #E2E8F0',
@@ -525,18 +525,19 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
             </p>
             <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: t.textMuted, margin: '4px 0 0' }}>{rankDisplay.label}</p>
           </div>
-          <div style={{
-            background: theme === 'dark' ? 'rgba(239,68,68,0.04)' : '#FFFFFF',
-            border: '1px solid rgba(239,68,68,0.15)',
+          <div className="col-span-2 sm:col-span-1" style={{
+            background: t.bgCard,
+            border: theme === 'dark' ? '1px solid #E2E8F0' : '1px solid rgba(239,68,68,0.28)',
             borderRadius: 12,
             padding: '16px 12px',
             textAlign: 'center',
             boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
+            overflow: 'hidden',
           }}>
-            <p style={{ fontFamily: "'Lora', serif", fontSize: '1.5rem', fontWeight: 400, color: '#EF4444', margin: 0, lineHeight: 1.2 }} className="sm:text-2xl">
+            <p style={{ fontFamily: "'Lora', serif", fontSize: 'clamp(1.45rem, 7vw, 1.75rem)', fontWeight: 400, color: '#F87171', margin: 0, lineHeight: 1.12, overflowWrap: 'anywhere' }} className="sm:text-2xl">
               {formatCurrency(revLow, data.currencySymbol)}{revHigh > revLow ? `–${formatCurrency(revHigh, '')}` : ''}
             </p>
-            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#EF4444', margin: '4px 0 0' }}>Monthly Risk</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#FCA5A5', margin: '6px 0 0' }}>Monthly Risk</p>
           </div>
         </div>
       </section>
