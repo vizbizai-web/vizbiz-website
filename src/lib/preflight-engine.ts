@@ -302,6 +302,104 @@ function humanizeBusinessType(input: string, fallback = 'local business'): strin
   return cleaned;
 }
 
+function normalizeComparableText(input: string): string {
+  return humanizeBusinessType(input, '')
+    .replace(/\b(llc|inc|ltd|limited|corp|corporation|company|co)\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isBusinessNameMasqueradingAsType(businessType: string, businessName?: string): boolean {
+  const type = normalizeComparableText(businessType);
+  const name = normalizeComparableText(businessName || '');
+  if (!type || !name) return false;
+  return type === name || name.includes(type) || type.includes(name);
+}
+
+function detectCustomerSegments(text: string): string[] {
+  const lower = text.toLowerCase();
+  const segments: string[] = [];
+  const add = (regex: RegExp, label: string) => { if (regex.test(lower)) segments.push(label); };
+  add(/schools?\s+(and|&)\s+daycares?|daycares?\s+(and|&)\s+schools?/i, 'schools and daycares');
+  if (!segments.includes('schools and daycares')) {
+    add(/\bschools?\b/i, 'schools');
+    add(/\bdaycares?\b|child\s*care/i, 'daycares');
+  }
+  add(/medical\s+(offices?|facilities?)|healthcare\s+(offices?|facilities?)|clinics?/i, 'medical offices');
+  add(/\brestaurants?\b|\bdining\b/i, 'restaurants');
+  add(/office\s+(buildings?|spaces?)|commercial\s+offices?/i, 'office buildings');
+  add(/\bgyms?\b|fitness\s+cent(er|re)s?/i, 'gyms');
+  add(/retail\s+(stores?|spaces?)|shops?/i, 'retail businesses');
+  return cleanQueryParts(segments).slice(0, 6);
+}
+
+export function separateBusinessIdentityFromEvidence(input: {
+  businessName?: string;
+  url: string;
+  metaTitle: string;
+  metaDescription: string;
+  scrapedTitle: string;
+  evidenceText: string;
+  htmlLang: string;
+  market: string;
+  googlePlaceTypes?: string[];
+}): {
+  niche: string;
+  businessType: string;
+  services: string[];
+  customerSegments: string[];
+  siteLanguage: string;
+  searchLanguage: string;
+  confidenceReason: string;
+} {
+  const evidence = `${input.url} ${input.metaTitle} ${input.metaDescription} ${input.scrapedTitle} ${input.evidenceText}`;
+  const placeType = googleTypeToBusinessType(input.googlePlaceTypes || []);
+  let niche = detectNicheByKeywords(evidence);
+  let businessType = humanizeBusinessType(placeType || stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDescription) || niche.replace(/_/g, ' '));
+  let services = extractLikelyServices(evidence, niche);
+  const customerSegments = detectCustomerSegments(evidence);
+
+  const commercialCleaningSignal = /commercial\s+clean(ing|ers?)|janitorial|saniti[sz](ing|ation)|facility\s+cleaning|office\s+cleaning|medical[-\s]?facility\s+cleaning|cleaning\s+services?/i.test(evidence);
+  if (commercialCleaningSignal) {
+    niche = 'cleaning_service';
+    businessType = 'commercial cleaning service';
+    const cleaningServices = [
+      'commercial cleaning',
+      /saniti[sz](ing|ation)/i.test(evidence) ? 'sanitizing' : '',
+      /janitorial/i.test(evidence) ? 'janitorial cleaning' : '',
+      /facility\s+cleaning/i.test(evidence) ? 'facility cleaning' : '',
+      /office\s+cleaning/i.test(evidence) ? 'office cleaning' : '',
+      /deep\s+cleaning/i.test(evidence) ? 'deep cleaning' : '',
+    ];
+    services = cleanQueryParts([...cleaningServices.filter(Boolean), ...services.filter((service) => !customerSegments.includes(service))]).slice(0, 6);
+  } else if (isBusinessNameMasqueradingAsType(businessType, input.businessName)) {
+    const descriptorAfterPipe = (input.metaTitle || '').split(/[|•–—]/).slice(1).join(' ').trim();
+    businessType = humanizeBusinessType(placeType || descriptorAfterPipe || input.metaDescription || niche.replace(/_/g, ' '));
+    if (isBusinessNameMasqueradingAsType(businessType, input.businessName)) businessType = humanizeBusinessType(niche.replace(/_/g, ' '));
+  }
+
+  const customerSegmentKeys = new Set(customerSegments.flatMap((segment) => {
+    const singular = segment.replace(/s\b/g, '').replace(/\band daycare\b/g, 'and daycare');
+    return [segment, singular];
+  }).map((segment) => humanizeBusinessType(segment, '')));
+  services = cleanQueryParts(services.filter((service) => {
+    const normalizedService = humanizeBusinessType(service, '');
+    return !customerSegmentKeys.has(normalizedService) && !customerSegments.includes(service) && !isBusinessNameMasqueradingAsType(service, input.businessName);
+  })).slice(0, 6);
+
+  const siteLanguage = inferLanguageFromSignals(evidence, input.htmlLang);
+  return {
+    niche,
+    businessType,
+    services,
+    customerSegments,
+    siteLanguage,
+    searchLanguage: siteLanguage,
+    confidenceReason: 'Separated business category, services, and served customer segments from website metadata/body evidence before prompt generation.',
+  };
+}
+
 function cleanQueryParts(parts: string[]): string[] {
   const seen = new Set<string>();
   return parts
@@ -320,6 +418,7 @@ export function buildEvidenceFirstQueries(input: {
   services: string[];
   market: string;
   intakeCity?: string;
+  customerSegments?: string[];
 }): { suggestedSearchQueries: string[]; competitorSearchQueries: string[] } {
   const market = input.intakeCity?.trim() || input.market?.split(',')[0]?.trim() || '{city}';
   const businessType = humanizeBusinessType(input.businessType);
@@ -327,6 +426,7 @@ export function buildEvidenceFirstQueries(input: {
     .map((service) => humanizeBusinessType(service, ''))
     .filter(Boolean)
     .slice(0, 4);
+  const customerSegments = cleanQueryParts(input.customerSegments || []).slice(0, 4);
   const primaryService = services[0] || businessType;
 
   const suggestedSearchQueries = cleanQueryParts([
@@ -335,6 +435,7 @@ export function buildEvidenceFirstQueries(input: {
     `best ${businessType} in ${market}`,
     `trusted ${primaryService} provider in ${market}`,
     `who offers ${primaryService} near ${market}`,
+    ...customerSegments.map((segment) => `${businessType} for ${segment} in ${market}`),
     ...services.slice(1).map((service) => `${service} provider in ${market}`),
     `${businessType} with good reviews in ${market}`,
   ]).slice(0, 8);
@@ -406,12 +507,13 @@ function stripBusinessNameNoise(input: string): string {
 
 function inferLanguageFromSignals(signals: string, htmlLang: string): string {
   const lang = (htmlLang || '').toLowerCase();
+  if (lang.startsWith('en')) return 'English';
   if (lang.startsWith('es')) return 'Spanish';
   if (lang.startsWith('fr')) return 'French';
   if (lang.startsWith('ro')) return 'Romanian';
   if (lang.startsWith('de')) return 'German';
   if (/[ñáéíóúü¿¡]|\b(para|servicios|productos|proveedor|fabricante|helados|empresa)\b/i.test(signals)) return 'Spanish';
-  if (/\b(le|la|les|pour|services|entreprise)\b/i.test(signals)) return 'French';
+  if (/\b(pour|entreprise|bonjour|français|france|québec|merci)\b/i.test(signals)) return 'French';
   if (/\b(si|pentru|servicii|clinici|romania)\b/i.test(signals)) return 'Romanian';
   return 'English';
 }
@@ -476,20 +578,29 @@ function deriveBusinessProfileFromEvidence(input: {
   confidenceReason: string;
 } {
   const evidenceText = `${input.url} ${input.metaTitle} ${input.metaDesc} ${input.scrapedTitle} ${input.rawText}`;
-  const niche = detectNicheByKeywords(evidenceText);
-  const placeType = googleTypeToBusinessType(input.googlePlaceEnrichment?.types || []);
-  const titleDescriptor = stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDesc);
-  const businessType = humanizeBusinessType(placeType || titleDescriptor || niche.replace(/_/g, ' '));
-  const services = extractLikelyServices(evidenceText, niche);
-  const siteLanguage = inferLanguageFromSignals(input.allSignals, input.htmlLang);
-  const searchLanguage = siteLanguage;
   const market = input.intakeCity?.trim()
     || input.googlePlaceEnrichment?.formattedAddress?.split(',').slice(-2).join(',').trim()
     || '';
+  const separatedProfile = separateBusinessIdentityFromEvidence({
+    businessName: (input.metaTitle || input.scrapedTitle || '').split(/[|•–—]/)[0]?.trim(),
+    url: input.url,
+    metaTitle: input.metaTitle,
+    metaDescription: input.metaDesc,
+    scrapedTitle: input.scrapedTitle,
+    evidenceText,
+    htmlLang: input.htmlLang,
+    market,
+    googlePlaceTypes: input.googlePlaceEnrichment?.types || [],
+  });
+  const niche = separatedProfile.niche;
+  const businessType = separatedProfile.businessType;
+  const services = separatedProfile.services;
+  const siteLanguage = separatedProfile.siteLanguage;
+  const searchLanguage = separatedProfile.searchLanguage;
   const contentQuality = input.rawText.length > 4500 ? 'high' : input.rawText.length > 1200 ? 'medium' : 'low';
   const hasSpecificBusinessType = businessType && !['local business', 'business', 'unknown'].includes(businessType);
   const nicheConfidence = hasSpecificBusinessType ? (services.length ? 78 : 68) : 35;
-  const queries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity: input.intakeCity });
+  const queries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity: input.intakeCity, customerSegments: separatedProfile.customerSegments });
   return {
     businessType,
     targetAudience: hasSpecificBusinessType ? `customers looking for a trusted ${businessType}${market ? ` in ${market}` : ''}` : '',
@@ -507,7 +618,7 @@ function deriveBusinessProfileFromEvidence(input: {
     competitorSearchQueries: queries.competitorSearchQueries,
     nicheConfidence,
     confidenceReason: hasSpecificBusinessType
-      ? 'Deterministic evidence-first profile derived from website copy, metadata, schema, and Google Places signals.'
+      ? separatedProfile.confidenceReason
       : 'Insufficient visible evidence for a specific business type; internal taxonomy remains a fallback only.',
   };
 }
