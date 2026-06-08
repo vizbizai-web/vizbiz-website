@@ -59,6 +59,14 @@ export type BusinessProfile = {
   searchLanguage: string;
   /** Geographic market they operate in (e.g. "Romania") */
   market: string;
+  /** Primary city/county anchor for local recommendation prompts */
+  primaryMarket: string;
+  /** Nearby/extended service areas explicitly claimed by website evidence */
+  serviceAreas: string[];
+  /** Evidence snippet explaining service-area extraction */
+  serviceAreaEvidence: string | null;
+  /** How prompts should mix primary city, nearby service areas, and industry segments */
+  promptMarketStrategy: "primary_market_only" | "primary_city_plus_nearby_service_areas";
   /** ISO 639-1 code for search language (e.g. "ro") — used by search APIs */
   searchLangCode: string;
   /** Evidence-first search queries that real customers would use to find this business */
@@ -336,6 +344,42 @@ function detectCustomerSegments(text: string): string[] {
   return cleanQueryParts(segments).slice(0, 6);
 }
 
+const SERVICE_AREA_CANDIDATES = [
+  'Rockwall County', 'Rockwall', 'Heath', 'Fate', 'Rowlett', 'Garland', 'Mesquite',
+  'Royse City', 'Forney', 'Wylie', 'Sachse', 'Terrell', 'Dallas', 'Plano', 'Frisco', 'McKinney',
+];
+
+function extractServiceAreaEvidence(text: string): string | null {
+  const compact = text.replace(/\s+/g, ' ');
+  const patterns = [
+    /serv(?:e|ing)[^.]{0,260}(?:area|areas|county|communities)[^.]{0,260}\./i,
+    /primary service area[^.]{0,360}\./i,
+    /extended coverage[^.]{0,260}\./i,
+    /surrounding (?:areas|communities)[^.]{0,260}\./i,
+  ];
+  for (const pattern of patterns) {
+    const match = compact.match(pattern);
+    if (match?.[0]) return match[0].trim();
+  }
+  return null;
+}
+
+function detectServiceAreas(text: string, primaryMarket: string): { serviceAreas: string[]; serviceAreaEvidence: string | null; promptMarketStrategy: BusinessProfile['promptMarketStrategy'] } {
+  const lower = text.toLowerCase();
+  const primary = primaryMarket.toLowerCase();
+  const found = SERVICE_AREA_CANDIDATES
+    .filter((area) => lower.includes(area.toLowerCase()))
+    .filter((area) => area.toLowerCase() !== primary)
+    .filter((area) => !(area.toLowerCase() === 'rockwall' && primary.includes('rockwall')));
+  const serviceAreas = cleanQueryParts(found).slice(0, 8);
+  const serviceAreaEvidence = extractServiceAreaEvidence(text);
+  return {
+    serviceAreas,
+    serviceAreaEvidence,
+    promptMarketStrategy: serviceAreas.length ? 'primary_city_plus_nearby_service_areas' : 'primary_market_only',
+  };
+}
+
 export function separateBusinessIdentityFromEvidence(input: {
   businessName?: string;
   url: string;
@@ -351,6 +395,10 @@ export function separateBusinessIdentityFromEvidence(input: {
   businessType: string;
   services: string[];
   customerSegments: string[];
+  primaryMarket: string;
+  serviceAreas: string[];
+  serviceAreaEvidence: string | null;
+  promptMarketStrategy: BusinessProfile['promptMarketStrategy'];
   siteLanguage: string;
   searchLanguage: string;
   confidenceReason: string;
@@ -361,6 +409,8 @@ export function separateBusinessIdentityFromEvidence(input: {
   let businessType = humanizeBusinessType(placeType || stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDescription) || niche.replace(/_/g, ' '));
   let services = extractLikelyServices(evidence, niche);
   const customerSegments = detectCustomerSegments(evidence);
+  const primaryMarket = /rockwall county/i.test(evidence) ? 'Rockwall County' : input.market;
+  const serviceAreaProfile = detectServiceAreas(evidence, primaryMarket || input.market);
 
   const commercialCleaningSignal = /commercial\s+clean(ing|ers?)|janitorial|saniti[sz](ing|ation)|facility\s+cleaning|office\s+cleaning|medical[-\s]?facility\s+cleaning|cleaning\s+services?/i.test(evidence);
   if (commercialCleaningSignal) {
@@ -396,9 +446,13 @@ export function separateBusinessIdentityFromEvidence(input: {
     businessType,
     services,
     customerSegments,
+    primaryMarket,
+    serviceAreas: serviceAreaProfile.serviceAreas,
+    serviceAreaEvidence: serviceAreaProfile.serviceAreaEvidence,
+    promptMarketStrategy: serviceAreaProfile.promptMarketStrategy,
     siteLanguage,
     searchLanguage: siteLanguage,
-    confidenceReason: 'Separated business category, services, and served customer segments from website metadata/body evidence before prompt generation.',
+    confidenceReason: 'Separated business category, services, served customer segments, and nearby service areas from website metadata/body evidence before prompt generation.',
   };
 }
 
@@ -421,32 +475,41 @@ export function buildEvidenceFirstQueries(input: {
   market: string;
   intakeCity?: string;
   customerSegments?: string[];
+  primaryMarket?: string;
+  serviceAreas?: string[];
 }): { suggestedSearchQueries: string[]; competitorSearchQueries: string[] } {
-  const market = input.intakeCity?.trim() || input.market?.split(',')[0]?.trim() || '{city}';
+  const market = input.primaryMarket?.trim() || input.intakeCity?.trim() || input.market?.split(',')[0]?.trim() || '{city}';
   const businessType = humanizeBusinessType(input.businessType);
   const services = cleanQueryParts(input.services || [])
     .map((service) => humanizeBusinessType(service, ''))
     .filter(Boolean)
     .slice(0, 4);
   const customerSegments = cleanQueryParts(input.customerSegments || []).slice(0, 4);
+  const serviceAreas = cleanQueryParts(input.serviceAreas || [])
+    .filter((area) => !market.toLowerCase().includes(area.toLowerCase()))
+    .slice(0, 5);
   const primaryService = services[0] || businessType;
+  const nearbyArea = serviceAreas.slice(0, 2).join(' or ');
+  const extendedArea = serviceAreas.slice(2, 4).join(' or ');
+  const industrySegment = customerSegments[0];
 
   const suggestedSearchQueries = cleanQueryParts([
     `I need a trusted ${businessType} in ${market}. Who should I choose?`,
     `Which ${businessType}s near ${market} have good reviews and clear proof?`,
     `best ${businessType} in ${market}`,
-    `trusted ${primaryService} provider in ${market}`,
-    `who offers ${primaryService} near ${market}`,
-    ...customerSegments.map((segment) => `${businessType} for ${segment} in ${market}`),
+    nearbyArea ? `${businessType} near ${nearbyArea}` : `trusted ${primaryService} provider in ${market}`,
+    industrySegment ? `${businessType} for ${industrySegment} in ${market}` : `who offers ${primaryService} near ${market}`,
+    extendedArea ? `${primaryService} company serving ${extendedArea}` : null,
+    ...customerSegments.slice(1).map((segment) => `${businessType} for ${segment} in ${market}`),
     ...services.slice(1).map((service) => `${service} provider in ${market}`),
     `${businessType} with good reviews in ${market}`,
-  ]).slice(0, 8);
+  ].filter((query): query is string => Boolean(query))).slice(0, 8);
 
   const competitorSearchQueries = cleanQueryParts([
     `${businessType} competitors ${market}`,
     `best ${businessType}s ${market}`,
     `${primaryService} companies ${market}`,
-    `${businessType} alternatives ${market}`,
+    serviceAreas.length ? `${businessType} companies ${serviceAreas.slice(0, 3).join(' ')}` : `${businessType} alternatives ${market}`,
   ]).slice(0, 5);
 
   return { suggestedSearchQueries, competitorSearchQueries };
@@ -569,6 +632,10 @@ function deriveBusinessProfileFromEvidence(input: {
   targetAudience: string;
   services: string[];
   customerSegments: string[];
+  primaryMarket: string;
+  serviceAreas: string[];
+  serviceAreaEvidence: string | null;
+  promptMarketStrategy: BusinessProfile['promptMarketStrategy'];
   siteLanguage: string;
   searchLanguage: string;
   market: string;
@@ -604,12 +671,24 @@ function deriveBusinessProfileFromEvidence(input: {
   const contentQuality = input.rawText.length > 4500 ? 'high' : input.rawText.length > 1200 ? 'medium' : 'low';
   const hasSpecificBusinessType = businessType && !['local business', 'business', 'unknown'].includes(businessType);
   const nicheConfidence = hasSpecificBusinessType ? (services.length ? 78 : 68) : 35;
-  const queries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity: input.intakeCity, customerSegments: separatedProfile.customerSegments });
+  const queries = buildEvidenceFirstQueries({
+    businessType,
+    services,
+    market,
+    intakeCity: input.intakeCity,
+    customerSegments: separatedProfile.customerSegments,
+    primaryMarket: separatedProfile.primaryMarket,
+    serviceAreas: separatedProfile.serviceAreas,
+  });
   return {
     businessType,
     targetAudience: hasSpecificBusinessType ? `customers looking for a trusted ${businessType}${market ? ` in ${market}` : ''}` : '',
     services,
     customerSegments: separatedProfile.customerSegments,
+    primaryMarket: separatedProfile.primaryMarket,
+    serviceAreas: separatedProfile.serviceAreas,
+    serviceAreaEvidence: separatedProfile.serviceAreaEvidence,
+    promptMarketStrategy: separatedProfile.promptMarketStrategy,
     siteLanguage,
     searchLanguage,
     market,
@@ -836,6 +915,10 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
       targetAudience: "",
       services: [],
       customerSegments: [],
+      primaryMarket: "",
+      serviceAreas: [],
+      serviceAreaEvidence: null,
+      promptMarketStrategy: "primary_market_only",
       siteLanguage: "English",
       searchLanguage: "English",
       market: "",
@@ -886,6 +969,10 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
   let siteLanguage = "English";
   let searchLanguage = "English";
   let market = "";
+  let primaryMarket = "";
+  let serviceAreas: string[] = [];
+  let serviceAreaEvidence: string | null = null;
+  let promptMarketStrategy: BusinessProfile['promptMarketStrategy'] = "primary_market_only";
   let niche = "local_business";
   let valueProposition = "";
   let pricingInfo: string | null = null;
@@ -913,6 +1000,10 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
   targetAudience = deterministicProfile.targetAudience;
   services = deterministicProfile.services;
   customerSegments = deterministicProfile.customerSegments;
+  primaryMarket = deterministicProfile.primaryMarket;
+  serviceAreas = deterministicProfile.serviceAreas;
+  serviceAreaEvidence = deterministicProfile.serviceAreaEvidence;
+  promptMarketStrategy = deterministicProfile.promptMarketStrategy;
   siteLanguage = deterministicProfile.siteLanguage;
   searchLanguage = deterministicProfile.searchLanguage;
   market = deterministicProfile.market;
@@ -975,7 +1066,7 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
   competitorSearchQueries = competitorSearchQueries.map((query) => query.replace(/\{city\}/g, resolvedMarketForQueries));
 
   if (shouldUseEvidenceFirstQueries({ niche, businessType, services, suggestedSearchQueries, nicheConfidence })) {
-    const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity, customerSegments });
+    const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity, customerSegments, primaryMarket, serviceAreas });
     console.warn(`[preflight] Evidence-first query safety gate: replacing weak/generic/stale queries for ${niche}/${businessType || 'unknown'}`);
     suggestedSearchQueries = evidenceQueries.suggestedSearchQueries;
     competitorSearchQueries = evidenceQueries.competitorSearchQueries;
@@ -1050,6 +1141,10 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
     targetAudience,
     services,
     customerSegments,
+    primaryMarket,
+    serviceAreas,
+    serviceAreaEvidence,
+    promptMarketStrategy,
     siteLanguage,
     searchLanguage,
     market,
