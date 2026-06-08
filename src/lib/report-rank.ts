@@ -20,9 +20,19 @@ export interface ReportRankDisplay {
  * every other measured/placeholder row also has zero. Zero presence means not
  * ranked / not visible, not first place.
  */
-export function getReportRankDisplay(competitors: ReportRankCompetitor[]): ReportRankDisplay {
+export function getReportRankDisplay(competitors: ReportRankCompetitor[], options: { clientOnly?: boolean } = {}): ReportRankDisplay {
   const you = competitors.find((competitor) => competitor.isYou);
   const yourScore = Math.max(0, you?.score ?? 0);
+
+  if (options.clientOnly || competitors.length <= 1) {
+    return {
+      rank: null,
+      value: 'Client-only',
+      label: 'Benchmark',
+      colorState: 'neutral',
+      yourScore,
+    };
+  }
 
   if (!you || yourScore <= 0) {
     return {

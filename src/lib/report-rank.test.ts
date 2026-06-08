@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { getReportRankDisplay } from './report-rank';
 
 describe('getReportRankDisplay', () => {
+  it('does not call a client-only snapshot #1 even when the business appears', () => {
+    const rank = getReportRankDisplay([
+      { name: 'Sierra del plata', score: 2, isYou: true },
+    ], { clientOnly: true });
+
+    expect(rank.rank).toBeNull();
+    expect(rank.value).toBe('Client-only');
+    expect(rank.label).toBe('Benchmark');
+    expect(rank.colorState).toBe('neutral');
+    expect(rank.yourScore).toBe(2);
+  });
+
   it('does not call a zero-presence business #1 when every score is zero', () => {
     const rank = getReportRankDisplay([
       { name: 'Thronmoor Services', score: 0, isYou: true },

@@ -421,10 +421,9 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
   const revHigh = Math.round((data.profitAtRisk?.high || 6000) * missedRate);
   const missedPct = Math.round(missedRate * 100);
 
-  const topCompetitor = data.competitors.find(c => !c.isYou && !c.isYours && c.score > 0);
-  const rankDisplay = getReportRankDisplay(data.competitors);
-
   const isClientOnly = data.competitorMode === "client_only";
+  const topCompetitor = data.competitors.find(c => !c.isYou && !c.isYours && c.score > 0);
+  const rankDisplay = getReportRankDisplay(data.competitors, { clientOnly: isClientOnly });
 
   const summaryText = data.aviScore >= 60
     ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still do not clearly surface the business. Closing those gaps could support an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional opportunity.`
