@@ -1,8 +1,8 @@
 /**
  * PreFlight Engine v2 — Deep Business Intelligence Extraction
  *
- * Rebuild: Instead of forcing the LLM to pick from a hardcoded niche menu,
- * we let it describe the business freely and extract structured data:
+ * Rebuild: instead of forcing the business through a hardcoded niche menu,
+ * we derive a Business Intelligence Profile from evidence and structured data:
  *   - What they do (specific, not generic)
  *   - Who they serve (target audience)
  *   - What language their customers search in
@@ -59,13 +59,13 @@ export type BusinessProfile = {
   market: string;
   /** ISO 639-1 code for search language (e.g. "ro") — used by search APIs */
   searchLangCode: string;
-  /** LLM-generated search queries that would be used by real customers to find this business */
+  /** Evidence-first search queries that real customers would use to find this business */
   suggestedSearchQueries: string[];
-  /** LLM-suggested competitor search queries for discovering real competitors */
+  /** Evidence-first competitor search queries for discovering real competitors */
   competitorSearchQueries: string[];
 
   // -- Confidence scoring --
-  /** How confident the LLM is about the niche/businessType classification (0-100) */
+  /** How confident the evidence path is about the niche/businessType classification (0-100) */
   nicheConfidence: number;
   /** One sentence explaining the confidence score */
   confidenceReason: string;
@@ -145,7 +145,8 @@ const LANG_CODE_MAP: Record<string, string> = {
 
 
 /**
- * Keyword-based niche detection fallback (used when LLM is unavailable)
+ * Keyword-based niche detection fallback. This is compatibility support only;
+ * the Business Intelligence Profile remains the prompt/report source of truth.
  */
 const NICHE_KEYWORDS: Record<string, string[]> = {
   electrical_contractor: ["electrician", "electrical contractor", "electrical contractors", "electrical services", "niceic", "chas", "safe contractor", "24/7 service", "electrical needs", "electrical installations", "electrical maintenance", "commercial electrical", "industrial electrical"],
@@ -370,30 +371,146 @@ export function shouldUseEvidenceFirstQueries(input: {
 }
 
 /**
- * The v2 LLM extraction prompt.
- * Instead of "pick from this list," we ask the LLM to describe the business
- * in its own words and extract structured fields we actually need.
+ * Provider-neutral extraction contract.
+ * The app must build the Business Intelligence Profile from real evidence first:
+ * website copy, schema, Google Places, contact/location signals, and submitted intake data.
+ *
+ * A model may assist this step only through the current configured provider. It must not
+ * force the business into a finite taxonomy. The taxonomy key is a secondary reporting
+ * fallback; businessType/services/market/searchLanguage are the fields that drive prompts.
  */
-const EXTRACTION_PROMPT = `Analyze this business website. Return ONLY valid JSON. No markdown. No code fences. No explanation.
+export const BUSINESS_PROFILE_EXTRACTION_CONTRACT = `Extract a Business Intelligence Profile from evidence.
+Return fields: businessType, targetAudience, services, siteLanguage, searchLanguage, market, optional taxonomySuggestion, valueProposition, pricing, quality, customerSearchQueries, competitorSearchQueries, nicheConfidence, confidenceReason.
+Rules:
+- Describe the business in human words first.
+- Do not force a finite taxonomy category.
+- Use local_business as the internal fallback when no exact taxonomy exists.
+- Customer queries must sound like real human AI/search questions for this exact business, services, language, and market.`;
 
-Extract:
-1. "businessType": The specific, precise category. NOT generic — "medical marketing consultancy" not "marketing agency". "Pediatric dental clinic" not "dentist". Be as specific as the site allows.
-2. "targetAudience": Who this business serves. E.g. "doctors, dentists, and health clinic owners in Romania" or "brides planning weddings in Ontario". Include geography if clear.
-3. "services": Array of 3-6 core services/products they offer. Be specific from the site content.
-4. "siteLanguage": The primary language of the website content (e.g. "Romanian", "English", "French").
-5. "searchLanguage": What language their potential customers would use to search for this type of business. Same as siteLanguage for local businesses, but might differ for international businesses.
-6. "market": The geographic market they serve (e.g. "Romania", "Ontario, Canada", "United States", "Cluj Napoca, Romania").
-7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, food_ingredient_supplier, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, pro_audio_systems, local_business. This is for internal categorization only — your businessType is what we actually use.
-8. "valueProposition": One sentence: what they do for their clients, in their own words (translate if not in English).
-9. "pricing": Any pricing information found (translate if needed), or null.
-10. "quality": "high", "medium", or "low" — is the site well-written with original content?
-11. "customerSearchQueries": Array of 5-8 search queries that REAL CUSTOMERS would type to find this business. Use the searchLanguage. Be specific — not "marketing agency near me" but "marketing medical pentru clinici Cluj" or "best medical marketing agency for doctors". Think about what someone would actually type into ChatGPT or Google.
-12. "competitorSearchQueries": Array of 3-5 search queries to find their REAL competitors. Use the searchLanguage. E.g. "medical marketing agencies Romania" or "consultanta marketing medici Bucuresti".
-13. "nicheConfidence": Your confidence that the niche and businessType are correct. A number from 0-100. 100 = very sure (clear website with obvious services), 50 = somewhat sure (vague or ambiguous site), below 30 = guessing (site didn't load well or is very generic).
-14. "confidenceReason": One sentence explaining your confidence score. E.g. "Site clearly lists water polo coaching and training services" or "Site is mostly images with little text, niche is inferred from domain name".
+function titleCaseWords(input: string): string {
+  return input
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.length <= 3 ? word : word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
-WEBSITE CONTENT:
-`;
+function stripBusinessNameNoise(input: string): string {
+  return (input || '')
+    .replace(/https?:\/\/[^\s]+/gi, ' ')
+    .replace(/\b(home|homepage|official site|welcome|about us|contact us)\b/gi, ' ')
+    .replace(/[|•–—-].*$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function inferLanguageFromSignals(signals: string, htmlLang: string): string {
+  const lang = (htmlLang || '').toLowerCase();
+  if (lang.startsWith('es')) return 'Spanish';
+  if (lang.startsWith('fr')) return 'French';
+  if (lang.startsWith('ro')) return 'Romanian';
+  if (lang.startsWith('de')) return 'German';
+  if (/[ñáéíóúü¿¡]|\b(para|servicios|productos|proveedor|fabricante|helados|empresa)\b/i.test(signals)) return 'Spanish';
+  if (/\b(le|la|les|pour|services|entreprise)\b/i.test(signals)) return 'French';
+  if (/\b(si|pentru|servicii|clinici|romania)\b/i.test(signals)) return 'Romanian';
+  return 'English';
+}
+
+function googleTypeToBusinessType(types: string[] = []): string {
+  const map: Record<string, string> = {
+    electrician: 'electrical contractor',
+    beauty_salon: 'beauty salon',
+    spa: 'spa and wellness clinic',
+    restaurant: 'restaurant',
+    car_dealer: 'car dealership',
+    real_estate_agency: 'real estate agency',
+    electronics_store: 'professional audio and electronics supplier',
+    home_goods_store: 'home goods store',
+    store: 'retail store',
+    health: 'health and wellness provider',
+  };
+  for (const type of types) {
+    if (map[type]) return map[type];
+  }
+  return '';
+}
+
+function extractLikelyServices(text: string, niche: string): string[] {
+  const lower = text.toLowerCase();
+  const candidates: string[] = [];
+  for (const keywords of Object.values(NICHE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (keyword.length > 4 && lower.includes(keyword.toLowerCase())) candidates.push(keyword);
+    }
+  }
+  if (niche !== 'local_business') candidates.unshift(niche.replace(/_/g, ' '));
+  const serviceMatches = text.match(/\b([A-Za-z][A-Za-z0-9&'’ -]{3,48}\s+(services?|solutions?|systems?|installation|installations|repair|repairs|supplier|distributor|clinic|studio|consulting|consultancy|therapy|tours?|classes|products?))\b/g) || [];
+  candidates.push(...serviceMatches.slice(0, 8));
+  return cleanQueryParts(candidates).map((item) => humanizeBusinessType(item, '')).filter(Boolean).slice(0, 6);
+}
+
+function deriveBusinessProfileFromEvidence(input: {
+  url: string;
+  allSignals: string;
+  metaTitle: string;
+  metaDesc: string;
+  scrapedTitle: string;
+  htmlLang: string;
+  rawText: string;
+  intakeCity?: string;
+  googlePlaceEnrichment: GooglePlaceEnrichment | null;
+}): {
+  businessType: string;
+  targetAudience: string;
+  services: string[];
+  siteLanguage: string;
+  searchLanguage: string;
+  market: string;
+  niche: string;
+  valueProposition: string;
+  pricingInfo: string | null;
+  contentQuality: "high" | "medium" | "low";
+  suggestedSearchQueries: string[];
+  competitorSearchQueries: string[];
+  nicheConfidence: number;
+  confidenceReason: string;
+} {
+  const evidenceText = `${input.url} ${input.metaTitle} ${input.metaDesc} ${input.scrapedTitle} ${input.rawText}`;
+  const niche = detectNicheByKeywords(evidenceText);
+  const placeType = googleTypeToBusinessType(input.googlePlaceEnrichment?.types || []);
+  const titleDescriptor = stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDesc);
+  const businessType = humanizeBusinessType(placeType || titleDescriptor || niche.replace(/_/g, ' '));
+  const services = extractLikelyServices(evidenceText, niche);
+  const siteLanguage = inferLanguageFromSignals(input.allSignals, input.htmlLang);
+  const searchLanguage = siteLanguage;
+  const market = input.intakeCity?.trim()
+    || input.googlePlaceEnrichment?.formattedAddress?.split(',').slice(-2).join(',').trim()
+    || '';
+  const contentQuality = input.rawText.length > 4500 ? 'high' : input.rawText.length > 1200 ? 'medium' : 'low';
+  const hasSpecificBusinessType = businessType && !['local business', 'business', 'unknown'].includes(businessType);
+  const nicheConfidence = hasSpecificBusinessType ? (services.length ? 78 : 68) : 35;
+  const queries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity: input.intakeCity });
+  return {
+    businessType,
+    targetAudience: hasSpecificBusinessType ? `customers looking for a trusted ${businessType}${market ? ` in ${market}` : ''}` : '',
+    services,
+    siteLanguage,
+    searchLanguage,
+    market,
+    niche,
+    valueProposition: hasSpecificBusinessType
+      ? `Provides ${businessType} services based on visible website, schema, and local profile evidence.`
+      : '',
+    pricingInfo: null,
+    contentQuality,
+    suggestedSearchQueries: queries.suggestedSearchQueries,
+    competitorSearchQueries: queries.competitorSearchQueries,
+    nicheConfidence,
+    confidenceReason: hasSpecificBusinessType
+      ? 'Deterministic evidence-first profile derived from website copy, metadata, schema, and Google Places signals.'
+      : 'Insufficient visible evidence for a specific business type; internal taxonomy remains a fallback only.',
+  };
+}
 
 /**
  * Check for Bing Webmaster Tools verification meta tag
@@ -555,7 +672,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   console.info(`[preflight] Sturm checks: BingWMT=${bingWmtVerified}, Blog=${blogCheck.hasBlog}, IndexedPages=${indexedPages ?? 'N/A'}, Reviews=${hasReviews}`);
 
   // -- Stage 2.6: Google Places enrichment for client business --
-  // City resolution order: 1) intake city, 2) will re-enrich after LLM extraction
+  // City resolution order: 1) intake city, 2) later evidence-derived market if available
   // Do NOT call Places with empty city — return unavailable status instead.
   let googlePlaceEnrichment: GooglePlaceEnrichment | null = null;
   let localEntityTrustScore: number | null = null;
@@ -575,7 +692,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
       console.warn(`[preflight] Google Places enrichment failed (non-blocking):`, e instanceof Error ? e.message : e);
     }
   } else {
-    console.info(`[preflight] Google Places: skipped — no city provided at intake. Will attempt after LLM extraction.`);
+    console.info(`[preflight] Google Places: skipped — no city provided at intake. Will attempt if later evidence resolves a reliable market.`);
     googlePlaceEnrichment = null;
   }
 
@@ -626,7 +743,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     };
   }
 
-  // -- Stage 3: Extract meta signals for LLM context --
+  // -- Stage 3: Extract meta/schema/site signals for the Business Intelligence Profile --
   const metaTitle = scraped.html?.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() || "";
   const metaDesc = scraped.html?.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1]?.trim() || "";
   const metaKeywords = scraped.html?.match(/<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']+)["']/i)?.[1]?.trim() || "";
@@ -644,10 +761,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     rawText.length > 50 ? `Page Content (${rawText.substring(0, 8000).length} chars):\n${rawText.substring(0, 8000)}` : null,
   ].filter(Boolean).join('\n');
 
-  // -- Stage 4: LLM extraction --
-  const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || "";
-  const OLLAMA_BASE_URL = "https://ollama.com/v1";
-
+  // -- Stage 4: Evidence-first business profile extraction --
   let businessType = "";
   let targetAudience = "";
   let services: string[] = [];
@@ -660,110 +774,36 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   let contentQuality: "high" | "medium" | "low" = "low";
   let suggestedSearchQueries: string[] = [];
   let competitorSearchQueries: string[] = [];
-  let nicheConfidence = 50; // Default confidence
+  let nicheConfidence = 50;
   let confidenceReason = 'Default confidence';
-  let llmUsed = false;
+  const modelAssistedExtractionUsed = false;
 
-  try {
-    const prompt = EXTRACTION_PROMPT + allSignals + '\n\n{"businessType": "';
+  const deterministicProfile = deriveBusinessProfileFromEvidence({
+    url,
+    allSignals,
+    metaTitle,
+    metaDesc,
+    scrapedTitle: scraped.title || '',
+    htmlLang,
+    rawText,
+    intakeCity,
+    googlePlaceEnrichment,
+  });
 
-    const llmRes = await fetch(`${OLLAMA_BASE_URL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OLLAMA_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "kimi-k2.6",
-        messages: [
-          {
-            role: "system",
-            content: "You are a business analyst specializing in identifying exactly what a business does, who it serves, and how its customers would search for it. You pay close attention to language, geography, and industry specificity. Return ONLY valid JSON. No markdown. No code fences. No explanation."
-          },
-          { role: "user", content: prompt }
-        ],
-        stream: false,
-        options: { temperature: 0.1 }
-      }),
-    });
-
-    if (llmRes.ok) {
-      const data = await llmRes.json();
-      const rawContent = data.choices?.[0]?.message?.content || data.message?.content || "";
-      const clean = rawContent.replace(/```json?/gi, "").replace(/```/g, "").trim();
-
-      // Handle partial JSON — the prompt ends with {"businessType": "
-      // so the LLM continues from there. Try to parse the full thing.
-      let result: any;
-      try {
-        // If the LLM returned a complete JSON object
-        result = JSON.parse(clean);
-      } catch {
-        // If it returned a partial starting from after our seed
-        try {
-          result = JSON.parse('{"businessType": "' + clean);
-        } catch {
-          // Last resort: try to find JSON object in the response
-          const jsonMatch = clean.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            result = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error("Could not parse LLM response as JSON");
-          }
-        }
-      }
-
-      businessType = result.businessType || "";
-      targetAudience = result.targetAudience || "";
-      services = Array.isArray(result.services) ? result.services : [];
-      siteLanguage = result.siteLanguage || "English";
-      searchLanguage = result.searchLanguage || siteLanguage;
-      market = result.market || "";
-      niche = result.niche || "local_business";
-      valueProposition = result.valueProposition || "";
-      pricingInfo = result.pricing || null;
-      contentQuality = result.quality || "low";
-      suggestedSearchQueries = Array.isArray(result.customerSearchQueries) ? result.customerSearchQueries : [];
-      competitorSearchQueries = Array.isArray(result.competitorSearchQueries) ? result.competitorSearchQueries : [];
-      nicheConfidence = typeof result.nicheConfidence === 'number' ? result.nicheConfidence : 50;
-      confidenceReason = result.confidenceReason || 'No reason provided';
-      llmUsed = true;
-
-      // Low confidence flag
-      if (nicheConfidence < 50) {
-        console.warn(`[preflight] ⚠️ LOW CONFIDENCE (${nicheConfidence}/100): ${confidenceReason}`);
-        console.warn(`[preflight] Niche: ${niche}, BusinessType: ${businessType} — may need manual review`);
-      } else {
-        console.info(`[preflight] Confidence: ${nicheConfidence}/100 — ${confidenceReason}`);
-      }
-
-      console.info(`[preflight] LLM extraction:`, {
-        businessType,
-        targetAudience: targetAudience.substring(0, 80),
-        niche,
-        siteLanguage,
-        searchLanguage,
-        market,
-        services: services.length,
-        customerQueries: suggestedSearchQueries.length,
-        competitorQueries: competitorSearchQueries.length,
-        nicheConfidence,
-      });
-    } else {
-      const errText = await llmRes.text().catch(() => "");
-      console.warn(`[preflight] Ollama API returned ${llmRes.status}: ${errText.substring(0, 200)}`);
-    }
-  } catch (e) {
-    console.warn(`[preflight] LLM call failed:`, e instanceof Error ? e.message : e);
-  }
-
-  // -- Fallback: keyword detection if LLM failed --
-  if (!llmUsed) {
-    const allText = `${url} ${metaTitle} ${metaDesc} ${scraped.title} ${rawText}`;
-    niche = detectNicheByKeywords(allText);
-    contentQuality = rawText.length > 3000 ? "medium" : "low";
-    businessType = niche.replace(/_/g, ' ');
-  }
+  businessType = deterministicProfile.businessType;
+  targetAudience = deterministicProfile.targetAudience;
+  services = deterministicProfile.services;
+  siteLanguage = deterministicProfile.siteLanguage;
+  searchLanguage = deterministicProfile.searchLanguage;
+  market = deterministicProfile.market;
+  niche = deterministicProfile.niche;
+  valueProposition = deterministicProfile.valueProposition;
+  pricingInfo = deterministicProfile.pricingInfo;
+  contentQuality = deterministicProfile.contentQuality;
+  suggestedSearchQueries = deterministicProfile.suggestedSearchQueries;
+  competitorSearchQueries = deterministicProfile.competitorSearchQueries;
+  nicheConfidence = deterministicProfile.nicheConfidence;
+  confidenceReason = deterministicProfile.confidenceReason;
 
   const guardedProfile = applyNicheGuardrails({
     niche,
@@ -827,16 +867,16 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   // -- Derive search language code --
   const searchLangCode = LANG_CODE_MAP[searchLanguage.toLowerCase()] || "en";
 
-  // -- Stage 4.5: Re-enrich with LLM-extracted business name + city --
-  // City resolution: intake city > LLM-extracted market > contact address > domain-only fallback
-  // Only re-enrich if we didn't already get a profile, or if LLM data might improve the match.
+  // -- Stage 4.5: Re-enrich with evidence-derived business name + city --
+  // City resolution: intake city > evidence-derived market > contact address > domain-only fallback.
+  // Re-enrichment is reserved for a future model-assisted profile path through the current configured provider.
   const cityFromMarket = market?.split(',')[0].trim() || '';
   const bestCity = intakeCity?.trim() || cityFromMarket;
   const enrichmentName = businessType || niche.replace(/_/g, ' ');
 
-  if (bestCity && enrichmentName && llmUsed) {
+  if (bestCity && enrichmentName && modelAssistedExtractionUsed) {
     try {
-      // Only re-enrich if: (a) no profile found yet, or (b) LLM name is better than domain
+      // Only re-enrich if: (a) no profile found yet, or (b) the extracted profile name is better than the domain.
       const shouldReEnrich = !googlePlaceEnrichment?.placeId || (enrichmentName !== url.replace(/^https?:\/\//, '').split('/')[0]);
       if (shouldReEnrich) {
         const reEnrichment = await enrichBusinessProfile(enrichmentName, bestCity, url);
@@ -845,7 +885,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
           if (!googlePlaceEnrichment?.placeId || reEnrichment.websiteMatch) {
             googlePlaceEnrichment = reEnrichment;
             localEntityTrustScore = calculateLocalEntityTrustScore(reEnrichment);
-            console.info(`[preflight] Re-enriched with LLM data: trust=${localEntityTrustScore}/100, name="${enrichmentName}", city="${bestCity}"`);
+            console.info(`[preflight] Re-enriched with model-assisted profile data: trust=${localEntityTrustScore}/100, name="${enrichmentName}", city="${bestCity}"`);
           }
         } else {
           console.info(`[preflight] Re-enrichment: no profile found for "${enrichmentName}" in "${bestCity}"`);
@@ -932,7 +972,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     revGap: `$${revenueGap.low}-$${revenueGap.high}/mo`,
     queries: suggestedSearchQueries.length,
     compQueries: competitorSearchQueries.length,
-    llm: llmUsed,
+    modelAssistedExtractionUsed,
     render: renderMethod,
   });
 

@@ -56,6 +56,8 @@ If a business appears in `0` AI questions/prompts, it is `Not ranked` / `AI Pres
 
 Prompt generation and report copy must use one `NicheResolution` object. Client-declared category/niche is the first source of truth. Automated classification may enrich it or flag a conflict, but must not silently overwrite it.
 
+The report/research pipeline must follow `docs/launch/vizbiz-pipeline-source-of-truth.md`: build a Business Intelligence Profile from intake, website crawl, metadata/schema, Google Places, services, language, market, paid-intake customer questions, and supplied competitors before using any finite niche taxonomy. Taxonomy is a secondary compatibility layer only. If the website or supplied competitors make the niche obvious, failure to identify it is a pipeline bug, not an Alex-review task.
+
 If niche confidence is low, market scope is broad/ambiguous, or vertical terms conflict, the report status is `NEEDS_FIX`, `HOLD`, or `RERUN`. Do not ask Alex to catch wrong-vertical sludge.
 
 ### Competitor/provenance contract

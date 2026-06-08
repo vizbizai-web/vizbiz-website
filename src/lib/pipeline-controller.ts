@@ -20,7 +20,7 @@ import {
   type LeadRow,
   type PipelineStage,
 } from "@/lib/google-sheets";
-import { preflightScan } from "@/lib/preflight-engine";
+import { buildEvidenceFirstQueries, preflightScan } from "@/lib/preflight-engine";
 import { runResearch } from "@/lib/research-runner";
 
 // ─── Research Mode ───────────────────────────────────────────────────
@@ -94,37 +94,51 @@ function normalizeClientDeclaredNiche(value?: string | null): { niche: string; n
   };
 }
 
-function parseClientDeclaredNiche(notes?: string | null): string {
+function parsePaidIntakePayload(notes?: string | null): any | null {
   const notesStr = notes || "";
   const paidIntakeMatch = notesStr.match(/PAID_INTAKE:(\{[\s\S]*?\})(?=\n[A-Z_]+:|$)/);
-  if (paidIntakeMatch) {
-    try {
-      const parsed = JSON.parse(paidIntakeMatch[1]);
-      if (typeof parsed.businessCategory === "string" && parsed.businessCategory.trim()) {
-        return parsed.businessCategory.trim();
-      }
-    } catch {
-      // Fall through to lightweight note parsing.
-    }
+  if (!paidIntakeMatch) return null;
+  try {
+    return JSON.parse(paidIntakeMatch[1]);
+  } catch {
+    return null;
   }
+}
+
+function parseClientDeclaredNiche(notes?: string | null): string {
+  const paidIntake = parsePaidIntakePayload(notes);
+  if (typeof paidIntake?.businessCategory === "string" && paidIntake.businessCategory.trim()) {
+    return paidIntake.businessCategory.trim();
+  }
+  const notesStr = notes || "";
   const noteMatch = notesStr.match(/ClientBusinessCategory:\s*([^|\n]+)/i);
   return noteMatch?.[1]?.trim() || "";
 }
 
-function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
+function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; market?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
   profile: T,
   declaredNiche: string,
+  city?: string,
 ): T {
   const normalized = normalizeClientDeclaredNiche(declaredNiche);
   if (!normalized) return profile;
+  const services = profile.services?.length ? profile.services : [normalized.businessType];
+  const evidenceQueries = buildEvidenceFirstQueries({
+    businessType: normalized.businessType,
+    services,
+    market: profile.market || city || "",
+    intakeCity: city,
+  });
   return {
     ...profile,
     niche: normalized.niche,
     nicheLabel: normalized.nicheLabel,
     businessType: normalized.businessType,
-    services: profile.services?.length ? profile.services : [normalized.businessType],
+    services,
+    suggestedSearchQueries: evidenceQueries.suggestedSearchQueries,
+    competitorSearchQueries: evidenceQueries.competitorSearchQueries,
     nicheConfidence: 100,
-    confidenceReason: `Client-declared business category overrides automated classification: ${normalized.nicheLabel}`,
+    confidenceReason: `Client-declared business category overrides automated classification: ${normalized.nicheLabel}. Search queries were regenerated from the declared business category so stale automated prompts cannot survive.`,
   };
 }
 
@@ -184,9 +198,10 @@ export async function runPreflightStage(
 
     // 5. Run preflight
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
+    const paidIntakePayload = parsePaidIntakePayload(lead.notes);
     const declaredNiche = parseClientDeclaredNiche(lead.notes);
     const rawPreflightResult = await preflightScan(lead.website, lead.city);
-    const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche);
+    const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche, lead.city);
     if (declaredNiche) {
       console.warn(`[pipeline] Client-declared niche override for ${leadId}: "${declaredNiche}" → ${preflightResult.niche}`);
     }
@@ -222,6 +237,8 @@ export async function runPreflightStage(
       suggestedSearchQueries: preflightResult.suggestedSearchQueries,
       competitorSearchQueries: preflightResult.competitorSearchQueries,
       clientDeclaredNiche: declaredNiche || null,
+      paidIntake: paidIntakePayload,
+      customerQuestions: Array.isArray(paidIntakePayload?.customerQuestions) ? paidIntakePayload.customerQuestions : [],
       socialLinks: preflightResult.socialLinks,
       contactInfo: preflightResult.contactInfo,
       schemaOrg: preflightResult.schemaOrg,

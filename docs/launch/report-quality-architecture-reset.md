@@ -226,7 +226,7 @@ Before Alex sees or a client receives anything:
 
 Subagents help only if they are narrow judges with pass/fail scorecards. They do not replace final accountability.
 
-Model-routing details live in `docs/launch/subagent-model-strategy.md`. The short version: strong models should handle final research, niche, copy, red-team, and Release Captain work; cheaper/local/Ollama models may do first-pass linting, banned-phrase scans, and mechanical summaries, but not final client-facing approval.
+Model-routing details live in `docs/launch/subagent-model-strategy.md`. The short version: strong models should handle final research, niche, copy, red-team, and Release Captain work; cheaper configured models may do first-pass linting, banned-phrase scans, and mechanical summaries, but not final client-facing approval.
 
 Every QA subagent must identify the model/provider it used. Unknown model/provider is not acceptable for final launch evidence.
 
@@ -320,9 +320,9 @@ Use model specialization for cost and coverage, not as a substitute for judgment
 - Rendered Preview QA: browser/vision-capable stack plus Release Captain visible-output review.
 - Red-Team QA: strongest available model; this role protects reputation.
 
-### Ollama/local model policy
+### configured lower-cost model policy
 
-Ollama models are useful for:
+configured lower-cost models are useful for:
 
 - banned phrase scans
 - prompt weirdness checks
@@ -330,7 +330,7 @@ Ollama models are useful for:
 - cheap first-pass copy lint
 - mechanical QA summarization
 
-Ollama/local models must not be the only judge for:
+configured lower-cost models must not be the only judge for:
 
 - final report approval
 - final paid copy approval
@@ -338,7 +338,7 @@ Ollama/local models must not be the only judge for:
 - final evidence/provenance claims
 - final revenue/opportunity claims
 
-If the Ollama API is added to Hermes, document the provider/model in `docs/launch/subagent-model-strategy.md` and keep the Release Captain on a high-reasoning model.
+If model routing changes, document the provider/model in `docs/launch/subagent-model-strategy.md` and keep the Release Captain on a high-reasoning current configured model.
 
 ## 24-hour rescue plan
 

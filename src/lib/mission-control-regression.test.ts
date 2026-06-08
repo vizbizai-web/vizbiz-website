@@ -154,7 +154,8 @@ describe('Mission Control production integrity', () => {
   it('keeps professional-audio niche extraction available and fills evidence-first fallbacks', () => {
     const preflight = repoFile('src/lib/preflight-engine.ts');
 
-    expect(preflight).toContain('pro_audio_systems, local_business');
+    expect(preflight).toContain('pro_audio_systems');
+    expect(preflight).toContain('Do not force a finite taxonomy category.');
     expect(preflight).toContain("niche === 'pro_audio_systems'");
     expect(preflight).toContain('audio professionals, venues, installers');
     expect(preflight).toContain('Supplies and supports professional audio, AV');

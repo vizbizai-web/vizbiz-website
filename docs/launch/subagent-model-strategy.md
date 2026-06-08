@@ -17,7 +17,7 @@ The current safest default is:
 - **Rendered Preview QA:** model must be vision/browser-capable if screenshots are involved; otherwise use browser text + Release Captain inspection.
 - **Red-team QA:** use the strongest available model, because this role is supposed to catch embarrassing semantic failures.
 
-Small/local/Ollama models are useful for cheap first-pass linting and checklist scans. They are not enough for final approval of client-facing VizBiz reports.
+Small configured models are useful for cheap first-pass linting and checklist scans. They are not enough for final approval of client-facing VizBiz reports.
 
 ## Current Hermes delegation behavior
 
@@ -58,7 +58,7 @@ Examples:
 
 ```bash
 hermes chat --provider openai-codex --model gpt-5.5 -q "Research QA task..."
-hermes chat --provider ollama --model <model-name> -q "Cheap copy lint task..."
+hermes chat -q "Cheap copy lint task using the current configured model..."
 ```
 
 Or create named Hermes profiles later:
@@ -98,7 +98,7 @@ Tasks:
 Model guidance:
 
 - Preferred: current main model or another high-reasoning hosted model.
-- Avoid using small local/Ollama model as final judge.
+- Avoid using small configured model as final judge.
 
 ### Niche / Market Agent
 
@@ -148,7 +148,7 @@ Tasks:
 Model guidance:
 
 - Deterministic commands matter more than model quality.
-- Ollama/local model is acceptable for summarizing command results.
+- configured lower-cost model is acceptable for summarizing command results.
 
 ### Rendered Preview Agent
 
@@ -181,11 +181,11 @@ Model guidance:
 
 - Do not cheap out here. The red-team agent is supposed to save reputation.
 
-## Ollama usage recommendation
+## Configured model usage recommendation
 
-If Alex has Ollama API with many models, use it as a cost-control layer, not as the final client-facing authority.
+Use lower-cost configured models as a cost-control layer only when they are available through the current configured provider, not as final client-facing authority.
 
-Good Ollama uses:
+Good lower-cost model uses:
 
 - banned phrase scans
 - first-pass copy lint
@@ -194,7 +194,7 @@ Good Ollama uses:
 - mechanical QA summarization
 - cheap red-team pre-pass before strong-model red-team
 
-Bad Ollama uses:
+Bad lower-cost model uses:
 
 - final report approval
 - final paid copy approval

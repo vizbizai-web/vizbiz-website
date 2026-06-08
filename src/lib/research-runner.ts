@@ -412,6 +412,7 @@ export async function runResearch(
     searchLangCode?: string;
     suggestedSearchQueries?: string[];
     competitorSearchQueries?: string[];
+    customerQuestions?: string[];
     // Scraper intelligence
     socialLinks?: {
       instagram: string | null;
@@ -450,12 +451,12 @@ export async function runResearch(
   // STEP 1: Use PreFlight profile if available (no duplicate site fetch needed)
   let websiteInsight;
   let finalNiche;
-  let enrichedPrompts: string[] | null = null; // v2: LLM-generated customer queries
-  let enrichedCompQueries: string[] | null = null; // v2: LLM-generated competitor queries
+  let enrichedPrompts: string[] | null = null; // Business-profile customer queries
+  let enrichedCompQueries: string[] | null = null; // Business-profile competitor queries
   
   if (preflightProfile) {
     console.info(`[research-runner] Using PreFlight v2 profile: niche=${preflightProfile.niche}, businessType=${preflightProfile.businessType || 'N/A'}, market=${preflightProfile.market || 'N/A'}, searchLang=${preflightProfile.searchLanguage || 'N/A'}`);
-    // Trust the LLM-classified niche even if not in our database
+    // Use the evidence-first profile as the source of truth. Taxonomy config is compatibility only.
     const knownNicheConfig = getNicheByName(preflightProfile.niche);
     const dynamicConfig = knownNicheConfig ? null : generateDynamicNicheConfig(
       preflightProfile.niche,
@@ -474,14 +475,20 @@ export async function runResearch(
     };
     finalNiche = preflightProfile.niche;
 
-    // v2: Use LLM-generated queries if available
+    // v2: Use profile/customer queries if available
+    const customerQuestionPrompts = Array.isArray(preflightProfile.customerQuestions)
+      ? preflightProfile.customerQuestions.map((question: string) => String(question).trim()).filter(Boolean)
+      : [];
     if (preflightProfile.suggestedSearchQueries && preflightProfile.suggestedSearchQueries.length >= 5) {
-      enrichedPrompts = preflightProfile.suggestedSearchQueries;
-      console.info(`[research-runner] Using ${enrichedPrompts.length} LLM-generated customer search queries`);
+      enrichedPrompts = [...customerQuestionPrompts, ...preflightProfile.suggestedSearchQueries];
+      console.info(`[research-runner] Using ${enrichedPrompts.length} business-profile customer search queries including ${customerQuestionPrompts.length} paid-intake questions`);
+    } else if (customerQuestionPrompts.length > 0) {
+      enrichedPrompts = customerQuestionPrompts;
+      console.info(`[research-runner] Using ${enrichedPrompts.length} paid-intake customer questions as prompt seeds`);
     }
     if (preflightProfile.competitorSearchQueries && preflightProfile.competitorSearchQueries.length >= 2) {
       enrichedCompQueries = preflightProfile.competitorSearchQueries;
-      console.info(`[research-runner] Using ${enrichedCompQueries.length} LLM-generated competitor search queries`);
+      console.info(`[research-runner] Using ${enrichedCompQueries.length} business-profile competitor search queries`);
     }
   } else {
     // Fallback: scan website ourselves
@@ -492,30 +499,39 @@ export async function runResearch(
   console.info(`[research-runner] Services: [${(websiteInsight.services || []).slice(0,5).join(', ')}]`);
   console.info(`[research-runner] Final niche: ${finalNiche}`);
   
-  // STEP 3: Generate prompts based on niche + tier
+  // STEP 3: Generate prompts from the Business Intelligence Profile first.
+  // Taxonomy is now only a fallback when no profile/services/customer queries exist.
   let prompts: string[];
-  if (tier === 'paid') {
-    // Full 84-prompt set for paid reports
+  const profileBasis = {
+    businessType: preflightProfile?.businessType || websiteInsight?.keywords?.[0] || finalNiche?.replace(/_/g, ' '),
+    targetAudience: preflightProfile?.targetAudience,
+    services: preflightProfile?.services || websiteInsight?.services || [],
+    market: preflightProfile?.market || city,
+    searchLanguage: preflightProfile?.searchLanguage,
+    suggestedSearchQueries: preflightProfile?.suggestedSearchQueries || [],
+  };
+
+  if (enrichedPrompts) {
+    prompts = buildPromptSetFromEnriched(enrichedPrompts, resolvedName, city, preflightProfile?.searchLanguage);
+    console.info(`[research-runner] Using business-profile customer query set: ${prompts.length} prompts (lang: ${preflightProfile?.searchLanguage || 'unknown'})`);
+  } else if (tier === 'paid') {
+    // Full prompt set for paid reports, seeded by the BI profile before taxonomy defaults.
     const { getPrompts } = await import('./full-prompts');
     const fullPromptDefs = getPrompts({
       businessName: resolvedName,
       city,
       niche: finalNiche,
-      competitorMention: competitors[0] || '',
+      competitorMention: competitors.join(', '),
       websiteInsight,
+      ...profileBasis,
     }, 'paid');
     prompts = fullPromptDefs.map(p => p.text);
-    console.info(`[research-runner] Using FULL 84-prompt set (paid tier): ${prompts.length} prompts`);
-  } else if (enrichedPrompts) {
-    // v2: Use LLM-generated queries from preflight — these are already language+market specific
-    // Pad to 20 if needed by generating variations
-    prompts = buildPromptSetFromEnriched(enrichedPrompts, resolvedName, city, preflightProfile?.searchLanguage);
-    console.info(`[research-runner] Using enriched prompt set: ${prompts.length} prompts (lang: ${preflightProfile?.searchLanguage || 'unknown'})`);
+    console.info(`[research-runner] Using business-profile full prompt set (paid tier): ${prompts.length} prompts`);
   } else {
-    // Standard 20-prompt set for free reports
+    // Standard prompt set only when no profile-first query set exists.
     const promptSet = getPromptSetForNiche(finalNiche);
     prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
-    console.info(`[research-runner] Using standard 20-prompt set (free tier)`);
+    console.info(`[research-runner] Using taxonomy fallback 20-prompt set (free tier)`);
   }
 
   const deterministicPromptGate = rebuildPromptsFromScrapedProfileIfContaminated(prompts, {
@@ -546,7 +562,7 @@ export async function runResearch(
         for (const bad of promptQuality.bad) {
           console.warn(`[research-runner]   BAD: "${bad.prompt}" — ${bad.reason}`);
         }
-        // Replace bad prompts with LLM-suggested alternatives
+        // Replace bad prompts with deterministic evidence-first alternatives.
         if (promptQuality.replacements.length > 0) {
           let replaced = 0;
           for (const bad of promptQuality.bad) {
@@ -1008,7 +1024,7 @@ function resolveBusinessName(businessName: string, website: string): string {
 }
 
 /**
- * Build a 20-prompt set from LLM-generated customer search queries.
+ * Build a 20-prompt set from evidence-first customer search queries.
  * These are already in the right language and market-specific.
  * If fewer than 20, generate variations to pad.
  */
@@ -1020,7 +1036,7 @@ function buildPromptSetFromEnriched(
 ): string[] {
   const prompts: string[] = [];
 
-  // Use the LLM-generated queries directly — they're already specific
+  // Use the evidence-first queries directly — they're already specific
   for (const q of enrichedQueries) {
     if (prompts.length >= 20) break;
     // Replace placeholders if present
@@ -1922,92 +1938,28 @@ function getWhyThisMatters(niche: string): string {
   }
 }
 /**
- * STEP 3.5: Prompt Quality Verification
- * 
- * Uses a quick LLM call to verify that generated prompts are actually
- * relevant to the business type. Catches mismatches like "water polo news"
- * for a water polo training platform, or "best dealership" for a restaurant.
+ * STEP 3.5: Deterministic Prompt Quality Verification
+ *
+ * Provider-neutral safety check. This does not call a separate model. It catches
+ * obvious stale vertical leakage and generic prompt drift after prompt generation.
  */
 async function verifyPromptQuality(
   prompts: string[],
   businessType: string,
   businessName: string,
 ): Promise<{ bad: { prompt: string; reason: string }[]; replacements: string[] }> {
-  const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY;
-  if (!OLLAMA_API_KEY) return { bad: [], replacements: [] };
+  const profileText = businessType.toLowerCase();
+  const bad = prompts
+    .filter((prompt) => STALE_VERTICAL_TERMS.test(prompt) && !STALE_VERTICAL_TERMS.test(profileText))
+    .map((prompt) => ({ prompt, reason: 'Prompt contains stale vertical language that does not match the evidence-first business type.' }));
 
-  // Sample up to 10 prompts to check (don't check all 20 to save time)
-  const samplePrompts = prompts.slice(0, 10);
+  const cleanBusinessType = normalizeProfileTerm(businessType, 'business');
+  const replacements = bad.map((_, index) => [
+    `I need a trusted ${cleanBusinessType}. Who should I choose?`,
+    `Which ${cleanBusinessType} providers have good reviews and clear proof?`,
+    `${businessName} reviews and services`,
+    `best ${cleanBusinessType} near me`,
+  ][index % 4]);
 
-  const verifyPrompt = `You are checking if search queries are appropriate for a specific business.
-
-Business: "${businessName}"
-Business type: "${businessType}"
-
-For each search query below, determine if it's a realistic query that a CUSTOMER would type to find THIS specific type of business. 
-
-A BAD query is one that:
-- Is about a different industry/service entirely
-- Is a news/information query, not a buyer-intent query
-- Uses the wrong language or market
-- Is too generic (e.g., "best X near me" when the business is a specific niche)
-- Would never lead someone to hire or buy from this business
-
-Return ONLY valid JSON. No markdown. No code fences.
-{
-  "bad": [
-    {"prompt": "exact prompt text", "reason": "why it's bad"}
-  ],
-  "replacements": [
-    "better prompt to replace the first bad one",
-    "better prompt to replace the second bad one"
-  ]
-}
-
-If all prompts are good, return: {"bad": [], "replacements": []}
-
-QUERIES TO CHECK:
-${samplePrompts.map((p, i) => `${i + 1}. "${p}"`).join('\n')}`;
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
-
-    const res = await fetch("https://ollama.com/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OLLAMA_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gemma3:4b",
-        messages: [{ role: "user", content: verifyPrompt }],
-        stream: false,
-        options: { temperature: 0.1 },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      throw new Error(`Ollama returned ${res.status}`);
-    }
-
-    const data = await res.json();
-    const content = data?.message?.content || "";
-    
-    // Parse JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return { bad: [], replacements: [] };
-    
-    const parsed = JSON.parse(jsonMatch[0]);
-    return {
-      bad: Array.isArray(parsed.bad) ? parsed.bad : [],
-      replacements: Array.isArray(parsed.replacements) ? parsed.replacements : [],
-    };
-  } catch (e) {
-    console.warn("[research-runner] Prompt quality LLM call failed:", e instanceof Error ? e.message : e);
-    return { bad: [], replacements: [] };
-  }
+  return { bad, replacements };
 }

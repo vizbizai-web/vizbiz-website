@@ -40,10 +40,15 @@ interface NicheConfig {
   competitor2: string;
   competitor3: string;
   keywords: string[];       // e.g., ["oyster", "pearl", "farm", "tour", "cruise"]
+  hasNamedCompetitors: boolean;
+}
+
+function hasUsableCompetitor(value: string): boolean {
+  return Boolean(value && !/^competitor\s+\d+$/i.test(value.trim()));
 }
 
 function generatePrompts(config: NicheConfig): PromptDef[] {
-  const { businessName, city, region, services, productType, competitor1, competitor2, competitor3, keywords } = config;
+  const { businessName, city, region, services, productType, competitor1, competitor2, competitor3, keywords, hasNamedCompetitors } = config;
   const shortName = businessName.split(' ').slice(0, 3).join(' ');
   const mainService = services[0] || productType;
   const prompts: PromptDef[] = [];
@@ -114,13 +119,20 @@ function generatePrompts(config: NicheConfig): PromptDef[] {
   cat4.forEach((text, i) => prompts.push({ id: `4.${i + 1}`, category: 4, categoryName: CATEGORIES[4], text }));
 
   // CATEGORY 5: COMPETITOR COMPARISON (6)
-  const cat5 = [
+  const cat5 = hasNamedCompetitors ? [
     `Which is better in ${city}: ${businessName} or ${competitor1}?`,
     `Compare ${businessName}, ${competitor1}, and ${competitor2} for ${mainService} in ${region}. Which should I choose?`,
     `Which ${productType} in ${city} has the best reputation: ${businessName}, ${competitor1}, or ${competitor2}?`,
     `For ${services[0] || mainService} in ${city}, who is better: ${businessName} or ${competitor1}?`,
     `Tell me about ${businessName}. Are they a good ${productType} in ${city}? What do customers say?`,
     `Tell me about ${competitor1}. Are they a good ${productType} in ${city}? What do customers say?`,
+  ] : [
+    `Which ${productType} providers in ${city} have the strongest reputation?`,
+    `Compare the top ${mainService} options in ${region}. Which should I choose?`,
+    `Which ${productType} in ${city} has the best reviews and proof?`,
+    `For ${services[0] || mainService} in ${city}, what provider should I trust?`,
+    `Tell me about ${businessName}. Are they a good ${productType} in ${city}? What do customers say?`,
+    `What alternatives should I compare before choosing a ${productType} in ${city}?`,
   ];
   cat5.forEach((text, i) => prompts.push({ id: `5.${i + 1}`, category: 5, categoryName: CATEGORIES[5], text }));
 
@@ -130,7 +142,9 @@ function generatePrompts(config: NicheConfig): PromptDef[] {
     `Looking for ${mainService} in ${city} fast. Where should I go?`,
     `What should I look for in a good ${productType} in ${city}?`,
     `Know any good ${keywords[0] || productType} places in ${city}? Looking for somewhere trustworthy.`,
-    `You mentioned ${competitor1} for ${productType} in ${city}. Are there any others I should consider? What about ${businessName}?`,
+    hasNamedCompetitors
+      ? `You mentioned ${competitor1} for ${productType} in ${city}. Are there any others I should consider? What about ${businessName}?`
+      : `Are there any other ${productType} providers in ${city} I should consider besides ${businessName}?`,
     `What's the process for booking ${mainService} in ${city}? Can you recommend someone?`,
   ];
   cat6.forEach((text, i) => prompts.push({ id: `6.${i + 1}`, category: 6, categoryName: CATEGORIES[6], text }));
@@ -178,17 +192,25 @@ function generatePrompts(config: NicheConfig): PromptDef[] {
   // CATEGORY 11: CROSS-COMPETITOR VISIBILITY (12)
   const cat11 = [
     `What's the best ${productType} in ${city} overall?`,
-    `I'm deciding between ${businessName} and ${competitor1}. Which should I choose in ${city}?`,
-    `${businessName} vs ${competitor1} vs ${competitor2} — which is the best ${mainService} near ${city}?`,
+    hasNamedCompetitors
+      ? `I'm deciding between ${businessName} and ${competitor1}. Which should I choose in ${city}?`
+      : `I'm comparing ${productType} providers in ${city}. Should ${businessName} be on my shortlist?`,
+    hasNamedCompetitors
+      ? `${businessName} vs ${competitor1} vs ${competitor2} — which is the best ${mainService} near ${city}?`
+      : `Which ${mainService} providers near ${city} have the strongest trust signals?`,
     `Which ${productType} in ${city} has the best deals right now, regardless of who?`,
-    `I want the best ${keywords[0] || productType} experience in ${city}. Should I go to ${businessName}, ${competitor1}, or ${competitor2}?`,
+    hasNamedCompetitors
+      ? `I want the best ${keywords[0] || productType} experience in ${city}. Should I go to ${businessName}, ${competitor1}, or ${competitor2}?`
+      : `I want the best ${keywords[0] || productType} experience in ${city}. Which providers should I compare?`,
     `What's the most reliable ${productType} I can book in ${city}? Which provider is the best?`,
     `I have a budget of $200 for ${mainService} in ${city}. Which provider gives the best value?`,
     `Which ${productType} in ${city} has the best overall experience? I want something memorable.`,
     `Where can I find the best rated ${mainService} in ${city}? I'm open to any provider.`,
     `I'm new to ${city} and want to try ${productType}. Which provider is best for first-timers?`,
     `Which ${productType} in ${city} offers the most unique experience?`,
-    `Between ${businessName}, ${competitor1}, ${competitor2}, and ${competitor3} — which has the best overall reputation?`,
+    hasNamedCompetitors
+      ? `Between ${businessName}, ${competitor1}, ${competitor2}, and ${competitor3} — which has the best overall reputation?`
+      : `Which ${productType} providers in ${city} have the best overall reputation?`,
   ];
   cat11.forEach((text, i) => prompts.push({ id: `11.${i + 1}`, category: 11, categoryName: CATEGORIES[11], text }));
 
@@ -204,6 +226,12 @@ function buildNicheConfig(data: {
   niche: string;
   competitorMention?: string;
   websiteInsight?: any;
+  businessType?: string;
+  targetAudience?: string;
+  services?: string[];
+  market?: string;
+  searchLanguage?: string;
+  suggestedSearchQueries?: string[];
 }): NicheConfig {
   const { businessName, city, niche, competitorMention, websiteInsight } = data;
   
@@ -271,19 +299,30 @@ function buildNicheConfig(data: {
 
   const defaults = nicheDefaults[niche] || nicheDefaults.local_business;
   
-  // Use website insights if available
-  const webServices = websiteInsight?.services?.length > 0 ? websiteInsight.services : defaults.services || ['general services'];
+  const specificBusinessType = (data.businessType || websiteInsight?.businessType || websiteInsight?.keywords?.[0] || '').replace(/_/g, ' ').trim().toLowerCase();
+  const profileServices = data.services?.length ? data.services : websiteInsight?.services;
+  const webServices = profileServices?.length > 0 ? profileServices : defaults.services || [specificBusinessType || 'general services'];
+  const productType = specificBusinessType || defaults.productType || 'local business';
+  const keywords = specificBusinessType
+    ? Array.from(new Set([specificBusinessType, ...webServices].join(' ').split(/\s+/).filter((word) => word.length > 3))).slice(0, 6)
+    : defaults.keywords || ['business', 'service'];
+  const competitorParts = (competitorMention || '').split(',').map((part) => part.trim()).filter(Boolean);
+  const competitor1 = competitorParts[0] || '';
+  const competitor2 = competitorParts[1] || '';
+  const competitor3 = competitorParts[2] || '';
+  const hasNamedCompetitors = hasUsableCompetitor(competitor1);
   
   return {
     businessName,
     city,
     region,
     services: webServices,
-    productType: defaults.productType || 'local business',
-    competitor1: competitorMention?.split(',')[0]?.trim() || 'Competitor 1',
-    competitor2: competitorMention?.split(',')[1]?.trim() || 'Competitor 2',
-    competitor3: competitorMention?.split(',')[2]?.trim() || 'Competitor 3',
-    keywords: defaults.keywords || ['business', 'service'],
+    productType,
+    competitor1,
+    competitor2: competitor2 || competitor1,
+    competitor3: competitor3 || competitor2 || competitor1,
+    keywords,
+    hasNamedCompetitors,
   };
 }
 
@@ -298,6 +337,12 @@ export function getPrompts(data: {
   niche: string;
   competitorMention?: string;
   websiteInsight?: any;
+  businessType?: string;
+  targetAudience?: string;
+  services?: string[];
+  market?: string;
+  searchLanguage?: string;
+  suggestedSearchQueries?: string[];
 }, tier: 'free' | 'paid' = 'free'): PromptDef[] {
   const config = buildNicheConfig(data);
   const allPrompts = generatePrompts(config);
