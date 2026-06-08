@@ -76,7 +76,7 @@ export async function GET(request: Request) {
     try {
       // Step 1: Preflight
       console.info(`[cron/process-reruns] [${lead.leadId}] Step 1: Preflight scan`);
-      const preflight = await preflightScan(lead.website, lead.city);
+      const preflight = await preflightScan(lead.website, lead.city, lead.dealershipName);
       
       // Step 2: Research
       console.info(`[cron/process-reruns] [${lead.leadId}] Step 2: AI visibility research`);

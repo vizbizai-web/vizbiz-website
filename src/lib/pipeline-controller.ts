@@ -200,7 +200,7 @@ export async function runPreflightStage(
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
     const paidIntakePayload = parsePaidIntakePayload(lead.notes);
     const declaredNiche = parseClientDeclaredNiche(lead.notes);
-    const rawPreflightResult = await preflightScan(lead.website, lead.city);
+    const rawPreflightResult = await preflightScan(lead.website, lead.city, lead.dealershipName);
     const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche, lead.city);
     if (declaredNiche) {
       console.warn(`[pipeline] Client-declared niche override for ${leadId}: "${declaredNiche}" → ${preflightResult.niche}`);

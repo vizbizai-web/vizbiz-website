@@ -562,6 +562,7 @@ function deriveBusinessProfileFromEvidence(input: {
   htmlLang: string;
   rawText: string;
   intakeCity?: string;
+  businessName?: string;
   googlePlaceEnrichment: GooglePlaceEnrichment | null;
 }): {
   businessType: string;
@@ -585,7 +586,7 @@ function deriveBusinessProfileFromEvidence(input: {
     || input.googlePlaceEnrichment?.formattedAddress?.split(',').slice(-2).join(',').trim()
     || '';
   const separatedProfile = separateBusinessIdentityFromEvidence({
-    businessName: (input.metaTitle || input.scrapedTitle || '').split(/[|•–—]/)[0]?.trim(),
+    businessName: input.businessName?.trim() || (input.metaTitle || input.scrapedTitle || '').split(/[|•–—]/)[0]?.trim(),
     url: input.url,
     metaTitle: input.metaTitle,
     metaDescription: input.metaDesc,
@@ -757,7 +758,7 @@ function checkForReviews(html: string | undefined): boolean {
 /**
  * PreFlight v2 — Deep Business Intelligence
  */
-export async function preflightScan(url: string, intakeCity?: string): Promise<BusinessProfileWithAudit> {
+export async function preflightScan(url: string, intakeCity?: string, businessName?: string): Promise<BusinessProfileWithAudit> {
   console.info(`[preflight] Scanning ${url}...`);
 
   // -- Stage 1: Scrape site --
@@ -791,7 +792,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   // Do NOT call Places with empty city — return unavailable status instead.
   let googlePlaceEnrichment: GooglePlaceEnrichment | null = null;
   let localEntityTrustScore: number | null = null;
-  const placesLookupName = url.replace(/^https?:\/\//, '').split('/')[0]; // domain as initial name
+  const placesLookupName = businessName?.trim() || url.replace(/^https?:\/\//, '').split('/')[0];
   const placesCity = intakeCity?.trim() || ''; // Priority 1: intake city
 
   if (placesCity) {
@@ -904,6 +905,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     htmlLang,
     rawText,
     intakeCity,
+    businessName,
     googlePlaceEnrichment,
   });
 
