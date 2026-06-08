@@ -1882,6 +1882,8 @@ function getCompetitorCategories(niche: string): string[] {
       return ["stronger presence on broad tourism and day-trip queries", "well-established review presence on travel platforms"];
     case "restaurant":
       return ["stronger presence on dining and reservation platforms", "better review visibility on food-focused searches"];
+    case "food_ingredient_supplier":
+      return ["stronger presence in food-service supplier searches", "clearer catalog and product proof for ice cream and food-production buyers"];
     case "home_fragrance":
       return ["stronger online presence in home scent and candle searches", "clearer brand positioning against established fragrance brands"];
     case "auto_transport":
@@ -1909,6 +1911,8 @@ function getWhyThisMatters(niche: string): string {
       return "AI shapes the shortlist before a visitor plans a day trip, looks for unique experiences, or searches for things to do. If you don't appear, tourists book someone else.";
     case "restaurant":
       return "AI shapes the shortlist before someone picks where to eat, checks reviews, or makes a reservation.";
+    case "food_ingredient_supplier":
+      return "AI can shape the shortlist before food-service buyers, ice cream shops, or manufacturers choose an ingredient supplier or product distributor.";
     case "home_fragrance":
       return "AI shapes the shortlist before someone buys candles, diffusers, or home scent products online. If you don't appear, customers buy from brands that do.";
     case "auto_transport":

@@ -155,10 +155,11 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   spray_tanning: ["spray tan", "tanning", "sunless", "bronze", "glow", "airbrush tan"],
   beauty_salon: ["salon", "beauty", "hair", "nails", "facial", "spa", "barber"],
   venue_wedding: ["venue", "wedding", "event", "banquet", "ballroom", "reception"],
-  dance_studio: ["dance", "ballet", "salsa", "hip hop", "studio", "dance class"],
+  dance_studio: ["dance studio", "dance school", "dance class", "dance classes", "dance lessons", "ballet", "hip hop", "ballroom", "choreography"],
   real_estate: ["realty", "real estate", "realtor", "property", "homes"],
   mobile_bar: ["cocktail", "bar", "mixology", "mobile bar", "cocktail catering", "drinks catering"],
   restaurant: ["menu", "restaurant", "dining", "bistro", "cuisine", "reservations", "lunch", "dinner"],
+  food_ingredient_supplier: ["helados", "helado", "elaboración de helados", "fabricación de productos artesanales", "usos industriales", "materias primas", "estabilizantes", "neutros", "pastas frutales", "colorantes", "esencias", "variegatos", "dulce de leche", "frutas en almíbar", "frutos secos", "envases", "salsas", "chocolate", "distribuidos por nosotros", "producidos por nosotros"],
   photography: ["photographer", "photography", "portrait", "headshot", "photo session"],
   cleaning_service: ["cleaning", "cleaning service", "maid", "janitorial", "house cleaning"],
   barbershop: ["barber", "barbershop", "haircut", "beard trim"],
@@ -255,6 +256,29 @@ function applyNicheGuardrails(input: {
         'sound reinforcement suppliers {city}',
       ],
       confidenceReason: 'Deterministic guardrail: professional audio/AV/electronics signals override generic workshop or artisan classifications.',
+    };
+  }
+
+  const isFoodIngredientSupplier = /elaboraci[oó]n\s+de\s+helados|fabricaci[oó]n\s+de\s+productos\s+artesanales|\busos\s+industriales\b|materias\s+primas|\bhelados?\b|\bhelader[ií]as?\b|estabilizantes?|\bneutros\b|pastas?\s+frutales?|colorantes?|esencias?|variegatos?|dulce\s+de\s+leche|frutas?\s+en\s+alm[ií]bar|frutos\s+secos|\benvases\b|\bsalsas\b|\bchocolate\b|distribuidos\s+por\s+nosotros|producidos\s+por\s+nosotros/.test(signal);
+  const falseDanceFromFoodSalsa = input.niche === 'dance_studio' && /\bsalsas\b|\brecetas\b|helados?|chocolate|dulce\s+de\s+leche/.test(signal);
+  if (isFoodIngredientSupplier || falseDanceFromFoodSalsa) {
+    return {
+      niche: 'food_ingredient_supplier',
+      businessType: 'ice cream ingredient manufacturer and food product supplier',
+      services: ['ice cream ingredients', 'stabilizers', 'fruit pastes', 'flavorings and colorants', 'sauces and food-service supplies'],
+      suggestedSearchQueries: [
+        'proveedor de insumos para heladería en {city}',
+        'fabricante de ingredientes para helados en {city}',
+        'estabilizantes y pastas para heladería en {city}',
+        'distribuidor de productos para heladerías en {city}',
+        'insumos para elaboración de helados en {city}',
+      ],
+      competitorSearchQueries: [
+        'proveedores de insumos para heladerías {city}',
+        'fabricantes de ingredientes para helados {city}',
+        'distribuidores para heladerías {city}',
+      ],
+      confidenceReason: 'Deterministic guardrail: Spanish ice-cream ingredient/product catalog terms override false dance-studio matches from words like “salsas” or template “estudio”.',
     };
   }
 
@@ -359,7 +383,7 @@ Extract:
 4. "siteLanguage": The primary language of the website content (e.g. "Romanian", "English", "French").
 5. "searchLanguage": What language their potential customers would use to search for this type of business. Same as siteLanguage for local businesses, but might differ for international businesses.
 6. "market": The geographic market they serve (e.g. "Romania", "Ontario, Canada", "United States", "Cluj Napoca, Romania").
-7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, pro_audio_systems, local_business. This is for internal categorization only — your businessType is what we actually use.
+7. "niche": Pick the CLOSEST match from this list: electrical_contractor, car_dealership, fine_jewelry, spray_tanning, beauty_salon, venue_wedding, dance_studio, real_estate, mobile_bar, auto_transport, restaurant, food_ingredient_supplier, photography, cleaning_service, barbershop, fitness_gym, med_spa, nail_salon, tutoring, pet_services, landscaping, it_services, marketing_agency, plant_shop, tourism_experience, artisan_workshop, pro_audio_systems, local_business. This is for internal categorization only — your businessType is what we actually use.
 8. "valueProposition": One sentence: what they do for their clients, in their own words (translate if not in English).
 9. "pricing": Any pricing information found (translate if needed), or null.
 10. "quality": "high", "medium", or "low" — is the site well-written with original content?
@@ -768,6 +792,14 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     searchLanguage = searchLanguage || siteLanguage;
   }
 
+  if (niche === 'food_ingredient_supplier') {
+    targetAudience ||= 'ice cream shops, food-service operators, and manufacturers buying ingredients and supplies for ice cream or dessert production';
+    valueProposition ||= 'Manufactures and distributes ingredients, stabilizers, flavorings, sauces, containers, and supplies for ice cream and food production.';
+    market ||= intakeCity?.trim() || 'Rosario, Argentina';
+    siteLanguage = 'Spanish';
+    searchLanguage = 'Spanish';
+  }
+
   if (!targetAudience && businessType) {
     targetAudience = `customers looking for a trusted ${businessType}${intakeCity ? ` in ${intakeCity}` : ''}`;
   }
@@ -777,6 +809,10 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   if (!market && intakeCity?.trim()) {
     market = intakeCity.trim();
   }
+
+  const resolvedMarketForQueries = intakeCity?.trim() || market?.split(',')[0]?.trim() || '{city}';
+  suggestedSearchQueries = suggestedSearchQueries.map((query) => query.replace(/\{city\}/g, resolvedMarketForQueries));
+  competitorSearchQueries = competitorSearchQueries.map((query) => query.replace(/\{city\}/g, resolvedMarketForQueries));
 
   if (shouldUseEvidenceFirstQueries({ niche, businessType, services, suggestedSearchQueries, nicheConfidence })) {
     const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity });

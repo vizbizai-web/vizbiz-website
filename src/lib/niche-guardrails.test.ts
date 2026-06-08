@@ -43,6 +43,19 @@ describe('niche guardrails', () => {
     expect(economics).toContain('Professional Audio / AV Systems');
   });
 
+  it('prevents Spanish ice-cream ingredient/product suppliers from becoming dance studio reports', () => {
+    const preflight = readFileSync('src/lib/preflight-engine.ts', 'utf8');
+    const economics = readFileSync('src/lib/niche-economics.ts', 'utf8');
+    const scraper = readFileSync('src/lib/site-scraper.ts', 'utf8');
+
+    expect(preflight).toContain('food_ingredient_supplier');
+    expect(preflight).toContain('Spanish ice-cream ingredient/product catalog terms override false dance-studio matches');
+    expect(preflight).toContain('proveedor de insumos para heladería en {city}');
+    expect(preflight).not.toContain('dance_studio: ["dance", "ballet", "salsa", "hip hop", "studio", "dance class"]');
+    expect(economics).toContain('Food Ingredient & Ice Cream Supply');
+    expect(scraper).toContain('looksLikeHtml');
+  });
+
   it('does not let arbitrary new niches fall into car dealership through substring matches', () => {
     const careBusiness = detectNiche(
       'Bright Care Clinic',

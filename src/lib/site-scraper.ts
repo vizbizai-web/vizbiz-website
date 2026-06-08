@@ -814,7 +814,13 @@ export async function fetchLlmsTxt(siteUrl: string): Promise<string | null> {
   try {
     const llmsUrl = `${siteUrl.replace(/\/$/, "")}/llms.txt`;
     const res = await fetch(llmsUrl, { signal: AbortSignal.timeout(5000) });
-    if (res.ok) return await res.text();
+    if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      const text = await res.text();
+      const looksLikeHtml = /text\/html/i.test(contentType) || /^\s*<!doctype\s+html/i.test(text) || /^\s*<html[\s>]/i.test(text) || /<title[^>]*>/i.test(text.slice(0, 500));
+      if (looksLikeHtml) return null;
+      return text;
+    }
   } catch {}
   return null;
 }

@@ -157,7 +157,7 @@ async function runTests() {
   
   const allNiches = ["car_dealership", "fine_jewelry", "spray_tanning", "beauty_salon",
     "venue_wedding", "dance_studio", "real_estate", "mobile_bar", "auto_transport",
-    "restaurant", "photography", "cleaning_service", "barbershop", "fitness_gym",
+    "restaurant", "food_ingredient_supplier", "photography", "cleaning_service", "barbershop", "fitness_gym",
     "med_spa", "nail_salon", "tutoring", "pet_services", "landscaping",
     "it_services", "marketing_agency", "plant_shop", "tourism_experience",
     "artisan_workshop", "local_business", "unknown"];
