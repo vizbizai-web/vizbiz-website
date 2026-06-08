@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     // Mark as queued
     await updateLeadStatus(leadId, {
       status: "rerun_queued",
-      notes: `Rerun queued at ${new Date().toISOString()}. Previous status: ${lead.status}`,
+      notes: `${lead.notes || ""}\n[RERUN_QUEUED ${new Date().toISOString()}] Previous status: ${lead.status}`,
     });
 
     // Send confirmation Telegram alert

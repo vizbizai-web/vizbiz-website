@@ -51,6 +51,8 @@ export type BusinessProfile = {
   targetAudience: string;
   /** Core services as extracted from the site */
   services: string[];
+  /** Customer segments / facility types served; not the business niche itself */
+  customerSegments: string[];
   /** Primary language of the website content (e.g. "Romanian") */
   siteLanguage: string;
   /** Language customers would use to search for this business (e.g. "Romanian" for a local Romanian business) */
@@ -565,6 +567,7 @@ function deriveBusinessProfileFromEvidence(input: {
   businessType: string;
   targetAudience: string;
   services: string[];
+  customerSegments: string[];
   siteLanguage: string;
   searchLanguage: string;
   market: string;
@@ -605,6 +608,7 @@ function deriveBusinessProfileFromEvidence(input: {
     businessType,
     targetAudience: hasSpecificBusinessType ? `customers looking for a trusted ${businessType}${market ? ` in ${market}` : ''}` : '',
     services,
+    customerSegments: separatedProfile.customerSegments,
     siteLanguage,
     searchLanguage,
     market,
@@ -830,6 +834,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
       businessType: "unknown",
       targetAudience: "",
       services: [],
+      customerSegments: [],
       siteLanguage: "English",
       searchLanguage: "English",
       market: "",
@@ -876,6 +881,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   let businessType = "";
   let targetAudience = "";
   let services: string[] = [];
+  let customerSegments: string[] = [];
   let siteLanguage = "English";
   let searchLanguage = "English";
   let market = "";
@@ -904,6 +910,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   businessType = deterministicProfile.businessType;
   targetAudience = deterministicProfile.targetAudience;
   services = deterministicProfile.services;
+  customerSegments = deterministicProfile.customerSegments;
   siteLanguage = deterministicProfile.siteLanguage;
   searchLanguage = deterministicProfile.searchLanguage;
   market = deterministicProfile.market;
@@ -966,7 +973,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
   competitorSearchQueries = competitorSearchQueries.map((query) => query.replace(/\{city\}/g, resolvedMarketForQueries));
 
   if (shouldUseEvidenceFirstQueries({ niche, businessType, services, suggestedSearchQueries, nicheConfidence })) {
-    const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity });
+    const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity, customerSegments });
     console.warn(`[preflight] Evidence-first query safety gate: replacing weak/generic/stale queries for ${niche}/${businessType || 'unknown'}`);
     suggestedSearchQueries = evidenceQueries.suggestedSearchQueries;
     competitorSearchQueries = evidenceQueries.competitorSearchQueries;
@@ -1040,6 +1047,7 @@ export async function preflightScan(url: string, intakeCity?: string): Promise<B
     businessType,
     targetAudience,
     services,
+    customerSegments,
     siteLanguage,
     searchLanguage,
     market,

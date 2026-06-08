@@ -115,7 +115,7 @@ function parseClientDeclaredNiche(notes?: string | null): string {
   return noteMatch?.[1]?.trim() || "";
 }
 
-function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; market?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
+function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; customerSegments?: string[]; market?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
   profile: T,
   declaredNiche: string,
   city?: string,
@@ -230,6 +230,7 @@ export async function runPreflightStage(
       businessType: preflightResult.businessType,
       targetAudience: preflightResult.targetAudience,
       services: preflightResult.services,
+      customerSegments: (preflightResult as any).customerSegments || [],
       siteLanguage: preflightResult.siteLanguage,
       searchLanguage: preflightResult.searchLanguage,
       market: preflightResult.market,

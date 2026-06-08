@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
         await updateLeadStatus(leadId, {
           status: "rerun_queued",
-          notes: `Rerun manually triggered at ${new Date().toISOString()}. Previous status: ${lead.status}`,
+          notes: `${lead.notes || ""}\n[RERUN_MANUALLY_TRIGGERED ${new Date().toISOString()}] Previous status: ${lead.status}`,
         });
 
         results.queued++;
