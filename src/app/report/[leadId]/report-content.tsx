@@ -1165,11 +1165,18 @@ function SocialProofStrip({ data, theme }: { data: LeadData; theme: Theme }) {
 function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
 
+  const competitorCount = data.competitors.filter(c => !c.isYou).length;
   const teaserItems = [
-    { icon: '🔍', title: '84 Query Breakdown', desc: 'See every prompt we tested, which AI recommended you, and exactly what it said.' },
-    { icon: '📊', title: 'Competitor Deep Dive', desc: `Full analysis of how ${data.competitors.filter(c => !c.isYou).length} competitors outperform you and where they're weak.` },
-    { icon: '📝', title: 'Step-by-Step Fix Plan', desc: 'Prioritized actions to improve your AI visibility within 30 days.' },
-    { icon: '📈', title: 'Monthly Tracking', desc: 'Watch your visibility score climb as improvements take effect.' },
+    { icon: '🔍', title: 'Deeper Query Breakdown', desc: 'See the full set of buyer questions we tested, when AI recommended you, and what it said.' },
+    {
+      icon: '📊',
+      title: 'Competitor Deep Dive',
+      desc: competitorCount > 0
+        ? `Full analysis of how ${competitorCount} local competitors perform, where they outrank you, and where they are weak.`
+        : 'Compare against 1–2 named local competitors so you can see who AI/search systems recommend instead and why.',
+    },
+    { icon: '📝', title: 'Step-by-Step Fix Plan', desc: 'Prioritized website, listing, content, and trust-signal fixes for the next 30 days.' },
+    { icon: '📈', title: 'Monthly Tracking', desc: 'Track your visibility score, competitor movement, and new recommendation gaps over time.' },
   ];
 
   return (
@@ -1256,7 +1263,7 @@ function BlurredReportPreview({ theme, leadId }: { theme: Theme; leadId: string 
         >
           <div className="text-center">
             <p className="text-sm sm:text-base font-semibold" style={{ color: t.textPrimary }}>Full Report Preview</p>
-            <p className="text-xs mt-1" style={{ color: t.textMuted }}>Complete audit: 84 queries, competitor analysis, fix plan</p>
+            <p className="text-xs mt-1" style={{ color: t.textMuted }}>Full audit: deeper questions, competitor analysis, prioritized fix plan</p>
           </div>
           <a
             href="#"
@@ -1281,17 +1288,17 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
 
   const plans = [
     {
-      name: 'Fix',
+      name: 'One-Time Full Report + Fix',
       price: 88,
-      description: 'Full audit + one-time fix',
-      features: ['Full AI visibility audit (84 queries)', 'Content optimization for AI platforms', 'Local listing cleanup & schema markup', 'Competitor gap analysis', '30-day email support'],
+      description: 'Turn this snapshot into a focused audit and 30-day fix plan',
+      features: ['Full AI visibility audit across buyer-style questions', 'Website and content fixes prioritized by impact', 'Google/listing and schema trust-signal review', 'Local competitor gap analysis when competitors are supplied', '30-day prioritized action plan'],
       highlighted: false,
     },
     {
-      name: 'Fix + Monitor',
+      name: 'Monthly Growth Plan',
       price: 188,
-      description: 'Full fix + we keep you visible every month',
-      features: ['Everything in the Fix plan', 'Monthly re-audit across 84 queries', 'Score tracking dashboard — watch your AVI climb', 'Competitor movement alerts', 'Ongoing content & listing optimization', 'Dedicated support channel'],
+      description: 'Monitor AI visibility, competitor movement, and new fixes every month',
+      features: ['Everything in the one-time report', 'Monthly visibility score refresh', 'Competitor movement tracking', 'Updated recommendations as AI results change', 'Ongoing local AI search improvement plan', 'Dedicated support channel'],
       highlighted: true,
     },
   ];
@@ -1302,7 +1309,7 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <SectionTitle style={{ color: t.textPrimary }}>
-              Ready to Fix This?
+              Turn this snapshot into a fix plan
             </SectionTitle>
             <p className="text-xs sm:text-sm mt-2" style={{ color: t.textMuted }}>
               Choose the plan that fits your business
@@ -1340,7 +1347,7 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
                   <span className="text-4xl sm:text-5xl font-light tabular-nums" style={{ color: t.textPrimary }}>
                     ${plan.price}
                   </span>
-                  <span className="text-sm" style={{ color: t.textMuted }}>{plan.name === 'Fix' ? 'one-time' : '/mo'}</span>
+                  <span className="text-sm" style={{ color: t.textMuted }}>{plan.name === 'One-Time Full Report + Fix' ? 'one-time' : '/mo'}</span>
                 </div>
                 <p className="text-xs mb-5" style={{ color: t.textMuted }}>{plan.description}</p>
                 <ul className="space-y-3 mb-6">
@@ -1355,7 +1362,7 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
                 </ul>
                 <a
                 href="#"
-                  onClick={async (e: any) => { e.preventDefault(); const t2 = plan.name === 'Fix' ? 'fix' : 'fix_and_monitor'; try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: leadId, tier: t2 }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = plan.name === 'Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003'; } }}
+                  onClick={async (e: any) => { e.preventDefault(); const t2 = plan.name === 'One-Time Full Report + Fix' ? 'fix' : 'fix_and_monitor'; try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: leadId, tier: t2 }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = plan.name === 'One-Time Full Report + Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003'; } }}
                   className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
                   style={plan.highlighted
                     ? {
@@ -1379,7 +1386,7 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
                     }
                   }}
                 >
-                  {plan.name === 'Fix' ? 'Get the Full Audit — $88' : 'Fix + Monitor — $188/mo'}
+                  {plan.name === 'One-Time Full Report + Fix' ? 'Get the Full Report + Fix — $88' : 'Start Monthly Growth — $188/mo'}
                 </a>
               </div>
             ))}
