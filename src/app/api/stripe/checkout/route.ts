@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getLeadByLeadId } from "@/lib/google-sheets";
 import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
@@ -34,6 +35,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
     }
 
+    const lead = await getLeadByLeadId(leadId).catch(() => null);
+    const businessName = lead?.dealershipName?.trim() || "Your Business";
+
     const sessionRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
       headers: {
@@ -49,6 +53,7 @@ export async function POST(request: NextRequest) {
         "metadata[leadId]": leadId,
         "metadata[tier]": tier,
         "metadata[paidPlan]": stripeTierToPaidPlan(tier),
+        "metadata[businessName]": businessName,
         "client_reference_id": leadId,
         "allow_promotion_codes": "true",
       }),

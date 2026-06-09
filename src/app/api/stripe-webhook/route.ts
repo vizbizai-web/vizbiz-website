@@ -67,7 +67,7 @@ async function sendPaidIntakeEmail(
           Payment is confirmed for <strong>${businessName}</strong>. The next step is a short 5-minute intake so we can make the paid report specific to your services, customers, competitors, and proof signals.
         </p>
         <p style="font-size: 15px; line-height: 1.7; color: #CBD5E1;">
-          We keep competitors to two, use your real customer questions, then manually review the report before delivery.
+          We focus the comparison around the two businesses customers are most likely to compare you against, use your real customer questions, and perform a final quality check before delivery.
         </p>
         <div style="text-align: center; margin: 32px 0;">
           <a href="${intakeUrl}" style="display: inline-block; background: linear-gradient(to right, #22D3EE, #06B6D4); color: #020617; text-decoration: none; padding: 16px 30px; border-radius: 14px; font-weight: 700; font-size: 16px;">
