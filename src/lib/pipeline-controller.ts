@@ -166,7 +166,7 @@ function getLockOwner(): string {
 
 export async function runPreflightStage(
   leadId: string,
-  options: { force?: boolean; researchMode?: ResearchMode } = {}
+  options: { force?: boolean; researchMode?: ResearchMode; revisionReason?: string } = {}
 ): Promise<StageResult> {
   const owner = getLockOwner();
   const mode = options.researchMode || "free";
@@ -242,6 +242,11 @@ export async function runPreflightStage(
       suggestedSearchQueries: preflightResult.suggestedSearchQueries,
       competitorSearchQueries: preflightResult.competitorSearchQueries,
       clientDeclaredNiche: declaredNiche || null,
+      operatorRevision: options.revisionReason ? {
+        reason: options.revisionReason,
+        requestedAt: new Date().toISOString(),
+        source: "mission_control_needs_fix",
+      } : undefined,
       paidIntake: paidIntakePayload,
       customerQuestions: Array.isArray(paidIntakePayload?.customerQuestions) ? paidIntakePayload.customerQuestions : [],
       socialLinks: preflightResult.socialLinks,
@@ -320,7 +325,7 @@ export async function runPreflightStage(
 
 export async function runResearchStage(
   leadId: string,
-  options: { force?: boolean; researchMode?: ResearchMode } = {}
+  options: { force?: boolean; researchMode?: ResearchMode; revisionReason?: string } = {}
 ): Promise<StageResult> {
   const owner = getLockOwner();
   const mode = options.researchMode || "free";
@@ -400,6 +405,11 @@ export async function runResearchStage(
     // 7. Store research data
     const researchJson = JSON.stringify({
       preflight: preflightProfile,
+      operatorRevision: options.revisionReason ? {
+        reason: options.revisionReason,
+        requestedAt: new Date().toISOString(),
+        source: "mission_control_needs_fix",
+      } : preflightProfile.operatorRevision,
       competitorMode,
       competitors,
       research: {
@@ -485,18 +495,18 @@ export async function runResearchStage(
 
 export async function runAllStages(
   leadId: string,
-  options: { force?: boolean; researchMode?: ResearchMode } = {}
+  options: { force?: boolean; researchMode?: ResearchMode; revisionReason?: string } = {}
 ): Promise<StageResult[]> {
   const results: StageResult[] = [];
   const mode = options.researchMode || "free";
 
   // Preflight
-  const preflightResult = await runPreflightStage(leadId, { force: options.force, researchMode: mode });
+  const preflightResult = await runPreflightStage(leadId, { force: options.force, researchMode: mode, revisionReason: options.revisionReason });
   results.push(preflightResult);
   if (!preflightResult.success && !preflightResult.skipped) return results;
 
   // Research
-  const researchResult = await runResearchStage(leadId, { force: options.force, researchMode: mode });
+  const researchResult = await runResearchStage(leadId, { force: options.force, researchMode: mode, revisionReason: options.revisionReason });
   results.push(researchResult);
   if (!researchResult.success && !researchResult.skipped) return results;
 

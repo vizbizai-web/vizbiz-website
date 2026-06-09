@@ -35,6 +35,7 @@ export const NICHE_ECONOMICS: Record<string, NicheEconomics> = {
   restaurant: { label: "Restaurant", avgLeadValue: 50, monthlyVolume: 400, currency: "USD", maxMonthlyGap: 50000 },
   photography: { label: "Photography", avgLeadValue: 250, monthlyVolume: 40, currency: "USD", maxMonthlyGap: 20000 },
   cleaning_service: { label: "Cleaning Service", avgLeadValue: 150, monthlyVolume: 80, currency: "USD", maxMonthlyGap: 30000 },
+  functional_nutrition: { label: "Functional Nutrition / Skin Health", avgLeadValue: 300, monthlyVolume: 60, currency: "USD", maxMonthlyGap: 40000 },
   barbershop: { label: "Barbershop", avgLeadValue: 40, monthlyVolume: 200, currency: "USD", maxMonthlyGap: 10000 },
   fitness_gym: { label: "Fitness / Gym", avgLeadValue: 100, monthlyVolume: 120, currency: "USD", maxMonthlyGap: 25000 },
   med_spa: { label: "Med Spa", avgLeadValue: 400, monthlyVolume: 60, currency: "USD", maxMonthlyGap: 50000 },

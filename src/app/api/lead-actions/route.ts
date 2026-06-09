@@ -191,6 +191,20 @@ export async function POST(request: Request) {
         });
         let rerunResult: { success?: boolean; error?: string; [key: string]: unknown } | null = null;
         if (autoRerun) {
+          try {
+            await sendPipelineAlert([
+              `🔧 Needs fix received — ${lead.dealershipName || "Unknown business"}`,
+              "",
+              `Lead ID: ${leadId}`,
+              `Report type: ${reportType}`,
+              `Reason: ${reason}`,
+              `Recovery: rerun starting now`,
+              `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+            ].join("\n"));
+          } catch (alertErr) {
+            console.warn("[lead-actions] needs_revision immediate alert failed (non-blocking):", alertErr);
+          }
+
           const origin = new URL(request.url).origin;
           rerunResult = await fetch(`${origin}/api/pipeline/process`, {
             method: "POST",
@@ -203,6 +217,19 @@ export async function POST(request: Request) {
             }),
           }).then((res) => res.json().catch(() => ({ success: res.ok, status: res.status })));
           if (rerunResult?.success === false) {
+            try {
+              await sendPipelineAlert([
+                `🚫 Needs fix rerun failed — ${lead.dealershipName || "Unknown business"}`,
+                "",
+                `Lead ID: ${leadId}`,
+                `Report type: ${reportType}`,
+                `Reason: ${reason}`,
+                `Error: ${rerunResult.error || "Unknown rerun failure"}`,
+                `Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}`,
+              ].join("\n"));
+            } catch (alertErr) {
+              console.warn("[lead-actions] needs_revision failure alert failed (non-blocking):", alertErr);
+            }
             return NextResponse.json({
               success: false,
               action: "needs_revision",

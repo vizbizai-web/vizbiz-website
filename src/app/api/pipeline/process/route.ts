@@ -19,7 +19,7 @@ export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const { leadId, force, researchMode } = body;
+  const { leadId, force, researchMode, revisionReason } = body;
 
   if (!leadId) {
     return NextResponse.json({ success: false, error: "Missing leadId" }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   const results = await runAllStages(leadId, {
     force: !!force,
     researchMode: (researchMode || "free") as ResearchMode,
+    revisionReason: typeof revisionReason === "string" ? revisionReason : undefined,
   });
 
   const allSuccess = results.every((r) => r.success || r.skipped);

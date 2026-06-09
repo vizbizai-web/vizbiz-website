@@ -116,10 +116,14 @@ describe('Mission Control production integrity', () => {
 
   it('alerts Alex when a Mission Control report is marked needs-fix', () => {
     const leadActions = repoFile('src/app/api/lead-actions/route.ts');
+    const pipeline = repoFile('src/lib/pipeline-controller.ts');
 
     expect(leadActions).toContain('sendPipelineAlert');
     expect(leadActions).toContain('Needs fix —');
+    expect(leadActions).toContain('Needs fix received');
     expect(leadActions).toContain('Needs fix + rerun started');
+    expect(leadActions).toContain('Needs fix rerun failed');
+    expect(pipeline).toContain('operatorRevision');
     expect(leadActions).toContain('autoRerun');
     expect(leadActions).toContain('revisionReason: reason');
     expect(leadActions).toContain('Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}');

@@ -71,4 +71,29 @@ describe('business profile separation before intake research', () => {
     expect(joined).not.toMatch(/mop wringerss|best mop wringers|trusted mop wringers/i);
     expect(joined).not.toMatch(/restaurant provider|who offers restaurant/i);
   });
+
+  it('does not misclassify functional nutrition / eczema businesses as cleaning services', () => {
+    const profile = separateBusinessIdentityFromEvidence({
+      businessName: 'Krysta Harcus',
+      url: 'https://www.krystaharcus.com/',
+      metaTitle: 'Certified Functional Nutritionist - Eczema and Psoriasis Solutions',
+      metaDescription: "I'm a certified Functional Nutritionist. I help people with eczema or psoriasis get the clear, beautiful skin you dream of without creams, pills or biologics.",
+      scrapedTitle: 'Certified Functional Nutritionist - Eczema and Psoriasis Solutions',
+      evidenceText: [
+        'Certified Functional Nutritionist',
+        'eczema and psoriasis solutions',
+        'clear beautiful skin without creams, pills or biologics',
+        'root-cause skin health nutrition support',
+      ].join(' '),
+      htmlLang: 'en-CA',
+      market: 'Kelowna',
+      googlePlaceTypes: [],
+    });
+
+    expect(profile.niche).toBe('functional_nutrition');
+    expect(profile.businessType).toMatch(/functional nutritionist/i);
+    expect(profile.services).toEqual(expect.arrayContaining(['eczema support', 'psoriasis support']));
+    expect(profile.customerSegments).toEqual(['people with eczema or psoriasis']);
+    expect(profile.businessType).not.toMatch(/cleaning/i);
+  });
 });

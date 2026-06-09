@@ -173,6 +173,7 @@ const NICHE_KEYWORDS: Record<string, string[]> = {
   food_ingredient_supplier: ["helados", "helado", "elaboración de helados", "fabricación de productos artesanales", "usos industriales", "materias primas", "estabilizantes", "neutros", "pastas frutales", "colorantes", "esencias", "variegatos", "dulce de leche", "frutas en almíbar", "frutos secos", "envases", "salsas", "chocolate", "distribuidos por nosotros", "producidos por nosotros"],
   photography: ["photographer", "photography", "portrait", "headshot", "photo session"],
   cleaning_service: ["cleaning", "cleaning service", "maid", "janitorial", "house cleaning"],
+  functional_nutrition: ["functional nutritionist", "certified functional nutritionist", "nutritionist", "eczema", "psoriasis", "clear skin", "skin condition", "biologics", "creams", "pills", "root cause", "elimination diet", "gut health"],
   barbershop: ["barber", "barbershop", "haircut", "beard trim"],
   fitness_gym: ["gym", "fitness", "personal trainer", "workout", "yoga studio"],
   med_spa: ["botox", "filler", "laser", "microneedling", "med spa", "injectables"],
@@ -226,6 +227,29 @@ function applyNicheGuardrails(input: {
       businessType: 'endermologie and body contouring clinic',
       services: input.services?.length ? input.services : ['LPG Endermologie', 'body contouring', 'cellulite reduction', 'skin toning'],
       confidenceReason: 'Deterministic guardrail: Endermologie/LPG/body-contouring signals override unrelated broad categories.',
+    };
+  }
+
+  const isFunctionalNutrition = /functional\s+nutritionist|certified\s+functional\s+nutritionist|\bnutritionist\b|\bhealth\s+coach\b|eczema|psoriasis|clear(?:er)?\s+(?:beautiful\s+)?skin|skin\s+(?:condition|conditions|solutions?)|\bbiologics\b|without\s+(?:creams|pills)|root\s+cause|gut\s+health|elimination\s+diet/.test(signal);
+  if (isFunctionalNutrition) {
+    return {
+      niche: 'functional_nutrition',
+      businessType: 'functional nutritionist for eczema and psoriasis support',
+      services: ['functional nutrition coaching', 'eczema support', 'psoriasis support', 'skin-health nutrition guidance'],
+      suggestedSearchQueries: [
+        'functional nutritionist for eczema in {city}',
+        'nutritionist who helps with psoriasis in {city}',
+        'eczema nutrition coach near {city}',
+        'root-cause skin health nutrition support in {city}',
+        'functional nutritionist for clear skin in {city}',
+      ],
+      competitorSearchQueries: [
+        'functional nutritionists for eczema {city}',
+        'eczema nutrition coaches {city}',
+        'psoriasis nutrition support {city}',
+        'skin health functional nutritionists {city}',
+      ],
+      confidenceReason: 'Deterministic guardrail: functional nutrition, eczema, psoriasis, and skin-health evidence override unrelated service-category matches.',
     };
   }
 
@@ -408,12 +432,20 @@ export function separateBusinessIdentityFromEvidence(input: {
   let niche = detectNicheByKeywords(evidence);
   let businessType = humanizeBusinessType(placeType || stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDescription) || niche.replace(/_/g, ' '));
   let services = extractLikelyServices(evidence, niche);
-  const customerSegments = detectCustomerSegments(evidence);
+  let customerSegments = detectCustomerSegments(evidence);
   const primaryMarket = /rockwall county/i.test(evidence) ? 'Rockwall County' : input.market;
   const serviceAreaProfile = detectServiceAreas(evidence, primaryMarket || input.market);
 
+  const functionalNutritionSignal = /functional\s+nutritionist|certified\s+functional\s+nutritionist|\bnutritionist\b|eczema|psoriasis|clear(?:er)?\s+(?:beautiful\s+)?skin|skin\s+(?:condition|conditions|solutions?)|\bbiologics\b|without\s+(?:creams|pills)|root\s+cause|gut\s+health|elimination\s+diet/i.test(evidence);
+  if (functionalNutritionSignal) {
+    niche = 'functional_nutrition';
+    businessType = 'functional nutritionist for eczema and psoriasis support';
+    services = ['functional nutrition coaching', 'eczema support', 'psoriasis support', 'skin-health nutrition guidance'];
+    customerSegments = ['people with eczema or psoriasis'];
+  }
+
   const commercialCleaningSignal = /commercial\s+clean(ing|ers?)|janitorial|saniti[sz](ing|ation)|facility\s+cleaning|office\s+cleaning|medical[-\s]?facility\s+cleaning|cleaning\s+services?/i.test(evidence);
-  if (commercialCleaningSignal) {
+  if (!functionalNutritionSignal && commercialCleaningSignal) {
     niche = 'cleaning_service';
     businessType = 'commercial cleaning service';
     const cleaningServices = [
