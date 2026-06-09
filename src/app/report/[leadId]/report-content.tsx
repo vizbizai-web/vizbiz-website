@@ -92,6 +92,15 @@ interface LeadData {
     };
     recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
   };
+  technicalReadiness?: {
+    score?: number;
+    hasLlmsTxt: boolean;
+    hasSchema: boolean;
+    contentQuality?: 'high' | 'medium' | 'low';
+    hasReviews: boolean;
+    hasBlog: boolean;
+    indexedPages: number | null;
+  };
   // Competitor mode tracking
   competitorMode?: "client_provided" | "client_only";
   // Google Places enrichment
@@ -762,6 +771,95 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
               }
             </div>
           )}
+        </div>
+      </section>
+    </FadeIn>
+  );
+}
+
+/* ── Internal AI discovery data is not rendered client-side until provenance is public-safe. ─── */
+function WebsiteAIReadiness({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const readiness = data.technicalReadiness;
+  if (!readiness) return null;
+
+  const checks = [
+    {
+      label: 'AI manifest / llms.txt',
+      passed: readiness.hasLlmsTxt,
+      detail: readiness.hasLlmsTxt
+        ? 'Found. The site has a dedicated AI-readable reference file.'
+        : 'Missing. AI tools have less structured guidance about the business.',
+    },
+    {
+      label: 'Structured data',
+      passed: readiness.hasSchema,
+      detail: readiness.hasSchema
+        ? 'Found. Search and AI systems have machine-readable business data to inspect.'
+        : 'Missing or weak. Key business details are harder for systems to verify.',
+    },
+    {
+      label: 'Readable website content',
+      passed: readiness.contentQuality === 'high' || readiness.contentQuality === 'medium',
+      detail: readiness.contentQuality === 'high'
+        ? 'Strong. The site has enough visible content for a useful first read.'
+        : readiness.contentQuality === 'medium'
+          ? 'Moderate. The site gives AI systems some context, but could explain more.'
+          : 'Thin. The site needs clearer service, proof, and local context.',
+    },
+    {
+      label: 'Review/testimonial proof',
+      passed: readiness.hasReviews,
+      detail: readiness.hasReviews
+        ? 'Found. Visible proof helps support trust and recommendation confidence.'
+        : 'Limited. More visible reviews or testimonials would strengthen trust signals.',
+    },
+  ];
+
+  const passedCount = checks.filter((check) => check.passed).length;
+  const score = typeof readiness.score === 'number' ? readiness.score : Math.round((passedCount / checks.length) * 100);
+
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <div className="max-w-4xl mx-auto">
+          <SectionTitle style={{ color: t.textPrimary }}>
+            Website AI Readiness
+          </SectionTitle>
+          <p className="text-xs sm:text-sm mt-2 mb-6" style={{ color: t.textMuted }}>
+            A quick technical read of whether your website gives AI-powered search systems enough clean data to understand and verify the business.
+          </p>
+
+          <div className="rounded-xl p-5 sm:p-6" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}`, boxShadow: t.shadow }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-5" style={{ borderColor: t.borderSubtle }}>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: t.textMuted }}>AI-readable site scan</p>
+                <p className="mt-2 text-sm leading-7" style={{ color: t.textSecondary }}>
+                  This complements the AI recommendation test above. It shows whether your site has the technical and content signals that make recommendations easier to justify.
+                </p>
+              </div>
+              <div className="shrink-0 rounded-2xl px-5 py-4 text-center" style={{ background: t.barTrack, border: `1px solid ${t.borderAccent}` }}>
+                <p className="text-3xl font-light tabular-nums" style={{ color: score >= 60 ? '#22C55E' : score >= 35 ? '#F59E0B' : '#EF4444' }}>{score}</p>
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: t.textMuted }}>Readiness score</p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {checks.map((check) => (
+                <div key={check.label} className="rounded-xl p-4" style={{ background: t.barTrack, border: `1px solid ${check.passed ? 'rgba(34,197,94,0.28)' : t.borderSubtle}` }}>
+                  <div className="flex items-center gap-2">
+                    <span style={{ color: check.passed ? '#22C55E' : '#F59E0B' }}>{check.passed ? '✓' : '!'}</span>
+                    <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>{check.label}</p>
+                  </div>
+                  <p className="mt-2 text-xs leading-6" style={{ color: t.textSecondary }}>{check.detail}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-5 text-xs leading-6" style={{ color: t.textMuted }}>
+              Note: this free snapshot shows the signal check, not the full implementation plan. The paid report turns these findings into exact page, schema, content, and priority fixes.
+            </p>
+          </div>
         </div>
       </section>
     </FadeIn>
@@ -1778,6 +1876,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       socialVsVisibility: researchData.socialVsVisibility,
       // Edward Sturm AI Discovery
       aiDiscovery: researchData.aiDiscovery,
+      technicalReadiness: researchData.technicalReadiness,
       // Competitor mode tracking
       competitorMode: researchData.competitorMode,
       // Google Places enrichment
@@ -1900,7 +1999,10 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           {/* 2. Score Breakdown */}
           <CategoryScores data={data} theme={theme} />
 
-          {/* 2b. Google Trust Signals (if Places data available) */}
+          {/* 2b. Website AI Readiness */}
+          <WebsiteAIReadiness data={data} theme={theme} />
+
+          {/* 2c. Google Trust Signals (if Places data available) */}
           <GoogleTrustSignals data={data} theme={theme} />
 
           {/* 3. How You Compare — only show when client provided competitors */}

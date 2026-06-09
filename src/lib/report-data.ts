@@ -42,6 +42,15 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
     return {
       ...parsed.research,
       nicheLabel: parsed.preflight?.nicheLabel,
+      technicalReadiness: {
+        score: parsed.preflight?.aiReadinessScore,
+        hasLlmsTxt: Boolean(parsed.preflight?.hasLlmsTxt),
+        hasSchema: Boolean(parsed.preflight?.hasSchema),
+        contentQuality: parsed.preflight?.contentQuality,
+        hasReviews: Boolean(parsed.preflight?.hasReviews),
+        hasBlog: Boolean(parsed.preflight?.hasBlog),
+        indexedPages: parsed.preflight?.indexedPages ?? null,
+      },
       competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
       internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
       competitorValidations: parsed.research.competitorValidations,

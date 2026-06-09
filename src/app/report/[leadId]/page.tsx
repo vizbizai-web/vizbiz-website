@@ -53,6 +53,15 @@ export type ResearchData = {
     };
     recommendations: { title: string; description: string; impact: 'High' | 'Medium' | 'Low' }[];
   };
+  technicalReadiness?: {
+    score?: number;
+    hasLlmsTxt: boolean;
+    hasSchema: boolean;
+    contentQuality?: 'high' | 'medium' | 'low';
+    hasReviews: boolean;
+    hasBlog: boolean;
+    indexedPages: number | null;
+  };
   // Competitor mode tracking
   competitorMode?: "client_provided" | "client_only";
   internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
