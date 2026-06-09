@@ -288,7 +288,7 @@ export default function MissionControlDashboard() {
                 {[
                   ['Score', '6.5→7.2'],
                   ['Phase', 'Expansion'],
-                  ['Shipping', 'Med spas'],
+                  ['Live', 'Med spas'],
                   ['Next', 'Dentists'],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0 rounded-xl border border-slate-800/60 bg-slate-950/40 p-3">

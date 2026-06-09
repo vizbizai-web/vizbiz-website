@@ -15,9 +15,9 @@ const statusCards = [
   },
   {
     label: 'Public blocker',
-    value: 'Deploy + index',
+    value: 'Indexing next',
     tone: 'amber',
-    detail: 'Ship changes, verify live URLs, then request indexing and track Search Console movement.',
+    detail: 'Production URLs are live; next step is Search Console/Bing submission and ranking movement tracking.',
   },
   {
     label: 'Measurement loop',
@@ -65,8 +65,8 @@ const foundationTasks = [
   },
   {
     label: 'First non-auto vertical page',
-    status: 'Shipping',
-    detail: '/ai-visibility-for-med-spas/ adds med-spa-specific AI visibility, trust proof, service clarity, FAQ, and schema signals.',
+    status: 'Done',
+    detail: '/ai-visibility-for-med-spas/ is live with med-spa-specific AI visibility, trust proof, service clarity, FAQ, and schema signals.',
   },
   {
     label: 'Bing Webmaster Tools verification',
@@ -114,12 +114,12 @@ const shippedAssets = [
   {
     label: 'Med spa vertical page',
     href: '/ai-visibility-for-med-spas/',
-    detail: 'First non-automotive vertical authority page; verify live after deploy.',
+    detail: 'First non-automotive vertical authority page, live on the custom domain.',
   },
 ];
 
 const firstBuilds = [
-  { page: '/ai-visibility-for-med-spas/', status: 'Shipping now' },
+  { page: '/ai-visibility-for-med-spas/', status: 'Live' },
   { page: '/ai-visibility-for-dentists/', status: 'Next' },
   { page: '/ai-visibility-for-law-firms/', status: 'Next' },
   { page: '/how-vizbiz-measures-ai-visibility/', status: 'Queued' },
@@ -161,7 +161,7 @@ const testPrompts = [
 
 const statusClass = (status: string) => {
   if (status === 'Done') return 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200';
-  if (status === 'Active' || status === 'Shipping' || status === 'Shipping now') return 'border-cyan-300/30 bg-cyan-300/10 text-cyan-200';
+  if (status === 'Active' || status === 'Shipping' || status === 'Shipping now' || status === 'Live') return 'border-cyan-300/30 bg-cyan-300/10 text-cyan-200';
   if (status === 'Next') return 'border-violet-300/30 bg-violet-300/10 text-violet-200';
   return 'border-amber-300/30 bg-amber-300/10 text-amber-200';
 };
@@ -180,8 +180,8 @@ export default function VisibilityEnginePage() {
           </div>
           <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-left lg:w-72 lg:text-right">
             <p className="text-xs uppercase tracking-widest text-cyan-100">Current checkpoint</p>
-            <p className="mt-1 text-2xl font-bold text-cyan-200">First non-auto vertical</p>
-            <p className="mt-2 text-xs leading-5 text-slate-300">Med spas are shipping now; dentists and law firms are next.</p>
+            <p className="mt-1 text-2xl font-bold text-cyan-200">First non-auto vertical live</p>
+            <p className="mt-2 text-xs leading-5 text-slate-300">Med spas are live; dentists and law firms are next.</p>
           </div>
         </div>
       </section>
