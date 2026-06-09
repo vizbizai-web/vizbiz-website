@@ -281,15 +281,15 @@ export default function MissionControlDashboard() {
                 </div>
                 <h2 className="mt-3 break-words text-xl font-bold text-white sm:text-2xl">VizBiz Visibility Engine</h2>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
-                  Build VizBiz.ai into its own proof asset: indexable authority pages, AI-citable answers, schema, llms.txt, Search Console hygiene, and conversion paths into the free mini report.
+                  Build VizBiz.ai into its own proof asset: indexable authority pages, AI-citable answers, schema, llms.txt, Search Console hygiene, vertical pages, and conversion paths into the free mini report. First non-auto vertical is med spas; dentists and law firms are next.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:w-[440px] xl:shrink-0">
                 {[
-                  ['Phase', 'Foundation'],
-                  ['Today', 'Audit + map'],
-                  ['Cadence', 'Daily block'],
-                  ['Rank', 'Beside intake'],
+                  ['Score', '6.5→7.2'],
+                  ['Phase', 'Expansion'],
+                  ['Shipping', 'Med spas'],
+                  ['Next', 'Dentists'],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0 rounded-xl border border-slate-800/60 bg-slate-950/40 p-3">
                     <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>

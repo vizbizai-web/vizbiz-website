@@ -18,6 +18,7 @@ const entries: SitemapEntry[] = [
 
   // Authority / SEO pages
   { path: "/ai-visibility-for-car-dealerships/", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/ai-visibility-for-med-spas/", changeFrequency: "weekly", priority: 0.88 },
   { path: "/ai-visibility-audit-for-car-dealerships/", changeFrequency: "weekly", priority: 0.9 },
   { path: "/ai-visibility-benchmark-report-2026/", changeFrequency: "monthly", priority: 0.9 },
   { path: "/ai-visibility-tools-compared/", changeFrequency: "weekly", priority: 0.85 },

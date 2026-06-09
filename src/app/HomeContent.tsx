@@ -607,9 +607,9 @@ export default function HomeContent() {
             <div id="blog-track" className="mt-10 flex gap-4 overflow-x-auto pb-4 scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               {[
+                { title: 'AI Visibility for Med Spas', slug: '/ai-visibility-for-med-spas', desc: 'How med spas can become easier for ChatGPT, Google AI, Gemini, Claude, and Perplexity to understand and recommend.' },
+                { title: 'Best AI Visibility Tools for Local Businesses', slug: '/best-ai-visibility-tools-for-local-businesses', desc: 'The practical tooling stack for local businesses measuring AI visibility beyond traditional SEO.' },
                 { title: '90-Day AI Visibility Playbook for Car Dealerships', slug: 'geo-is-the-new-playbook-car-dealerships', desc: 'Step-by-step plan to go from invisible to AI-recommended in 90 days.' },
-                { title: 'AI Visibility Audit: What It Measures and Why Your Dealership Needs One', slug: 'ai-visibility-audit-what-it-measures-dealership', desc: 'Breakdown of what the AVI score actually measures and how to use it.' },
-                { title: 'We Scored 50 Ontario Dealerships on AI Visibility', slug: 'ai-visibility-score-ontario-car-dealerships', desc: 'The results were brutal. Most scored below 30/100.' },
                 { title: '35+ AI Visibility Statistics Every Dealership Needs to Know', slug: 'ai-visibility-statistics-car-dealerships', desc: 'The data behind why AI visibility matters — traffic, buyer behavior, local impact.' },
                 { title: 'AI Visibility Tools for Car Dealerships Compared (2026)', slug: 'vizbiz-vs-metricus-vs-scope', desc: 'Side-by-side comparison of every tool that measures AI visibility.' },
                 { title: 'ChatGPT vs Gemini vs Perplexity: Which Recommends More Dealerships?', slug: 'chatgpt-vs-gemini-vs-perplexity-dealerships', desc: 'We tested all three. The differences are bigger than you think.' },
@@ -622,7 +622,7 @@ export default function HomeContent() {
                 { title: 'What Is AI Visibility for Car Dealerships? (Complete Guide)', slug: 'what-is-ai-visibility-car-dealerships', desc: 'The fundamentals — what AI visibility is, why it matters, and where to start.' },
                 { title: 'Why Your Dealership Isn\'t Showing Up in ChatGPT', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'Diagnosing the visibility gap and the fixes that move the needle fastest.' },
               ].map((post, i) => (
-                <a key={i} href={`/blog/${post.slug}`}
+                <a key={i} href={post.slug.startsWith('/') || post.slug.startsWith('../') ? post.slug.replace('../', '/') : `/blog/${post.slug}`}
                   className="group flex w-[300px] shrink-0 flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all hover:border-[#22D3EE]/30 hover:bg-white/[0.04]">
                   <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#22D3EE]/10 text-xs font-bold text-[#22D3EE]">
                     {String(i + 1).padStart(2, '0')}
@@ -693,6 +693,8 @@ export default function HomeContent() {
               </div>
               <div className="flex flex-wrap gap-x-10 gap-y-4 text-sm text-white/40">
                 <Link href="/sample-ai-visibility-report-for-car-dealerships" className="hover:text-white">Sample Report</Link>
+                <Link href="/ai-visibility-for-med-spas" className="hover:text-white">Med Spas</Link>
+                <Link href="/best-ai-visibility-tools-for-local-businesses" className="hover:text-white">Local AI Tools</Link>
                 <Link href="/blog" className="hover:text-white">Blog</Link>
                 <Link href="/faq-ai-visibility-for-car-dealerships" className="hover:text-white">FAQ</Link>
                 <Link href="/about" className="hover:text-white">About</Link>

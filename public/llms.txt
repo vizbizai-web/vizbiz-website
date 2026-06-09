@@ -23,6 +23,10 @@
 - [About](https://vizbiz.ai/about/): Why AI visibility matters and how VizBiz helps.
 - [Contact](https://vizbiz.ai/contact/): Contact VizBiz.
 
+## Local Business Vertical Resources
+- [AI Visibility for Med Spas](https://vizbiz.ai/ai-visibility-for-med-spas/): How med spas can improve AI recommendation readiness, treatment visibility, review trust, schema, FAQs, and local entity clarity.
+- [Best AI Visibility Tools for Local Businesses](https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses/): Tooling and measurement overview for local businesses across verticals.
+
 ## Core Topics
 - [What is AI Visibility Scoring?](https://vizbiz.ai/what-is-ai-visibility-scoring/): How AI visibility can be measured.
 - [What is GEO?](https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships/): Generative Engine Optimization explained.
