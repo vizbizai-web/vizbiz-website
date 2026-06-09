@@ -1,5 +1,6 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
@@ -8,6 +9,7 @@ import { useIsMobile } from '@/lib/use-mobile';
 import { isJunkCompetitor } from '@/lib/junk-filter';
 import { getSeparateCompetitorNames, hasVerifiedLocalTrustData } from '@/lib/funnel-logic';
 import { getReportRankDisplay } from '@/lib/report-rank';
+import { buildStripeCheckoutFallbackUrl } from '@/lib/stripe-checkout-logic';
 import {
   RadarChart,
   PolarGrid,
@@ -1470,8 +1472,23 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
                   ))}
                 </ul>
                 <a
-                href="#"
-                  onClick={async (e: any) => { e.preventDefault(); const t2 = plan.name === 'One-Time Full Report + Fix' ? 'fix' : 'fix_and_monitor'; try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: leadId, tier: t2 }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = plan.name === 'One-Time Full Report + Fix' ? 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002' : 'https://buy.stripe.com/5kQ7sMdn103Q2P22MM24003'; } }}
+                href={buildStripeCheckoutFallbackUrl(plan.name === 'One-Time Full Report + Fix' ? 'fix' : 'fix_and_monitor')}
+                  onClick={async (e: MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault();
+                    const tier = plan.name === 'One-Time Full Report + Fix' ? 'fix' : 'fix_and_monitor';
+                    const fallbackUrl = buildStripeCheckoutFallbackUrl(tier);
+                    try {
+                      const response = await fetch('/api/stripe/checkout/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ leadId, tier }),
+                      });
+                      const data = await response.json().catch(() => ({}));
+                      window.location.href = response.ok && data.url ? data.url : fallbackUrl;
+                    } catch {
+                      window.location.href = fallbackUrl;
+                    }
+                  }}
                   className="block w-full py-3.5 text-base font-semibold rounded-xl text-center transition-all"
                   style={plan.highlighted
                     ? {
