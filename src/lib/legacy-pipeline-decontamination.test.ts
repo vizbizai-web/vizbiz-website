@@ -29,4 +29,13 @@ describe("legacy pipeline route decontamination", () => {
     expect(source).toContain("/api/pipeline/process");
     expect(source).not.toContain("/api/process-lead");
   });
+
+  it("blocks direct research calls from using the legacy finite niche detector without preflight", () => {
+    const source = readFileSync("src/lib/research-runner.ts", "utf8");
+
+    expect(source).toContain("preflightScan");
+    expect(source).toContain("No PreFlight profile supplied; running evidence-first preflight");
+    expect(source).not.toContain("detectNiche(");
+    expect(source).not.toContain("finalNiche = websiteInsight.niche");
+  });
 });

@@ -6,7 +6,8 @@
  * in the results.
  */
 
-import { detectNiche, getNicheByName, generateDynamicNicheConfig } from "./niche-detector";
+import { getNicheByName, generateDynamicNicheConfig } from "./niche-detector";
+import { preflightScan } from "./preflight-engine";
 import { getPromptSetForNiche, calculateRevenueLoss } from "./prompt-curator";
 import type { PromptSet } from "./prompt-curator";
 import { isJunkCompetitor } from "./junk-filter";
@@ -448,9 +449,16 @@ export async function runResearch(
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
   console.info(`[research-runner] Competitor mode: ${competitorMode}, provided competitors: ${competitors.length > 0 ? competitors.join(", ") : "none"}`);
   
-  // STEP 1: Use PreFlight profile if available (no duplicate site fetch needed)
-  let websiteInsight;
-  let finalNiche;
+  // STEP 1: Always use the Business Intelligence Profile as the source of truth.
+  // If an old/direct route calls runResearch without preflight data, recover by
+  // running preflight here instead of falling back to the legacy finite taxonomy.
+  if (!preflightProfile) {
+    console.warn(`[research-runner] No PreFlight profile supplied; running evidence-first preflight before research for ${resolvedName}. Legacy taxonomy fallback is blocked.`);
+    preflightProfile = await preflightScan(website, city, resolvedName);
+  }
+
+  let websiteInsight: { services: string[]; keywords: string[]; niche: string; nicheConfig: unknown | null } | null = null;
+  let finalNiche = "";
   let enrichedPrompts: string[] | null = null; // Business-profile customer queries
   let enrichedCompQueries: string[] | null = null; // Business-profile competitor queries
   
@@ -490,10 +498,10 @@ export async function runResearch(
       enrichedCompQueries = preflightProfile.competitorSearchQueries;
       console.info(`[research-runner] Using ${enrichedCompQueries.length} business-profile competitor search queries`);
     }
-  } else {
-    // Fallback: scan website ourselves
-    websiteInsight = await scanWebsite(website);
-    finalNiche = websiteInsight.niche || detectNiche(resolvedName, website).niche;
+  }
+
+  if (!websiteInsight || !finalNiche) {
+    throw new Error("Business Intelligence Profile failed before research; refusing to use legacy niche fallback.");
   }
   
   console.info(`[research-runner] Services: [${(websiteInsight.services || []).slice(0,5).join(', ')}]`);
@@ -873,9 +881,9 @@ async function scanWebsite(website: string): Promise<{
   keywords: string[];
   services: string[];
   niche: string | null;
-  nicheConfig: ReturnType<typeof detectNiche> | null;
+  nicheConfig: unknown | null;
 }> {
-  const result = { keywords: [] as string[], services: [] as string[], niche: null as string | null, nicheConfig: null as ReturnType<typeof detectNiche> | null };
+  const result = { keywords: [] as string[], services: [] as string[], niche: null as string | null, nicheConfig: null as unknown | null };
   
   try {
     const url = website.startsWith('http') ? website : `https://${website}`;
