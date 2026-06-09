@@ -117,7 +117,11 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
   const statusBand = escapeHtml((data.statusBand || "Visibility review").trim());
   const count = escapeHtml(formatCount(data.appearedCount, data.totalPrompts));
   const context = escapeHtml(competitorContext(data.competitors || [], data.businessName.trim() || "Your business", rawNicheLabel, marketLabel));
-  const ctaLabel = data.isPaid ? "Open the full AI visibility report" : "Open the private snapshot";
+  const ctaLabel = data.isPaid ? "Open the verified AI visibility report" : "Open the free snapshot";
+  const scoreLabel = data.isPaid ? "Verified visibility score" : "Snapshot visibility score";
+  const scoreHelper = data.isPaid
+    ? "Full-report benchmark"
+    : "Free limited test";
   const metricLine = escapeHtml(metricSummary(data.appearedCount, data.totalPrompts, data.statusBand));
   const preheader = escapeHtml(metricSummary(data.appearedCount, data.totalPrompts, data.statusBand));
 
@@ -142,6 +146,7 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                 <h1 style="margin:0;color:#ffffff;font-size:34px;line-height:1.12;letter-spacing:-.035em;font-weight:750;">Your snapshot for ${businessName} is ready.</h1>
                 <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we checked how clearly popular AI assistants and AI-powered search tools can understand, verify, and recommend ${businessName} when people compare ${comparisonScope}.</p>
                 <p style="margin:16px 0 0;color:#e2e8f0;font-size:15px;line-height:1.65;font-weight:650;">${metricLine}</p>
+                ${data.isPaid ? "" : `<p style="margin:10px 0 0;color:#94a3b8;font-size:13px;line-height:1.6;">This free snapshot is a starting read. The full report verifies the score with a deeper buyer-question test, competitor context, and website trust-signal review.</p>`}
               </td>
             </tr>
             <tr>
@@ -149,9 +154,10 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 26px;">
                   <tr>
                     <td width="48%" style="background:#0f172a;border:1px solid rgba(34,211,238,.18);border-radius:18px;padding:20px;text-align:center;">
-                      <p style="margin:0;color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;">Visibility score</p>
+                      <p style="margin:0;color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;">${scoreLabel}</p>
                       <p style="margin:10px 0 0;color:#ffffff;font-size:38px;font-weight:750;line-height:1;">${score}<span style="font-size:16px;color:#94a3b8;">/100</span></p>
                       <p style="margin:10px 0 0;color:#22d3ee;font-size:13px;font-weight:700;">${statusBand}</p>
+                      <p style="margin:6px 0 0;color:#94a3b8;font-size:12px;">${scoreHelper}</p>
                     </td>
                     <td width="4%" style="font-size:0;">&nbsp;</td>
                     <td width="48%" style="background:#0f172a;border:1px solid rgba(34,211,238,.18);border-radius:18px;padding:20px;text-align:center;">
@@ -179,7 +185,7 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                       <p style="margin:0 0 12px;color:#ffffff;font-size:15px;font-weight:750;">Inside the snapshot</p>
                       <ul style="margin:0;padding-left:20px;color:#cbd5e1;font-size:15px;line-height:1.8;">
                         <li>Which buyer-style AI questions surfaced ${businessName}, and which did not.</li>
-                        <li>How clearly your site explains your services, market, and trust signals.</li>
+                        <li>How clearly your site explains your services, market, trust signals, and AI-readable website data.</li>
                         <li>Where better proof could help AI systems recommend you with more confidence.</li>
                       </ul>
                     </td>

@@ -31,9 +31,34 @@ describe("report email", () => {
     );
     expect(html).toContain("BridgeLegal and Broughton Partners");
     expect(html).toContain("legal referral and case-growth options in Greater Toronto Area");
-    expect(html).toContain("Open the private snapshot");
+    expect(html).toContain("Open the free snapshot");
+    expect(html).toContain("Snapshot visibility score");
+    expect(html).toContain("Free limited test");
+    expect(html).toContain("The full report verifies the score");
+    expect(html).toContain("AI-readable website data");
     expect(html).toContain("Appeared in 2 of 5 AI recommendation checks");
     expect(html).not.toMatch(/dealership|Does ChatGPT|AI-driven buyers|60 seconds|free-ai-visibility-test/i);
+    expect(runClientCopyQA(html).ok).toBe(true);
+  });
+
+  it("labels paid report score as verified instead of a free snapshot", () => {
+    const html = buildReportEmailHtml({
+      businessName: "Mop Wringers",
+      contactName: "Mop Wringers",
+      primaryMarket: "Rockwall County",
+      reportUrl: "https://vizbiz.ai/report/mop/full?preview=1",
+      aviScore: 40,
+      statusBand: "Moderate",
+      appearedCount: 8,
+      totalPrompts: 20,
+      nicheLabel: "commercial cleaning",
+      isPaid: true,
+    });
+
+    expect(html).toContain("Verified visibility score");
+    expect(html).toContain("Full-report benchmark");
+    expect(html).toContain("Open the verified AI visibility report");
+    expect(html).not.toContain("This free snapshot is a starting read");
     expect(runClientCopyQA(html).ok).toBe(true);
   });
 
