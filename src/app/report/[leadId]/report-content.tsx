@@ -239,6 +239,23 @@ const getScoreAccent = (score: number): string => {
 const formatCurrency = (val: number, sym: string): string =>
   sym + Math.round(val).toLocaleString();
 
+const formatCompetitorDisplayName = (name: string): string => {
+  const raw = (name || '').trim();
+  if (!raw) return 'Competitor';
+  try {
+    const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+    const host = url.hostname.replace(/^www\./, '');
+    const base = host.split('.')[0] || host;
+    return base
+      .split(/[-_]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  } catch {
+    return raw;
+  }
+};
+
 const getImpactColor = (impact: string): string => {
   switch (impact) {
     case 'High': return '#EF4444';
@@ -696,7 +713,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
 
   const totalQ = data.totalPrompts || 20;
   const compDataRaw = data.competitors.map(c => ({
-    name: c.isYou ? `${data.businessName.split(' ')[0]} (You)` : c.name,
+    name: c.isYou ? `${data.businessName.split(' ')[0]} (You)` : formatCompetitorDisplayName(c.name),
     score: c.score,
     pct: totalQ > 0 ? Math.round((c.score / totalQ) * 100) : 0,
     isYou: c.isYou,
@@ -704,9 +721,10 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   }));
   const compData = compDataRaw.filter(c => c.isYou || c.isYours || !isJunkCompetitor(c.name));
 
-  const maxScore = Math.max(...compData.map(c => c.score), 1);
+  const maxScore = Math.max(...compData.map(c => c.score), 0);
   const rankDisplay = getReportRankDisplay(compData);
   const yourScore = rankDisplay.yourScore;
+  const gapToLeader = Math.max(0, maxScore - yourScore);
 
   const compColors = ['#8B5CF6', '#F97316', '#EC4899'];
 
@@ -732,10 +750,10 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
               <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Times Recommended</p>
             </div>
             <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
-              <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: maxScore > yourScore ? '#EF4444' : '#22C55E' }}>
-                {maxScore > yourScore ? `−${maxScore - yourScore}` : '—'}
+              <p className="text-xl sm:text-2xl font-light tabular-nums" style={{ color: gapToLeader > 0 ? '#EF4444' : t.textPrimary }}>
+                {gapToLeader > 0 ? `−${gapToLeader}` : '—'}
               </p>
-              <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Behind Leader</p>
+              <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>{gapToLeader > 0 ? 'Behind Leader' : 'No Visible Leader'}</p>
             </div>
           </div>
 

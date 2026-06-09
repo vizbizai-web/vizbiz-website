@@ -124,6 +124,10 @@ describe('Mission Control production integrity', () => {
     expect(leadActions).toContain('Needs fix + rerun started');
     expect(leadActions).toContain('Needs fix rerun failed');
     expect(pipeline).toContain('operatorRevision');
+    const reportContent = repoFile('src/app/report/[leadId]/report-content.tsx');
+    expect(reportContent).toContain('No Visible Leader');
+    expect(reportContent).toContain('gapToLeader');
+    expect(reportContent).not.toContain('Math.max(...compData.map(c => c.score), 1)');
     expect(leadActions).toContain('autoRerun');
     expect(leadActions).toContain('revisionReason: reason');
     expect(leadActions).toContain('Mission Control: https://vizbiz.ai/mission-control/leads/${leadId}');
