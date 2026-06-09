@@ -229,10 +229,10 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
 
         {/* === 2. SCORE OVERVIEW === */}
         <section>
-          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-6">Your AI Visibility Score</h2>
+          <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-6">Verified AI Visibility Score</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-1 rounded-2xl p-6 flex flex-col items-center justify-center text-center" style={{ background: 'linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%)' }}>
-              <div className="text-xs text-white/70 mb-1 uppercase tracking-wider">AVI Score</div>
+              <div className="text-xs text-white/70 mb-1 uppercase tracking-wider">Full-report score</div>
               <div className="text-5xl font-bold text-white">{fullAviScore}</div>
               <div className="text-xs text-white/50">out of 100</div>
               <div className="mt-2 px-3 py-1 rounded-full bg-white/20 text-xs text-white font-medium">
@@ -253,14 +253,14 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
               </div>
               {searchScore !== null && (
                 <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Search AI Score</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Search AI Visibility</div>
                   <div className="text-2xl font-bold mt-1">{searchScore}%</div>
                   <div className="text-[10px] text-gray-500">AI-generated answers</div>
                 </div>
               )}
               {geminiScore !== null && (
                 <div className="rounded-xl p-4 bg-white/[0.03] border border-white/5">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gemini Score</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Gemini Visibility</div>
                   <div className="text-2xl font-bold mt-1">{geminiScore}%</div>
                   <div className="text-[10px] text-gray-500">Google Gemini</div>
                 </div>
@@ -341,7 +341,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
           {isFullCapture && aiCaptureData?.categoryBreakdown && (
           <section>
             <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Category Breakdown</h2>
-            <p className="text-xs text-gray-600 mb-6">Your visibility across {totalCapturePrompts} queries in 11 categories. Each category tests a different buyer scenario.</p>
+            <p className="text-xs text-gray-600 mb-6">Supporting visibility signals across {totalCapturePrompts} queries in 11 buyer scenarios.</p>
             <div className="space-y-3">
               {aiCaptureData.categoryBreakdown.map((cat: any) => (
                 <div key={cat.category} className="flex items-center gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">

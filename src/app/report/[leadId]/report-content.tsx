@@ -222,6 +222,12 @@ const getScoreLabel = (score: number): string => {
   return 'Weak';
 };
 
+const getSignalLabel = (score: number): string => {
+  if (score >= 60) return 'Strong signal';
+  if (score >= 35) return 'Partial signal';
+  return 'Needs work';
+};
+
 const getScoreAccent = (score: number): string => {
   if (score >= 60) return '#22C55E';
   if (score >= 35) return '#F59E0B';
@@ -445,7 +451,7 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
       <section className="py-12 sm:py-16">
         {/* Muted label */}
         <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: t.textMuted, marginBottom: 8 }}>
-          AI Visibility Report
+          Free AI Visibility Snapshot
         </p>
 
         {/* Business name - Lora serif */}
@@ -466,7 +472,7 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
           {summaryText}
         </p>
 
-        {/* Score - massive serif number */}
+        {/* Snapshot score - the only main 0–100 score in the free report */}
         <div style={{ marginBottom: 8 }}>
           <span
             style={{ fontFamily: "'Lora', serif", fontSize: '80px', fontWeight: 300, lineHeight: 1, color: t.textPrimary, letterSpacing: '-0.02em' }}
@@ -476,6 +482,10 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
           </span>
           <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 20, color: t.textMuted, marginLeft: 2 }}>/100</span>
         </div>
+
+        <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 12, lineHeight: 1.6, color: t.textMuted, marginBottom: 16, maxWidth: 520 }}>
+          Snapshot Visibility Score based on this free, limited test. The paid report reruns a deeper review with more buyer questions, competitor context, and website/trust-signal evidence, so the final score may change.
+        </p>
 
         {/* Thin progress bar (4px) */}
         <div style={{ maxWidth: 320, marginBottom: 12 }}>
@@ -563,10 +573,10 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
       <section className="py-12">
         <div style={{ background: t.bgCard, border: '1px solid #E2E8F0', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)', padding: '24px' }} className="sm:p-8">
           <SectionTitle style={{ color: t.textPrimary }}>
-            Score Breakdown
+            Visibility Signal Breakdown
           </SectionTitle>
           <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 12, color: t.textMuted, marginTop: 8, marginBottom: 32, lineHeight: 1.6 }}>
-            Each score (0–100) reflects how often {data.businessName} appeared in real buyer-intent queries. Above 60 = strong. 35–60 = moderate. Below 35 = weak.
+            Supporting signals behind the snapshot score. The paid report turns these into exact fixes and priority order.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -576,7 +586,7 @@ function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
                 <div key={cat.name}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
                     <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, fontWeight: 500, color: t.textPrimary }}>{cat.name}</span>
-                    <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, fontWeight: 600, color: accent, fontVariantNumeric: 'tabular-nums' }}>{cat.score}/100</span>
+                    <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 12, fontWeight: 600, color: accent }}>{getSignalLabel(cat.score)}</span>
                   </div>
                   {/* Thin flat bar - 4px height, no rounding */}
                   <div style={{ height: 4, background: t.barTrack, width: '100%' }}>
@@ -817,7 +827,8 @@ function WebsiteAIReadiness({ data, theme }: { data: LeadData; theme: Theme }) {
   ];
 
   const passedCount = checks.filter((check) => check.passed).length;
-  const score = typeof readiness.score === 'number' ? readiness.score : Math.round((passedCount / checks.length) * 100);
+  const readinessLabel = passedCount >= 3 ? 'Strong foundation' : passedCount >= 2 ? 'Partial foundation' : 'Needs work';
+  const readinessColor = passedCount >= 3 ? '#22C55E' : passedCount >= 2 ? '#F59E0B' : '#EF4444';
 
   return (
     <FadeIn>
@@ -839,8 +850,8 @@ function WebsiteAIReadiness({ data, theme }: { data: LeadData; theme: Theme }) {
                 </p>
               </div>
               <div className="shrink-0 rounded-2xl px-5 py-4 text-center" style={{ background: t.barTrack, border: `1px solid ${t.borderAccent}` }}>
-                <p className="text-3xl font-light tabular-nums" style={{ color: score >= 60 ? '#22C55E' : score >= 35 ? '#F59E0B' : '#EF4444' }}>{score}</p>
-                <p className="text-[10px] uppercase tracking-wider" style={{ color: t.textMuted }}>Readiness score</p>
+                <p className="text-base font-semibold" style={{ color: readinessColor }}>{readinessLabel}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-wider" style={{ color: t.textMuted }}>{passedCount} of {checks.length} signals found</p>
               </div>
             </div>
 
@@ -1996,7 +2007,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
           {/* 1. Hero */}
           <ReportHero data={data} theme={theme} />
 
-          {/* 2. Score Breakdown */}
+          {/* 2. Visibility signal breakdown */}
           <CategoryScores data={data} theme={theme} />
 
           {/* 2b. Website AI Readiness */}
