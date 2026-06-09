@@ -15,6 +15,12 @@ describe('Mission Control report preview', () => {
         hasReviews: true,
         hasBlog: false,
         indexedPages: 14,
+        paidIntake: {
+          competitors: [
+            { name: 'Bayside Endermologie', website: 'https://bayside.example' },
+            { name: 'Natural Health and Beauty with Endermologie', website: 'https://natural.example' },
+          ],
+        },
       },
       competitorMode: 'client_provided',
       competitors: ['Bayside Endermologie', 'Natural Health and Beauty with Endermologie'],
@@ -45,6 +51,10 @@ describe('Mission Control report preview', () => {
       indexedPages: 14,
     });
     expect(parsed?.competitorValidations?.[0]?.name).toBe('Bayside Endermologie');
+    expect(parsed?.suppliedCompetitors).toEqual([
+      { name: 'Bayside Endermologie', website: 'https://bayside.example' },
+      { name: 'Natural Health and Beauty with Endermologie', website: 'https://natural.example' },
+    ]);
   });
 
   it('does not send pending-review operators to the client-gated public report URL', () => {

@@ -430,7 +430,17 @@ export function separateBusinessIdentityFromEvidence(input: {
   const evidence = `${input.url} ${input.metaTitle} ${input.metaDescription} ${input.scrapedTitle} ${input.evidenceText}`;
   const placeType = googleTypeToBusinessType(input.googlePlaceTypes || []);
   let niche = detectNicheByKeywords(evidence);
-  let businessType = humanizeBusinessType(placeType || stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDescription) || niche.replace(/_/g, ' '));
+  const humanBusinessType = extractHumanBusinessTypeFromEvidence({
+    businessName: input.businessName,
+    metaTitle: input.metaTitle,
+    metaDescription: input.metaDescription,
+    scrapedTitle: input.scrapedTitle,
+    evidenceText: input.evidenceText,
+  });
+  let businessType = humanizeBusinessType(humanBusinessType || placeType || stripBusinessNameNoise(input.metaTitle || input.scrapedTitle || input.metaDescription) || niche.replace(/_/g, ' '));
+  if (humanBusinessType && niche === 'local_business') {
+    niche = nicheSlugFromBusinessType(humanBusinessType);
+  }
   let services = extractLikelyServices(evidence, niche);
   let customerSegments = detectCustomerSegments(evidence);
   const primaryMarket = /rockwall county/i.test(evidence) ? 'Rockwall County' : input.market;
@@ -600,6 +610,59 @@ function stripBusinessNameNoise(input: string): string {
     .replace(/[|•–—-].*$/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function nicheSlugFromBusinessType(value: string): string {
+  return humanizeBusinessType(value, 'local business')
+    .replace(/\b(local|trusted|certified|professional|best|top rated)\b/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 64) || 'local_business';
+}
+
+function extractHumanBusinessTypeFromEvidence(input: {
+  businessName?: string;
+  metaTitle: string;
+  metaDescription: string;
+  scrapedTitle: string;
+  evidenceText: string;
+}): string {
+  const businessName = normalizeComparableText(input.businessName || '');
+  const reject = (candidate: string) => {
+    const normalized = normalizeComparableText(candidate);
+    if (!normalized || normalized.length < 4) return true;
+    if (businessName && (normalized === businessName || businessName.includes(normalized) || normalized.includes(businessName))) return true;
+    return /^(home|official site|welcome|about|contact|services|solutions|learn more|book now)$/i.test(candidate.trim());
+  };
+  const cleanDescriptor = (candidate: string) => candidate
+    .replace(/\b(in|near|serving)\s+[A-Z][A-Za-z .,'-]{2,80}$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const candidates: string[] = [];
+  const titleBits = [input.metaTitle, input.scrapedTitle]
+    .flatMap((title) => (title || '').split(/\s*[|•–—]\s*/))
+    .map(cleanDescriptor)
+    .filter(Boolean);
+  candidates.push(...titleBits);
+
+  const evidence = `${input.metaDescription} ${input.evidenceText}`.replace(/\s+/g, ' ');
+  const patterns = [
+    /\b(?:I am|I'm|we are|we're|is a|are a|as a|as an)\s+(?:an?\s+)?([A-Za-z][A-Za-z0-9&'’ -]{4,80}?(?:specialist|nutritionist|coach|consultant|clinic|contractor|accountant|lawyer|attorney|provider|supplier|manufacturer|studio|salon|spa|restaurant|agency|service|services|company|shop|store|practice|firm))\b/i,
+    /\b(?:certified|licensed|trusted|local|professional)\s+([A-Za-z][A-Za-z0-9&'’ -]{4,80}?(?:specialist|nutritionist|coach|consultant|clinic|contractor|accountant|lawyer|attorney|provider|supplier|manufacturer|studio|salon|spa|restaurant|agency|service|services|company|shop|store|practice|firm))\b/i,
+  ];
+  for (const pattern of patterns) {
+    const match = evidence.match(pattern);
+    if (match?.[1]) candidates.push(cleanDescriptor(match[1]));
+  }
+
+  const serviceMatches = evidence.match(/\b([A-Za-z][A-Za-z0-9&'’ -]{3,64}\s+(?:specialist|nutritionist|coach|consultant|clinic|contractor|accountant|lawyer|attorney|provider|supplier|manufacturer|studio|salon|spa|restaurant|agency|service|services|company|shop|store|practice|firm))\b/g) || [];
+  candidates.push(...serviceMatches.slice(0, 6).map(cleanDescriptor));
+
+  const descriptor = candidates
+    .map((candidate) => humanizeBusinessType(candidate, ''))
+    .find((candidate) => !reject(candidate));
+  return descriptor || '';
 }
 
 function inferLanguageFromSignals(signals: string, htmlLang: string): string {

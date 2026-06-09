@@ -52,6 +52,15 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
         indexedPages: parsed.preflight?.indexedPages ?? null,
       },
       competitorMode: parsed.competitorMode || (parsed.competitors?.length > 0 ? 'client_provided' : 'client_only'),
+      suppliedCompetitors: Array.isArray(parsed.preflight?.paidIntake?.competitors) && parsed.preflight.paidIntake.competitors.length > 0
+        ? parsed.preflight.paidIntake.competitors
+            .map((competitor: { name?: unknown; website?: unknown }) => ({
+              name: typeof competitor.name === 'string' ? competitor.name.trim() : '',
+              website: typeof competitor.website === 'string' ? competitor.website.trim() : '',
+            }))
+            .filter((competitor: { name: string; website: string }) => competitor.name)
+            .slice(0, 2)
+        : (parsed.competitors || []).map((name: string) => ({ name, website: '' })).slice(0, 2),
       internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
       competitorValidations: parsed.research.competitorValidations,
       googlePlaceEnrichment: parsed.research.googlePlaceEnrichment,

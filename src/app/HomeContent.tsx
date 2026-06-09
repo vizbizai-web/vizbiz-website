@@ -206,9 +206,11 @@ function IntakeForm() {
     const url = (fd.get('websiteUrl') as string || '').trim();
     payload.append('websiteUrl', /^https?:\/\//i.test(url) ? url : url ? `https://${url}` : '');
     payload.append('cityMarket', fd.get('city') as string);
-    const c1 = fd.get('competitorOne') as string;
-    const c2 = fd.get('competitorTwo') as string;
-    payload.append('competitor', [c1, c2].filter(Boolean).join(', '));
+    payload.append('businessCategory', (fd.get('primaryService') as string || '').trim());
+    const c1 = (fd.get('competitorOne') as string || '').trim();
+    const c2 = (fd.get('competitorTwo') as string || '').trim();
+    payload.append('competitor', c1);
+    payload.append('competitor2', c2);
     payload.append('phone', 'Not provided');
     payload.append('source', 'hero form');
     payload.append('originalCta', 'Show my score preview + prepare email report');

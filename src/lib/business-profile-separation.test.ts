@@ -96,4 +96,31 @@ describe('business profile separation before intake research', () => {
     expect(profile.customerSegments).toEqual(['people with eczema or psoriasis']);
     expect(profile.businessType).not.toMatch(/cleaning/i);
   });
+
+  it('uses human-readable site evidence for new niches instead of forcing a stale taxonomy bucket', () => {
+    const profile = separateBusinessIdentityFromEvidence({
+      businessName: 'North Shore Tax Relief',
+      url: 'https://northshoretaxrelief.example',
+      metaTitle: 'North Shore Tax Relief | Certified Tax Resolution Specialist',
+      metaDescription: 'We are a certified tax resolution specialist helping small business owners with CRA tax debt, unfiled returns, and bookkeeping cleanup.',
+      scrapedTitle: 'Certified Tax Resolution Specialist',
+      evidenceText: 'Tax debt help, CRA negotiations, unfiled tax returns, bookkeeping cleanup, small business tax support.',
+      htmlLang: 'en-CA',
+      market: 'Vancouver',
+      googlePlaceTypes: [],
+    });
+
+    expect(profile.businessType).toBe('certified tax resolution specialist');
+    expect(profile.niche).toBe('tax_resolution_specialist');
+    expect(profile.businessType).not.toMatch(/car dealership|local business/i);
+
+    const queries = buildEvidenceFirstQueries({
+      businessType: profile.businessType,
+      services: profile.services,
+      market: 'Vancouver',
+      customerSegments: profile.customerSegments,
+    }).suggestedSearchQueries.join(' ');
+    expect(queries).toMatch(/tax resolution specialist/i);
+    expect(queries).not.toMatch(/dealership|inventory|trade-in/i);
+  });
 });

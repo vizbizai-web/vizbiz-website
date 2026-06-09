@@ -209,9 +209,16 @@ export async function runPreflightStage(
     // 6. Parse competitors from the durable lead field. Force reruns may replace
     // notes, so notes-only competitor mode detection loses submitted competitors.
     const competitors: string[] = (() => {
+      if (Array.isArray(paidIntakePayload?.competitors)) {
+        const paidCompetitors = paidIntakePayload.competitors
+          .map((competitor: { name?: unknown }) => typeof competitor.name === "string" ? competitor.name.trim() : "")
+          .filter((name: string) => name.length > 0)
+          .slice(0, 2);
+        if (paidCompetitors.length > 0) return paidCompetitors;
+      }
       const compStr = lead.competitor || "";
       if (!compStr) return [];
-      return compStr.split(",").map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+      return compStr.split(",").map((c: string) => c.trim()).filter((c: string) => c.length > 0).slice(0, 2);
     })();
 
     // 7. Determine competitorMode. Prefer explicit stored metadata, but any

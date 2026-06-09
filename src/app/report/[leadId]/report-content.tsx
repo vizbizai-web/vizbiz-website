@@ -32,6 +32,7 @@ interface Category {
 
 interface Competitor {
   name: string;
+  website?: string;
   score: number;
   isYou?: boolean;
   isYours?: boolean;
@@ -719,6 +720,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
   const totalQ = data.totalPrompts || 20;
   const compDataRaw = data.competitors.map(c => ({
     name: c.isYou ? `${data.businessName.split(' ')[0]} (You)` : formatCompetitorDisplayName(c.name),
+    website: c.website,
     score: c.score,
     pct: totalQ > 0 ? Math.round((c.score / totalQ) * 100) : 0,
     isYou: c.isYou,
@@ -784,7 +786,10 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
                 {compData.filter(c => c.isYours).map((entry, i) => (
                   <div key={entry.name} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                      <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: t.textPrimary }}>{entry.score > 0 ? entry.name : `${entry.name} (not visible)`}</span>
+                      <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: t.textPrimary }}>
+                        {entry.score > 0 ? entry.name : `${entry.name} (not visible)`}
+                        {entry.website ? <span style={{ color: t.textMuted }}> · {formatCompetitorDisplayName(entry.website)}</span> : null}
+                      </span>
                       <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: '#A78BFA', fontVariantNumeric: 'tabular-nums' }}>{entry.score}/{totalQ}</span>
                     </div>
                     <div style={{ height: 4, background: t.barTrack, width: '100%' }}>
@@ -1894,8 +1899,11 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
         }
         // Client-provided mode: show only the client-supplied comparison targets.
         // Raw/search-discovered names are internal evidence only until validated.
-        const userCompetitors = getSeparateCompetitorNames(leadData?.competitor || '');
-        const userCompWithScores = userCompetitors.map((uc: string) => {
+        const suppliedCompetitors = researchData.suppliedCompetitors?.length
+          ? researchData.suppliedCompetitors
+          : getSeparateCompetitorNames(leadData?.competitor || '').map((name) => ({ name, website: '' }));
+        const userCompWithScores = suppliedCompetitors.slice(0, 2).map((competitor) => {
+          const uc = competitor.name;
           const ucKey = uc.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
           let appearances = 0;
           for (const r of researchData.promptResults) {
@@ -1903,7 +1911,7 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
               appearances++;
             }
           }
-          return { name: uc, score: appearances, isYours: true } as Competitor;
+          return { name: uc, website: competitor.website, score: appearances, isYours: true } as Competitor;
         });
         return [
           { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },

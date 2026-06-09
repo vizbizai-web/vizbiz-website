@@ -64,6 +64,7 @@ export type ResearchData = {
   };
   // Competitor mode tracking
   competitorMode?: "client_provided" | "client_only";
+  suppliedCompetitors?: { name: string; website?: string }[];
   internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
   // Google Places enrichment
   googlePlaceEnrichment?: { placeId: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null } | null;
