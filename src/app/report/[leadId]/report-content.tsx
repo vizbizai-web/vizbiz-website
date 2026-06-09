@@ -246,6 +246,11 @@ const formatCompetitorDisplayName = (name: string): string => {
     const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
     const host = url.hostname.replace(/^www\./, '');
     const base = host.split('.')[0] || host;
+    const knownDomainLabels: Record<string, string> = {
+      juliachien: 'Julia Chien',
+      theoriginaleczemacoach: 'The Original Eczema Coach',
+    };
+    if (knownDomainLabels[base.toLowerCase()]) return knownDomainLabels[base.toLowerCase()];
     return base
       .split(/[-_]+/)
       .filter(Boolean)
