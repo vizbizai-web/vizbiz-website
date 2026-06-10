@@ -21,8 +21,28 @@ describe('client-declared niche override', () => {
   });
 
   it('stores free-intake business category in notes so preflight can honor it', () => {
-    const source = readFileSync('src/app/api/pipeline/intake/route.ts', 'utf8');
-    expect(source).toContain('ClientBusinessCategory');
-    expect(source).toContain('payload.businessCategory || payload.niche || payload.industry || payload.category');
+    const routeSource = readFileSync('src/app/api/pipeline/intake/route.ts', 'utf8');
+    const normalizationSource = readFileSync('src/lib/intake-normalization.ts', 'utf8');
+    expect(routeSource).toContain('buildIntakeNotes');
+    expect(normalizationSource).toContain('ClientBusinessCategory');
+    expect(routeSource).toContain('payload.businessCategory || payload.niche || payload.industry || payload.category');
+  });
+
+  it('lets Telegram Use declared become the latest operator override without re-triggering the original conflict', () => {
+    const source = readFileSync('src/lib/pipeline-controller.ts', 'utf8');
+    const preflightSource = readFileSync('src/lib/preflight-engine.ts', 'utf8');
+    expect(source).toContain('matchAll(/ClientBusinessCategory');
+    expect(source).toContain('replace(/\\.\\s*(?:TZ|Locale|UTM|Referrer):');
+    expect(source).toContain('latestMatch');
+    expect(source).toContain('parsed?.clientDeclaredNiche');
+    expect(source).toContain('parsed?.preflight?.clientDeclaredNiche');
+    expect(source).toContain('parsed?.preflight?.paidIntake?.businessCategory');
+    expect(source).toContain('hasTelegramDeclaredNicheOverride');
+    expect(source).toContain('parsed?.preflight?.operatorRevision?.reason?.includes("use declared service")');
+    expect(source).toContain('const services = [normalized.businessType]');
+    expect(preflightSource).toContain('AI oral assessment tools for verifying student understanding');
+    expect(preflightSource).toContain('best ${businessType} alternatives');
+    expect(source).toContain('allowBlockedNicheResolution: telegramDeclaredOverride && Boolean(declaredNiche)');
+    expect(source).toContain('submittedPrimaryService: telegramDeclaredOverride ? null : declaredNiche || null');
   });
 });

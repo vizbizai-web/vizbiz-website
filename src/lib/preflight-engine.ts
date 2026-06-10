@@ -91,6 +91,26 @@ export function buildNicheClassifierDiagnosticLog(input: NicheClassifierDiagnost
 function logNicheClassifierDiagnostic(input: NicheClassifierDiagnosticInput): void {
   const diagnostic = buildNicheClassifierDiagnosticLog(input);
   console.info('[niche-classifier-input-diagnostic]', JSON.stringify(diagnostic));
+
+  const leadId = input.leadId?.trim();
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!leadId || !url || !key) return;
+
+  fetch(`${url}/rest/v1/lead_events`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      lead_id: leadId,
+      event_type: 'niche_classifier_input_diagnostic',
+      event_payload: { ...diagnostic, loggedAt: new Date().toISOString() },
+    }),
+  }).catch((error) => console.warn('[preflight-engine] classifier diagnostic insert failed', error));
 }
 
 export type BusinessProfile = {
@@ -603,25 +623,44 @@ export function buildEvidenceFirstQueries(input: {
   const nearbyArea = serviceAreas.slice(0, 2).join(' or ');
   const extendedArea = serviceAreas.slice(2, 4).join(' or ');
   const industrySegment = customerSegments[0];
+  const isPlatformOrProduct = /\b(platform|software|saas|app|tool|technology|ai|edtech|education assessment|oral assessment|assessment platform)\b/i.test(`${businessType} ${services.join(' ')}`);
 
-  const suggestedSearchQueries = cleanQueryParts([
-    `I need a trusted ${businessType} in ${market}. Who should I choose?`,
-    `Which ${businessType}s near ${market} have good reviews and clear proof?`,
-    `best ${businessType} in ${market}`,
-    nearbyArea ? `${businessType} near ${nearbyArea}` : `trusted ${primaryService} provider in ${market}`,
-    industrySegment ? `${businessType} for ${industrySegment} in ${market}` : `who offers ${primaryService} near ${market}`,
-    extendedArea ? `${primaryService} company serving ${extendedArea}` : null,
-    ...customerSegments.slice(1).map((segment) => `${businessType} for ${segment} in ${market}`),
-    ...services.slice(1).map((service) => `${service} provider in ${market}`),
-    `${businessType} with good reviews in ${market}`,
-  ].filter((query): query is string => Boolean(query))).slice(0, 8);
+  const suggestedSearchQueries = isPlatformOrProduct
+    ? cleanQueryParts([
+      `Which ${businessType} should higher education teams consider?`,
+      `best ${businessType} for universities and professors`,
+      `AI oral assessment tools for verifying student understanding`,
+      `alternatives to written assignments for assessing real student understanding`,
+      `rubric-aligned oral assessment software for higher education`,
+      `conversation-based assessment platform for schools`,
+      ...customerSegments.map((segment) => `${businessType} for ${segment}`),
+      ...services.slice(1).map((service) => `${service} platform for education teams`),
+    ].filter((query): query is string => Boolean(query))).slice(0, 8)
+    : cleanQueryParts([
+      `I need a trusted ${businessType} in ${market}. Who should I choose?`,
+      `Which ${businessType}s near ${market} have good reviews and clear proof?`,
+      `best ${businessType} in ${market}`,
+      nearbyArea ? `${businessType} near ${nearbyArea}` : `trusted ${primaryService} provider in ${market}`,
+      industrySegment ? `${businessType} for ${industrySegment} in ${market}` : `who offers ${primaryService} near ${market}`,
+      extendedArea ? `${primaryService} company serving ${extendedArea}` : null,
+      ...customerSegments.slice(1).map((segment) => `${businessType} for ${segment} in ${market}`),
+      ...services.slice(1).map((service) => `${service} provider in ${market}`),
+      `${businessType} with good reviews in ${market}`,
+    ].filter((query): query is string => Boolean(query))).slice(0, 8);
 
-  const competitorSearchQueries = cleanQueryParts([
-    `${businessType} competitors ${market}`,
-    `best ${businessType}s ${market}`,
-    `${primaryService} companies ${market}`,
-    serviceAreas.length ? `${businessType} companies ${serviceAreas.slice(0, 3).join(' ')}` : `${businessType} alternatives ${market}`,
-  ]).slice(0, 5);
+  const competitorSearchQueries = isPlatformOrProduct
+    ? cleanQueryParts([
+      `${businessType} competitors`,
+      `best ${businessType} alternatives`,
+      `${primaryService} software companies`,
+      `AI assessment platform alternatives`,
+    ]).slice(0, 5)
+    : cleanQueryParts([
+      `${businessType} competitors ${market}`,
+      `best ${businessType}s ${market}`,
+      `${primaryService} companies ${market}`,
+      serviceAreas.length ? `${businessType} companies ${serviceAreas.slice(0, 3).join(' ')}` : `${businessType} alternatives ${market}`,
+    ]).slice(0, 5);
 
   return { suggestedSearchQueries, competitorSearchQueries };
 }
@@ -1010,6 +1049,7 @@ export async function preflightScan(
     submittedPrimaryService?: string | null;
     competitors?: string[];
     onNicheBlocked?: (resolved: NicheResult) => Promise<void> | void;
+    allowBlockedNicheResolution?: boolean;
   } = {},
 ): Promise<BusinessProfileWithAudit> {
   console.info(`[preflight] Scanning ${url}...`);
@@ -1172,8 +1212,11 @@ export async function preflightScan(
     } : null,
   });
   if (resolvedNiche.status === 'CONFLICT' || resolvedNiche.status === 'blocked_insufficient_evidence') {
-    await diagnosticContext.onNicheBlocked?.(resolvedNiche);
-    throw new Error(`Niche resolution blocked: ${resolvedNiche.status} (${resolvedNiche.conflict.explanation || 'no safe niche'})`);
+    if (!diagnosticContext.allowBlockedNicheResolution) {
+      await diagnosticContext.onNicheBlocked?.(resolvedNiche);
+      throw new Error(`Niche resolution blocked: ${resolvedNiche.status} (${resolvedNiche.conflict.explanation || 'no safe niche'})`);
+    }
+    console.warn(`[preflight] Niche resolution block bypassed by explicit operator resolution for ${diagnosticContext.leadId || domainFromUrl(url)}: ${resolvedNiche.status}`);
   }
 
   // -- Stage 4: Evidence-first business profile extraction --

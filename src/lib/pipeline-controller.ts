@@ -112,8 +112,46 @@ function parseClientDeclaredNiche(notes?: string | null): string {
     return paidIntake.businessCategory.trim();
   }
   const notesStr = notes || "";
-  const noteMatch = notesStr.match(/ClientBusinessCategory:\s*([^|\n]+)/i);
-  return noteMatch?.[1]?.trim() || "";
+  const noteMatches = Array.from(notesStr.matchAll(/ClientBusinessCategory:\s*([^|\n]+)/gi));
+  const latestMatch = noteMatches.at(-1);
+  if (latestMatch?.[1]?.trim()) {
+    return latestMatch[1]
+      .replace(/\.\s*(?:TZ|Locale|UTM|Referrer):[\s\S]*$/i, "")
+      .trim();
+  }
+
+  try {
+    const parsed = JSON.parse(notesStr);
+    const candidates = [
+      parsed?.clientDeclaredNiche,
+      parsed?.preflight?.clientDeclaredNiche,
+      parsed?.paidIntake?.businessCategory,
+      parsed?.preflight?.paidIntake?.businessCategory,
+    ];
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+    }
+  } catch {
+    // Non-JSON notes are expected for fresh intakes and Telegram append logs.
+  }
+
+  return "";
+}
+
+function hasTelegramDeclaredNicheOverride(notes?: string | null): boolean {
+  const notesStr = notes || "";
+  if (/Source:\s*telegram_use_submitted/i.test(notesStr)) return true;
+  try {
+    const parsed = JSON.parse(notesStr);
+    return parsed?.nicheResolution?.conflictResolution === "use_submitted"
+      || parsed?.preflight?.nicheResolution?.conflictResolution === "use_submitted"
+      || parsed?.operatorRevision?.reason?.includes("use declared service")
+      || parsed?.preflight?.operatorRevision?.reason?.includes("use declared service")
+      || parsed?.confidenceReason?.includes("Client-declared business category overrides automated classification")
+      || parsed?.preflight?.confidenceReason?.includes("Client-declared business category overrides automated classification");
+  } catch {
+    return false;
+  }
 }
 
 function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; customerSegments?: string[]; market?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
@@ -123,7 +161,7 @@ function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel
 ): T {
   const normalized = normalizeClientDeclaredNiche(declaredNiche);
   if (!normalized) return profile;
-  const services = profile.services?.length ? profile.services : [normalized.businessType];
+  const services = [normalized.businessType];
   const evidenceQueries = buildEvidenceFirstQueries({
     businessType: normalized.businessType,
     services,
@@ -201,6 +239,7 @@ export async function runPreflightStage(
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
     const paidIntakePayload = parsePaidIntakePayload(lead.notes);
     const declaredNiche = parseClientDeclaredNiche(lead.notes);
+    const telegramDeclaredOverride = hasTelegramDeclaredNicheOverride(lead.notes);
     // Parse submitted competitors before preflight so diagnostic logging can prove
     // whether competitor text contaminated the exact classifier input.
     const competitors: string[] = (() => {
@@ -217,7 +256,8 @@ export async function runPreflightStage(
     })();
     const rawPreflightResult = await preflightScan(lead.website, lead.city, lead.dealershipName, {
       leadId,
-      submittedPrimaryService: declaredNiche || null,
+      submittedPrimaryService: telegramDeclaredOverride ? null : declaredNiche || null,
+      allowBlockedNicheResolution: telegramDeclaredOverride && Boolean(declaredNiche),
       competitors,
       onNicheBlocked: async (resolved) => {
         const submitted = resolved.conflict.declaredCandidate || declaredNiche || "none";

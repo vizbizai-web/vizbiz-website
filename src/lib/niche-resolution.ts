@@ -217,6 +217,35 @@ function normalizeComparable(value: string): string {
   return normalizeForVerification(value).replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
+const MACHINE_METADATA_PATTERN = /(?:\btz[_:\s-]|\butc[_:\s-]|\blocale[_:\s-]|\butm[_:\s-]|https?:\/\/|www\.|[a-z0-9]+_[a-z0-9]+_[a-z0-9]+)/i;
+
+function hasMachinePattern(value: string): boolean {
+  return MACHINE_METADATA_PATTERN.test(value);
+}
+
+function blockedSubmittedOnlyResult(input: NicheInput, pack: EvidencePack, reason: string, submitted: string): NicheResult {
+  return {
+    status: 'blocked_insufficient_evidence',
+    method: 'blocked_insufficient_evidence',
+    needsReview: true,
+    businessNiche: { value: '', confidence: 0, primaryEvidence: [] },
+    services: [],
+    customerSegments: [],
+    serviceArea: [],
+    language: pack.detectedLanguage,
+    conflict: { declaredCandidate: submitted || null, websiteCandidate: null, explanation: reason },
+    diagnostics: {
+      packCharCount: pack.packCharCount,
+      pagesIncluded: pack.pagesIncluded,
+      submittedServicePresent: pack.submittedServicePresent,
+      crawlQuality: pack.crawlQuality,
+      bodyCharCount: pack.bodyCharCount,
+      llmPassesSkipped: true,
+      degradedReason: reason,
+    },
+  };
+}
+
 function includesTerm(haystack: string, needle: string | null): boolean {
   if (!needle?.trim()) return false;
   return normalizeComparable(haystack).includes(normalizeComparable(needle));
@@ -381,6 +410,9 @@ async function logNicheDiagnostic(leadId: string, payload: Record<string, unknow
 
 function submittedOnlyResult(input: NicheInput, pack: EvidencePack, reason: string): NicheResult {
   const submitted = input.submittedPrimaryService?.trim() || '';
+  if (submitted && (GENERIC_DENYLIST.has(normalizeComparable(submitted)) || hasMachinePattern(submitted))) {
+    return blockedSubmittedOnlyResult(input, pack, `${reason}; rejected unsafe submitted primary service`, submitted);
+  }
   return {
     status: submitted ? 'OK' : 'blocked_insufficient_evidence',
     method: submitted ? 'submitted_only' : 'blocked_insufficient_evidence',
@@ -567,9 +599,13 @@ function valueHasSupportingDoQuote(value: string, verified: QuoteExtractionOutpu
   const normalizedValue = normalizeComparable(value);
   if (!normalizedValue) return false;
   const doQuotes = [...verified.whatTheyDo, ...verified.selfDescription];
+  const providerLikeValue = /\b(provider|supplier|supply|supplies|distributor|distributes|manufacturer|fabricante|proveedor|distribuidor|insumos)\b/i.test(value);
   return doQuotes.some((q) => {
     const normalizedQuote = normalizeComparable(q.quote);
-    return normalizedQuote.includes(normalizedValue) || normalizedValue.includes(normalizedQuote) || primaryEvidence.includes(q.quote);
+    const directSupport = normalizedQuote.includes(normalizedValue) || normalizedValue.includes(normalizedQuote) || primaryEvidence.includes(q.quote);
+    if (directSupport) return true;
+    if (!providerLikeValue) return false;
+    return /\b(supply|supplies|distribute|distributes|manufacture|manufactures|fabricamos|distribuimos|proveemos|suministramos|insumos)\b/i.test(q.quote);
   });
 }
 
@@ -590,7 +626,12 @@ function applyPostCallValidation(decision: NicheDecisionOutput, verified: QuoteE
 
   if (decision.status === 'OK') {
     const quoteSet = allVerifiedQuoteStrings(verified);
-    const evidenceOk = decision.businessNiche.primaryEvidence.every((item) => item === 'declared service' || quoteSet.has(item));
+    const evidenceOk = decision.businessNiche.primaryEvidence.every((item) => {
+      if (item === 'declared service' || /\b(owner|client|submitted|declared)\b/i.test(item)) return true;
+      if (quoteSet.has(item)) return true;
+      const normalizedItem = normalizeForVerification(item);
+      return [...quoteSet].some((quote) => normalizedItem.includes(normalizeForVerification(quote)));
+    });
     if (!evidenceOk) throw new Error('primaryEvidence failed validation');
 
     if (intersectsSegment(decision.businessNiche.value, decision.customerSegments) && !valueHasSupportingDoQuote(decision.businessNiche.value, verified, decision.businessNiche.primaryEvidence)) {

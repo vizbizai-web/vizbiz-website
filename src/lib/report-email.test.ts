@@ -7,8 +7,15 @@ describe("report email", () => {
     expect(() => assertValidReportEmailCta("https://vizbiz.ai/free-ai-visibility-test/")).toThrow(/must not point/);
   });
 
-  it("accepts private report CTAs", () => {
-    expect(assertValidReportEmailCta("/report/lead-123?preview=1")).toBe("https://vizbiz.ai/report/lead-123?preview=1");
+  it("accepts private report CTAs even when site URL env has a literal escaped newline", () => {
+    const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.NEXT_PUBLIC_SITE_URL = "https://vizbiz.ai\\n";
+    try {
+      expect(assertValidReportEmailCta("/report/lead-123?preview=1")).toBe("https://vizbiz.ai/report/lead-123?preview=1");
+    } finally {
+      if (previousSiteUrl === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+      else process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
+    }
   });
 
   it("builds premium client-safe copy for a non-dealership report", () => {

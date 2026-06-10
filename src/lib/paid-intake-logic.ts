@@ -1,3 +1,5 @@
+import { cleanIntakeBusinessCategory, cleanIntakeText } from './intake-normalization';
+
 export type PaidPlan = 'full_report_fix' | 'monthly_growth';
 
 export type PaidIntakeInput = Record<string, string | undefined> & {
@@ -51,7 +53,7 @@ export function getPaidIntakeNextStepUrl(leadId: string, plan?: string): string 
 }
 
 function clean(value?: string): string {
-  return (value || '').trim();
+  return cleanIntakeText(value);
 }
 
 function normalizeUrl(value?: string): string {
@@ -61,7 +63,7 @@ function normalizeUrl(value?: string): string {
 }
 
 function questionList(value?: string): string[] {
-  return clean(value)
+  return (value || '').trim()
     .split(/\n|\r|;/)
     .map((item) => item.trim())
     .filter(Boolean)
@@ -78,7 +80,7 @@ export function buildPaidIntakePayload(input: PaidIntakeInput, now = new Date())
     plan: normalizePaidPlan(input.plan),
     submittedAt: now.toISOString(),
     estimatedMinutes: 5,
-    businessCategory: clean(input.businessCategory),
+    businessCategory: cleanIntakeBusinessCategory(input.businessCategory),
     mainServices: clean(input.mainServices),
     idealCustomer: clean(input.idealCustomer),
     differentiator: clean(input.differentiator),

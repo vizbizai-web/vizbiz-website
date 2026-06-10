@@ -28,7 +28,7 @@ function toAbsoluteVizBizUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return "";
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://vizbiz.ai").replace(/\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://vizbiz.ai").replace(/\\n/g, "").replace(/\s+$/, "").replace(/\/$/, "");
   return `${base}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`;
 }
 

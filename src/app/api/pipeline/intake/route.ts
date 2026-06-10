@@ -10,6 +10,7 @@ import { appendLead, isSheetsConfigured } from "@/lib/google-sheets";
 import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
 import { buildPostIntakeRedirect } from "@/lib/funnel-logic";
 import { buildPipelineBaseUrl } from "@/lib/pipeline-url";
+import { buildIntakeNotes, cleanIntakeBusinessCategory, cleanIntakeText } from "@/lib/intake-normalization";
 
 type IntakePayload = {
   name: string;
@@ -82,29 +83,29 @@ export async function POST(request: Request) {
   const competitorMode = hasClientCompetitor ? "client_provided" : "client_only";
 
   const cleanPayload: IntakePayload = {
-    name: payload.name.trim(),
-    dealershipName: payload.dealershipName.trim(),
-    email: payload.email.trim().toLowerCase(),
-    phone: payload.phone.trim(),
+    name: cleanIntakeText(payload.name),
+    dealershipName: cleanIntakeText(payload.dealershipName),
+    email: cleanIntakeText(payload.email).toLowerCase(),
+    phone: cleanIntakeText(payload.phone),
     websiteUrl: normalizeWebsiteUrl(payload.websiteUrl),
-    cityMarket: payload.cityMarket.trim(),
-    competitor: payload.competitor?.trim() || undefined,
-    competitor2: payload.competitor2?.trim() || undefined,
+    cityMarket: cleanIntakeText(payload.cityMarket),
+    competitor: cleanIntakeText(payload.competitor) || undefined,
+    competitor2: cleanIntakeText(payload.competitor2) || undefined,
     competitorMode,
-    businessCategory: (payload.businessCategory || payload.niche || payload.industry || payload.category)?.trim() || undefined,
-    selectedPlan: payload.selectedPlan?.trim() || undefined,
-    source: payload.source?.trim() || "snapshot funnel",
-    originalCta: payload.originalCta?.trim() || undefined,
-    originalPage: payload.originalPage?.trim() || undefined,
-    utmSource: payload.utm_source?.trim() || undefined,
-    utmMedium: payload.utm_medium?.trim() || undefined,
-    utmCampaign: payload.utm_campaign?.trim() || undefined,
-    utmTerm: payload.utm_term?.trim() || undefined,
-    utmContent: payload.utm_content?.trim() || undefined,
-    referrer: payload.referrer?.trim() || undefined,
-    timezone: payload.timezone?.trim() || undefined,
-    utcOffset: payload.utcOffset?.trim() || undefined,
-    locale: payload.locale?.trim() || undefined,
+    businessCategory: cleanIntakeBusinessCategory(payload.businessCategory || payload.niche || payload.industry || payload.category) || undefined,
+    selectedPlan: cleanIntakeText(payload.selectedPlan) || undefined,
+    source: cleanIntakeText(payload.source) || "snapshot funnel",
+    originalCta: cleanIntakeText(payload.originalCta) || undefined,
+    originalPage: cleanIntakeText(payload.originalPage) || undefined,
+    utmSource: cleanIntakeText(payload.utm_source) || undefined,
+    utmMedium: cleanIntakeText(payload.utm_medium) || undefined,
+    utmCampaign: cleanIntakeText(payload.utm_campaign) || undefined,
+    utmTerm: cleanIntakeText(payload.utm_term) || undefined,
+    utmContent: cleanIntakeText(payload.utm_content) || undefined,
+    referrer: cleanIntakeText(payload.referrer) || undefined,
+    timezone: cleanIntakeText(payload.timezone) || undefined,
+    utcOffset: cleanIntakeText(payload.utcOffset) || undefined,
+    locale: cleanIntakeText(payload.locale) || undefined,
   };
 
   // Always generate a leadId upfront — even if Sheets fails, we have a reference
@@ -128,7 +129,20 @@ export async function POST(request: Request) {
         status: "new",
         researchStatus: "pending",
         emailSentAt: "",
-        notes: `Source: ${cleanPayload.source}. CTA: ${cleanPayload.originalCta || "direct"}. Page: ${cleanPayload.originalPage || "/intake"}.${cleanPayload.businessCategory ? ` ClientBusinessCategory: ${cleanPayload.businessCategory}.` : ""}${cleanPayload.utmSource ? ` UTM: ${cleanPayload.utmSource}/${cleanPayload.utmMedium || "none"}/${cleanPayload.utmCampaign || "none"}` : ""}${cleanPayload.referrer ? ` Referrer: ${cleanPayload.referrer}` : ""}${cleanPayload.timezone ? ` TZ: ${cleanPayload.timezone} (UTC${cleanPayload.utcOffset ? (parseInt(cleanPayload.utcOffset) > 0 ? "-" : "+") + String(Math.abs(parseInt(cleanPayload.utcOffset) / 60)).padStart(2, "0") + ":" + String(Math.abs(parseInt(cleanPayload.utcOffset) % 60)).padStart(2, "0") : ""})` : ""}${cleanPayload.locale ? ` Locale: ${cleanPayload.locale}` : ""} | CompetitorMode: ${cleanPayload.competitorMode}.`,
+        notes: buildIntakeNotes({
+          source: cleanPayload.source,
+          originalCta: cleanPayload.originalCta,
+          originalPage: cleanPayload.originalPage,
+          businessCategory: cleanPayload.businessCategory,
+          utmSource: cleanPayload.utmSource,
+          utmMedium: cleanPayload.utmMedium,
+          utmCampaign: cleanPayload.utmCampaign,
+          referrer: cleanPayload.referrer,
+          timezone: cleanPayload.timezone,
+          utcOffset: cleanPayload.utcOffset,
+          locale: cleanPayload.locale,
+          competitorMode: cleanPayload.competitorMode,
+        }),
         source: cleanPayload.source,
         originalCta: cleanPayload.originalCta,
         originalPage: cleanPayload.originalPage,

@@ -161,7 +161,70 @@ describe('verifyQuotes', () => {
   });
 });
 
+describe('resolveNiche degraded submitted-only safeguards', () => {
+  it('rejects browser-metadata-polluted submitted primary service instead of propagating it', async () => {
+    clearNicheLLMForTests();
+    const result = await resolveNiche({
+      leadId: 'polluted_submitted_service',
+      businessName: 'Coraltalk AI Inc.',
+      websiteDomain: 'coraltalk.com',
+      submittedPrimaryService: 'Assessments education. TZ: Europe/Malta (UTC+02:00) Locale: en-US',
+      crawl: {
+        crawlMethod: 'fetch',
+        crawlQuality: 'thin',
+        pages: [{
+          url: 'https://www.coraltalk.com',
+          title: 'Coraltalk | Build Understanding Through Conversation',
+          metaDescription: 'Voice-native AI that runs oral assessments and personalized tutoring, at scale.',
+          h1s: [],
+          jsonLdTypes: [],
+          bodyText: 'short',
+        }],
+      },
+      places: null,
+    });
+
+    expect(result.status).toBe('blocked_insufficient_evidence');
+    expect(result.method).toBe('blocked_insufficient_evidence');
+    expect(result.businessNiche.value).toBe('');
+    expect(result.services).toEqual([]);
+    expect(result.needsReview).toBe(true);
+  });
+});
+
 describe('resolveNiche acceptance fixtures', () => {
+  it('accepts primary evidence when the provider wraps a verified quote in labeling text', () => {
+    const quote = 'We supply professional audio systems for churches, theatres, venues and broadcast studios.';
+    setNicheLLMForTests(async (request) => request.pass === 1
+      ? { whatTheyDo: [{ quote, sourceUrl: 'https://audio.example/' }], whoTheyServe: [], whereTheyOperate: [], selfDescription: [] } satisfies QuoteExtractionOutput
+      : okDecision('pro audio supplier', ['Owner-declared primary service: pro audio supplier', `Website quote: "${quote}"`]));
+
+    return expect(resolveNiche({
+      leadId: 'wrapped-primary-evidence',
+      businessName: 'Audio House',
+      websiteDomain: 'audio.example',
+      submittedPrimaryService: 'pro audio supplier',
+      crawl: { crawlMethod: 'fetch', crawlQuality: 'full', pages: [mkPage(longBody(quote), { url: 'https://audio.example/' })] },
+      places: null,
+    })).resolves.toMatchObject({ status: 'OK', method: 'two_pass_llm', businessNiche: { value: 'pro audio supplier' } });
+  });
+
+  it('does not treat supplier customer segments as the business niche when WHAT_THEY_DO supports supplier language', async () => {
+    const quote = 'Fabricamos y distribuimos insumos para heladerías, pastelerías y gastronomía.';
+    setNicheLLMForTests(async (request) => request.pass === 1
+      ? { whatTheyDo: [{ quote, sourceUrl: 'https://ingredientes.example/' }], whoTheyServe: [{ quote: 'Atendemos heladerías, restaurantes y pastelerías.', sourceUrl: 'https://ingredientes.example/' }], whereTheyOperate: [], selfDescription: [] } satisfies QuoteExtractionOutput
+      : okDecision('proveedor de insumos para heladerías, pastelerías y gastronomía', [quote], { customerSegments: ['heladerías', 'restaurantes', 'pastelerías'], language: 'es' }));
+
+    await expect(resolveNiche({
+      leadId: 'supplier-segment-support',
+      businessName: 'Sabor Sur',
+      websiteDomain: 'ingredientes.example',
+      submittedPrimaryService: 'proveedor de insumos para heladerías',
+      crawl: { crawlMethod: 'fetch', crawlQuality: 'full', pages: [mkPage(longBody(`${quote}\nAtendemos heladerías, restaurantes y pastelerías.`), { url: 'https://ingredientes.example/' })] },
+      places: null,
+    })).resolves.toMatchObject({ status: 'OK', method: 'two_pass_llm', businessNiche: { value: 'proveedor de insumos para heladerías, pastelerías y gastronomía' } });
+  });
+
   it('empty crawl uses submitted-only path and skips both LLM passes over five stable runs', async () => {
     let calls = 0;
     setNicheLLMForTests(async () => {
