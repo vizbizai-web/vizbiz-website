@@ -21,6 +21,7 @@ import {
   type PipelineStage,
 } from "@/lib/google-sheets";
 import { buildEvidenceFirstQueries, preflightScan } from "@/lib/preflight-engine";
+import { sendNicheResolutionAlertTelegram } from "@/lib/telegram-alerts";
 import { runResearch } from "@/lib/research-runner";
 
 // ─── Research Mode ───────────────────────────────────────────────────
@@ -200,14 +201,8 @@ export async function runPreflightStage(
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
     const paidIntakePayload = parsePaidIntakePayload(lead.notes);
     const declaredNiche = parseClientDeclaredNiche(lead.notes);
-    const rawPreflightResult = await preflightScan(lead.website, lead.city, lead.dealershipName);
-    const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche, lead.city);
-    if (declaredNiche) {
-      console.warn(`[pipeline] Client-declared niche override for ${leadId}: "${declaredNiche}" → ${preflightResult.niche}`);
-    }
-
-    // 6. Parse competitors from the durable lead field. Force reruns may replace
-    // notes, so notes-only competitor mode detection loses submitted competitors.
+    // Parse submitted competitors before preflight so diagnostic logging can prove
+    // whether competitor text contaminated the exact classifier input.
     const competitors: string[] = (() => {
       if (Array.isArray(paidIntakePayload?.competitors)) {
         const paidCompetitors = paidIntakePayload.competitors
@@ -220,6 +215,31 @@ export async function runPreflightStage(
       if (!compStr) return [];
       return compStr.split(",").map((c: string) => c.trim()).filter((c: string) => c.length > 0).slice(0, 2);
     })();
+    const rawPreflightResult = await preflightScan(lead.website, lead.city, lead.dealershipName, {
+      leadId,
+      submittedPrimaryService: declaredNiche || null,
+      competitors,
+      onNicheBlocked: async (resolved) => {
+        const submitted = resolved.conflict.declaredCandidate || declaredNiche || "none";
+        const websiteCandidate = resolved.conflict.websiteCandidate || resolved.businessNiche.value || "insufficient evidence";
+        await sendNicheResolutionAlertTelegram({
+          leadId,
+          businessName: lead.dealershipName,
+          submitted,
+          websiteCandidate,
+          status: resolved.status,
+          explanation: resolved.conflict.explanation,
+        });
+      },
+    });
+    const preflightResult = applyClientDeclaredNicheOverride(rawPreflightResult, declaredNiche, lead.city);
+    if (declaredNiche) {
+      console.warn(`[pipeline] Client-declared niche override for ${leadId}: "${declaredNiche}" → ${preflightResult.niche}`);
+    }
+
+    // 6. Competitors were parsed before preflight for diagnostics and are reused
+    // here for competitor mode/state preservation. Force reruns may replace
+    // notes, so notes-only competitor mode detection loses submitted competitors.
 
     // 7. Determine competitorMode. Prefer explicit stored metadata, but any
     // submitted competitor names must keep the rerun in client_provided mode.
@@ -266,6 +286,8 @@ export async function runPreflightStage(
       contentQuality: preflightResult.contentQuality,
       googlePlaceEnrichment: (preflightResult as any).googlePlaceEnrichment || null,
       localEntityTrustScore: (preflightResult as any).localEntityTrustScore || null,
+      nicheResolution: (preflightResult as any).nicheResolution || null,
+      profileHash: (preflightResult as any).profileHash || null,
       seoAudit: preflightResult.seoAudit ? {
         overallScore: preflightResult.seoAudit.overallScore,
         issues: preflightResult.seoAudit.issues.length,

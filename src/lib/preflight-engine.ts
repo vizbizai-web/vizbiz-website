@@ -19,6 +19,7 @@
  */
 
 import { scrapeSite, fetchLlmsTxt } from "./site-scraper";
+import { resolveNiche, type NicheResult } from "./niche-resolution";
 import { runSEOAudit, SEOAuditResult } from "./seo-auditor";
 import { calcRevenueGap, NICHE_ECONOMICS as NICHE_ECONOMICS_SHARED } from "./niche-economics";
 import { enrichBusinessProfile, calculateLocalEntityTrustScore, type GooglePlaceEnrichment } from "./places-client";
@@ -27,6 +28,70 @@ export type BusinessProfileWithAudit = BusinessProfile & {
   seoAudit?: SEOAuditResult;
   renderMethod?: 'firecrawl' | 'playwright' | 'fetch';
 };
+
+export type NicheClassifierDiagnosticInput = {
+  leadId?: string;
+  businessName?: string;
+  websiteUrl: string;
+  classifierInput: string;
+  submittedPrimaryService?: string | null;
+  competitors?: string[];
+};
+
+export type NicheClassifierDiagnosticLog = {
+  event: 'niche_classifier_input_diagnostic';
+  leadId: string | null;
+  businessName: string | null;
+  websiteUrl: string;
+  classifierInput: string;
+  classifierInputCharCount: number;
+  submittedPrimaryService: string | null;
+  submittedPrimaryServicePresent: boolean;
+  competitorTextInContext: boolean;
+  competitorMatches: string[];
+};
+
+function normalizeDiagnosticText(value: string): string {
+  return value.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function domainFromUrl(value: string): string {
+  try {
+    return new URL(value.startsWith('http') ? value : `https://${value}`).hostname.replace(/^www\./, '');
+  } catch {
+    return value.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+  }
+}
+
+export function buildNicheClassifierDiagnosticLog(input: NicheClassifierDiagnosticInput): NicheClassifierDiagnosticLog {
+  const classifierInput = input.classifierInput || '';
+  const normalizedInput = normalizeDiagnosticText(classifierInput);
+  const submittedPrimaryService = input.submittedPrimaryService?.trim() || null;
+  const normalizedPrimaryService = submittedPrimaryService ? normalizeDiagnosticText(submittedPrimaryService) : '';
+  const submittedPrimaryServicePresent = Boolean(normalizedPrimaryService && normalizedInput.includes(normalizedPrimaryService));
+  const competitorMatches = (input.competitors || [])
+    .map((competitor) => competitor.trim())
+    .filter(Boolean)
+    .filter((competitor) => normalizedInput.includes(normalizeDiagnosticText(competitor)));
+
+  return {
+    event: 'niche_classifier_input_diagnostic',
+    leadId: input.leadId || null,
+    businessName: input.businessName?.trim() || null,
+    websiteUrl: input.websiteUrl,
+    classifierInput,
+    classifierInputCharCount: classifierInput.length,
+    submittedPrimaryService,
+    submittedPrimaryServicePresent,
+    competitorTextInContext: competitorMatches.length > 0,
+    competitorMatches,
+  };
+}
+
+function logNicheClassifierDiagnostic(input: NicheClassifierDiagnosticInput): void {
+  const diagnostic = buildNicheClassifierDiagnosticLog(input);
+  console.info('[niche-classifier-input-diagnostic]', JSON.stringify(diagnostic));
+}
 
 export type BusinessProfile = {
   // -- v1 compat fields (still used by report rendering) --
@@ -132,6 +197,10 @@ export type BusinessProfile = {
   googlePlaceEnrichment: GooglePlaceEnrichment | null;
   /** Local entity trust score (0-100) from Google Places data */
   localEntityTrustScore: number | null;
+  /** Isolated two-pass niche resolver result and diagnostic trail */
+  nicheResolution?: NicheResult;
+  /** Hash of the resolved niche/profile decision for downstream prompt-plan locking */
+  profileHash?: string;
 };
 
 // Weighted scoring for each niche — average lead value and monthly volume
@@ -932,7 +1001,17 @@ function checkForReviews(html: string | undefined): boolean {
 /**
  * PreFlight v2 — Deep Business Intelligence
  */
-export async function preflightScan(url: string, intakeCity?: string, businessName?: string): Promise<BusinessProfileWithAudit> {
+export async function preflightScan(
+  url: string,
+  intakeCity?: string,
+  businessName?: string,
+  diagnosticContext: {
+    leadId?: string;
+    submittedPrimaryService?: string | null;
+    competitors?: string[];
+    onNicheBlocked?: (resolved: NicheResult) => Promise<void> | void;
+  } = {},
+): Promise<BusinessProfileWithAudit> {
   console.info(`[preflight] Scanning ${url}...`);
 
   // -- Stage 1: Scrape site --
@@ -1056,6 +1135,47 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
     rawText.length > 50 ? `Page Content (${rawText.substring(0, 8000).length} chars):\n${rawText.substring(0, 8000)}` : null,
   ].filter(Boolean).join('\n');
 
+  logNicheClassifierDiagnostic({
+    leadId: diagnosticContext.leadId,
+    businessName,
+    websiteUrl: url,
+    classifierInput: allSignals,
+    submittedPrimaryService: diagnosticContext.submittedPrimaryService,
+    competitors: diagnosticContext.competitors,
+  });
+
+  const h1s = Array.from(scraped.html?.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi) || [])
+    .map((match) => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 6);
+  const resolvedNiche = await resolveNiche({
+    leadId: diagnosticContext.leadId || domainFromUrl(url),
+    businessName: businessName || scraped.title || domainFromUrl(url),
+    websiteDomain: domainFromUrl(url),
+    submittedPrimaryService: diagnosticContext.submittedPrimaryService || null,
+    crawl: {
+      crawlMethod: renderMethod,
+      crawlQuality: scraped.error ? 'failed' : rawText.length < 800 ? 'thin' : 'full',
+      pages: [{
+        url,
+        title: metaTitle || scraped.title || '',
+        metaDescription: metaDesc,
+        h1s,
+        jsonLdTypes: scraped.intelligence?.schemaData.types || seoAudit?.schemaTypes || [],
+        bodyText: rawText,
+      }],
+    },
+    places: googlePlaceEnrichment ? {
+      matched: Boolean(googlePlaceEnrichment.placeId),
+      matchMethod: googlePlaceEnrichment.websiteMatch ? 'website_domain' : googlePlaceEnrichment.placeId ? 'name_only' : 'none',
+      types: googlePlaceEnrichment.types || [],
+    } : null,
+  });
+  if (resolvedNiche.status === 'CONFLICT' || resolvedNiche.status === 'blocked_insufficient_evidence') {
+    await diagnosticContext.onNicheBlocked?.(resolvedNiche);
+    throw new Error(`Niche resolution blocked: ${resolvedNiche.status} (${resolvedNiche.conflict.explanation || 'no safe niche'})`);
+  }
+
   // -- Stage 4: Evidence-first business profile extraction --
   let businessType = "";
   let targetAudience = "";
@@ -1128,6 +1248,24 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
     if (guardedProfile.suggestedSearchQueries?.length) suggestedSearchQueries = guardedProfile.suggestedSearchQueries;
     if (guardedProfile.competitorSearchQueries?.length) competitorSearchQueries = guardedProfile.competitorSearchQueries;
     nicheConfidence = Math.max(nicheConfidence, 90);
+  }
+
+  if (resolvedNiche.status === 'OK') {
+    const resolvedBusinessType = resolvedNiche.businessNiche.value.trim();
+    if (resolvedBusinessType) {
+      niche = nicheSlugFromBusinessType(resolvedBusinessType);
+      businessType = resolvedBusinessType;
+      services = resolvedNiche.services.length ? resolvedNiche.services : [resolvedBusinessType];
+      customerSegments = resolvedNiche.customerSegments;
+      serviceAreas = resolvedNiche.serviceArea;
+      siteLanguage = resolvedNiche.language === 'es' ? 'Spanish' : resolvedNiche.language || siteLanguage;
+      searchLanguage = siteLanguage;
+      nicheConfidence = Math.round(resolvedNiche.businessNiche.confidence * 100);
+      confidenceReason = `Resolved by isolated two-pass niche resolver (${resolvedNiche.method}); primary evidence: ${resolvedNiche.businessNiche.primaryEvidence.join(' | ')}`;
+      const evidenceQueries = buildEvidenceFirstQueries({ businessType, services, market, intakeCity, customerSegments, primaryMarket, serviceAreas });
+      suggestedSearchQueries = evidenceQueries.suggestedSearchQueries;
+      competitorSearchQueries = evidenceQueries.competitorSearchQueries;
+    }
   }
 
   if (niche === 'pro_audio_systems') {
@@ -1272,6 +1410,8 @@ export async function preflightScan(url: string, intakeCity?: string, businessNa
     hasReviews,
     googlePlaceEnrichment,
     localEntityTrustScore,
+    nicheResolution: resolvedNiche,
+    profileHash: resolvedNiche.profileHash,
   };
 
   console.info(`[preflight] Result:`, {

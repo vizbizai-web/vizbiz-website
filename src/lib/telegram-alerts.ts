@@ -191,6 +191,52 @@ export async function sendReportReadyTelegram(alert: ReportReadyAlert): Promise<
   console.info("[telegram-alert] report-ready alert sent", { dealership: alert.dealershipName, leadId: alert.leadId });
 }
 
+type NicheResolutionAlert = {
+  leadId: string;
+  businessName: string;
+  submitted: string;
+  websiteCandidate: string;
+  status: string;
+  explanation?: string;
+};
+
+export async function sendNicheResolutionAlertTelegram(alert: NicheResolutionAlert): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("[telegram-alert] TELEGRAM_BOT_TOKEN not configured");
+    return;
+  }
+
+  const msg = [
+    `⚠️ Niche resolution blocked — ${alert.businessName}`,
+    "",
+    `Lead ID: ${alert.leadId}`,
+    `Submitted: ${alert.submitted || "none"}`,
+    `Website evidence: ${alert.websiteCandidate || "insufficient evidence"}`,
+    `Status: ${alert.status}`,
+    alert.explanation ? `Why: ${alert.explanation}` : null,
+    "",
+    `Choose a resolution before research continues.`,
+  ].filter(Boolean).join("\n");
+
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: ALEX_DM,
+      text: msg,
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Use declared", callback_data: `niche_use_submitted_${alert.leadId}` },
+          { text: "Use website", callback_data: `niche_use_website_${alert.leadId}` },
+          { text: "Custom…", callback_data: `niche_custom_${alert.leadId}` },
+        ]],
+      },
+    }),
+  });
+
+  console.info("[telegram-alert] niche-resolution alert sent", { leadId: alert.leadId, status: alert.status });
+}
+
 /**
  * Pipeline alert — sends to Alex's DM with pipeline stage updates
  */
