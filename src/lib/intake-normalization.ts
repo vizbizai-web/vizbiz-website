@@ -14,6 +14,7 @@ export type IntakeNoteInput = {
 };
 
 const METADATA_SEGMENT_PATTERN = /\s*(?:[.|]\s*)?(?:TZ|Locale|UTM|Referrer|CompetitorMode)\s*:\s*.*$/i;
+const INLINE_METADATA_START_PATTERN = /\s+(?=(?:tz|utc|locale|utm)[_:\s-])/i;
 
 export const MACHINE_METADATA_PATTERN = /(?:\btz[_:\s-]|\butc[_:\s-]|\blocale[_:\s-]|\butm[_:\s-]|https?:\/\/|www\.|[a-z0-9]+_[a-z0-9]+_[a-z0-9]+)/i;
 
@@ -22,7 +23,10 @@ export function cleanIntakeText(value?: string | null): string {
 }
 
 export function cleanIntakeBusinessCategory(value?: string | null): string {
-  return cleanIntakeText(value).replace(METADATA_SEGMENT_PATTERN, '').trim();
+  return cleanIntakeText(value)
+    .replace(METADATA_SEGMENT_PATTERN, '')
+    .split(INLINE_METADATA_START_PATTERN)[0]
+    .trim();
 }
 
 export function hasMachineMetadata(value?: string | null): boolean {

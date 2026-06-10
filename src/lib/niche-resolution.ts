@@ -408,6 +408,30 @@ async function logNicheDiagnostic(leadId: string, payload: Record<string, unknow
   }).catch((error) => console.warn('[niche-resolution] Supabase diagnostic insert failed', error));
 }
 
+async function logPass1StructuredFailure(leadId: string, error: unknown): Promise<void> {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!url || !key) return;
+  await fetch(`${url}/rest/v1/lead_events`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      lead_id: leadId,
+      event_type: 'pass_1_structured_failure',
+      event_payload: {
+        reason: 'pass_1_structured_output_failed_after_retry',
+        error: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
+        loggedAt: new Date().toISOString(),
+      },
+    }),
+  }).catch((insertError) => console.warn('[niche-resolution] pass1 failure event insert failed', insertError));
+}
+
 function submittedOnlyResult(input: NicheInput, pack: EvidencePack, reason: string): NicheResult {
   const submitted = input.submittedPrimaryService?.trim() || '';
   if (submitted && (GENERIC_DENYLIST.has(normalizeComparable(submitted)) || hasMachinePattern(submitted))) {
@@ -712,6 +736,7 @@ export async function resolveNiche(input: NicheInput): Promise<NicheResult> {
     }));
   } catch (error) {
     console.warn('[niche-resolution] Pass 1 structured extraction failed; degrading to submitted-only path', error);
+    await logPass1StructuredFailure(input.leadId, error);
     const result = submittedOnlyResult(input, pack, 'pass_1_structured_output_failed_after_retry');
     await logNicheDiagnostic(input.leadId, { stage: 'degraded_mode', resultStatus: result.status, method: result.method, reason: result.diagnostics.degradedReason });
     return result;

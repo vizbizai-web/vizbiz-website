@@ -518,6 +518,11 @@ function splitCompetitors(value: string | undefined): [string | null, string | n
   return [parts[0] || null, parts[1] || null];
 }
 
+export function normalizeSubmittedNicheForInsert(value?: string | null): string | null {
+  const trimmed = (value || "").trim();
+  return trimmed || null;
+}
+
 async function supabaseAppendLead(lead: Partial<LeadRow> & Pick<LeadRow, "timestamp" | "dealershipName" | "website" | "city" | "email">): Promise<string> {
   const [competitor1, competitor2] = splitCompetitors(lead.clientProvidedCompetitors || lead.competitor);
   const rawIntake = {
@@ -537,7 +542,7 @@ async function supabaseAppendLead(lead: Partial<LeadRow> & Pick<LeadRow, "timest
       email: lead.email,
       website_url: lead.website,
       submitted_location: lead.city,
-      submitted_niche: (lead as Partial<LeadRow> & { niche?: string }).niche || "local_business",
+      submitted_niche: normalizeSubmittedNicheForInsert((lead as Partial<LeadRow> & { niche?: string }).niche),
       competitor_1_name: competitor1,
       competitor_2_name: competitor2,
       competitor_source: competitor1 || competitor2 ? "submitted" : "missing",

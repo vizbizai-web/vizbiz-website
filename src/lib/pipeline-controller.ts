@@ -154,6 +154,33 @@ function hasTelegramDeclaredNicheOverride(notes?: string | null): boolean {
   }
 }
 
+async function getPass1FailureRateSummary(): Promise<string | null> {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  if (!url || !key) return null;
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const headers = { apikey: key, Authorization: `Bearer ${key}` };
+  try {
+    const [packResponse, failureResponse] = await Promise.all([
+      fetch(`${url}/rest/v1/lead_events?select=id&event_type=eq.niche_resolution_diagnostic&event_payload->>stage=eq.pack_built&created_at=gte.${encodeURIComponent(since)}&limit=1000`, { headers }),
+      fetch(`${url}/rest/v1/lead_events?select=id&event_type=eq.pass_1_structured_failure&created_at=gte.${encodeURIComponent(since)}&limit=1000`, { headers }),
+    ]);
+    if (!packResponse.ok || !failureResponse.ok) return null;
+    const packs = await packResponse.json() as unknown[];
+    const failures = await failureResponse.json() as unknown[];
+    const total = packs.length;
+    const failed = failures.length;
+    if (!total) return null;
+    const rate = failed / total;
+    if (rate <= 0.1) return null;
+    return `Pass 1 structured-output failure rate: ${(rate * 100).toFixed(1)}% (${failed}/${total} niche runs in last 24h).`;
+  } catch (error) {
+    console.warn("[pipeline] pass1 failure rate lookup failed", error);
+    return null;
+  }
+}
+
 function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel?: string; businessType?: string; services?: string[]; customerSegments?: string[]; market?: string; suggestedSearchQueries?: string[]; competitorSearchQueries?: string[]; confidenceReason?: string; nicheConfidence?: number }>(
   profile: T,
   declaredNiche: string,
@@ -262,13 +289,14 @@ export async function runPreflightStage(
       onNicheBlocked: async (resolved) => {
         const submitted = resolved.conflict.declaredCandidate || declaredNiche || "none";
         const websiteCandidate = resolved.conflict.websiteCandidate || resolved.businessNiche.value || "insufficient evidence";
+        const pass1FailureRate = await getPass1FailureRateSummary();
         await sendNicheResolutionAlertTelegram({
           leadId,
           businessName: lead.dealershipName,
           submitted,
           websiteCandidate,
           status: resolved.status,
-          explanation: resolved.conflict.explanation,
+          explanation: [resolved.conflict.explanation, pass1FailureRate].filter(Boolean).join("\n"),
         });
       },
     });
