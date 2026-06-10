@@ -225,11 +225,11 @@ export async function sendNicheResolutionAlertTelegram(alert: NicheResolutionAle
       chat_id: ALEX_DM,
       text: msg,
       reply_markup: {
-        inline_keyboard: [[
-          { text: "Use declared", callback_data: `niche_use_submitted_${alert.leadId}` },
-          { text: "Use website", callback_data: `niche_use_website_${alert.leadId}` },
-          { text: "Custom…", callback_data: `niche_custom_${alert.leadId}` },
-        ]],
+        inline_keyboard: [
+          [{ text: "Use declared", callback_data: `niche_use_submitted_${alert.leadId}` }],
+          [{ text: "Use website", callback_data: `niche_use_website_${alert.leadId}` }],
+          [{ text: "Custom…", callback_data: `niche_custom_${alert.leadId}` }],
+        ],
       },
     }),
   });
