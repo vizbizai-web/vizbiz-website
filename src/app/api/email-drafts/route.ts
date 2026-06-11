@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAllLeads } from "@/lib/google-sheets";
+import { excludeQaLeads } from "@/lib/qa-leads";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
@@ -8,7 +9,7 @@ import { join } from "path";
 // GET /api/email-drafts — list all email drafts for leads
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const leads = excludeQaLeads(await getAllLeads());
     const drafts: Array<{
       leadId: string;
       dealershipName: string;

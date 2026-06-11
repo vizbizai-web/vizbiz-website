@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getAllLeads } from "@/lib/google-sheets";
+import { excludeQaLeads } from "@/lib/qa-leads";
 
 
 export const revalidate = 0;
 
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const allLeads = await getAllLeads();
+    const leads = excludeQaLeads(allLeads);
 
     // Group by status for pipeline view
     const byStatus = leads.reduce(
@@ -33,6 +35,7 @@ export async function GET() {
 
     return NextResponse.json({
       stats,
+      qa: { excluded: allLeads.length - leads.length, included: leads.length },
       pipeline: byStatus,
       leads,
     });

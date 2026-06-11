@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAllLeads } from "@/lib/google-sheets";
+import { excludeQaLeads } from "@/lib/qa-leads";
 
 
 
 // GET /api/attention-feed — things that need Alex's attention
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const leads = excludeQaLeads(await getAllLeads());
     const now = Date.now();
     const alerts: Array<{
       id: string;

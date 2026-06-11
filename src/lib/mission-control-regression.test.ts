@@ -23,6 +23,26 @@ describe('Mission Control production integrity', () => {
     expect(route).not.toContain('leads: []');
   });
 
+  it('excludes QA/test leads from operator-facing metrics, feeds, and draft queues', () => {
+    const files = [
+      'src/app/api/email-drafts/route.ts',
+      'src/app/api/pipeline-status/route.ts',
+      'src/app/api/attention-feed/route.ts',
+      'src/app/mission-control/api/email-drafts/route.ts',
+      'src/app/mission-control/api/pipeline-status/route.ts',
+      'src/app/mission-control/api/attention-feed/route.ts',
+    ];
+
+    for (const file of files) {
+      const route = repoFile(file);
+      expect(route).toContain('excludeQaLeads');
+      expect(route).toContain('@/lib/qa-leads');
+    }
+
+    expect(repoFile('src/app/api/pipeline-status/route.ts')).toContain('qa: { excluded: allLeads.length - leads.length, included: leads.length }');
+    expect(repoFile('src/app/mission-control/api/pipeline-status/route.ts')).toContain('qa: { excluded: qaExcluded - leads.length, included: leads.length }');
+  });
+
   it('does not keep stale demo mission/agent database artifacts inside production MC', () => {
     const staleFiles = [
       'src/app/mission-control/lib/db.ts',
