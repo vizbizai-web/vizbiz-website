@@ -23,6 +23,7 @@ import {
 import { buildEvidenceFirstQueries, preflightScan } from "@/lib/preflight-engine";
 import { sendNicheResolutionAlertTelegram } from "@/lib/telegram-alerts";
 import { runResearch } from "@/lib/research-runner";
+import { cleanIntakeBusinessCategory } from "@/lib/intake-normalization";
 
 // ─── Research Mode ───────────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ export function getResearchModeConfig(mode: ResearchMode): ResearchModeConfig {
 }
 
 function normalizeClientDeclaredNiche(value?: string | null): { niche: string; nicheLabel: string; businessType: string } | null {
-  const label = (value || "").trim();
+  const label = cleanIntakeBusinessCategory(value);
   if (!label) return null;
   const lower = label.toLowerCase();
   if (/endermologie|\blpg\b|body\s+contour|cellulite|lymphatic|skin\s+ton/.test(lower)) {
@@ -106,18 +107,16 @@ function parsePaidIntakePayload(notes?: string | null): any | null {
   }
 }
 
-function parseClientDeclaredNiche(notes?: string | null): string {
+export function parseClientDeclaredNiche(notes?: string | null): string {
   const paidIntake = parsePaidIntakePayload(notes);
   if (typeof paidIntake?.businessCategory === "string" && paidIntake.businessCategory.trim()) {
-    return paidIntake.businessCategory.trim();
+    return cleanIntakeBusinessCategory(paidIntake.businessCategory);
   }
   const notesStr = notes || "";
   const noteMatches = Array.from(notesStr.matchAll(/ClientBusinessCategory:\s*([^|\n]+)/gi));
   const latestMatch = noteMatches.at(-1);
   if (latestMatch?.[1]?.trim()) {
-    return latestMatch[1]
-      .replace(/\.\s*(?:TZ|Locale|UTM|Referrer):[\s\S]*$/i, "")
-      .trim();
+    return cleanIntakeBusinessCategory(latestMatch[1]);
   }
 
   try {
@@ -129,7 +128,7 @@ function parseClientDeclaredNiche(notes?: string | null): string {
       parsed?.preflight?.paidIntake?.businessCategory,
     ];
     for (const candidate of candidates) {
-      if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+      if (typeof candidate === "string" && candidate.trim()) return cleanIntakeBusinessCategory(candidate);
     }
   } catch {
     // Non-JSON notes are expected for fresh intakes and Telegram append logs.

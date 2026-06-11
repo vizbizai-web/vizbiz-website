@@ -4,6 +4,12 @@ import { buildNicheCallbackResolution } from "@/lib/telegram-niche-callback";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
+
+function isAuthorizedTelegramWebhook(request: Request): boolean {
+  if (!TELEGRAM_WEBHOOK_SECRET) return true;
+  return request.headers.get("x-telegram-bot-api-secret-token") === TELEGRAM_WEBHOOK_SECRET;
+}
 
 async function answerCallback(callbackQueryId: string, text: string, showAlert = false): Promise<void> {
   if (!TELEGRAM_BOT_TOKEN) return;
@@ -25,6 +31,10 @@ async function editCallbackMessage(chatId: number | string, messageId: number, t
 
 export async function POST(request: Request) {
   try {
+    if (!isAuthorizedTelegramWebhook(request)) {
+      return NextResponse.json({ ok: false, error: "Unauthorized Telegram webhook" }, { status: 401 });
+    }
+
     const update = await request.json();
     const callback = update?.callback_query;
     const callbackId = String(callback?.id || "");

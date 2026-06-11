@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildIntakeNotes, cleanIntakeBusinessCategory } from './intake-normalization';
 import { normalizeSubmittedNicheForInsert } from './google-sheets';
+import { parseClientDeclaredNiche } from './pipeline-controller';
 
 describe('intake normalization', () => {
   it('keeps browser metadata out of the business category at write time', () => {
@@ -50,6 +51,12 @@ describe('intake normalization', () => {
     expect(notes).not.toContain('ClientBusinessCategory: plumbing locale_');
     expect(notes).not.toContain('ClientBusinessCategory: plumbing utc_');
     expect(notes).not.toContain('ClientBusinessCategory: plumbing utm_');
+  });
+
+  it('parses polluted legacy ClientBusinessCategory notes as the clean client-declared niche', () => {
+    const notes = 'Source: qa_clean_sentinel | CTA: Gate 4 clean sentinel intake | Page: /free-ai-visibility-test | ClientBusinessCategory: plumbing tz_America_Toronto locale_en-CA utc_-240 utm_source_gate | TZ: America/Toronto (UTC+04:00) | Locale: en-CA | CompetitorMode: client_only.';
+
+    expect(parseClientDeclaredNiche(notes)).toBe('plumbing');
   });
 
   it('keeps blank submitted niche null instead of writing synthetic local_business', () => {

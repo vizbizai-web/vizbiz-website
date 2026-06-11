@@ -143,6 +143,7 @@ export async function POST(request: Request) {
           locale: cleanPayload.locale,
           competitorMode: cleanPayload.competitorMode,
         }),
+        niche: cleanPayload.businessCategory,
         source: cleanPayload.source,
         originalCta: cleanPayload.originalCta,
         originalPage: cleanPayload.originalPage,
