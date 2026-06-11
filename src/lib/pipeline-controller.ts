@@ -153,6 +153,20 @@ function hasTelegramDeclaredNicheOverride(notes?: string | null): boolean {
   }
 }
 
+function hasTelegramWebsiteNicheOverride(notes?: string | null): boolean {
+  const notesStr = notes || "";
+  if (/Source:\s*telegram_use_website/i.test(notesStr)) return true;
+  try {
+    const parsed = JSON.parse(notesStr);
+    return parsed?.nicheResolution?.conflictResolution === "use_website"
+      || parsed?.preflight?.nicheResolution?.conflictResolution === "use_website"
+      || parsed?.operatorRevision?.reason?.includes("use website evidence")
+      || parsed?.preflight?.operatorRevision?.reason?.includes("use website evidence");
+  } catch {
+    return false;
+  }
+}
+
 async function getPass1FailureRateSummary(): Promise<string | null> {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -266,6 +280,8 @@ export async function runPreflightStage(
     const paidIntakePayload = parsePaidIntakePayload(lead.notes);
     const declaredNiche = parseClientDeclaredNiche(lead.notes);
     const telegramDeclaredOverride = hasTelegramDeclaredNicheOverride(lead.notes);
+    const telegramWebsiteOverride = hasTelegramWebsiteNicheOverride(lead.notes);
+    const telegramNicheOverride = telegramDeclaredOverride || telegramWebsiteOverride;
     // Parse submitted competitors before preflight so diagnostic logging can prove
     // whether competitor text contaminated the exact classifier input.
     const competitors: string[] = (() => {
@@ -282,8 +298,8 @@ export async function runPreflightStage(
     })();
     const rawPreflightResult = await preflightScan(lead.website, lead.city, lead.dealershipName, {
       leadId,
-      submittedPrimaryService: telegramDeclaredOverride ? null : declaredNiche || null,
-      allowBlockedNicheResolution: telegramDeclaredOverride && Boolean(declaredNiche),
+      submittedPrimaryService: telegramNicheOverride ? null : declaredNiche || null,
+      allowBlockedNicheResolution: telegramNicheOverride && Boolean(declaredNiche),
       competitors,
       onNicheBlocked: async (resolved) => {
         const submitted = resolved.conflict.declaredCandidate || declaredNiche || "none";
