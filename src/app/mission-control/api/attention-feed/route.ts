@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
+import { excludeQaLeads } from '@/lib/qa-leads';
 
 export const revalidate = 0;
 
@@ -21,7 +22,7 @@ function daysBetween(date: string) {
 
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const leads = excludeQaLeads(await getAllLeads());
     const alerts: AttentionAlert[] = [];
 
     const pendingReview = leads.filter((lead) => lead.status === 'pending_review');

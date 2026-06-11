@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
+import { excludeQaLeads } from '@/lib/qa-leads';
 
 export const revalidate = 0;
 
@@ -16,7 +17,9 @@ const STATUSES = [
 
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const allLeads = await getAllLeads();
+    const qaExcluded = allLeads.length;
+    const leads = excludeQaLeads(allLeads);
     const pipeline = leads.reduce<Record<string, typeof leads>>((acc, lead) => {
       const status = lead.status || 'new';
       if (!acc[status]) acc[status] = [];
@@ -35,6 +38,7 @@ export async function GET() {
     return NextResponse.json({
       source: 'vizbiz-leads',
       stats,
+      qa: { excluded: qaExcluded - leads.length, included: leads.length },
       pipeline,
       leads,
       syncedAt: new Date().toISOString(),

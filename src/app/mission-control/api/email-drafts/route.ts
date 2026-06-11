@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
+import { excludeQaLeads } from '@/lib/qa-leads';
 
 export const revalidate = 0;
 
@@ -24,7 +25,7 @@ function draftStatus(status: string): DraftStatus {
 
 export async function GET() {
   try {
-    const leads = await getAllLeads();
+    const leads = excludeQaLeads(await getAllLeads());
     const draftable = leads.filter((lead) =>
       ['approved', 'email_drafted', 'contacted', 'paid_report_delivered'].includes(lead.status),
     );
