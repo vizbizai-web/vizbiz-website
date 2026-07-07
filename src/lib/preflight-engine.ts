@@ -249,6 +249,7 @@ const LANG_CODE_MAP: Record<string, string> = {
  */
 const NICHE_KEYWORDS: Record<string, string[]> = {
   electrical_contractor: ["electrician", "electrical contractor", "electrical contractors", "electrical services", "niceic", "chas", "safe contractor", "24/7 service", "electrical needs", "electrical installations", "electrical maintenance", "commercial electrical", "industrial electrical"],
+  fashion_bag_store: ["torebki", "torebka", "torebka skórzana", "saszetki", "saszetka", "skórzana", "sklep internetowy", "do koszyka", "koszyk", "leather handbag", "leather bag", "handbags", "pouches", "online store"],
   car_dealership: ["dealer", "auto", "cars", "automotive", "honda", "toyota", "ford", "chevrolet", "inventory", "financing", "trade-in", "certified pre-owned", "test drive"],
   endermologie_clinic: ["endermologie", "lpg endermologie", "cellulite", "body sculpting", "body contouring", "lymphatic drainage", "non-invasive treatment", "skin toning", "smooth tone and revitalise", "smooth tone and revitalize"],
   fine_jewelry: ["jewelry store", "jeweller", "jeweler", "diamond", "engagement ring", "lab grown", "gemstone", "bridal jewelry"],
@@ -339,6 +340,29 @@ function applyNicheGuardrails(input: {
         'skin health functional nutritionists {city}',
       ],
       confidenceReason: 'Deterministic guardrail: functional nutrition, eczema, psoriasis, and skin-health evidence override unrelated service-category matches.',
+    };
+  }
+
+  const isFashionBagStore = /\btorebk[ai]\b|\btorebki\b|torebka\s+sk[oó]rzana|\bsaszetk[ai]\b|\bsaszetki\b|\bsklep\s+internetowy\b|\bdo\s+koszyka\b|\bkoszyk\b|leather\s+(hand)?bags?|handbags?|pouches?/.test(signal);
+  if (isFashionBagStore) {
+    return {
+      niche: 'fashion_bag_store',
+      businessType: 'online leather handbag store',
+      services: ['leather handbags', 'leather pouches', 'women’s bags', 'online bag sales'],
+      suggestedSearchQueries: [
+        'gdzie kupić skórzaną torebkę online w Polsce',
+        'najlepsze polskie marki torebek skórzanych',
+        'skórzane torebki damskie z dobrymi opiniami',
+        'Genua Bags opinie i jakość torebek skórzanych',
+        'polski sklep z torebkami skórzanymi online',
+      ],
+      competitorSearchQueries: [
+        'polskie marki torebek skórzanych',
+        'sklepy z torebkami skórzanymi online Polska',
+        'marki podobne do Genua Bags',
+        'najlepsze torebki skórzane Polska',
+      ],
+      confidenceReason: 'Deterministic guardrail: Polish ecommerce signals for leather handbags/pouches and cart/product pricing override broad beauty-salon matches.',
     };
   }
 
@@ -543,8 +567,16 @@ export function separateBusinessIdentityFromEvidence(input: {
     customerSegments = ['people with eczema or psoriasis'];
   }
 
+  const fashionBagStoreSignal = /\btorebk[ai]\b|\btorebki\b|torebka\s+sk[oó]rzana|\bsaszetk[ai]\b|\bsaszetki\b|\bsklep\s+internetowy\b|\bdo\s+koszyka\b|\bkoszyk\b|leather\s+(hand)?bags?|handbags?|pouches?/i.test(evidence);
+  if (!functionalNutritionSignal && fashionBagStoreSignal) {
+    niche = 'fashion_bag_store';
+    businessType = 'online leather handbag store';
+    services = ['leather handbags', 'leather pouches', 'women’s bags', 'online bag sales'];
+    customerSegments = ['online shoppers'];
+  }
+
   const commercialCleaningSignal = /commercial\s+clean(ing|ers?)|janitorial|saniti[sz](ing|ation)|facility\s+cleaning|office\s+cleaning|medical[-\s]?facility\s+cleaning|cleaning\s+services?/i.test(evidence);
-  if (!functionalNutritionSignal && commercialCleaningSignal) {
+  if (!functionalNutritionSignal && !fashionBagStoreSignal && commercialCleaningSignal) {
     niche = 'cleaning_service';
     businessType = 'commercial cleaning service';
     const cleaningServices = [
@@ -780,7 +812,9 @@ function inferLanguageFromSignals(signals: string, htmlLang: string): string {
   if (lang.startsWith('fr')) return 'French';
   if (lang.startsWith('ro')) return 'Romanian';
   if (lang.startsWith('de')) return 'German';
+  if (lang.startsWith('pl')) return 'Polish';
   if (/[ñáéíóúü¿¡]|\b(para|servicios|productos|proveedor|fabricante|helados|empresa)\b/i.test(signals)) return 'Spanish';
+  if (/\b(torebki|torebka|saszetki|sklep internetowy|koszyk|do koszyka|dostawa|zwroty|regulamin|polityka prywatno[sś]ci)\b/i.test(signals)) return 'Polish';
   if (/\b(pour|entreprise|bonjour|français|france|québec|merci)\b/i.test(signals)) return 'French';
   if (/\b(si|pentru|servicii|clinici|romania)\b/i.test(signals)) return 'Romanian';
   return 'English';
@@ -1349,6 +1383,26 @@ export async function preflightScan(
     if (niche === 'local_business' && businessType && businessType !== 'local business' && businessType !== 'unknown') {
       confidenceReason = `${confidenceReason}; evidence-first query gate used scraped business type/services instead of generic local-business prompts.`;
     }
+  }
+
+  if (niche === 'fashion_bag_store') {
+    suggestedSearchQueries = [
+      'gdzie kupić skórzaną torebkę online w Polsce',
+      'najlepsze polskie marki torebek skórzanych',
+      'skórzane torebki damskie z dobrymi opiniami',
+      'Genua Bags opinie i jakość torebek skórzanych',
+      'polski sklep z torebkami skórzanymi online',
+    ];
+    competitorSearchQueries = [
+      'polskie marki torebek skórzanych',
+      'sklepy z torebkami skórzanymi online Polska',
+      'marki podobne do Genua Bags',
+      'najlepsze torebki skórzane Polska',
+    ];
+    siteLanguage = 'Polish';
+    searchLanguage = 'Polish';
+    targetAudience = 'online shoppers comparing Polish leather handbags, pouches, and women’s bags';
+    valueProposition = 'Sells leather handbags, pouches, and women’s bags through a Polish ecommerce store.';
   }
 
   // -- Derive search language code --

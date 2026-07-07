@@ -6,7 +6,14 @@ export type ClientReportAccessInput = {
 
 export type ClientReportAccessState = 'ready' | 'processing';
 
-const CLIENT_READY_STATUSES = new Set(['approved', 'email_drafted', 'contacted', 'closed_won']);
+const CLIENT_READY_STATUSES = new Set([
+  'approved',
+  'email_drafted',
+  'contacted',
+  'closed_won',
+  'paid_report_ready_for_review',
+  'paid_report_delivered',
+]);
 
 export function buildPostIntakeRedirect(leadId?: string | null): string {
   const suffix = leadId ? `&lid=${encodeURIComponent(leadId)}` : '';

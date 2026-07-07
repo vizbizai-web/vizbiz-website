@@ -123,4 +123,32 @@ describe('business profile separation before intake research', () => {
     expect(queries).toMatch(/tax resolution specialist/i);
     expect(queries).not.toMatch(/dealership|inventory|trade-in/i);
   });
+
+  it('classifies Polish leather handbag ecommerce as fashion bags, not beauty salon or brand-as-category', () => {
+    const profile = separateBusinessIdentityFromEvidence({
+      businessName: 'Genua s.c.',
+      url: 'https://genuabags.com',
+      metaTitle: 'Genua Bags',
+      metaDescription: '',
+      scrapedTitle: 'GENUA BAGS',
+      evidenceText: [
+        'TOREBKI',
+        'SASZETKI',
+        'torebka skórzana',
+        'saszetka skórzana',
+        'Cena 1 220,00 zł',
+        'Do koszyka',
+        'Sklep internetowy Shoper.pl',
+      ].join(' '),
+      htmlLang: 'pl',
+      market: 'Grzybowo',
+      googlePlaceTypes: ['store'],
+    });
+
+    expect(profile.niche).toBe('fashion_bag_store');
+    expect(profile.businessType).toMatch(/leather handbag store/i);
+    expect(profile.services).toEqual(expect.arrayContaining(['leather handbags', 'leather pouches']));
+    expect(profile.siteLanguage).toBe('Polish');
+    expect(profile.businessType).not.toMatch(/genua bags|beauty salon/i);
+  });
 });

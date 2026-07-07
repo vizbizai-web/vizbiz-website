@@ -38,6 +38,11 @@ describe('client-declared niche override', () => {
     expect(source).toContain('parsed?.clientDeclaredNiche');
     expect(source).toContain('parsed?.preflight?.clientDeclaredNiche');
     expect(source).toContain('parsed?.preflight?.paidIntake?.businessCategory');
+    expect(source).toContain('parseClientDeclaredNiche(lead.notes) || cleanIntakeBusinessCategory((lead as any).niche)');
+    expect(source).toContain('safeValueProposition');
+    expect(source).toContain('safeTargetAudience');
+    expect(source).toContain('platformScores: researchResult.platformScores');
+    expect(source).toContain('costEstimate: researchResult.costEstimate');
     expect(source).toContain('hasTelegramDeclaredNicheOverride');
     expect(source).toContain('hasTelegramWebsiteNicheOverride');
     expect(source).toContain('Source:\\s*telegram_use_website');
@@ -45,6 +50,9 @@ describe('client-declared niche override', () => {
     expect(source).toContain('parsed?.preflight?.operatorRevision?.reason?.includes("use website evidence")');
     expect(source).toContain('const telegramNicheOverride = telegramDeclaredOverride || telegramWebsiteOverride');
     expect(source).toContain('const services = [normalized.businessType]');
+    expect(source).toContain('valueProposition: `Provides ${normalized.nicheLabel} services based on the client-declared category');
+    expect(source).toContain('targetAudience: city');
+    expect(source).toContain('customerSegments: []');
     expect(preflightSource).toContain('AI oral assessment tools for verifying student understanding');
     expect(preflightSource).toContain('best ${businessType} alternatives');
     expect(source).toContain('allowBlockedNicheResolution: telegramNicheOverride && Boolean(declaredNiche)');

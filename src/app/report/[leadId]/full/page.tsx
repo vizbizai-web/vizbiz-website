@@ -9,6 +9,7 @@ import Link from "next/link";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { isJunkCompetitor } from "@/lib/junk-filter";
+import { parseResearchDataFromNotes } from "@/lib/report-data";
 
 
 export const metadata: Metadata = {
@@ -16,17 +17,6 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 0;
-
-function parseResearchData(notes: string) {
-  const marker = "RESEARCH_DATA:";
-  const idx = notes.indexOf(marker);
-  if (idx < 0) return null;
-  try {
-    return JSON.parse(notes.slice(idx + marker.length));
-  } catch {
-    return null;
-  }
-}
 
 export default async function FullReportPage({
   params,
@@ -55,9 +45,9 @@ export default async function FullReportPage({
     );
   }
 
-  const researchData = parseResearchData(lead.notes || "");
+  const researchData = parseResearchDataFromNotes(lead.notes || "");
 
-  // Try to load AI capture data — prefer full 84-prompt capture
+  // Try to load AI capture data — prefer full paid-depth capture
   let aiCaptureData = null;
   try {
     const slug = (researchData?.businessName || lead.dealershipName || '').toLowerCase().replace(/\s+/g, '-');

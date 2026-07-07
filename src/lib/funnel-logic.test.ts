@@ -17,9 +17,11 @@ describe('VizBiz funnel logic', () => {
     expect(getClientReportAccessState({ status: 'approved', researchStatus: 'complete', hasResearchData: false })).toBe('processing');
   });
 
-  it('allows report content only after approval plus completed research data', () => {
+  it('allows report content after approval plus completed research data, including paid review/delivery gates', () => {
     expect(getClientReportAccessState({ status: 'approved', researchStatus: 'complete', hasResearchData: true })).toBe('ready');
     expect(getClientReportAccessState({ status: 'email_drafted', researchStatus: 'complete', hasResearchData: true })).toBe('ready');
+    expect(getClientReportAccessState({ status: 'paid_report_ready_for_review', researchStatus: 'complete', hasResearchData: true })).toBe('ready');
+    expect(getClientReportAccessState({ status: 'paid_report_delivered', researchStatus: 'complete', hasResearchData: true })).toBe('ready');
   });
 
   it('keeps two submitted competitors separate instead of grouping them as one', () => {

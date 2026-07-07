@@ -35,7 +35,9 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
   const website = researchData?.website || leadData?.website || '';
   const niche = researchData?.niche || 'local_business';
   const promptResults = researchData?.promptResults || [];
-  const totalPrompts = promptResults.length || 20;
+  const categoryScorecard = researchData?.categoryScorecard || [];
+  const sourceLedger = researchData?.sourceLedger || [];
+  const totalPrompts = promptResults.length || 60;
   const appearedCount = promptResults.filter((r: any) => r.businessAppeared).length;
   const aviScore = Math.round((appearedCount / totalPrompts) * 100);
 
@@ -53,7 +55,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
     ? Object.entries(competitorFreq).sort((a, b) => b[1] - a[1])[0]
     : null;
 
-  // AI capture data (real responses) — full 84-prompt if available
+  // AI capture data (real responses) — full paid-depth if available
   const captureResults = aiCaptureData?.results || [];
   const isFullCapture = captureResults.length > 40; // 84×2 = 168, vs 20×2 = 40
   const totalCapturePrompts = aiCaptureData?.totalPrompts || totalPrompts;
@@ -137,7 +139,7 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
     },
     {
       title: 'Claim and optimize your Google Business Profile',
-      detail: `Google Business Profile data feeds directly into AI Overviews and Gemini. Ensure your category, services, hours, and photos are complete and accurate.`,
+      detail: `Google Business Profile data feeds directly into Gemini and Gemini. Ensure your category, services, hours, and photos are complete and accurate.`,
       queries: [],
       impact: 'High',
       effort: 'Low',
@@ -191,8 +193,8 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
           <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-4">Executive Summary</h2>
           <div className="space-y-4 text-base leading-relaxed text-gray-300">
             <p>
-              <span className="text-white font-medium">{businessName}</span> has <span className="text-white font-semibold">{aviScore}% AI visibility</span> across {totalPrompts} buyer-intent searches.
-              AI platforms mention you in {appearedCount} out of {totalPrompts} queries tested.
+              <span className="text-white font-medium">{businessName}</span> has <span className="text-white font-semibold">{aviScore}% AI visibility</span> across up to 60 buyer questions per platform.
+              AI platforms mention you in {appearedCount} out of {totalPrompts} provider datapoints tested.
             </p>
             {topCompetitor && isClientProvided ? (
               <p>
@@ -226,6 +228,71 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
             )}
           </div>
         </section>
+
+        {/* === CATEGORY SCORECARD === */}
+        {categoryScorecard.length > 0 && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-6">Category Scorecard</h2>
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <p className="mb-5 text-sm leading-6 text-gray-400">
+                This paid battery groups buyer questions by intent so the report shows where AI understands {businessName} — and where the next fix should focus.
+              </p>
+              <div className="space-y-3">
+                {categoryScorecard.map((row: any) => (
+                  <div key={row.categoryId} className="rounded-2xl border border-white/8 bg-[#0F172A] p-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <div className="text-sm font-semibold text-white">{row.ownerLabel || row.categoryName}</div>
+                        <div className="mt-1 text-xs text-gray-500">{row.categoryName}</div>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400">{row.implication}</p>
+                        {row.brandedMisinformation?.length ? (
+                          <p className="mt-2 text-sm text-amber-300">Branded answer check: possible stale or incomplete facts surfaced.</p>
+                        ) : null}
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${row.verdict === 'Strong' ? 'bg-emerald-500/15 text-emerald-300' : row.verdict === 'Mixed' ? 'bg-amber-500/15 text-amber-300' : 'bg-red-500/15 text-red-300'}`}>{row.verdict}</div>
+                        <div className="mt-2 text-sm text-gray-300">{row.appearedCount}/{row.totalPrompts}</div>
+                      </div>
+                    </div>
+                    {row.platformRates?.length ? (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        {row.platformRates.map((p: any) => (
+                          <div key={p.provider} className="rounded-xl bg-white/[0.04] px-3 py-2 text-xs text-gray-300">
+                            <span className="text-gray-500">{p.provider}</span> · {Math.round((p.appearanceRate || 0) * 100)}%
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === SOURCE LEDGER === */}
+        {sourceLedger.length > 0 && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-6">Where AI gets its answers about {location || 'this market'}</h2>
+            <div className="rounded-3xl border border-cyan-400/15 bg-cyan-400/[0.04] p-5">
+              <p className="mb-5 text-sm leading-6 text-gray-300">
+                These domains were cited by the AI answers we stored. A source appears here only if it was present in the saved citation data.
+              </p>
+              <div className="overflow-hidden rounded-2xl border border-white/10">
+                {sourceLedger.slice(0, 8).map((source: any) => (
+                  <div key={source.domain} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-white/8 px-4 py-3 text-sm last:border-b-0">
+                    <div>
+                      <div className="font-medium text-white">{source.domain}</div>
+                      <div className="text-xs text-gray-500">{source.totalCitations} citations · {source.providers?.join(', ')}</div>
+                    </div>
+                    <div className={source.clientPresent ? 'text-emerald-300' : 'text-red-300'}>{source.clientPresent ? '✓ Client present' : '✗ Client gap'}</div>
+                    <div className="text-gray-400">{source.categories?.join(', ')}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* === 2. SCORE OVERVIEW === */}
         <section>
@@ -268,6 +335,32 @@ export default function FullReportContent({ leadId, leadData, researchData, aiCa
             </div>
           </div>
         </section>
+
+        {/* === 2B. PLATFORM VISIBILITY CARDS === */}
+        {researchData?.platformScores?.length > 0 && (
+          <section>
+            <h2 className="text-xs text-gray-500 uppercase tracking-widest mb-2">Platform-by-platform visibility</h2>
+            <p className="text-sm text-gray-400 mb-6">
+              Tested across the AI platforms we test: ChatGPT, Gemini, and Perplexity. Each card shows whether your business appeared in that engine's grounded answer sample.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-3" data-testid="platform-visibility-cards">
+              {researchData.platformScores.map((card: any) => {
+                const appeared = card.appearedCount > 0;
+                return (
+                  <div key={card.provider} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                    <div className="text-xs uppercase tracking-[0.18em] text-gray-500">{card.label}</div>
+                    <div className={`mt-3 text-2xl font-semibold ${appeared ? 'text-emerald-400' : 'text-orange-400'}`}>
+                      {appeared ? 'Appeared' : 'Not appeared'}
+                    </div>
+                    <div className="mt-2 text-sm text-gray-400">
+                      {card.appearedCount}/{card.totalPrompts} prompts · {Math.round((card.appearanceRate || 0) * 100)}% appearance rate
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* === 3. WHAT AI ACTUALLY SAYS === */}
         <section>

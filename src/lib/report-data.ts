@@ -15,6 +15,22 @@ function extractBalancedJson(text: string, start: number): string | null {
 }
 
 export function parseResearchDataFromNotes(notes?: string | null): ResearchData | null {
+  const infrastructureCitationHost = /^(vertexaisearch\.cloud\.google\.com|googleusercontent\.com|gstatic\.com|googleapis\.com|cloud\.google\.com)$/i;
+  const sanitizeClientResearch = (research: Record<string, unknown>) => {
+    const { rawSourceLedger: _rawSourceLedger, ...clientSafeResearch } = research;
+    if (Array.isArray(clientSafeResearch.promptResults)) {
+      clientSafeResearch.promptResults = clientSafeResearch.promptResults.map((row: Record<string, unknown>) => ({
+        ...row,
+        citations: Array.isArray(row.citations)
+          ? row.citations.filter((url) => {
+              try { return !infrastructureCitationHost.test(new URL(String(url)).hostname.replace(/^www\./, '').toLowerCase()); }
+              catch { return false; }
+            })
+          : [],
+      }));
+    }
+    return clientSafeResearch;
+  };
   const notesStr = notes || '';
   if (!notesStr.trim()) return null;
 
@@ -22,7 +38,7 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
   const legacyIdx = notesStr.indexOf(legacyMarker);
   if (legacyIdx >= 0) {
     try {
-      return JSON.parse(notesStr.slice(legacyIdx + legacyMarker.length)) as ResearchData;
+      return sanitizeClientResearch(JSON.parse(notesStr.slice(legacyIdx + legacyMarker.length)) as Record<string, unknown>) as ResearchData;
     } catch {
       // Fall through to the current pipeline JSON format.
     }
@@ -39,8 +55,9 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
   try {
     const parsed = JSON.parse(jsonBlob);
     if (!parsed?.research) return null;
+    const clientSafeResearch = sanitizeClientResearch(parsed.research as Record<string, unknown>);
     return {
-      ...parsed.research,
+      ...clientSafeResearch,
       nicheLabel: parsed.preflight?.nicheLabel,
       technicalReadiness: {
         score: parsed.preflight?.aiReadinessScore,

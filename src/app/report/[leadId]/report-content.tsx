@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 
 import type { LeadPageData, ResearchData } from './page';
+import type { MonthlyTrendModel } from '@/lib/monthly-trends';
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
 
 /* ── Types ────────────────────────────────────── */
@@ -120,6 +121,8 @@ interface LeadData {
   } | null;
   localEntityTrustScore?: number | null;
   competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
+  platformScores?: { provider: string; label: string; appearedCount: number; totalPrompts: number; appearanceRate: number; status: string }[];
+  costEstimate?: { free: number; paid: number; currency: string; assumptions: string[] };
 }
 
 type Theme = 'dark' | 'light';
@@ -457,8 +460,6 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
   const totalPrompts = data.totalPrompts || 20;
   const promptsAppeared = data.promptsAppeared ?? 0;
   const missedRate = totalPrompts > 0 ? (totalPrompts - promptsAppeared) / totalPrompts : 0;
-  const revLow = Math.round((data.profitAtRisk?.low || 1500) * missedRate);
-  const revHigh = Math.round((data.profitAtRisk?.high || 6000) * missedRate);
   const missedPct = Math.round(missedRate * 100);
 
   const isClientOnly = data.competitorMode === "client_only";
@@ -466,10 +467,10 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
   const rankDisplay = getReportRankDisplay(data.competitors, { clientOnly: isClientOnly });
 
   const summaryText = data.aviScore >= 60
-    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} AI queries — solid, but ${missedPct}% of buyer-intent searches still do not clearly surface the business. Closing those gaps could support an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo in additional opportunity.`
+    ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} tested buyer-intent queries — solid, but ${missedPct}% still did not clearly surface the business. Those gaps mean some customers are finding competitors instead.`
     : data.aviScore >= 35
-      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} queries — ${missedPct}% of tested AI recommendation scenarios did not clearly surface the business${!isClientOnly && topCompetitor ? ` while ${topCompetitor.name} appeared more often` : ''}. That represents an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo visibility opportunity.`
-      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} AI queries. In tested buyer-intent scenarios for ${data.location}, the business was not clearly surfaced — representing an estimated ${formatCurrency(revLow, data.currencySymbol)}–${formatCurrency(revHigh, data.currencySymbol)}/mo visibility opportunity.`;
+      ? `${data.businessName} appears in ${promptsAppeared} of ${totalPrompts} tested buyer-intent queries — ${missedPct}% did not clearly surface the business${!isClientOnly && topCompetitor ? ` while ${topCompetitor.name} appeared more often` : ''}. Those gaps mean some customers are finding competitors instead.`
+      : `${data.businessName} appears in only ${promptsAppeared} of ${totalPrompts} tested buyer-intent queries for ${data.location}. The business was not clearly surfaced in most of this sample, which means some customers are finding competitors instead.`;
 
   return (
     <FadeIn>
@@ -579,9 +580,9 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
             overflow: 'hidden',
           }}>
             <p style={{ fontFamily: "'Lora', serif", fontSize: 'clamp(1.45rem, 7vw, 1.75rem)', fontWeight: 400, color: '#F87171', margin: 0, lineHeight: 1.12, overflowWrap: 'anywhere' }} className="sm:text-2xl">
-              {formatCurrency(revLow, data.currencySymbol)}{revHigh > revLow ? `–${formatCurrency(revHigh, '')}` : ''}
+              {missedPct}%
             </p>
-            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#FCA5A5', margin: '6px 0 0' }}>Monthly Risk</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#FCA5A5', margin: '6px 0 0' }}>Visibility Gap</p>
           </div>
         </div>
       </section>
@@ -590,6 +591,37 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
 }
 
 /* ── Category Scores (thin flat bars) ───────── */
+
+function PlatformVisibilityCards({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const cards = data.platformScores || [];
+  if (cards.length === 0) return null;
+  return (
+    <Section>
+      <SectionTitle style={{ color: t.textPrimary }}>Platform-by-platform visibility</SectionTitle>
+      <p className="mt-2 text-sm" style={{ color: t.textSecondary }}>
+        Tested across the AI platforms we test: ChatGPT, Gemini, and Perplexity. Each card shows whether your business appeared in that engine's grounded answer sample.
+      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3" data-testid="platform-visibility-cards">
+        {cards.map((card) => {
+          const appeared = card.appearedCount > 0;
+          return (
+            <div key={card.provider} className="rounded-2xl border p-5" style={{ background: t.bgCard, borderColor: t.borderSubtle }}>
+              <div className="text-xs uppercase tracking-[0.18em]" style={{ color: t.textMuted }}>{card.label}</div>
+              <div className="mt-3 text-2xl font-semibold" style={{ color: appeared ? '#22C55E' : '#F97316' }}>
+                {appeared ? 'Appeared' : 'Not appeared'}
+              </div>
+              <div className="mt-2 text-sm" style={{ color: t.textSecondary }}>
+                {card.appearedCount}/{card.totalPrompts} prompts · {Math.round((card.appearanceRate || 0) * 100)}% appearance rate
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
 function CategoryScores({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
 
@@ -926,11 +958,6 @@ function RevenueImpact({ data, theme }: { data: LeadData; theme: Theme }) {
   const missedRate = 1 - appearanceRate;
   const missedPct = Math.round(missedRate * 100);
 
-  const low = data.profitAtRisk?.low || 1500;
-  const high = data.profitAtRisk?.high || 6000;
-  const revenueLeak = Math.round(low * missedRate);
-  const revenueLeakHigh = Math.round(high * missedRate);
-
   const hasCompetitors = data.competitors.some(c => !c.isYou && !c.isYours && c.score > 0);
 
   return (
@@ -938,21 +965,21 @@ function RevenueImpact({ data, theme }: { data: LeadData; theme: Theme }) {
       <section className="py-12">
         <div className="max-w-4xl mx-auto text-center">
           <SectionTitle style={{ color: t.textPrimary }}>
-            Estimated Revenue at Risk
+            Visibility Gap
           </SectionTitle>
           <p className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight mt-4" style={{ color: t.profitRiskText }}>
-            {formatCurrency(revenueLeak, data.currencySymbol)}<span className="text-lg sm:text-xl">&ndash;{formatCurrency(revenueLeakHigh, data.currencySymbol)}</span><span className="text-lg sm:text-xl">/mo</span>
+            {missedPct}%
           </p>
           <p className="text-sm mt-3" style={{ color: t.textSecondary }}>
             {hasCompetitors
-              ? `Based on your ${missedPct}% miss rate in this visibility test, this is a directional opportunity range against named comparison targets.`
-              : `Your business was not found in ${missedPct}% of the tested visibility scenarios. This is a directional opportunity signal, not a revenue guarantee.`
+              ? `In this visibility sample, ${missedPct}% of tested buyer-intent scenarios did not clearly surface your business against named comparison targets.`
+              : `In this visibility sample, ${missedPct}% of tested buyer-intent scenarios did not clearly surface your business.`
             }
           </p>
           <div className="mt-6 inline-block rounded-xl px-5 py-3" style={{ background: theme === 'dark' ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', border: `1px solid ${theme === 'dark' ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.1)'}` }}>
             <p className="text-xs sm:text-sm" style={{ color: t.textSecondary }}>
               You appeared in <strong style={{ color: t.textPrimary }}>{promptsAppeared}/{totalPrompts}</strong> tested recommendation scenarios.{' '}
-              <strong style={{ color: '#EF4444' }}>{missedPct}%</strong> of the test set shows a visibility gap to improve.
+              When your business is not clearly surfaced, some customers are finding competitors instead.
             </p>
           </div>
         </div>
@@ -1765,8 +1792,63 @@ function CompetitorFallback({ theme }: { theme: Theme }) {
   );
 }
 
+/* ── Monthly Trend Section ─────────────────────── */
+function MonthlyTrendSection({ trend, theme }: { trend: MonthlyTrendModel | null; theme: Theme }) {
+  if (!trend || trend.points.length === 0) return null;
+  const t = getThemeStyles(theme);
+  const latest = trend.points.at(-1);
+  const previous = trend.points.length >= 2 ? trend.points.at(-2) : null;
+  const delta = latest?.score !== null && latest?.score !== undefined && previous?.score !== null && previous?.score !== undefined
+    ? latest.score - previous.score
+    : null;
+  return (
+    <FadeIn>
+      <Section>
+        <SectionTitle style={{ color: t.textPrimary }}>Monthly visibility trend</SectionTitle>
+        <p className="mt-2 text-sm leading-7" style={{ color: t.textSecondary }}>
+          {trend.baselineCopy}
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {trend.points.map((point) => (
+            <div key={point.sequence} className="rounded-2xl p-4" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}` }}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em]" style={{ color: t.textMuted }}>Snapshot {point.sequence}</p>
+                  <p className="mt-1 text-sm" style={{ color: t.textSecondary }}>{point.label}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-semibold tabular-nums" style={{ color: t.textPrimary }}>{point.score ?? '—'}</p>
+                  <p className="text-xs" style={{ color: t.textMuted }}>{point.band || 'Recorded'}</p>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {point.platformRates.map((rate) => (
+                  <div key={`${point.sequence}-${rate.provider}`} className="flex items-center justify-between text-xs" style={{ color: t.textSecondary }}>
+                    <span>{rate.label}</span>
+                    <span className="tabular-nums">{rate.rate === null ? '—' : `${rate.rate}%`}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        {trend.hasComparison && (
+          <div className="mt-6 rounded-2xl p-5" style={{ background: t.barTrack, border: `1px solid ${t.borderSubtle}` }}>
+            <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>
+              Latest movement {delta === null ? '' : delta >= 0 ? `+${delta} points` : `${delta} points`}
+            </p>
+            <ul className="mt-3 space-y-2 text-sm leading-7" style={{ color: t.textSecondary }}>
+              {trend.movementCopy.map((line) => <li key={line}>• {line}</li>)}
+            </ul>
+          </div>
+        )}
+      </Section>
+    </FadeIn>
+  );
+}
+
 /* ── Main Component ────────────────────────────── */
-export default function ReportContent({ leadId, leadData, researchData }: { leadId: string; leadData: LeadPageData | null; researchData: ResearchData | null }) {
+export default function ReportContent({ leadId, leadData, researchData, monthlyTrend }: { leadId: string; leadData: LeadPageData | null; researchData: ResearchData | null; monthlyTrend?: MonthlyTrendModel | null }) {
   const { theme, toggle } = useTheme();
   const t = getThemeStyles(theme);
 
@@ -1942,6 +2024,8 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
       googlePlaceEnrichment: researchData.googlePlaceEnrichment || null,
       localEntityTrustScore: researchData.localEntityTrustScore ?? null,
       competitorValidations: researchData.competitorValidations || [],
+      platformScores: researchData.platformScores,
+      costEstimate: researchData.costEstimate,
     };
   }
 
@@ -2057,6 +2141,8 @@ export default function ReportContent({ leadId, leadData, researchData }: { lead
 
           {/* 2. Visibility signal breakdown */}
           <CategoryScores data={data} theme={theme} />
+          <PlatformVisibilityCards data={data} theme={theme} />
+          <MonthlyTrendSection trend={monthlyTrend || null} theme={theme} />
 
           {/* 2b. Website AI Readiness */}
           <WebsiteAIReadiness data={data} theme={theme} />

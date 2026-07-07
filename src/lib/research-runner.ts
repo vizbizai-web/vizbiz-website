@@ -15,12 +15,18 @@ import { collectSocialSignals } from "./social-signals";
 import { extractFanoutQueries, scoreFanoutCoverage, generateFanoutReport } from "./query-fanout";
 import { tavilySearch, type TavilySearchResult } from "./tavily-client";
 import { validateCompetitor } from "./competitor-discovery";
+import { BATTERY_V2_VERSION, buildCategoryScorecard, buildCitationSourceLedger, buildRawCitationSourceLedger, generateBatteryV2, hashBatteryPlan, type BatteryCategoryId, type BatteryPrompt } from "./battery-v2";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_SEARCH_API_KEY;
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const PERPLEXITY_MODEL = process.env.PERPLEXITY_MODEL || "sonar";
 const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/v1/sonar"; // Verified May 2025
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_RESPONSES_ENDPOINT = "https://api.openai.com/v1/responses";
+const OPENAI_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-4.1-mini";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.Gemini_Api_Key;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
 if (!TAVILY_API_KEY) {
   console.warn("[research-runner] TAVILY_API_KEY not configured");
@@ -29,7 +35,13 @@ if (!BRAVE_API_KEY) {
   console.warn("[research-runner] BRAVE_SEARCH_API_KEY not configured — no fallback available");
 }
 if (!PERPLEXITY_API_KEY) {
-  console.warn("[research-runner] PERPLEXITY_API_KEY not configured — AI visibility checks will use web search fallback (NOT true AI visibility)");
+  console.warn("[research-runner] PERPLEXITY_API_KEY not configured — Perplexity/Sonar checks will fall back when needed");
+}
+if (!OPENAI_API_KEY) {
+  console.warn("[research-runner] OPENAI_API_KEY not configured — ChatGPT checks unavailable");
+}
+if (!GEMINI_API_KEY) {
+  console.warn("[research-runner] GEMINI_API_KEY not configured — Gemini checks unavailable");
 }
 
 // TavilySearchResult imported from tavily-client.ts
@@ -82,7 +94,7 @@ async function braveSearch(query: string): Promise<TavilySearchResult[]> {
  * 
  * Calls Perplexity's Sonar model (a real AI model) with a prompt and checks
  * whether the business name or website appears in the AI's answer.
- * This provides AI-search answer and citation evidence. It is a supporting evidence layer, not proof of visibility in ChatGPT, Gemini, Claude, or Google AI Overview.
+ * This provides AI-search answer and citation evidence. It is a supporting evidence layer, not proof of visibility in ChatGPT, Gemini, or Perplexity.
  * 
  * Request format: POST PERPLEXITY_ENDPOINT
  * Model: PERPLEXITY_MODEL (default: sonar)
@@ -128,6 +140,102 @@ async function queryAIModel(prompt: string): Promise<{ content: string; citation
   }
 }
 
+type AIAnswerProvider = "perplexity" | "openai" | "gemini" | "web-search-fallback" | "failed";
+type RealAIProvider = "perplexity" | "openai" | "gemini";
+export type PlatformScore = {
+  provider: "perplexity" | "openai" | "gemini";
+  label: "Perplexity" | "ChatGPT" | "Gemini";
+  appearedCount: number;
+  totalPrompts: number;
+  appearanceRate: number;
+  status: "tested" | "not_configured" | "failed";
+};
+
+const PLATFORM_LABELS: Record<RealAIProvider, PlatformScore["label"]> = {
+  perplexity: "Perplexity",
+  openai: "ChatGPT",
+  gemini: "Gemini",
+};
+
+function configuredAIProviders(): RealAIProvider[] {
+  return ([
+    PERPLEXITY_API_KEY ? "perplexity" : null,
+    OPENAI_API_KEY ? "openai" : null,
+    GEMINI_API_KEY ? "gemini" : null,
+  ].filter(Boolean) as RealAIProvider[]);
+}
+
+export function estimateResearchProviderCost(promptCountPerProvider: number): { free: number; paid: number; currency: "USD"; assumptions: string[] } {
+  // Conservative working estimate for prompt-scale budgeting. Exact invoices vary by model pricing/search grounding volume.
+  const perPrompt = { perplexity: 0.006, openai: 0.004, gemini: 0.0025 };
+  const oneRun = (n: number) => Number(((perPrompt.perplexity + perPrompt.openai + perPrompt.gemini) * n).toFixed(4));
+  return {
+    free: oneRun(5),
+    paid: oneRun(promptCountPerProvider),
+    currency: "USD",
+    assumptions: [
+      "Perplexity Sonar, OpenAI Responses web_search, and Gemini Google Search grounding are counted per prompt.",
+      "Free tier runs 5 prompts per engine; paid tier uses the current prompt cap per engine.",
+      "Estimate is conservative; provider invoices depend on model, answer length, and grounding/search volume.",
+    ],
+  };
+}
+
+async function queryOpenAIResponses(prompt: string): Promise<{ content: string; citations: string[] }> {
+  if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
+  const response = await fetch(OPENAI_RESPONSES_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      model: OPENAI_RESPONSES_MODEL,
+      input: prompt,
+      tools: [{ type: "web_search_preview" }],
+      max_output_tokens: 900,
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!response.ok) throw new Error(`OpenAI Responses API error: ${response.status} ${await response.text()}`);
+  const data = await response.json();
+  const content = data.output_text || (data.output || []).flatMap((item: any) => item.content || []).map((c: any) => c.text || c.value || "").join(" ");
+  const citations = (data.output || []).flatMap((item: any) => item.content || []).flatMap((c: any) => c.annotations || []).map((a: any) => a.url || a.uri || "").filter(Boolean);
+  return { content, citations };
+}
+
+async function queryGeminiGrounded(prompt: string): Promise<{ content: string; citations: string[] }> {
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { maxOutputTokens: 900 },
+    }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!response.ok) throw new Error(`Gemini API error: ${response.status} ${await response.text()}`);
+  const data = await response.json();
+  const candidate = data.candidates?.[0] || {};
+  const content = (candidate.content?.parts || []).map((p: any) => p.text || "").join(" ");
+  const chunks = candidate.groundingMetadata?.groundingChunks || [];
+  const citations = chunks.map((chunk: any) => chunk.web?.uri || chunk.web?.url || "").filter(Boolean);
+  return { content, citations };
+}
+
+async function queryProviderAnswer(provider: RealAIProvider, prompt: string): Promise<{ content: string; citations: string[] }> {
+  if (provider === "perplexity") return queryAIModel(prompt);
+  if (provider === "openai") return queryOpenAIResponses(prompt);
+  return queryGeminiGrounded(prompt);
+}
+
+function answerMentionsBusiness(answer: { content: string; citations: string[] }, businessName: string, website: string): boolean {
+  const lowerBusinessName = businessName.toLowerCase();
+  const lowerWebsite = website.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  const lowerContent = answer.content.toLowerCase();
+  return lowerContent.includes(lowerBusinessName) || lowerContent.includes(lowerWebsite) || answer.citations.some((url) => url.toLowerCase().includes(lowerWebsite));
+}
+
 interface CitationAnalysis {
   allCitations: string[];
   citationsByDomain: Map<string, { count: number; urls: string[] }>;
@@ -142,67 +250,26 @@ interface CitationAnalysis {
 async function checkAIBusinessAppearance(
   prompt: string,
   businessName: string,
-  website: string
-): Promise<{ appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed"; content: string; citations: string[] }> {
-  const lowerBusinessName = businessName.toLowerCase();
-  const lowerWebsite = website.toLowerCase().replace(/^https?:\/\//, "");
-
-  // Try Perplexity first for AI-search evidence
-  if (PERPLEXITY_API_KEY) {
+  website: string,
+  provider: RealAIProvider = "perplexity"
+): Promise<{ appeared: boolean; provider: AIAnswerProvider; kind: "ai_answer"; content: string; citations: string[]; executionStatus: "completed" | "failed"; failureReason?: string }> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
-      const aiResponse = await queryAIModel(prompt);
-      const lowerContent = aiResponse.content.toLowerCase();
-
-      // Check if business name appears in AI answer text
-      const nameInAnswer = lowerContent.includes(lowerBusinessName);
-
-      // Check if website domain appears in AI answer text
-      const websiteInAnswer = lowerContent.includes(lowerWebsite);
-
-      // Check citations for the business website
-      const websiteInCitations = aiResponse.citations.some(
-        (url) => url.toLowerCase().includes(lowerWebsite)
-      );
-
-      const appeared = nameInAnswer || websiteInAnswer || websiteInCitations;
-
+      const aiResponse = await queryProviderAnswer(provider, prompt);
+      const appeared = answerMentionsBusiness(aiResponse, businessName, website);
       if (appeared) {
-        console.info(`[research-runner] ✅ AI visibility (Perplexity): "${businessName}" appeared in answer to "${prompt}"`);
+        console.info(`[research-runner] ✅ AI visibility (${provider}): "${businessName}" appeared in answer to "${prompt}"`);
       }
-
-      return {
-        appeared,
-        provider: "perplexity" as const,
-        content: aiResponse.content,
-        citations: aiResponse.citations,
-      };
+      return { appeared, provider, kind: "ai_answer", content: aiResponse.content, citations: aiResponse.citations, executionStatus: "completed" };
     } catch (error) {
-      console.warn(`[research-runner] Perplexity failed for "${prompt}", falling back to web search:`, error instanceof Error ? error.message : error);
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[research-runner] ${provider} failed for "${prompt}" on attempt ${attempt}/2:`, message);
+      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 750));
     }
   }
-
-  // FALLBACK: Web search (Tavily/Brave) — NOT true AI visibility
-  console.warn(`[research-runner] ⚠️ FALLBACK to web search for "${prompt}" — results are web search, not AI-generated answers. Install PERPLEXITY_API_KEY for AI-search evidence.`);
-
-  try {
-    const { results: searchResults } = await searchWithFallback(prompt);
-    const appeared = checkBusinessAppearance(searchResults, businessName, website);
-
-    return {
-      appeared,
-      provider: "web-search-fallback" as const,
-      content: searchResults.map(r => r.content).join(" "),
-      citations: searchResults.map(r => r.url),
-    };
-  } catch (error) {
-    console.error(`[research-runner] Web search fallback also failed for "${prompt}":`, error instanceof Error ? error.message : error);
-    return {
-      appeared: false,
-      provider: "failed" as const,
-      content: "",
-      citations: [],
-    };
-  }
+  return { appeared: false, provider, kind: "ai_answer", content: "", citations: [], executionStatus: "failed", failureReason: lastError instanceof Error ? lastError.message : String(lastError || "provider_failed") };
 }
 
 /**
@@ -221,7 +288,7 @@ function getDomain(url: string): string {
  * Analyze all citations across prompts to find competitor domains
  */
 function analyzeCitations(rawResults: { prompt: string; results: TavilySearchResult[] }[], 
-                          aiChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[]): CitationAnalysis {
+                          aiChecks: { prompt: string; appeared: boolean; provider: AIAnswerProvider; kind?: "ai_answer" }[]): CitationAnalysis {
   const allCitations: string[] = [];
   const citationsByDomain = new Map<string, { count: number; urls: string[] }>();
   
@@ -323,7 +390,7 @@ async function searchWithFallback(query: string): Promise<{ results: TavilySearc
 
 export interface ResearchResult {
   prompts: string[];
-  promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string }[];
+  promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string; provider?: AIAnswerProvider; kind?: "ai_answer"; categoryId?: BatteryCategoryId; categoryName?: string; promptId?: string; citations?: string[]; content?: string; executionStatus?: "completed" | "failed"; failureReason?: string }[];
   resolvedName: string;
   appearedCount: number;
   totalPrompts: number;
@@ -355,8 +422,16 @@ export interface ResearchResult {
     competitorDominantQueries: string[];
   };
   // AI visibility tracking
-  aiVisibilityProvider?: "perplexity" | "web-search-fallback" | "failed";
-  aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
+  aiVisibilityProvider?: AIAnswerProvider;
+  aiVisibilityChecks?: { prompt: string; appeared: boolean; provider: AIAnswerProvider; kind?: "ai_answer" }[];
+  platformScores?: PlatformScore[];
+  batteryVersion?: string;
+  promptPlanMetadata?: { version: string; hash: string; prompts: BatteryPrompt[] };
+  categoryScorecard?: ReturnType<typeof buildCategoryScorecard>;
+  sourceLedger?: ReturnType<typeof buildCitationSourceLedger>;
+  rawSourceLedger?: ReturnType<typeof buildRawCitationSourceLedger>;
+  executionFailures?: { prompt: string; provider: AIAnswerProvider; categoryId?: BatteryCategoryId; promptId?: string; failureReason?: string }[];
+  costEstimate?: { free: number; paid: number; currency: "USD"; assumptions: string[] };
   // Competitor mode tracking
   competitorMode?: "client_provided" | "client_only";
   internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
@@ -439,11 +514,12 @@ export async function runResearch(
     tier?: 'free' | 'paid' | 'full';
     competitorMode?: "client_provided" | "client_only";
     maxPrompts?: number;
+    promptPlan?: { prompts: Array<string | Partial<BatteryPrompt> & { text?: string }>; hash?: string; version?: string };
   }
 ): Promise<ResearchResult> {
   const tier = options?.tier || 'free';
   const competitorMode = options?.competitorMode || "client_only";
-  const maxPrompts = options?.maxPrompts || (tier === 'paid' ? 20 : 5);
+  const maxPrompts = options?.maxPrompts || (tier === 'paid' ? 60 : 5);
   // Resolve the best business name to use for searches
   const resolvedName = resolveBusinessName(businessName, website);
   console.info(`[research-runner] Resolved business name: "${businessName}" → "${resolvedName}" (website: ${website})`);
@@ -508,41 +584,45 @@ export async function runResearch(
   console.info(`[research-runner] Final niche: ${finalNiche}`);
   
   // STEP 3: Generate prompts from the Business Intelligence Profile first.
-  // Taxonomy is now only a fallback when no profile/services/customer queries exist.
+  // Battery v2 stores category-tagged plans; provider fanout stays internal.
   let prompts: string[];
+  let batteryPrompts: BatteryPrompt[] = [];
   const profileBasis = {
+    businessName: resolvedName,
+    city,
+    market: preflightProfile?.market || city,
+    niche: finalNiche,
     businessType: preflightProfile?.businessType || websiteInsight?.keywords?.[0] || finalNiche?.replace(/_/g, ' '),
     targetAudience: preflightProfile?.targetAudience,
     services: preflightProfile?.services || websiteInsight?.services || [],
-    market: preflightProfile?.market || city,
+    customerSegments: (preflightProfile as any)?.customerSegments || [],
+    competitors,
     searchLanguage: preflightProfile?.searchLanguage,
-    suggestedSearchQueries: preflightProfile?.suggestedSearchQueries || [],
+    website,
   };
 
-  if (enrichedPrompts) {
-    prompts = buildPromptSetFromEnriched(enrichedPrompts, resolvedName, city, preflightProfile?.searchLanguage);
-    console.info(`[research-runner] Using business-profile customer query set: ${prompts.length} prompts (lang: ${preflightProfile?.searchLanguage || 'unknown'})`);
-  } else if (tier === 'paid') {
-    // Full prompt set for paid reports, seeded by the BI profile before taxonomy defaults.
-    const { getPrompts } = await import('./full-prompts');
-    const fullPromptDefs = getPrompts({
-      businessName: resolvedName,
-      city,
-      niche: finalNiche,
-      competitorMention: competitors.join(', '),
-      websiteInsight,
-      ...profileBasis,
-    }, 'paid');
-    prompts = fullPromptDefs.map(p => p.text);
-    console.info(`[research-runner] Using business-profile full prompt set (paid tier): ${prompts.length} prompts`);
+  const suppliedPlan = options?.promptPlan?.prompts || [];
+  if (Array.isArray(suppliedPlan) && suppliedPlan.length > 0) {
+    const first = suppliedPlan[0] as any;
+    if (first && typeof first === 'object' && 'text' in first) {
+      batteryPrompts = (suppliedPlan as any[]).map((prompt) => ({ ...prompt, text: String(prompt.text || '').trim() } as BatteryPrompt)).filter((prompt) => prompt.text);
+      prompts = batteryPrompts.map((prompt) => prompt.text);
+    } else {
+      prompts = suppliedPlan.map((prompt) => String(prompt).trim()).filter(Boolean);
+      const generated = generateBatteryV2(profileBasis, tier === 'paid' ? 'paid' : 'free');
+      batteryPrompts = prompts.map((text, index) => generated.find((p) => p.text.toLowerCase() === text.toLowerCase()) || ({ ...generated[index % generated.length], id: generated[index % generated.length]?.id || `LEGACY.${index + 1}`, text } as BatteryPrompt));
+    }
+    console.info(`[research-runner] Reusing prior snapshot prompt plan verbatim: ${prompts.length} prompts`);
   } else {
-    // Standard prompt set only when no profile-first query set exists.
-    const promptSet = getPromptSetForNiche(finalNiche);
-    prompts = generatePrompts(promptSet, resolvedName, city, websiteInsight.services);
-    console.info(`[research-runner] Using taxonomy fallback 20-prompt set (free tier)`);
+    batteryPrompts = generateBatteryV2(profileBasis, tier === 'paid' ? 'paid' : 'free');
+    prompts = batteryPrompts.map((prompt) => prompt.text);
+    console.info(`[research-runner] Using Battery v2 prompt plan (${tier}): ${prompts.length} prompts, version=${BATTERY_V2_VERSION}`);
   }
 
-  const deterministicPromptGate = rebuildPromptsFromScrapedProfileIfContaminated(prompts, {
+  const isReusedPromptPlan = Array.isArray(options?.promptPlan?.prompts) && options.promptPlan.prompts.length > 0;
+  const deterministicPromptGate = isReusedPromptPlan
+    ? { rebuilt: false, reason: "", prompts }
+    : rebuildPromptsFromScrapedProfileIfContaminated(prompts, {
     businessType: preflightProfile?.businessType,
     services: preflightProfile?.services,
     niche: finalNiche,
@@ -552,17 +632,25 @@ export async function runResearch(
   });
   if (deterministicPromptGate.rebuilt) {
     console.warn(`[research-runner] Prompt safety gate rebuilt prompt set: ${deterministicPromptGate.reason}`);
-    prompts = deterministicPromptGate.prompts;
+    // Preserve Battery v2's category contract when the safety gate intervenes.
+    // The old scrape-first fallback produced five same-intent free prompts
+    // (for example, several "best car dealer Oakville" variants). Rebuilding
+    // from the resolved profile keeps the free miniature as C1/C2/C3/C5/C8.
+    batteryPrompts = generateBatteryV2(profileBasis, tier === 'paid' ? 'paid' : 'free');
+    prompts = batteryPrompts.map((prompt) => prompt.text);
   }
 
-  // Apply maxPrompts limit (free mode: 5, paid: 20, full: 30)
+  // Apply maxPrompts limit (free mode: 5, paid Battery v2: 60)
   if (prompts.length > maxPrompts) {
     console.info(`[research-runner] Limiting prompts: ${prompts.length} → ${maxPrompts} (mode: ${tier})`);
     prompts = prompts.slice(0, maxPrompts);
+    batteryPrompts = batteryPrompts.slice(0, maxPrompts);
   }
   
-  // STEP 3.5: Prompt Quality Check — verify prompts match the business
-  if (preflightProfile?.businessType) {
+  // STEP 3.5: Prompt Quality Check — verify prompts match the business.
+  // Monthly loops that reuse a prior snapshot prompt plan must remain verbatim;
+  // profile/prompt drift is handled by the scheduler hash gate instead.
+  if (!isReusedPromptPlan && preflightProfile?.businessType) {
     try {
       const promptQuality = await verifyPromptQuality(prompts, preflightProfile.businessType, resolvedName);
       if (promptQuality.bad.length > 0) {
@@ -634,8 +722,8 @@ export async function runResearch(
   // Use client-provided competitors if available, else empty (for client_only)
   const competitorsToCheck = competitorMode === "client_provided" ? clientProvidedCompetitors : competitors;
 
-  const { results, rawResults, aiVisibilityChecks, aiVisibilityProvider } = await runPromptSearches(
-    prompts, resolvedName, website, competitorsToCheck, businessName
+  const { results, rawResults, aiVisibilityChecks, aiVisibilityProvider, platformScores } = await runPromptSearches(
+    prompts, resolvedName, website, competitorsToCheck, businessName, batteryPrompts
   );
   
   // STEP 4.5: Discover competitors from search results
@@ -671,14 +759,25 @@ export async function runResearch(
   // STEP 5: Calculate scores and bands
   // For client_only mode, pass empty competitors to calculateScores so it doesn't fabricate comparisons
   const competitorsForScoring = competitorMode === "client_only" ? [] : competitorsToCheck;
-  const finalResult = calculateScores(results, resolvedName, competitorsForScoring, finalNiche);
+  const scoredResults = results.filter((result) => result.executionStatus !== "failed");
+  const finalResult = calculateScores(scoredResults, resolvedName, competitorsForScoring, finalNiche);
   
   // Track which provider was used for AI visibility
   finalResult.aiVisibilityProvider = aiVisibilityProvider;
   finalResult.aiVisibilityChecks = aiVisibilityChecks;
+  finalResult.platformScores = platformScores;
+  finalResult.batteryVersion = BATTERY_V2_VERSION;
+  finalResult.promptPlanMetadata = { version: BATTERY_V2_VERSION, hash: hashBatteryPlan(batteryPrompts), prompts: batteryPrompts };
+  finalResult.categoryScorecard = buildCategoryScorecard(finalResult.promptResults, profileBasis);
+  finalResult.rawSourceLedger = buildRawCitationSourceLedger(finalResult.promptResults, website);
+  finalResult.sourceLedger = buildCitationSourceLedger(finalResult.promptResults, website);
+  finalResult.executionFailures = results
+    .filter((result) => result.executionStatus === "failed")
+    .map((result) => ({ prompt: result.prompt, provider: result.provider, categoryId: result.categoryId, promptId: result.promptId, failureReason: result.failureReason }));
+  finalResult.costEstimate = estimateResearchProviderCost(maxPrompts);
 
   // Set evidence source tracking fields
-  const sonarUsed = aiVisibilityChecks?.some(c => c.provider === "perplexity") ?? false;
+  const sonarUsed = aiVisibilityChecks?.some(c => c.provider === "perplexity" || c.provider === "openai" || c.provider === "gemini") ?? false;
   const fallbackUsed = aiVisibilityChecks?.some(c => c.provider === "web-search-fallback") ?? false;
   finalResult.aiAnswerEvidenceAvailable = sonarUsed;
   finalResult.webSearchFallbackUsed = fallbackUsed;
@@ -1100,7 +1199,7 @@ function generatePrompts(
 ): string[] {
   // Use niche-specific templates from the prompt set
   const templates = promptSet.prompts;
-  // Generate prompts from templates — use up to 20 niche-specific prompts
+  // Legacy taxonomy fallback prompt generator kept for old tests only.
   const generatedPrompts: string[] = [];
   
   for (let i = 0; i < 20 && i < templates.length; i++) {
@@ -1130,7 +1229,7 @@ function generatePrompts(
     }
   }
   
-  return generatedPrompts.slice(0, 20); // Ensure exactly 20 prompts
+  return generatedPrompts.slice(0, 20);
 }
 
 function extractMakeFromBusiness(businessName: string): string {
@@ -1244,13 +1343,23 @@ interface PromptResult {
   businessAppeared: boolean;
   competitorAppeared: boolean;
   competitorName?: string;
+  provider: AIAnswerProvider;
+  kind: "ai_answer";
+  categoryId?: BatteryCategoryId;
+  categoryName?: string;
+  promptId?: string;
+  citations?: string[];
+  content?: string;
+  executionStatus?: "completed" | "failed";
+  failureReason?: string;
 }
 
 interface PromptSearchOutput {
   results: PromptResult[];
   rawResults: { prompt: string; results: TavilySearchResult[] }[];
-  aiVisibilityChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[];
-  aiVisibilityProvider: "perplexity" | "web-search-fallback" | "failed";
+  aiVisibilityChecks: { prompt: string; appeared: boolean; provider: AIAnswerProvider; kind?: "ai_answer"; categoryId?: BatteryCategoryId; categoryName?: string; promptId?: string; citations?: string[]; content?: string; executionStatus?: "completed" | "failed"; failureReason?: string }[];
+  aiVisibilityProvider: AIAnswerProvider;
+  platformScores: PlatformScore[];
 }
 
 async function runPromptSearches(
@@ -1258,80 +1367,96 @@ async function runPromptSearches(
   businessName: string,
   website: string,
   competitors: string[],
-  originalName?: string
+  originalName?: string,
+  batteryPrompts: BatteryPrompt[] = []
 ): Promise<PromptSearchOutput> {
   const results: PromptResult[] = [];
   const rawResults: { prompt: string; results: TavilySearchResult[] }[] = [];
-  const aiVisibilityChecks: { prompt: string; appeared: boolean; provider: "perplexity" | "web-search-fallback" | "failed" }[] = [];
-  
-  // Track which provider is being used across all prompts
-  let aiVisibilityProvider: "perplexity" | "web-search-fallback" | "failed" = "web-search-fallback";
-  
-  // === BATCHED PARALLEL Perplexity calls (5 concurrent) for speed ===
-  // This keeps total time under 60s instead of 120s+ sequential
-  const BATCH_SIZE = 5;
+  const aiVisibilityChecks: PromptSearchOutput['aiVisibilityChecks'] = [];
+  const providers = configuredAIProviders();
+  const promptMeta = new Map(batteryPrompts.map((prompt) => [prompt.text.toLowerCase(), prompt]));
+  const metadataFor = (prompt: string) => {
+    const meta = promptMeta.get(prompt.toLowerCase());
+    return meta ? { categoryId: meta.categoryId, categoryName: meta.categoryName, promptId: meta.id } : {};
+  };
+  const platformScores: PlatformScore[] = (["openai", "gemini", "perplexity"] as RealAIProvider[]).map((provider) => ({
+    provider,
+    label: PLATFORM_LABELS[provider],
+    appearedCount: 0,
+    totalPrompts: providers.includes(provider) ? prompts.length : 0,
+    appearanceRate: 0,
+    status: providers.includes(provider) ? "tested" : "not_configured",
+  }));
+
+  if (providers.length === 0) {
+    console.warn(`[research-runner] No AI answer providers configured; falling back to web search only.`);
+  }
+
+  const BATCH_SIZE = 3;
   for (let i = 0; i < prompts.length; i += BATCH_SIZE) {
     const batch = prompts.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(
-      batch.map(async (prompt) => {
-        try {
-          const aiResult = await checkAIBusinessAppearance(prompt, businessName, website);
-          // Also get web search results for competitor discovery (parallel with AI check)
-          const searchPromise = searchWithFallback(prompt).catch(() => ({ results: [] as TavilySearchResult[], provider: "failed" }));
-          return { prompt, aiResult, searchPromise };
-        } catch (error) {
-          console.error(`[research-runner] Failed for "${prompt}":`, error);
-          return { prompt, aiResult: null as any, searchPromise: null };
-        }
-      })
-    );
-    
-    for (const { prompt, aiResult, searchPromise } of batchResults) {
-      if (aiResult) {
-        if (aiResult.provider === "perplexity") {
-          aiVisibilityProvider = "perplexity";
-        }
-        aiVisibilityChecks.push({ prompt, appeared: aiResult.appeared, provider: aiResult.provider });
-        
-        // Get web search results for competitor discovery
-        let competitorResult: { appeared: boolean; name?: string } = { appeared: false };
-        if (searchPromise) {
-          try {
-            const { results: searchResults } = await searchPromise;
-            rawResults.push({ prompt, results: searchResults });
-            competitorResult = checkCompetitorAppearance(searchResults, competitors);
-          } catch {
-            rawResults.push({ prompt, results: [] });
-          }
-        } else {
-          rawResults.push({ prompt, results: [] });
-        }
-        
+    const batchResults = await Promise.all(batch.map(async (prompt) => {
+      const searchPromise = searchWithFallback(prompt).catch(() => ({ results: [] as TavilySearchResult[], provider: "failed" }));
+      const providerResults = providers.length > 0
+        ? await Promise.all(providers.map((provider) => checkAIBusinessAppearance(prompt, businessName, website, provider)))
+        : [];
+      return { prompt, providerResults, searchPromise };
+    }));
+
+    for (const { prompt, providerResults, searchPromise } of batchResults) {
+      let competitorResult: { appeared: boolean; name?: string } = { appeared: false };
+      try {
+        const { results: searchResults } = await searchPromise;
+        rawResults.push({ prompt, results: searchResults });
+        competitorResult = checkCompetitorAppearance(searchResults, competitors);
+      } catch {
+        rawResults.push({ prompt, results: [] });
+      }
+
+      const meta = metadataFor(prompt);
+      if (providerResults.length === 0) {
+        const appeared = checkBusinessAppearance(rawResults[rawResults.length - 1]?.results || [], businessName, website);
+        aiVisibilityChecks.push({ prompt, appeared, provider: "web-search-fallback", kind: "ai_answer", ...meta, citations: [], content: "", executionStatus: "completed" });
+        results.push({ prompt, businessAppeared: appeared, competitorAppeared: competitorResult.appeared, competitorName: competitorResult.name, provider: "web-search-fallback", kind: "ai_answer", ...meta, citations: [], content: "", executionStatus: "completed" });
+        continue;
+      }
+
+      for (const aiResult of providerResults) {
+        aiVisibilityChecks.push({ prompt, appeared: aiResult.appeared, provider: aiResult.provider, kind: "ai_answer", ...meta, citations: aiResult.citations || [], content: aiResult.content || "", executionStatus: aiResult.executionStatus, failureReason: aiResult.failureReason });
         results.push({
           prompt,
           businessAppeared: aiResult.appeared,
           competitorAppeared: competitorResult.appeared,
-          competitorName: competitorResult.name
+          competitorName: competitorResult.name,
+          provider: aiResult.provider,
+          kind: "ai_answer",
+          ...meta,
+          citations: aiResult.citations || [],
+          content: aiResult.content || "",
+          executionStatus: aiResult.executionStatus,
+          failureReason: aiResult.failureReason,
         });
-      } else {
-        aiVisibilityChecks.push({ prompt, appeared: false, provider: "failed" });
-        results.push({ prompt, businessAppeared: false, competitorAppeared: false });
-        rawResults.push({ prompt, results: [] });
       }
     }
-    
-    // Small delay between batches to avoid rate limiting
-    if (i + BATCH_SIZE < prompts.length) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+    if (i + BATCH_SIZE < prompts.length) await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  for (const score of platformScores) {
+    const providerChecks = aiVisibilityChecks.filter(c => c.provider === score.provider && c.executionStatus !== "failed");
+    if (providerChecks.length > 0) {
+      score.totalPrompts = providerChecks.length;
+      score.appearedCount = providerChecks.filter(c => c.appeared).length;
+      score.appearanceRate = score.totalPrompts > 0 ? score.appearedCount / score.totalPrompts : 0;
+      score.status = "tested";
+    } else if (score.status === "tested") {
+      score.status = "failed";
     }
   }
-  
-  // Log summary of AI visibility provider used
-  const perplexityCount = aiVisibilityChecks.filter(c => c.provider === "perplexity").length;
-  const fallbackCount = aiVisibilityChecks.filter(c => c.provider === "web-search-fallback").length;
-  console.info(`[research-runner] AI visibility: ${perplexityCount}/${prompts.length} prompts checked via Perplexity Sonar, ${fallbackCount} via web search fallback`);
-  
-  return { results, rawResults, aiVisibilityChecks, aiVisibilityProvider };
+
+  const aiVisibilityProvider: AIAnswerProvider = providers.length === 3 ? "perplexity" : (providers[0] || "web-search-fallback");
+  console.info(`[research-runner] AI visibility: ${results.length} provider datapoints across ${prompts.length} prompts (${platformScores.map(s => `${s.label}:${s.appearedCount}/${s.totalPrompts}`).join(', ')})`);
+  return { results, rawResults, aiVisibilityChecks, aiVisibilityProvider, platformScores };
 }
 
 /**
@@ -1462,7 +1587,7 @@ function checkCompetitorAppearance(
  * This discovers competitors that weren't known upfront.
  * 
  * How it works:
- * 1. Collect all raw search results from the 20 prompts
+ * 1. Collect all raw search results from stored AI/search prompts
  * 2. Extract candidate business names from titles + URLs
  * 3. Filter out the target business, directories, and generic names
  * 4. Score by frequency of appearance across different prompts
@@ -1868,6 +1993,15 @@ function calculateScores(
         businessAppeared: r.businessAppeared,
         competitorAppeared: isCompetitorAppeared,
         competitorName: cleanCompetitorName,
+        provider: r.provider,
+        kind: r.kind,
+        categoryId: r.categoryId,
+        categoryName: r.categoryName,
+        promptId: r.promptId,
+        citations: r.citations,
+        content: r.content,
+        executionStatus: r.executionStatus,
+        failureReason: r.failureReason,
       };
     }),
     resolvedName: '', // Will be set by caller

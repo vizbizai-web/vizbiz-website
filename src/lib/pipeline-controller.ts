@@ -21,9 +21,10 @@ import {
   type PipelineStage,
 } from "@/lib/google-sheets";
 import { buildEvidenceFirstQueries, preflightScan } from "@/lib/preflight-engine";
-import { sendNicheResolutionAlertTelegram } from "@/lib/telegram-alerts";
+import { sendNicheResolutionAlertTelegram, sendPipelineAlert } from "@/lib/telegram-alerts";
 import { runResearch } from "@/lib/research-runner";
 import { cleanIntakeBusinessCategory } from "@/lib/intake-normalization";
+import { appendResearchSnapshot } from "@/lib/audit-snapshots";
 
 // ─── Research Mode ───────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ export const PIPELINE_LIMITS = {
     sonarModel: "sonar",
   },
   paid: {
-    sonarPrompts: 20,
+    sonarPrompts: 60,
     firecrawlPages: 15,
     runCompetitorDiscovery: true,
     runCompetitorAnalysis: true,
@@ -213,7 +214,12 @@ function applyClientDeclaredNicheOverride<T extends { niche?: string; nicheLabel
     niche: normalized.niche,
     nicheLabel: normalized.nicheLabel,
     businessType: normalized.businessType,
+    valueProposition: `Provides ${normalized.nicheLabel} services based on the client-declared category and visible website evidence.`,
+    targetAudience: city
+      ? `people and organizations looking for ${normalized.nicheLabel} support in ${city}`
+      : `people and organizations looking for ${normalized.nicheLabel} support`,
     services,
+    customerSegments: [],
     suggestedSearchQueries: evidenceQueries.suggestedSearchQueries,
     competitorSearchQueries: evidenceQueries.competitorSearchQueries,
     nicheConfidence: 100,
@@ -278,7 +284,7 @@ export async function runPreflightStage(
     // 5. Run preflight
     console.info(`[pipeline] Preflight starting for ${leadId}: ${lead.dealershipName} (${lead.website})`);
     const paidIntakePayload = parsePaidIntakePayload(lead.notes);
-    const declaredNiche = parseClientDeclaredNiche(lead.notes);
+    const declaredNiche = parseClientDeclaredNiche(lead.notes) || cleanIntakeBusinessCategory((lead as any).niche);
     const telegramDeclaredOverride = hasTelegramDeclaredNicheOverride(lead.notes);
     const telegramWebsiteOverride = hasTelegramWebsiteNicheOverride(lead.notes);
     const telegramNicheOverride = telegramDeclaredOverride || telegramWebsiteOverride;
@@ -329,16 +335,22 @@ export async function runPreflightStage(
     const modeMatch = lead.notes?.match(/CompetitorMode:\s*(\w+)/);
     const competitorMode = modeMatch?.[1] === "client_provided" || competitors.length > 0 ? "client_provided" : "client_only";
 
+    const preflightBusinessType = preflightResult.businessType || preflightResult.nicheLabel || preflightResult.niche || "local business";
+    const safeValueProposition = `Provides ${preflightBusinessType} services based on visible website, schema, and local profile evidence.`;
+    const safeTargetAudience = lead.city
+      ? `customers looking for a trusted ${preflightBusinessType} in ${lead.city}`
+      : `customers looking for a trusted ${preflightBusinessType}`;
+
     // 8. Store preflight data in notes
     const preflightJson = JSON.stringify({
       niche: preflightResult.niche,
       nicheLabel: preflightResult.nicheLabel,
-      valueProposition: preflightResult.valueProposition,
+      valueProposition: safeValueProposition,
       pricingInfo: preflightResult.pricingInfo,
       estimatedRevenueGap: preflightResult.estimatedRevenueGap,
       aiReadinessScore: preflightResult.aiReadinessScore,
       businessType: preflightResult.businessType,
-      targetAudience: preflightResult.targetAudience,
+      targetAudience: safeTargetAudience,
       services: preflightResult.services,
       customerSegments: (preflightResult as any).customerSegments || [],
       siteLanguage: preflightResult.siteLanguage,
@@ -529,6 +541,8 @@ export async function runResearchStage(
         totalPrompts: researchResult.totalPrompts,
         statusBand: researchResult.statusBand,
         promptResults: researchResult.promptResults,
+        platformScores: researchResult.platformScores,
+        costEstimate: researchResult.costEstimate,
         competitorMention: researchResult.competitorMention,
         revenueLoss: researchResult.revenueLoss,
         niche: researchResult.niche,
@@ -547,10 +561,41 @@ export async function runResearchStage(
         competitorValidations: researchResult.competitorValidations,
         googlePlaceEnrichment: researchResult.googlePlaceEnrichment,
         localEntityTrustScore: researchResult.localEntityTrustScore,
+        batteryVersion: researchResult.batteryVersion,
+        promptPlanMetadata: researchResult.promptPlanMetadata,
+        categoryScorecard: researchResult.categoryScorecard,
+        sourceLedger: researchResult.sourceLedger,
+        rawSourceLedger: researchResult.rawSourceLedger,
+        executionFailures: researchResult.executionFailures,
       },
     });
 
     const completedAt = new Date().toISOString();
+    let snapshot: Awaited<ReturnType<typeof appendResearchSnapshot>> = null;
+    let snapshotWriteError: string | null = null;
+    try {
+      snapshot = await appendResearchSnapshot({
+        leadId,
+        tier: mode,
+        researchResult,
+        preflightProfile,
+        source: "pipeline_research_stage",
+      });
+    } catch (error) {
+      snapshotWriteError = error instanceof Error ? error.message : String(error);
+      console.error(`[pipeline] Audit snapshot append failed for ${leadId}; research completion will continue`, snapshotWriteError);
+      await sendPipelineAlert([
+        "⚠️ Audit snapshot write failed — research still completed",
+        "",
+        `Lead ID: ${leadId}`,
+        `Business: ${lead.dealershipName}`,
+        `Mode: ${mode}`,
+        `Error: ${snapshotWriteError}`,
+        "",
+        "The lead audit was not blocked. Investigate audit_snapshots persistence before relying on trend history.",
+      ].join("\n")).catch((alertError) => console.warn("[pipeline] snapshot failure alert failed", alertError));
+    }
+
     await updatePipelineState(leadId, {
       status: "pending_review",
       researchStatus: "complete",
@@ -580,6 +625,9 @@ export async function runResearchStage(
         total: researchResult.totalPrompts,
         band: researchResult.statusBand,
         mode,
+        snapshotId: snapshot?.id,
+        snapshotSequence: snapshot?.sequence,
+        snapshotWriteError,
       },
     };
   } catch (error) {

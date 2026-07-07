@@ -1,9 +1,9 @@
 /**
- * Full Prompt Generator — 84 buyer-intent queries across 11 categories
+ * Full Prompt Generator — legacy buyer-intent query helper
  * 
  * Category structure from the original research engine, adapted for any niche.
- * Free tier: first 20 prompts (categories 1-2)
- * Paid tier: full 84 prompts across all 11 categories
+ * Legacy prompt helper; Battery v2 free tier is a 5-category miniature.
+ * Paid tier: full paid-depth prompts across all 11 categories
  */
 
 export interface PromptDef {
@@ -28,7 +28,7 @@ export const CATEGORIES: Record<number, string> = {
 };
 
 // Niche-specific template generators
-// Each returns 84 prompts with proper placeholders replaced
+// Each returns paid-depth prompts with proper placeholders replaced
 
 interface NicheConfig {
   businessName: string;
@@ -329,7 +329,7 @@ function buildNicheConfig(data: {
 /**
  * Get prompts for a lead
  * @param data - Research data about the business
- * @param tier - 'free' for 20 prompts, 'paid' for 84
+ * @param tier - legacy helper only; Battery v2 owns current paid/free depth.
  */
 export function getPrompts(data: {
   businessName: string;

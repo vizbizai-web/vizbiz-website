@@ -3,6 +3,8 @@ import { getLeadByLeadId, isSheetsConfigured } from '@/lib/google-sheets';
 import { validateReportToken } from '@/lib/report-token';
 import { getClientReportAccessState } from '@/lib/funnel-logic';
 import { parseResearchDataFromNotes } from '@/lib/report-data';
+import { listAuditSnapshots } from '@/lib/audit-snapshots';
+import { buildMonthlyTrendModel, type MonthlyTrendModel } from '@/lib/monthly-trends';
 import ReportContent from './report-content';
 import ReportPending from './report-pending';
 
@@ -25,7 +27,9 @@ export type ResearchData = {
   totalPrompts: number;
   statusBand: string;
   serviceVisibility: string;
-  promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string }[];
+  promptResults: { prompt: string; businessAppeared: boolean; competitorAppeared: boolean; competitorName?: string; provider?: string; kind?: "ai_answer" }[];
+  platformScores?: { provider: "perplexity" | "openai" | "gemini"; label: "Perplexity" | "ChatGPT" | "Gemini"; appearedCount: number; totalPrompts: number; appearanceRate: number; status: "tested" | "not_configured" | "failed" }[];
+  costEstimate?: { free: number; paid: number; currency: "USD"; assumptions: string[] };
   competitorMention: string;
   competitorLine: string;
   competitorCategories: string[];
@@ -102,6 +106,7 @@ export default async function ReportPage({
   let leadData: LeadPageData | null = null;
   let researchData: ResearchData | null = null;
   let leadFound = false;
+  let monthlyTrend: MonthlyTrendModel | null = null;
 
   if (isSheetsConfigured()) {
     try {
@@ -126,6 +131,7 @@ export default async function ReportPage({
         };
 
         researchData = parseResearchDataFromNotes(lead.notes);
+        monthlyTrend = buildMonthlyTrendModel(await listAuditSnapshots(leadId));
 
         // Fallback: parse competitorMode from notes text if still not available
         if (researchData && !researchData.competitorMode) {
@@ -165,5 +171,5 @@ export default async function ReportPage({
   }
 
   // All gates passed — show the full report
-  return <ReportContent leadId={leadId} leadData={leadData} researchData={researchData} />;
+  return <ReportContent leadId={leadId} leadData={leadData} researchData={researchData} monthlyTrend={monthlyTrend} />;
 }

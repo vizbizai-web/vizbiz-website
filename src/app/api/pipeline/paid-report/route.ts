@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { sendRevenueAlert } from "@/lib/telegram-alerts";
+import { assertPaidReportResearchComplete } from "@/lib/paid-report-readiness";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -36,13 +37,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const readiness = assertPaidReportResearchComplete(lead);
+    if (!readiness.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: readiness.error,
+          currentResearchStatus: lead.researchStatus,
+        },
+        { status: 409 }
+      );
+    }
+
     const now = new Date().toISOString();
     const reportUrl = `https://vizbiz.ai/report/${leadId}/full/`;
     const monitoringState = tier === "fix_and_monitor" ? "monitoring_setup_required" : "monitoring_available_later";
 
     await updateLead(leadId, {
       status: "paid_report_ready_for_review",
-      researchStatus: lead.researchStatus || "complete",
       reportGeneratedAt: now,
       reportUrl,
       lastStage: "paid_report_review",

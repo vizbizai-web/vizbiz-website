@@ -35,4 +35,12 @@ describe('free report client copy safety', () => {
     expect(source).not.toContain('revenue going elsewhere');
     expect(source).not.toContain('AI recommendations go to');
   });
+
+  it('does not show hardcoded dollar risk ranges until revenue math is defensible', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).not.toContain('Monthly Risk');
+    expect(source).not.toContain('Estimated Revenue at Risk');
+    expect(source).not.toContain('visibility opportunity');
+    expect(source).toContain('customers are finding competitors instead');
+  });
 });

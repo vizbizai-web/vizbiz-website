@@ -160,7 +160,7 @@ function generateFaq(audit: AuditData): { markdown: string; html: string } {
 function generateTechnicalFixes(audit: AuditData): { markdown: string; robotsTxt: string } {
   const robotsTxt = `User-agent: *\nAllow: /\nSitemap: ${audit.website}/sitemap.xml\n\n# AI Crawlers\nUser-agent: ChatGPT-User\nAllow: /\nUser-agent: Google-Extended\nAllow: /\nUser-agent: Perplexity\nAllow: /\n`;
 
-  const markdown = `# Technical Fixes — ${audit.businessName}\n\n## robots.txt\n\`\`\`\n${robotsTxt}\n\`\`\`\n\n## Meta Recommendations\n\n1. Add JSON-LD schema to homepage <head>\n2. Create and submit sitemap.xml\n3. Ensure all pages have unique title + meta description\n4. Add llms.txt to site root\n5. Set up Google Search Console and Bing Webmaster Tools\n\n## AI Crawler Access\nEnsure robots.txt allows: ChatGPT-User, Google-Extended, Perplexity, ClaudeBot, Bytespider\n`;
+  const markdown = `# Technical Fixes — ${audit.businessName}\n\n## robots.txt\n\`\`\`\n${robotsTxt}\n\`\`\`\n\n## Meta Recommendations\n\n1. Add JSON-LD schema to homepage <head>\n2. Create and submit sitemap.xml\n3. Ensure all pages have unique title + meta description\n4. Add llms.txt to site root\n5. Set up Google Search Console and Bing Webmaster Tools\n\n## AI Crawler Access\nEnsure robots.txt allows: ChatGPT-User, Google-Extended, Perplexity, Bytespider\n`;
 
   return { markdown, robotsTxt };
 }
