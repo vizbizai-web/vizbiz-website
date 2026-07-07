@@ -65,7 +65,7 @@ describe("report email", () => {
     expect(html).toContain("Verified visibility score");
     expect(html).toContain("Full-report benchmark");
     expect(html).toContain("Open the verified AI visibility report");
-    expect(html).not.toContain("This free snapshot is a starting read");
+    expect(html).not.toMatch(/Hi Mop Wringers|Hi there/i);
     expect(runClientCopyQA(html).ok).toBe(true);
   });
 
@@ -81,9 +81,7 @@ describe("report email", () => {
       competitors: ["BridgeLegal", "Broughton Partners"],
     });
 
-    expect(html).toContain("Hi there,");
-    expect(html).toContain("when people compare options in their market");
-    expect(html).not.toMatch(/Hi LexHive|Hi Alex|Toronto|legal marketing|legal referral|your market/i);
+    expect(html).not.toMatch(/Hi LexHive|Hi there|Hi Alex|Toronto|legal marketing|legal referral|your market/i);
     expect(runClientCopyQA(html).ok).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLeadByLeadId } from "@/lib/google-sheets";
-import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
+import { buildStripeCheckoutSuccessUrl, buildStripeCheckoutFallbackUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 
@@ -37,6 +37,27 @@ export async function POST(request: NextRequest) {
 
     const lead = await getLeadByLeadId(leadId).catch(() => null);
     const businessName = lead?.dealershipName?.trim() || "Your Business";
+    const customerEmail = lead?.email?.trim() || "";
+
+    const checkoutParams: Record<string, string> = {
+      "mode": mode,
+      "line_items[0][price]": priceId,
+      "line_items[0][quantity]": "1",
+      "success_url": buildStripeCheckoutSuccessUrl(leadId, tier),
+      "cancel_url": `https://vizbiz.ai/report/${leadId}?cancelled=1`,
+      "metadata[leadId]": leadId,
+      "metadata[tier]": tier,
+      "metadata[paidPlan]": stripeTierToPaidPlan(tier),
+      "metadata[businessName]": businessName,
+      "client_reference_id": leadId,
+      "allow_promotion_codes": "true",
+    };
+
+    if (mode === "subscription") {
+      // Allows 100%-off QA promotion codes to complete without forcing a live card,
+      // while normal paid subscriptions still collect payment details when money is due.
+      checkoutParams["payment_method_collection"] = "if_required";
+    }
 
     const sessionRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
@@ -44,31 +65,24 @@ export async function POST(request: NextRequest) {
         "Authorization": `Bearer ${STRIPE_SECRET_KEY}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams({
-        "mode": mode,
-        "line_items[0][price]": priceId,
-        "line_items[0][quantity]": "1",
-        "success_url": buildStripeCheckoutSuccessUrl(leadId, tier),
-        "cancel_url": `https://vizbiz.ai/report/${leadId}?cancelled=1`,
-        "metadata[leadId]": leadId,
-        "metadata[tier]": tier,
-        "metadata[paidPlan]": stripeTierToPaidPlan(tier),
-        "metadata[businessName]": businessName,
-        "client_reference_id": leadId,
-        "allow_promotion_codes": "true",
-      }),
+      body: new URLSearchParams(checkoutParams),
     });
 
     const session = await sessionRes.json();
 
     if (session.error) {
       console.error("[stripe/checkout] Stripe error:", session.error.message);
+      const fallbackUrl = buildStripeCheckoutFallbackUrl(tier, leadId, customerEmail);
       return NextResponse.json(
         {
+          url: fallbackUrl,
+          sessionId: null,
+          fallback: true,
+          reason: "dynamic_checkout_session_creation_failed",
           error: "Stripe checkout session creation failed",
           message: session.error.message,
         },
-        { status: sessionRes.status || 502 }
+        { status: 200 }
       );
     }
 

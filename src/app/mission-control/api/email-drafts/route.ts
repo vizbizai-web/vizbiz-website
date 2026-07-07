@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
 import { excludeQaLeads } from '@/lib/qa-leads';
+import { renderClientEmail } from '@/lib/client-emails';
+import { buildReportUrl } from '@/lib/report-token';
 
 export const revalidate = 0;
 
@@ -23,6 +25,19 @@ function draftStatus(status: string): DraftStatus {
   return 'generated';
 }
 
+function parseSnapshotCounts(snapshotAppeared?: string, notes?: string): { appeared: number; total: number } | null {
+  const match = (snapshotAppeared || '').match(/(\d+)\s*(?:of|\/)\s*(\d+)/i);
+  if (match) return { appeared: Number(match[1]), total: Number(match[2]) };
+  try {
+    const parsed = JSON.parse(notes || '{}');
+    const research = parsed?.research || parsed;
+    if (Number.isFinite(research?.appearedCount) && Number.isFinite(research?.totalPrompts)) {
+      return { appeared: Number(research.appearedCount), total: Number(research.totalPrompts) };
+    }
+  } catch {}
+  return null;
+}
+
 export async function GET() {
   try {
     const leads = excludeQaLeads(await getAllLeads());
@@ -30,13 +45,28 @@ export async function GET() {
       ['approved', 'email_drafted', 'contacted', 'paid_report_delivered'].includes(lead.status),
     );
 
-    const drafts = draftable.map((lead) => ({
-      lead,
-      research: parseResearch(lead.notes || ''),
-      status: draftStatus(lead.status),
-      reportUrl: lead.reportUrl || `/report/${lead.leadId}`,
-      emailSentAt: lead.emailSentAt || null,
-    }));
+    const drafts = draftable.map((lead) => {
+      const counts = parseSnapshotCounts(lead.snapshotAppeared, lead.notes);
+      const reportUrl = lead.reportUrl || buildReportUrl(lead.leadId);
+      const rendered = counts ? renderClientEmail('E2_FREE_REPORT_DELIVERY', {
+        business: lead.dealershipName || 'your business',
+        contactName: lead.contactName,
+        city: lead.city,
+        appearedX: counts.appeared,
+        totalN: counts.total,
+        reportUrl,
+      }) : null;
+      return {
+        lead,
+        research: parseResearch(lead.notes || ''),
+        status: draftStatus(lead.status),
+        reportUrl,
+        emailSentAt: lead.emailSentAt || null,
+        templateName: rendered?.id || null,
+        subject: rendered?.subject || null,
+        body: rendered?.text || null,
+      };
+    });
 
     return NextResponse.json({
       source: 'vizbiz-leads',

@@ -98,8 +98,8 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
   const normalizedBusiness = rawBusinessName.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const safeContactName = normalizedContact && normalizedContact !== normalizedBusiness && !normalizedBusiness.includes(normalizedContact)
     ? rawContactName
-    : "there";
-  const firstName = escapeHtml(safeContactName.trim().split(/\s+/)[0] || "there");
+    : "";
+  const firstName = escapeHtml(safeContactName.trim().split(/\s+/)[0] || "");
   const rawCity = (data.city || "").trim();
   const rawPrimaryMarket = (data.primaryMarket || "").trim();
   const rawNicheLabel = (data.nicheLabel || "").trim();
@@ -113,6 +113,9 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
           ? `options in ${marketLabel}`
           : "options in their market"
   );
+  const greetingLine = firstName
+    ? `Hi ${firstName}, we checked how clearly popular AI assistants and AI-powered search tools can understand, verify, and recommend ${businessName} when people compare ${comparisonScope}.`
+    : `We checked how clearly popular AI assistants and AI-powered search tools can understand, verify, and recommend ${businessName} when people compare ${comparisonScope}.`;
   const score = data.aviScore !== undefined && data.aviScore !== null ? escapeHtml(String(data.aviScore)) : "—";
   const statusBand = escapeHtml((data.statusBand || "Visibility review").trim());
   const count = escapeHtml(formatCount(data.appearedCount, data.totalPrompts));
@@ -144,7 +147,7 @@ export function buildReportEmailHtml(data: ReportEmailData): string {
                 <img src="https://vizbiz.ai/logo.jpg" width="118" alt="VizBiz.ai" style="display:block;border-radius:8px;margin-bottom:30px;" />
                 <p style="margin:0 0 14px;color:#22d3ee;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;">Private AI Visibility Snapshot</p>
                 <h1 style="margin:0;color:#ffffff;font-size:34px;line-height:1.12;letter-spacing:-.035em;font-weight:750;">Your snapshot for ${businessName} is ready.</h1>
-                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">Hi ${firstName}, we checked how clearly popular AI assistants and AI-powered search tools can understand, verify, and recommend ${businessName} when people compare ${comparisonScope}.</p>
+                <p style="margin:22px 0 0;color:#cbd5e1;font-size:16px;line-height:1.75;">${greetingLine}</p>
                 <p style="margin:16px 0 0;color:#e2e8f0;font-size:15px;line-height:1.65;font-weight:650;">${metricLine}</p>
                 ${data.isPaid ? "" : `<p style="margin:10px 0 0;color:#94a3b8;font-size:13px;line-height:1.6;">This free snapshot is a starting read. The full report verifies the score with a deeper buyer-question test, competitor context, and website trust-signal review.</p>`}
               </td>

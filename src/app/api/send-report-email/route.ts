@@ -4,6 +4,9 @@ import { sendVizBizEmail } from '@/lib/resend-mailer';
 import { getLeadByLeadId } from '@/lib/google-sheets';
 import { buildReportEmailHtml, buildReportEmailSubject } from '@/lib/report-email';
 import { verifyReportCta } from '@/lib/report-cta-verifier';
+import { recordActionAudit, requireMissionControlApiAuth } from '@/lib/mission-control-api-auth';
+import { recordClientEmailSent } from '@/lib/client-emails';
+import { scheduleNurtureAfterE2 } from '@/lib/email-suite-automation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -55,6 +58,8 @@ async function sendEmail(to: string, subject: string, html: string): Promise<str
 }
 
 export async function POST(req: NextRequest) {
+  const unauthorized = requireMissionControlApiAuth(req);
+  if (unauthorized) return unauthorized;
   try {
     const body = await req.json();
     const { to, leadId } = body;
@@ -124,6 +129,16 @@ export async function POST(req: NextRequest) {
     const subject = buildReportEmailSubject({ businessName, reportUrl });
     const messageId = await sendEmail(to, subject, html);
     console.info(`[send-report-email] Sent to ${to}, id=${messageId}`);
+    await recordActionAudit({ leadId, action: "send_report_email", channel: "mission_control", metadata: { to, messageId } });
+    await recordClientEmailSent({
+      leadId,
+      templateId: isPaidSend ? 'E9_PAID_REPORT_FIX_KIT_DELIVERY' : 'E2_FREE_REPORT_DELIVERY',
+      messageId,
+      emailClass: 'transactional',
+      automation: 'gated',
+      to,
+    });
+    if (!isPaidSend) await scheduleNurtureAfterE2(lead);
 
     return NextResponse.json({ success: true, emailId: messageId, reportUrl });
   } catch (err) {

@@ -9,9 +9,10 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { sendVizBizEmail } from "@/lib/resend-mailer";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
-import { buildStripeCheckoutSuccessUrl, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
+import { buildStripeCheckoutSuccessUrl, stripePaymentLinkToTier, stripeTierToPaidPlan } from "@/lib/stripe-checkout-logic";
+import { subscriptionMirrorPatchFromStripeEvent, upsertSubscriptionMirror } from "@/lib/subscription-loop";
+import { renderClientEmail, sendRenderedClientEmail } from "@/lib/client-emails";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -21,7 +22,14 @@ type StripeWebhookEvent = {
   data?: {
     object?: {
       metadata?: Record<string, string | undefined>;
+      client_reference_id?: string;
+      payment_link?: string;
       customer_details?: { email?: string };
+      subscription?: string | { id?: string; metadata?: Record<string, string | undefined> };
+      id?: string;
+      status?: string;
+      current_period_end?: number;
+      period_end?: number;
     };
   };
 };
@@ -50,39 +58,25 @@ async function sendPaidIntakeEmail(
   leadId: string,
   tier: string
 ) {
-  const paidPlan = stripeTierToPaidPlan(tier);
   const intakeUrl = buildStripeCheckoutSuccessUrl(leadId, tier);
-  const planLabel = paidPlan === "monthly_growth" ? "Monthly Growth Plan" : "Full Report + Fix Pack";
-  const subject = `Next step: complete your VizBiz paid report intake — ${businessName}`;
+  const rendered = renderClientEmail('E7_PAYMENT_RECEIVED_NEXT_STEP', {
+    business: businessName,
+    intakeUrl,
+  });
+  await sendRenderedClientEmail({ leadId, to, rendered });
+}
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; background: #020617; color: #F8FAFC; border-radius: 20px; overflow: hidden;">
-      <div style="padding: 34px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(135deg,#020617,#0F172A);">
-        <h1 style="color: #FFFFFF; font-size: 26px; margin: 0;">VizBiz<span style="color:#22D3EE;">.ai</span></h1>
-        <p style="color: #94A3B8; font-size: 14px; margin: 10px 0 0;">${planLabel} intake</p>
-      </div>
-      <div style="padding: 34px;">
-        <p style="font-size: 16px; line-height: 1.7; color: #E2E8F0;">Hi there,</p>
-        <p style="font-size: 16px; line-height: 1.7; color: #E2E8F0;">
-          Payment is confirmed for <strong>${businessName}</strong>. The next step is a short 5-minute intake so we can make the paid report specific to your services, customers, competitors, and proof signals.
-        </p>
-        <p style="font-size: 15px; line-height: 1.7; color: #CBD5E1;">
-          We focus the comparison around the two businesses customers are most likely to compare you against, use your real customer questions, and perform a final quality check before delivery.
-        </p>
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="${intakeUrl}" style="display: inline-block; background: linear-gradient(to right, #22D3EE, #06B6D4); color: #020617; text-decoration: none; padding: 16px 30px; border-radius: 14px; font-weight: 700; font-size: 16px;">
-            Complete Paid Report Intake
-          </a>
-        </div>
-        ${paidPlan === "full_report_fix" ? `<p style="font-size: 14px; color: #67E8F9; line-height: 1.6;">After the one-time fix, you can still upgrade to monthly monitoring if you want fresh competitor movement and recurring visibility fixes.</p>` : ""}
-      </div>
-      <div style="padding: 22px 34px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
-        <p style="font-size: 12px; color: rgba(248,250,252,0.48); margin: 0;">VizBiz.ai — AI Visibility Intelligence</p>
-      </div>
-    </div>
-  `;
-
-  await sendVizBizEmail({ to, subject, html });
+async function sendSubscriptionLifecycleEmail(input: { templateId: 'E12_PAYMENT_FAILED' | 'E13_CANCELLATION_ACKNOWLEDGMENT'; leadId?: string | null; pauseDate?: string }) {
+  if (!input.leadId) return;
+  const lead = await getLeadByLeadId(input.leadId).catch(() => null);
+  if (!lead?.email) return;
+  const rendered = renderClientEmail(input.templateId, {
+    business: lead.dealershipName || 'your business',
+    contactName: lead.contactName,
+    billingPortalUrl: process.env.STRIPE_BILLING_PORTAL_URL || 'https://billing.stripe.com/p/login',
+    pauseDate: input.pauseDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  });
+  await sendRenderedClientEmail({ leadId: lead.leadId, to: lead.email, rendered });
 }
 
 export async function POST(request: Request) {
@@ -126,11 +120,15 @@ export async function POST(request: Request) {
 
     // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
+      const subscriptionPatch = subscriptionMirrorPatchFromStripeEvent(event);
+      if (subscriptionPatch) {
+        await upsertSubscriptionMirror(subscriptionPatch).catch((error) => console.warn("[stripe-webhook] subscription mirror update failed", error));
+      }
+
       const session = event.data?.object;
-      const leadId = session?.metadata?.leadId;
-      const tier = session?.metadata?.tier || "fix";
+      const leadId = session?.metadata?.leadId || session?.client_reference_id;
+      const tier = session?.metadata?.tier || stripePaymentLinkToTier(session?.payment_link);
       const customerEmail = session?.customer_details?.email;
-      const businessName = session?.metadata?.businessName || "Your Business";
 
       if (!leadId) {
         console.error("[stripe-webhook] No leadId in session metadata");
@@ -145,6 +143,7 @@ export async function POST(request: Request) {
       );
 
       const existingLead = await getLeadByLeadId(leadId).catch(() => null);
+      const resolvedBusinessName = session?.metadata?.businessName || existingLead?.dealershipName || "Your Business";
       await updateLead(leadId, {
         status: "paid_intake_pending",
         lastStage: "paid_intake",
@@ -153,7 +152,7 @@ export async function POST(request: Request) {
 
       if (customerEmail) {
         try {
-          await sendPaidIntakeEmail(customerEmail, businessName, leadId, tier);
+          await sendPaidIntakeEmail(customerEmail, resolvedBusinessName, leadId, tier);
           console.info(`[stripe-webhook] Paid intake email sent to ${customerEmail}`);
         } catch (emailErr) {
           console.error("[stripe-webhook] Paid intake email send failed:", emailErr);
@@ -168,6 +167,24 @@ export async function POST(request: Request) {
         intakeUrl: buildStripeCheckoutSuccessUrl(leadId, tier),
         deliveryBlockedUntilApproval: true,
       });
+    }
+
+    if ([
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "invoice.payment_succeeded",
+      "invoice.payment_failed",
+    ].includes(event.type || "")) {
+      const subscriptionPatch = subscriptionMirrorPatchFromStripeEvent(event);
+      if (!subscriptionPatch) return NextResponse.json({ received: true, mirrored: false });
+      await upsertSubscriptionMirror(subscriptionPatch);
+      if (event.type === 'invoice.payment_failed') {
+        await sendSubscriptionLifecycleEmail({ templateId: 'E12_PAYMENT_FAILED', leadId: subscriptionPatch.leadId }).catch((error) => console.warn('[stripe-webhook] E12 payment failed email skipped', error));
+      }
+      if (event.type === 'customer.subscription.deleted') {
+        await sendSubscriptionLifecycleEmail({ templateId: 'E13_CANCELLATION_ACKNOWLEDGMENT', leadId: subscriptionPatch.leadId }).catch((error) => console.warn('[stripe-webhook] E13 cancellation email skipped', error));
+      }
+      return NextResponse.json({ received: true, mirrored: true, status: subscriptionPatch.status, pausedReason: subscriptionPatch.pausedReason || null });
     }
 
     // Acknowledge other event types

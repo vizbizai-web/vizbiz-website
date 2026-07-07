@@ -81,6 +81,6 @@ export function validateReportToken(leadId: string, token: string): { valid: boo
  */
 export function buildReportUrl(leadId: string): string {
   const token = generateReportToken(leadId);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vizbiz.ai';
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://vizbiz.ai').trim().replace(/\s+/g, '').replace(/\/+$/, '');
   return `${baseUrl}/report/${leadId}?token=${token}`;
 }
