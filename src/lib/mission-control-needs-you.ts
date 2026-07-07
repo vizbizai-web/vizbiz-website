@@ -4,6 +4,7 @@ import { isSupabaseRestConfigured, supabaseRest } from './supabase-rest';
 type TriageLike = { label: 'junk_candidate' | 'uncertain' | 'clean'; reasons: string[]; score: number };
 
 export type NeedsYouTier = 'paid' | 'subscriber' | 'free' | 'failure';
+export type NeedsYouAction = 'resolve_niche' | 'review_paid' | 'review_free' | 'approve_monthly' | 'approve_gated_email' | 'inspect_failure' | 'open_detail' | 'complete_paid_intake' | 'fulfill_paid_from_profile';
 
 export interface NeedsYouBadge {
   label: string;
@@ -17,7 +18,7 @@ export interface NeedsYouItem {
   status: string;
   tier: NeedsYouTier;
   tierRank: number;
-  primaryAction: 'resolve_niche' | 'review_paid' | 'review_free' | 'approve_monthly' | 'approve_gated_email' | 'inspect_failure' | 'open_detail';
+  primaryAction: NeedsYouAction;
   primaryActionLabel: string;
   ageHours: number | null;
   createdAt: string;
@@ -66,9 +67,24 @@ function ageHours(timestamp: string, nowMs: number): number | null {
   return Math.max(0, Math.round(((nowMs - parsed) / 3_600_000) * 100) / 100);
 }
 
-function tierFor(lead: PipelineLead): { tier: NeedsYouTier; rank: number; action: NeedsYouItem['primaryAction']; label: string } | null {
+function paymentConfirmedAt(lead: PipelineLead): string {
+  return Array.from((lead.notes || '').matchAll(/\[PAYMENT_CONFIRMED\s+([^\]]+)\]/gi)).at(-1)?.[1] || lead.timestamp || '';
+}
+
+function paidIntakeAgeHours(lead: PipelineLead, nowMs = Date.now()): number | null {
+  const parsed = Date.parse(paymentConfirmedAt(lead));
+  if (!Number.isFinite(parsed)) return null;
+  return Math.max(0, (nowMs - parsed) / 3_600_000);
+}
+
+function tierFor(lead: PipelineLead, nowMs = Date.now()): { tier: NeedsYouTier; rank: number; action: NeedsYouItem['primaryAction']; label: string } | null {
   const status = lead.status || 'new';
   const notes = lead.notes || '';
+  if (status === 'paid_intake_pending') {
+    const hours = paidIntakeAgeHours(lead, nowMs);
+    if (hours != null && hours >= 72) return { tier: 'paid', rank: 1, action: 'fulfill_paid_from_profile', label: 'Fulfill from resolved profile' };
+    if (hours != null && hours >= 24) return { tier: 'paid', rank: 1, action: 'complete_paid_intake', label: 'Paid intake stalled' };
+  }
   if (FAILURE_STATUSES.has(status) || /snapshotWriteError|webhook failure|PASS_1_FAILURE_RATE_BREACH/i.test(notes)) {
     return { tier: 'failure', rank: 4, action: 'inspect_failure', label: 'Inspect failure' };
   }
@@ -105,6 +121,11 @@ function getQualityBadges(lead: PipelineLead): NeedsYouBadge[] {
   if (/zero appearances|only \d+ competitor|prompts may not match|quality warning/i.test(warningBlob)) {
     badges.push({ label: 'Quality warning', tone: 'red', detail: 'Research payload flagged a low-quality or mismatch risk.' });
   }
+  if (lead.status === 'paid_intake_pending') {
+    badges.push({ label: 'Paid intake stalled', tone: 'amber', detail: 'Client has paid but has not completed confirm-and-enrich intake.' });
+    const hours = paidIntakeAgeHours(lead);
+    if (hours != null && hours >= 72) badges.push({ label: '72h fallback allowed', tone: 'cyan', detail: 'Operator can fulfill using resolved profile alone.' });
+  }
   if (lead.triage?.label === 'uncertain') {
     badges.push({ label: 'Uncertain triage', tone: 'amber', detail: lead.triage.reasons.join(', ') });
   }
@@ -118,7 +139,7 @@ export function buildNeedsYouQueue(leads: PipelineLead[], now = new Date()): Nee
   const nowMs = now.getTime();
   const items = leads
     .map((lead) => {
-      const tier = tierFor(lead);
+      const tier = tierFor(lead, nowMs);
       if (!tier) return null;
       const badges = getQualityBadges(lead);
       return {

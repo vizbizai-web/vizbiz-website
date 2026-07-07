@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { buildStripeCheckoutFallbackUrl, buildStripeCheckoutSuccessUrl, stripePaymentLinkToTier } from './stripe-checkout-logic';
 
 describe('stripe checkout logic', () => {
-  it('sends one-time buyers to paid intake after checkout', () => {
-    expect(buildStripeCheckoutSuccessUrl('lead-123', 'fix')).toBe('https://vizbiz.ai/paid-intake/lead-123?plan=full_report_fix&paid=1');
+  it('sends one-time buyers to paid intake after checkout without form-side plan selection', () => {
+    expect(buildStripeCheckoutSuccessUrl('lead-123', 'fix')).toBe('https://vizbiz.ai/paid-intake/lead-123?paid=1');
   });
 
-  it('sends monthly buyers to monthly paid intake after checkout', () => {
-    expect(buildStripeCheckoutSuccessUrl('lead-123', 'fix_and_monitor')).toBe('https://vizbiz.ai/paid-intake/lead-123?plan=monthly_growth&paid=1');
+  it('sends monthly buyers to the same intake URL because tier comes from Stripe metadata', () => {
+    expect(buildStripeCheckoutSuccessUrl('lead-123', 'fix_and_monitor')).toBe('https://vizbiz.ai/paid-intake/lead-123?paid=1');
   });
 
   it('keeps static Stripe payment-link fallbacks available when dynamic checkout is permission-limited', () => {

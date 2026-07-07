@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CheckCircle2, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import { getLeadByLeadId } from '@/lib/google-sheets';
-import { normalizePaidPlan } from '@/lib/paid-intake-logic';
+import { buildPaidIntakePrefill, derivePaidPlanFromLead } from '@/lib/paid-intake-logic';
 import PaidIntakeForm from './PaidIntakeForm';
 
 const PAID_INTAKE_ALLOWED_STATUSES = new Set([
@@ -21,15 +21,12 @@ export const metadata: Metadata = {
 
 export default async function PaidIntakePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ leadId: string }>;
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { leadId } = await params;
-  const { plan } = await searchParams;
   const lead = await getLeadByLeadId(leadId);
-  const paidPlan = normalizePaidPlan(plan);
 
   if (!lead) {
     return (
@@ -55,6 +52,8 @@ export default async function PaidIntakePage({
     );
   }
 
+  const paidPlan = derivePaidPlanFromLead(lead);
+  const prefill = buildPaidIntakePrefill(lead);
   const isMonthly = paidPlan === 'monthly_growth';
 
   return (
@@ -119,7 +118,7 @@ export default async function PaidIntakePage({
               <h2 className="mt-1 text-2xl font-semibold text-white">{lead.dealershipName}</h2>
               <p className="mt-1 text-sm text-slate-400">{lead.website} • {lead.city}</p>
             </div>
-            <PaidIntakeForm lead={lead} plan={paidPlan} />
+            <PaidIntakeForm lead={lead} paidPlan={paidPlan} prefill={prefill} />
           </div>
         </div>
       </section>

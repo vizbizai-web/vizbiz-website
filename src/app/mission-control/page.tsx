@@ -21,7 +21,7 @@ type NeedsYouItem = {
   status: string;
   tier: 'paid' | 'subscriber' | 'free' | 'failure';
   primaryActionLabel: string;
-  primaryAction: 'resolve_niche' | 'review_paid' | 'review_free' | 'approve_monthly' | 'approve_gated_email' | 'inspect_failure' | 'open_detail';
+  primaryAction: 'resolve_niche' | 'review_paid' | 'review_free' | 'approve_monthly' | 'approve_gated_email' | 'inspect_failure' | 'open_detail' | 'complete_paid_intake' | 'fulfill_paid_from_profile';
   ageHours: number | null;
   reportPreviewUrl: string;
   detailUrl: string;
@@ -89,7 +89,11 @@ function useLeadAction(refetch: () => Promise<void>) {
     setBusyLeadId(item.leadId);
     setMessage(null);
     try {
-      const approveAction = item.primaryAction === 'approve_gated_email' ? 'approve_gated_email' : 'approve';
+      const approveAction = item.primaryAction === 'approve_gated_email'
+        ? 'approve_gated_email'
+        : item.primaryAction === 'fulfill_paid_from_profile'
+          ? 'fulfill_paid_from_profile'
+          : 'approve';
       const payload = action === 'approve'
         ? { leadId: item.leadId, action: approveAction, data: item.primaryAction === 'approve_gated_email' ? { templateId: 'E11_30_DAY_RESCAN' } : undefined }
         : { leadId: item.leadId, action: 'needs_revision', data: { reportType: item.tier === 'paid' ? 'paid' : 'free', reason: 'Needs work from Step 2 queue review', autoRerun: false } };
@@ -248,9 +252,17 @@ function QueueRow({ item, ordinal, busy, onAction }: { item: NeedsYouItem; ordin
           </div>
         </div>
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
-          <Link href={item.reportPreviewUrl} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-3 text-center text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15 sm:py-2">Open preview</Link>
-          <button disabled={busy} onClick={() => onAction(item, 'approve')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-3 text-sm font-semibold text-emerald-200 disabled:opacity-40 sm:py-2">{busy ? '...' : 'Approve → next'}</button>
-          <button disabled={busy} onClick={() => onAction(item, 'needs_revision')} className="rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-3 text-sm font-semibold text-orange-200 disabled:opacity-40 sm:py-2">Needs-work → next</button>
+          {item.primaryAction === 'complete_paid_intake' ? (
+            <Link href={`/paid-intake/${item.leadId}`} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-3 text-center text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15 sm:py-2">Open intake</Link>
+          ) : (
+            <Link href={item.reportPreviewUrl} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-3 text-center text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15 sm:py-2">Open preview</Link>
+          )}
+          {item.primaryAction === 'complete_paid_intake' ? (
+            <Link href={item.detailUrl} className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-3 text-center text-sm font-semibold text-amber-200 hover:border-amber-300/50 sm:py-2">Review stalled intake</Link>
+          ) : (
+            <button disabled={busy} onClick={() => onAction(item, 'approve')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-3 text-sm font-semibold text-emerald-200 disabled:opacity-40 sm:py-2">{busy ? '...' : item.primaryAction === 'fulfill_paid_from_profile' ? 'Fulfill from profile → next' : 'Approve → next'}</button>
+          )}
+          <button disabled={busy || item.primaryAction === 'complete_paid_intake'} onClick={() => onAction(item, 'needs_revision')} className="rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-3 text-sm font-semibold text-orange-200 disabled:opacity-40 sm:py-2">Needs-work → next</button>
           <Link href={item.detailUrl} className="rounded-lg border border-slate-700 px-3 py-3 text-center text-sm font-semibold text-slate-300 hover:border-slate-500 sm:py-2">Detail</Link>
         </div>
       </div>

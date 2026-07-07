@@ -65,6 +65,25 @@ describe('Mission Control Needs-You queue', () => {
     expect(queue[0].badges.map((badge) => badge.label)).toEqual(expect.arrayContaining(['Places gap', 'Language check']));
   });
 
+  it('adds paid_intake_pending to Needs-You after 24h and allows profile-only fulfillment after 72h', () => {
+    const queue = buildNeedsYouQueue([
+      lead({
+        leadId: 'pending-24h',
+        status: 'paid_intake_pending',
+        notes: '[PAYMENT_CONFIRMED 2026-07-04T10:00:00.000Z] tier=fix; paid intake pending',
+      }),
+      lead({
+        leadId: 'pending-72h',
+        status: 'paid_intake_pending',
+        notes: '[PAYMENT_CONFIRMED 2026-07-01T10:00:00.000Z] tier=fix; paid intake pending',
+      }),
+    ], new Date('2026-07-05T12:00:00.000Z'));
+
+    expect(queue.find((item) => item.leadId === 'pending-24h')?.primaryAction).toBe('complete_paid_intake');
+    expect(queue.find((item) => item.leadId === 'pending-72h')?.primaryAction).toBe('fulfill_paid_from_profile');
+    expect(queue.find((item) => item.leadId === 'pending-72h')?.badges.map((badge) => badge.label)).toContain('72h fallback allowed');
+  });
+
   it('builds the health strip with provider dots, spend estimate, pipeline counts, and deployed SHA', () => {
     const notes = 'RESEARCH_DATA:' + JSON.stringify({
       platformScores: [

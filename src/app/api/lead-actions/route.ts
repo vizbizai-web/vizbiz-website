@@ -101,6 +101,21 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, action: "approve_gated_email", leadId, result });
       }
 
+      case "fulfill_paid_from_profile": {
+        const paymentAt = Array.from((lead.notes || '').matchAll(/\[PAYMENT_CONFIRMED\s+([^\]]+)\]/gi)).at(-1)?.[1] || lead.timestamp;
+        const ageMs = Date.now() - (Date.parse(paymentAt) || Date.now());
+        if (ageMs < 72 * 60 * 60 * 1000) {
+          return NextResponse.json({ error: "Paid intake fallback is only available after 72h pending." }, { status: 409 });
+        }
+        await updateLeadResearchResults(leadId, {
+          status: "paid_intake_submitted",
+          researchStatus: "pending",
+          notes: `${lead.notes || ""}\n[PAID_INTAKE_FALLBACK_APPROVED ${new Date().toISOString()}] source=resolved_profile operator=mission_control`,
+        });
+        await recordActionAudit({ leadId, action: "fulfill_paid_from_profile", channel: "mission_control", metadata: { paymentAt } });
+        return NextResponse.json({ success: true, action: "fulfill_paid_from_profile", leadId });
+      }
+
       case "save_email_draft": {
         const draft = getEmailDraftPayload(data);
         if (!draft) return NextResponse.json({ error: "Draft subject and body are required" }, { status: 400 });
@@ -405,7 +420,7 @@ function getAvailableActions(status: string): string[] {
       return ["save_email_draft", "approve_email", "approve_and_send", "needs_revision", "update_status", "mark_junk"];
     case "paid_checkout_complete":
     case "paid_intake_pending":
-      return ["update_status"];
+      return ["fulfill_paid_from_profile", "update_status"];
     case "paid_intake_submitted":
       return ["run_research", "update_status"];
     case "paid_report_ready_for_review":
