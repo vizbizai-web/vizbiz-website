@@ -42,7 +42,8 @@ export function buildMonthlyOnePager(input: { businessName: string; diff: Snapsh
 
 export function validateOnePagerNumbers(onePager: MonthlyOnePager, diff: SnapshotDiff): string[] {
   const errors: string[] = [];
-  const comparableText = JSON.stringify({ scoreLine: onePager.scoreLine, platformLines: onePager.platformLines, movementLines: onePager.movementLines, nextFocus: onePager.nextFocus });
+  const comparableText = JSON.stringify({ scoreLine: onePager.scoreLine, platformLines: onePager.platformLines, movementLines: onePager.movementLines, nextFocus: onePager.nextFocus })
+    .replace(/question\s+\d+/gi, 'question');
   const numbersInText = (comparableText.match(/\b\d+\b/g) || [])
     .map((raw) => ({ raw, value: Number(raw) }))
     // QA/business names can contain timestamp-like identifiers. Those are not
