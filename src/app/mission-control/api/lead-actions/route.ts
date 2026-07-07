@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { missionControlInternalHeaders } from '@/lib/mission-control-api-auth';
 
 export const revalidate = 0;
 
@@ -11,6 +12,7 @@ async function forwardJson(request: Request, path: string, init: RequestInit = {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      ...missionControlInternalHeaders(),
       ...(init.headers || {}),
     },
     cache: 'no-store',

@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
+import { requireMissionControlApiAuth } from "@/lib/mission-control-api-auth";
 import { getAllLeads } from "@/lib/google-sheets";
-import { excludeQaLeads } from "@/lib/qa-leads";
+import { excludeQaLeads } from '@/lib/qa-leads';
+import { classifyLeadTriage } from '@/lib/lead-triage';
+import { buildMcHealthStrip, buildNeedsYouQueue, enrichProviderStatusFromLatestSnapshot } from '@/lib/mission-control-needs-you';
 
 
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
+  const unauthorized = requireMissionControlApiAuth(request);
+  if (unauthorized) return unauthorized;
   try {
     const allLeads = await getAllLeads();
-    const leads = excludeQaLeads(allLeads);
+    const leads = excludeQaLeads(allLeads).map((lead) => ({
+      ...lead,
+      triage: classifyLeadTriage(lead),
+    }));
 
     // Group by status for pipeline view
     const byStatus = leads.reduce(
@@ -33,11 +41,20 @@ export async function GET() {
       closed_lost: byStatus["closed_lost"]?.length || 0,
     };
 
+    const needsYou = buildNeedsYouQueue(leads);
+    const health = await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads));
+
     return NextResponse.json({
       stats,
       qa: { excluded: allLeads.length - leads.length, included: leads.length },
       pipeline: byStatus,
       leads,
+      needsYou,
+      health,
+      triage: {
+        junkCandidates: leads.filter((lead) => lead.triage.label === 'junk_candidate').length,
+        uncertain: leads.filter((lead) => lead.triage.label === 'uncertain').length,
+      },
     });
   } catch (error: any) {
     console.error("[pipeline-status] Error:", error.message);

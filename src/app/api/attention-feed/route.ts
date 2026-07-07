@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
+import { requireMissionControlApiAuth } from "@/lib/mission-control-api-auth";
 import { getAllLeads } from "@/lib/google-sheets";
 import { excludeQaLeads } from "@/lib/qa-leads";
 
 
 
 // GET /api/attention-feed — things that need Alex's attention
-export async function GET() {
+export async function GET(request: Request) {
+  const unauthorized = requireMissionControlApiAuth(request);
+  if (unauthorized) return unauthorized;
   try {
     const leads = excludeQaLeads(await getAllLeads());
     const now = Date.now();

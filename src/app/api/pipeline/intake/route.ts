@@ -11,6 +11,8 @@ import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
 import { buildPostIntakeRedirect } from "@/lib/funnel-logic";
 import { buildPipelineBaseUrl } from "@/lib/pipeline-url";
 import { buildIntakeNotes, cleanIntakeBusinessCategory, cleanIntakeText } from "@/lib/intake-normalization";
+import { assessIntakeSpam } from "@/lib/intake-spam-defense";
+import { sendIntakeConfirmation } from "@/lib/email-suite-automation";
 
 type IntakePayload = {
   name: string;
@@ -64,6 +66,16 @@ export async function POST(request: Request) {
     payload = Object.fromEntries(formData.entries()) as Record<string, string>;
   } else {
     payload = await request.json();
+  }
+
+  const spamDecision = assessIntakeSpam(payload, request);
+  if (!spamDecision.ok) {
+    console.warn("[pipeline/intake] spam submission blocked", { reason: spamDecision.reason, score: spamDecision.score });
+    if (spamDecision.reason === 'rate_limited') {
+      return NextResponse.json({ success: false, error: "Too many submissions. Please try again later." }, { status: 429 });
+    }
+    // Neutral success prevents simple bots from learning which trap fired; no CRM write, no alert.
+    return NextResponse.json({ success: true, leadId: "", redirectUrl: "/thank-you?submitted=1", reportReady: false });
   }
 
   const missingField = requiredFields.find((field) => {
@@ -166,6 +178,21 @@ export async function POST(request: Request) {
     }
   } else {
     console.warn("[pipeline/intake] Supabase/CRM not configured — lead NOT stored");
+  }
+
+  // Send E1 intake confirmation after the CRM write is accepted. Non-fatal if Resend is unavailable.
+  if (dataStored) {
+    try {
+      await sendIntakeConfirmation({
+        leadId,
+        dealershipName: cleanPayload.dealershipName,
+        contactName: cleanPayload.name,
+        email: cleanPayload.email,
+        city: cleanPayload.cityMarket,
+      });
+    } catch (err) {
+      console.error("[pipeline/intake] E1 intake confirmation failed", err);
+    }
   }
 
   // Send Telegram alert — MUST await on serverless (Vercel kills process after response)

@@ -141,7 +141,7 @@ const measurementPlan = [
   {
     label: 'AI assistant prompts',
     cadence: 'Weekly',
-    detail: 'Run fixed prompts across ChatGPT, Gemini/Google AI, Claude, and Perplexity; score mention, rank, correctness, and citations.',
+    detail: 'Run fixed prompts across ChatGPT, Gemini, and Perplexity; score mention, rank, correctness, and citations.',
   },
   {
     label: 'Conversion signal',

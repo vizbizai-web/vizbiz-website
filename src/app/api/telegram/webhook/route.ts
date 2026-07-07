@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getLeadByLeadId, updateLead } from "@/lib/google-sheets";
 import { buildNicheCallbackResolution } from "@/lib/telegram-niche-callback";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
+import { sendVizBizEmail } from "@/lib/resend-mailer";
+import { recordActionAudit } from "@/lib/mission-control-api-auth";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
@@ -42,6 +44,47 @@ export async function POST(request: Request) {
     const messageText = String(callback?.message?.text || "");
     const chatId = callback?.message?.chat?.id;
     const messageId = callback?.message?.message_id;
+
+    if (callbackData.startsWith("move_alert_")) {
+      const match = callbackData.match(/^move_alert_(approve|skip)_(.+)$/);
+      const action = match?.[1];
+      const leadId = match?.[2];
+      if (!action || !leadId) {
+        if (callbackId) await answerCallback(callbackId, "Invalid movement-alert action.", true);
+        return NextResponse.json({ ok: false, error: "Invalid movement-alert action" }, { status: 400 });
+      }
+      const lead = await getLeadByLeadId(leadId);
+      if (!lead) {
+        if (callbackId) await answerCallback(callbackId, `Lead not found: ${leadId}`, true);
+        return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
+      }
+      if (action === "skip") {
+        await updateLead(leadId, { notes: `${lead.notes || ""}\n[COMPETITOR_MOVEMENT_ALERT_SKIPPED ${new Date().toISOString()}]` });
+        await recordActionAudit({ leadId, action: "competitor_movement_alert_skip", channel: "telegram" });
+        if (callbackId) await answerCallback(callbackId, "Skipped this month.");
+        if (chatId && messageId) await editCallbackMessage(chatId, messageId, `${messageText}\n\n⏭️ Skipped this month's competitor movement alert.`);
+        return NextResponse.json({ ok: true, action, leadId });
+      }
+      if (!lead.email) {
+        if (callbackId) await answerCallback(callbackId, "Lead has no email; alert not sent.", true);
+        return NextResponse.json({ ok: false, error: "Lead has no email" }, { status: 400 });
+      }
+      const subjectMatch = messageText.match(/^Subject:\s*(.+)$/m);
+      const subject = subjectMatch?.[1]?.trim() || `${lead.dealershipName}: monthly AI visibility alert`;
+      const bodyMatch = messageText.match(/CLIENT EMAIL BODY:\s*\n([\s\S]*)$/);
+      const clientBody = (bodyMatch?.[1] || '').replace(/\n\n(?:✅|⏭️).*[\s\S]*$/m, '').trim();
+      if (!clientBody) {
+        if (callbackId) await answerCallback(callbackId, "Client email body missing; alert not sent.", true);
+        return NextResponse.json({ ok: false, error: "Client email body missing" }, { status: 400 });
+      }
+      const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;white-space:pre-wrap">${clientBody.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] || c))}</div>`;
+      await sendVizBizEmail({ to: lead.email, subject, html });
+      await updateLead(leadId, { notes: `${lead.notes || ""}\n[COMPETITOR_MOVEMENT_ALERT_APPROVED_SENT ${new Date().toISOString()} subject=${subject}]` });
+      await recordActionAudit({ leadId, action: "competitor_movement_alert_approve_send", channel: "telegram", metadata: { subject } });
+      if (callbackId) await answerCallback(callbackId, "Competitor movement alert sent.");
+      if (chatId && messageId) await editCallbackMessage(chatId, messageId, `${messageText}\n\n✅ Approved and sent to ${lead.email}.`);
+      return NextResponse.json({ ok: true, action, leadId, sent: true });
+    }
 
     if (!callbackData.startsWith("niche_")) {
       if (callbackId) await answerCallback(callbackId, "Unsupported VizBiz action.", true);

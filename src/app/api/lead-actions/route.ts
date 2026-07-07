@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { getAllLeads, updateLeadResearchResults } from "@/lib/google-sheets";
 import type { LeadRow } from "@/lib/google-sheets";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
+import { recordActionAudit, requireMissionControlApiAuth } from "@/lib/mission-control-api-auth";
+import { buildMissionControlNicheResolution } from "@/lib/niche-resolution-actions";
+import { approveAndSendGatedEmail } from "@/lib/email-suite-automation";
 
 // GET /api/lead-actions — list all leads with their available actions
-export async function GET() {
+export async function GET(request: Request) {
+  const unauthorized = requireMissionControlApiAuth(request);
+  if (unauthorized) return unauthorized;
   try {
     const leads = await getAllLeads();
     const leadsWithActions = leads.map((lead) => ({
@@ -36,8 +41,23 @@ async function proxyReviewAction(request: Request, leadId: string, action: strin
   return res.json();
 }
 
+function buildEmailDraftNote(kind: "SAVED" | "APPROVED", subject: string, body: string) {
+  const marker = kind === "SAVED" ? "[EMAIL_DRAFT_SAVED" : "[EMAIL_DRAFT_APPROVED";
+  return `${marker} ${new Date().toISOString()}] ${JSON.stringify({ subject, body })}`;
+}
+
+function getEmailDraftPayload(data: unknown) {
+  const draft = data as { subject?: unknown; body?: unknown } | undefined;
+  const subject = String(draft?.subject || "").trim();
+  const body = String(draft?.body || "").trim();
+  if (!subject || !body) return null;
+  return { subject, body };
+}
+
 // POST /api/lead-actions — execute a pipeline action on a lead
 export async function POST(request: Request) {
+  const unauthorized = requireMissionControlApiAuth(request);
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
     const { leadId, action, data } = body;
@@ -55,6 +75,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Action "${action}" not allowed for status "${lead.status}"` }, { status: 400 });
     }
 
+    await recordActionAudit({ leadId, action, channel: "mission_control", metadata: { status: lead.status } });
+
     switch (action) {
       case "run_research": {
         const origin = new URL(request.url).origin;
@@ -70,6 +92,32 @@ export async function POST(request: Request) {
       case "approve": {
         const result = await proxyReviewAction(request, leadId, "approve");
         return NextResponse.json({ success: true, action: "approve", leadId, result });
+      }
+
+      case "approve_gated_email": {
+        const templateId = data?.templateId === 'E11_30_DAY_RESCAN' ? 'E11_30_DAY_RESCAN' : 'E11_30_DAY_RESCAN';
+        const result = await approveAndSendGatedEmail(lead, templateId);
+        await recordActionAudit({ leadId, action: "approve_gated_email", channel: "mission_control", metadata: { templateId, messageId: result.messageId } });
+        return NextResponse.json({ success: true, action: "approve_gated_email", leadId, result });
+      }
+
+      case "save_email_draft": {
+        const draft = getEmailDraftPayload(data);
+        if (!draft) return NextResponse.json({ error: "Draft subject and body are required" }, { status: 400 });
+        await updateLeadResearchResults(leadId, {
+          notes: `${lead.notes || ""}\n${buildEmailDraftNote("SAVED", draft.subject, draft.body)}`,
+        });
+        return NextResponse.json({ success: true, action: "save_email_draft", leadId });
+      }
+
+      case "approve_email": {
+        const draft = getEmailDraftPayload(data);
+        if (!draft) return NextResponse.json({ error: "Draft subject and body are required" }, { status: 400 });
+        await updateLeadResearchResults(leadId, {
+          status: "email_drafted",
+          notes: `${lead.notes || ""}\n${buildEmailDraftNote("APPROVED", draft.subject, draft.body)}`,
+        });
+        return NextResponse.json({ success: true, action: "approve_email", leadId });
       }
 
       case "hold": {
@@ -103,7 +151,7 @@ export async function POST(request: Request) {
         const result = await fetch(`${origin}/api/pipeline/process`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ leadId, force: true, researchMode: data?.researchMode || "free" }),
+          body: JSON.stringify({ leadId, force: true, researchMode: data?.researchMode || "free", revisionReason: reason }),
         }).then((res) => res.json().catch(() => ({ ok: res.ok, status: res.status })));
         try {
           await sendPipelineAlert([
@@ -288,6 +336,42 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, action: "mark_junk", leadId });
       }
 
+      case "resolve_niche": {
+        const resolution = buildMissionControlNicheResolution({
+          leadId,
+          action: data?.resolutionAction as "use_submitted" | "use_website" | "custom",
+          submittedNiche: typeof data?.submittedNiche === 'string' ? data.submittedNiche : '',
+          websiteNiche: typeof data?.websiteNiche === 'string' ? data.websiteNiche : '',
+          customNiche: typeof data?.customNiche === 'string' ? data.customNiche : '',
+        });
+        await updateLeadResearchResults(leadId, {
+          status: "new",
+          researchStatus: "pending",
+          notes: `${lead.notes || ""}\n${resolution.noteLine}`,
+        });
+        await recordActionAudit({ leadId, action: `niche_resolution_${resolution.action}`, channel: "mission_control", metadata: { selectedNiche: resolution.selectedNiche } });
+        const origin = new URL(request.url).origin;
+        const rerun = await fetch(`${origin}/api/pipeline/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId, force: true, researchMode: data?.researchMode || "free", revisionReason: resolution.rerunReason }),
+        }).then((res) => res.json().catch(() => ({ success: res.ok, status: res.status })));
+        try {
+          await sendPipelineAlert([
+            `✅ Niche resolution applied — ${lead.dealershipName || "Unknown business"}`,
+            "",
+            `Lead ID: ${leadId}`,
+            `Selected niche: ${resolution.selectedNiche}`,
+            `Action: ${resolution.action}`,
+            `Channel: Mission Control`,
+            `Rerun: ${JSON.stringify(rerun).slice(0, 300)}`,
+          ].join("\n"));
+        } catch (alertErr) {
+          console.warn("[lead-actions] niche resolution alert failed (non-blocking):", alertErr);
+        }
+        return NextResponse.json({ success: true, action: "resolve_niche", leadId, selectedNiche: resolution.selectedNiche, rerun });
+      }
+
       case "update_status": {
         if (!data?.status) return NextResponse.json({ error: "data.status is required" }, { status: 400 });
         await updateLeadResearchResults(leadId, {
@@ -309,16 +393,16 @@ export async function POST(request: Request) {
 function getAvailableActions(status: string): string[] {
   switch (status) {
     case "new":
-      return ["run_research", "mark_junk", "update_status"];
+      return ["run_research", "mark_junk", "resolve_niche", "update_status"];
     case "researching":
     case "research_complete":
       return ["update_status"];
     case "pending_review":
-      return ["approve", "approve_and_send", "needs_revision", "do_not_send", "hold", "rerun", "update_status"];
+      return ["approve", "approve_and_send", "needs_revision", "do_not_send", "hold", "rerun", "resolve_niche", "update_status"];
     case "approved":
-      return ["approve_and_send", "needs_revision", "do_not_send", "update_status"];
+      return ["save_email_draft", "approve_email", "approve_and_send", "needs_revision", "do_not_send", "update_status"];
     case "email_drafted":
-      return ["approve_and_send", "needs_revision", "update_status", "mark_junk"];
+      return ["save_email_draft", "approve_email", "approve_and_send", "needs_revision", "update_status", "mark_junk"];
     case "paid_checkout_complete":
     case "paid_intake_pending":
       return ["update_status"];
@@ -327,10 +411,12 @@ function getAvailableActions(status: string): string[] {
     case "paid_report_ready_for_review":
       return ["approve_and_send", "needs_revision", "do_not_send", "update_status"];
     case "needs_revision":
-      return ["rerun", "run_research", "update_status"];
+      return ["rerun", "run_research", "resolve_niche", "update_status"];
     case "contacted":
     case "paid_report_delivered":
-      return ["update_status"];
+      return ["approve_gated_email", "update_status"];
+    case "rerun_completed":
+      return ["approve_gated_email", "update_status"];
     case "closed_won":
     case "closed_lost":
     case "do_not_send":

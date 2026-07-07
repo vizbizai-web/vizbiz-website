@@ -13,6 +13,35 @@ describe('Mission Control production integrity', () => {
     expect(middleware).not.toContain("request.nextUrl.pathname.startsWith('/mission-control/api')");
   });
 
+  it('protects canonical Mission Control action APIs from unauthenticated outside requests', () => {
+    const protectedRoutes = [
+      'src/app/api/lead-actions/route.ts',
+      'src/app/api/send-report-email/route.ts',
+      'src/app/api/fix-kits/[leadId]/route.ts',
+      'src/app/api/fix-kits/[leadId]/artifact/route.ts',
+      'src/app/api/fix-kits/[leadId]/deliver/route.ts',
+      'src/app/api/fix-kits/[leadId]/download/route.ts',
+      'src/app/api/monthly-one-pagers/[leadId]/route.ts',
+      'src/app/api/email-drafts/route.ts',
+      'src/app/api/pipeline-status/route.ts',
+      'src/app/api/attention-feed/route.ts',
+      'src/app/api/cron-status/route.ts',
+    ];
+
+    for (const file of protectedRoutes) {
+      const source = repoFile(file);
+      expect(source).toContain('requireMissionControlApiAuth');
+      expect(source).toContain('if (unauthorized) return unauthorized');
+    }
+
+    const wrapper = repoFile('src/app/mission-control/api/lead-actions/route.ts');
+    expect(wrapper).toContain('missionControlInternalHeaders');
+    const auth = repoFile('src/lib/mission-control-api-auth.ts');
+    expect(auth).toContain('Unauthorized Mission Control API request');
+    expect(auth).toContain('recordActionAudit');
+    expect(auth).toContain("event_type: 'action_audit'");
+  });
+
   it('does not serve stubbed pipeline data from the Mission Control API', () => {
     const route = repoFile('src/app/mission-control/api/pipeline-status/route.ts');
 
@@ -177,6 +206,37 @@ describe('Mission Control production integrity', () => {
     expect(pipelinePage).not.toContain("'draft_email'");
     expect(pipelinePage).not.toContain("'approve_email'");
     expect(pipelinePage).not.toContain("'follow_up'");
+  });
+
+  it('forces manual reruns through current preflight and research instead of legacy stored state', () => {
+    const leadActions = repoFile('src/app/api/lead-actions/route.ts');
+    const pipeline = repoFile('src/lib/pipeline-controller.ts');
+
+    expect(leadActions).toContain('body: JSON.stringify({ leadId, force: true, researchMode: data?.researchMode || "free", revisionReason: reason })');
+    expect(pipeline).toContain('runPreflightStage(leadId, { force: options.force');
+    expect(pipeline).toContain('runResearchStage(leadId, { force: options.force');
+    expect(pipeline).toContain('preflightScan(lead.website, lead.city, lead.dealershipName');
+    expect(pipeline).toContain('runResearch(');
+  });
+
+  it('keeps Email Hub edited drafts persistent before approval', () => {
+    const emailHub = repoFile('src/app/mission-control/emails/page.tsx');
+    const leadActions = repoFile('src/app/api/lead-actions/route.ts');
+
+    expect(emailHub).toContain('handleSaveDraft');
+    expect(emailHub).toContain("action: 'save_email_draft'");
+    expect(emailHub).toContain("action: 'approve_email'");
+    expect(emailHub).toContain('setEmailDrafts');
+    expect(emailHub).not.toContain("onClick={() => { setEditingId(null); }} className=\"text-sm px-4 py-2 rounded-lg bg-emerald-500/10");
+    expect(leadActions).toContain('case "save_email_draft"');
+    expect(leadActions).toContain('case "approve_email"');
+    expect(leadActions).toContain('[EMAIL_DRAFT_SAVED');
+    expect(leadActions).toContain('[EMAIL_DRAFT_APPROVED');
+    expect(emailHub).not.toContain('your-site');
+    const emailDraftsRoute = repoFile('src/app/mission-control/api/email-drafts/route.ts');
+    expect(emailDraftsRoute).toContain('renderClientEmail');
+    expect(emailDraftsRoute).toContain('buildReportUrl(lead.leadId)');
+    expect(emailDraftsRoute).not.toContain('`/report/${lead.leadId}`');
   });
 
   it('keeps professional-audio niche extraction available and fills evidence-first fallbacks', () => {

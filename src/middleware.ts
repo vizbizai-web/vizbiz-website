@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Serve Google Search Console verification files
   const gscFiles: Record<string, string> = {
     '/googlefffa2894f075b012.html': 'google-site-verification: googlefffa2894f075b012',
@@ -42,10 +42,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for session cookie
+  // Check for a signed, unexpired Mission Control session cookie.
   const session = request.cookies.get('mc_session')?.value;
+  const validSession = await verifyMissionControlSession(session);
   
-  if (!session) {
+  if (!validSession) {
     // Redirect to login
     const loginUrl = new URL('/mission-control/login', request.url);
     loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
@@ -53,6 +54,24 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyMissionControlSession(session?: string): Promise<boolean> {
+  if (!session) return false;
+  const [expiresRaw, nonce, signature] = session.split('.');
+  const expires = Number(expiresRaw);
+  if (!expires || !nonce || !signature || Date.now() > expires) return false;
+  const password = process.env.MISSION_CONTROL_PASSWORD || '';
+  if (!password) return false;
+  const salt = process.env.MISSION_CONTROL_SECRET_SALT || 'vizbiz-salt';
+  const expected = await sha256Hex(`${expires}:${nonce}:${password}:${salt}`);
+  return signature === expected;
 }
 
 export const config = {

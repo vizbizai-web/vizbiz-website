@@ -21,6 +21,7 @@ interface Lead {
   notes: string;
   source: string;
   leadId: string;
+  triage?: { label: 'junk_candidate' | 'uncertain' | 'clean'; reasons: string[]; score: number };
 }
 
 const COLUMNS = [
@@ -119,10 +120,15 @@ function useLeadAction() {
 export default function PipelinePage() {
   const { leads, loading, error, refetch } = usePipeline();
   const { runAction, loadingId, errorId, successId } = useLeadAction();
+  const [triageFilter, setTriageFilter] = useState<'all' | 'junk_candidate' | 'uncertain'>('all');
+
+  const visibleLeads = leads.filter((lead) => triageFilter === 'all' || lead.triage?.label === triageFilter);
+  const junkCandidates = leads.filter((lead) => lead.triage?.label === 'junk_candidate');
+  const uncertainLeads = leads.filter((lead) => lead.triage?.label === 'uncertain');
 
   const byColumn = COLUMNS.map((col) => ({
     ...col,
-    leads: leads.filter((l) => l.status === col.id),
+    leads: visibleLeads.filter((l) => l.status === col.id),
   }));
 
   const handleAction = async (leadId: string, action: string, data?: any) => {
@@ -144,6 +150,28 @@ export default function PipelinePage() {
       {error && (
         <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-sm">{error}</div>
       )}
+
+      <div className="glass-card border-0 rounded-2xl p-4 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold">Step 1 triage</p>
+            <h2 className="text-white font-semibold mt-1">Spam defense + queue filters</h2>
+            <p className="text-sm text-slate-400 mt-1">Bulk-junk is intentionally approval-gated. Candidates below are proposals only until Alex approves them.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(['all', 'junk_candidate', 'uncertain'] as const).map((filter) => (
+              <button key={filter} onClick={() => setTriageFilter(filter)} className={`text-sm px-3 py-2 rounded-lg border ${triageFilter === filter ? 'text-cyan-200 border-cyan-400/50 bg-cyan-400/10' : 'text-slate-300 border-slate-700 bg-slate-900/40'}`}>
+                {filter === 'all' ? `All (${leads.length})` : filter === 'junk_candidate' ? `Junk candidates (${junkCandidates.length})` : `Uncertain (${uncertainLeads.length})`}
+              </button>
+            ))}
+          </div>
+        </div>
+        {junkCandidates.length > 0 && (
+          <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-100">
+            Proposed junk candidates are visible in the filter. Do not bulk-junk until Alex approves the list. Uncertain leads are excluded by design.
+          </div>
+        )}
+      </div>
 
       {/* Kanban Board */}
       <div className="flex flex-col md:flex-row md:gap-3 gap-2 md:overflow-x-auto pb-4">
@@ -188,7 +216,13 @@ export default function PipelinePage() {
                       </div>
 
                       {/* Tags */}
-                      <div className="flex items-center gap-1.5 mb-3">
+                      <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                        {lead.triage?.label === 'junk_candidate' && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-red-500/15 text-red-200 border border-red-500/20" title={lead.triage.reasons.join(', ')}>Junk candidate · {lead.triage.score}</span>
+                        )}
+                        {lead.triage?.label === 'uncertain' && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-200 border border-amber-500/20" title={lead.triage.reasons.join(', ')}>Uncertain · {lead.triage.score}</span>
+                        )}
                         {lead.visibilityBand && (
                           <span className="text-xs px-2 py-0.5 rounded bg-slate-800/50 text-slate-300">{lead.visibilityBand}</span>
                         )}

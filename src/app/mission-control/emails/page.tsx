@@ -44,6 +44,20 @@ function parseResearch(notes: string): any | null {
   return null;
 }
 
+function parseSavedEmailDraft(notes: string): { subject: string; body: string; approved: boolean } | null {
+  if (!notes) return null;
+  const matches = Array.from(notes.matchAll(/\[EMAIL_DRAFT_(SAVED|APPROVED)[^\]]*\]\s*(\{[^\n]+\})/g));
+  const latest = matches.at(-1);
+  if (!latest) return null;
+  try {
+    const parsed = JSON.parse(latest[2]);
+    if (typeof parsed.subject !== 'string' || typeof parsed.body !== 'string') return null;
+    return { subject: parsed.subject, body: parsed.body, approved: latest[1] === 'APPROVED' };
+  } catch {
+    return null;
+  }
+}
+
 function generateDraft(lead: Lead, research: any): { subject: string; body: string } {
   const name = lead.contactName || lead.dealershipName;
   const biz = lead.dealershipName;
@@ -92,13 +106,14 @@ function useDrafts() {
       const draftable = leads.filter(l => l.status === 'email_drafted' || l.status === 'approved');
       const generated: EmailDraft[] = draftable.map(lead => {
         const research = parseResearch(lead.notes);
-        const { subject, body } = generateDraft(lead, research);
+        const saved = parseSavedEmailDraft(lead.notes);
+        const generatedDraft = generateDraft(lead, research);
         return {
           lead,
           research,
-          subject,
-          body,
-          status: lead.status === 'approved' ? 'generated' as DraftStatus : 'generated' as DraftStatus,
+          subject: saved?.subject || generatedDraft.subject,
+          body: saved?.body || generatedDraft.body,
+          status: saved?.approved ? 'approved' as DraftStatus : 'generated' as DraftStatus,
         };
       });
 
@@ -112,11 +127,11 @@ function useDrafts() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-  return { drafts, loading, error, refetch: fetchData };
+  return { drafts, setEmailDrafts, loading, error, refetch: fetchData };
 }
 
 export default function EmailsPage() {
-  const { drafts, loading, error, refetch } = useDrafts();
+  const { drafts, setEmailDrafts, loading, error, refetch } = useDrafts();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState('');
@@ -130,6 +145,22 @@ export default function EmailsPage() {
     generated: drafts.filter(d => d.status === 'generated').length,
     approved: drafts.filter(d => d.status === 'approved').length,
     sent: drafts.filter(d => d.status === 'sent').length,
+  };
+
+  const handleSaveDraft = async (draft: EmailDraft) => {
+    const subject = editSubject.trim();
+    const body = editBody.trim();
+    const res = await fetch('/mission-control/api/lead-actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: draft.lead.leadId, action: 'save_email_draft', data: { subject, body } }),
+    });
+    if (res.ok) {
+      setEmailDrafts((current) => current.map((item) =>
+        item.lead.leadId === draft.lead.leadId ? { ...item, subject, body } : item
+      ));
+      setEditingId(null);
+    }
   };
 
   const handleApprove = async (draft: EmailDraft) => {
@@ -249,7 +280,7 @@ export default function EmailsPage() {
                     className="w-full h-64 bg-slate-900/30 border border-slate-800/30 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-slate-600 font-sans resize-y"
                   />
                   <div className="flex gap-2">
-                    <button onClick={() => { setEditingId(null); }} className="text-sm px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Save</button>
+                    <button onClick={() => handleSaveDraft(draft)} className="text-sm px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Save</button>
                     <button onClick={() => setEditingId(null)} className="text-sm px-4 py-2 rounded-lg bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                   </div>
                 </div>

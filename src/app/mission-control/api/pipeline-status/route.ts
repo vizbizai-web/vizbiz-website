@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
 import { excludeQaLeads } from '@/lib/qa-leads';
+import { classifyLeadTriage } from '@/lib/lead-triage';
+import { buildMcHealthStrip, buildNeedsYouQueue, enrichProviderStatusFromLatestSnapshot } from '@/lib/mission-control-needs-you';
 
 export const revalidate = 0;
 
@@ -19,7 +21,10 @@ export async function GET() {
   try {
     const allLeads = await getAllLeads();
     const qaExcluded = allLeads.length;
-    const leads = excludeQaLeads(allLeads);
+    const leads = excludeQaLeads(allLeads).map((lead) => ({
+      ...lead,
+      triage: classifyLeadTriage(lead),
+    }));
     const pipeline = leads.reduce<Record<string, typeof leads>>((acc, lead) => {
       const status = lead.status || 'new';
       if (!acc[status]) acc[status] = [];
@@ -35,12 +40,21 @@ export async function GET() {
       { total: leads.length } as Record<(typeof STATUSES)[number] | 'total', number>,
     );
 
+    const needsYou = buildNeedsYouQueue(leads);
+    const health = await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads));
+
     return NextResponse.json({
       source: 'vizbiz-leads',
       stats,
       qa: { excluded: qaExcluded - leads.length, included: leads.length },
       pipeline,
       leads,
+      needsYou,
+      health,
+      triage: {
+        junkCandidates: leads.filter((lead) => lead.triage.label === 'junk_candidate').length,
+        uncertain: leads.filter((lead) => lead.triage.label === 'uncertain').length,
+      },
       syncedAt: new Date().toISOString(),
     });
   } catch (error) {

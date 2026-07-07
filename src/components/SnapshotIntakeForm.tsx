@@ -1,7 +1,7 @@
 "use client";
 
 import type { FocusEvent, FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const inputClassName = "input-shell mt-2";
 const labelClassName = "block text-sm font-medium text-[var(--text-primary)]";
@@ -37,6 +37,12 @@ export default function SnapshotIntakeForm({
   hasError,
 }: SnapshotIntakeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStartedAt, setFormStartedAt] = useState('');
+
+  useEffect(() => {
+    setFormStartedAt(String(Date.now()));
+  }, []);
+
   function handleWebsiteBlur(event: FocusEvent<HTMLInputElement>) {
     const normalized = normalizeWebsiteUrl(event.currentTarget.value);
     if (!normalized) {
@@ -130,6 +136,8 @@ export default function SnapshotIntakeForm({
       <input type="hidden" name="originalCta" value={originalCta} />
       <input type="hidden" name="originalPage" value={originalPage} />
       <input type="hidden" name="phone" value="Not provided via intake form" />
+      <input type="hidden" name="formStartedAt" value={formStartedAt} />
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
       {hasError ? (
         <div className="rounded-2xl border border-amber-300/18 bg-amber-400/10 px-4 py-3 text-sm text-amber-100/90">
