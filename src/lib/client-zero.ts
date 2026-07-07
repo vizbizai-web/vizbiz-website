@@ -103,11 +103,19 @@ export async function appendClientZeroFixtureSnapshot(input: { leadId: string; r
   const total = input.total || (input.tier === 'free' ? 15 : 180);
   const research = buildFixtureResearchResult(total, input.appeared);
   const snapshots = await listAuditSnapshots(input.leadId);
-  return appendAuditSnapshot({
+  const payload = {
     leadId: input.leadId, sequence: snapshots.length + 1, runType: input.runType as any, tier: input.tier as any, profileHash: 'client-zero-profile-v1',
-    promptPlan: { prompts: research.promptPlanMetadata.prompts, version: research.promptPlanMetadata.version, hash: research.promptPlanMetadata.hash, batteryVersion: research.batteryVersion },
-    platformScores: research.platformScores, blendedScore: input.appeared / total, band: research.statusBand, promptResults: research.promptResults, competitorScores: [], readiness: { hasLlmsTxt: true, hasSchema: true }, costEstimate: input.tier === 'free' ? 0.05 : 0.75, status: 'complete', errorMessage: null, source: CLIENT_ZERO_SOURCE,
-  });
+    promptPlan: { prompts: research.promptPlanMetadata.prompts, version: research.promptPlanMetadata.version, hash: research.promptPlanMetadata.hash, batteryVersion: research.batteryVersion, runType: input.runType },
+    platformScores: research.platformScores, blendedScore: input.appeared / total, band: research.statusBand, promptResults: research.promptResults, competitorScores: [], readiness: { hasLlmsTxt: true, hasSchema: true }, costEstimate: input.tier === 'free' ? 0.05 : 0.75, status: 'complete' as const, errorMessage: null, source: CLIENT_ZERO_SOURCE,
+  };
+  try {
+    return await appendAuditSnapshot(payload);
+  } catch (error) {
+    if (input.runType === 'pulse' && String(error).includes('audit_snapshots_run_type_check')) {
+      return appendAuditSnapshot({ ...payload, runType: 'manual' as any, source: 'client_zero:pulse' });
+    }
+    throw error;
+  }
 }
 
 function monthLabel(iso?: string, seq?: number) {
@@ -118,7 +126,7 @@ export async function getClientZeroDashboardModel(): Promise<ClientZeroDashboard
   const lead = await getClientZeroLead();
   const snapshots = lead?.leadId ? (await listAuditSnapshots(lead.leadId)).filter((s) => s.status === 'complete') : [];
   const monthlySnapshots = snapshots.filter((s) => s.tier === 'paid' && s.runType !== 'pulse');
-  const pulseSnapshots = snapshots.filter((s) => s.runType === 'pulse' || s.tier === 'free');
+  const pulseSnapshots = snapshots.filter((s) => s.runType === 'pulse' || s.tier === 'free' || s.source === 'client_zero:pulse' || (s.promptPlan as any)?.runType === 'pulse');
   const latest = snapshots.at(-1);
   const engineLines = ['openai','gemini','perplexity'].map((provider) => ({ provider, points: snapshots.map((s) => ({ sequence: s.sequence, rate: Number((s.platformScores || []).find((p: any) => p.provider === provider)?.appearanceRate || 0), runType: s.runType })) }));
   const cats = new Map<string, { name: string; vals: number[] }>();

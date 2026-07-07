@@ -31,6 +31,7 @@ async function runPulse(lead: Awaited<ReturnType<typeof ensureClientZeroLead>>) 
 
 export async function GET(request: Request) {
   if (!authorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  try {
   const url = new URL(request.url);
   const action = url.searchParams.get('action') || 'dispatch';
   const now = new Date(url.searchParams.get('now') || Date.now());
@@ -67,6 +68,9 @@ export async function GET(request: Request) {
   const latestPulse = snapshots.filter((s) => s.runType === 'pulse').at(-1);
   const pulseDue = !latestPulse || !latestPulse.createdAt || Date.parse(latestPulse.createdAt) <= now.getTime() - 7 * 24 * 60 * 60 * 1000;
   return NextResponse.json({ success: true, action: 'dispatch', leadId: lead.leadId, pulseDue, monthlyDelegatedTo: '/api/cron/process-reruns', snapshotCount: snapshots.length });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
