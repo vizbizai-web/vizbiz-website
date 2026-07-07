@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "What Is AI Visibility Scoring? — VizBiz",
   description:
-    "AI Visibility Scoring measures how often your business appears in AI-powered search results like ChatGPT, Google AI Overviews, and Perplexity. Learn what it is, why it matters, and how to improve your score.",
+    "AI Visibility Scoring measures how often your business appears in AI-powered search results like ChatGPT, Gemini, and Perplexity. Learn what it is, why it matters, and how to improve your score.",
   openGraph: {
     title: "What Is AI Visibility Scoring?",
     description:
@@ -44,7 +44,7 @@ export default function AIVisibilityScoring() {
           <p className="text-lg text-gray-700 leading-relaxed">
             <strong>AI Visibility Scoring</strong> measures how often and how
             prominently your business appears in AI-generated answers — across
-            platforms like ChatGPT, Google AI Overviews, Gemini, and Perplexity.
+            platforms like ChatGPT, Gemini, and Perplexity.
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
             Think of it like SEO ranking, but for AI. Instead of tracking your
@@ -239,7 +239,7 @@ export default function AIVisibilityScoring() {
                 step: "1",
                 title: "Make your site readable by AI crawlers",
                 description:
-                  "Ensure your robots.txt allows AI bots (GPTBot, ClaudeBot, PerplexityBot, Google-Extended). Many businesses accidentally block them.",
+                  "Ensure your robots.txt allows AI bots (GPTBot, GeminiBot, PerplexityBot, Google-Extended). Many businesses accidentally block them.",
               },
               {
                 step: "2",
@@ -318,7 +318,7 @@ export default function AIVisibilityScoring() {
           </h2>
           <p className="text-gray-600 text-lg">
             Get a free AI visibility audit for your dealership. We&apos;ll run
-            real buyer-intent queries across ChatGPT, Google AI Overviews, and
+            real buyer-intent queries across ChatGPT, Gemini, and
             more — and show you exactly where you appear and where you
             don&apos;t.
           </p>

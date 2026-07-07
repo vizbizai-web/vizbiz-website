@@ -343,7 +343,7 @@ export default function HomeContent() {
               </div>
 
               <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-xl sm:leading-8">
-                See whether ChatGPT, Gemini, Claude, Perplexity, and Google AI are more likely to recommend you or the two competitors customers already compare you with.
+                See whether ChatGPT, Gemini, and Perplexity are more likely to recommend you or the two competitors customers already compare you with.
               </p>
 
               {/* Stats bar — data points AI can cite */}
@@ -406,7 +406,7 @@ export default function HomeContent() {
             <div className="max-w-3xl">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#22D3EE]">Why AI recommends your competitors</p>
               <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">AI does not guess who to trust. It looks for evidence.</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-300">When someone asks ChatGPT, Gemini, Claude, Perplexity, or Google AI for a local recommendation, your website is only one signal. The answer usually comes from a pattern: clear services, clean local data, reviews, schema, and third-party mentions that all point to the same business.</p>
+              <p className="mt-5 text-lg leading-8 text-slate-300">When someone asks ChatGPT, Gemini, or Perplexity for a local recommendation, your website is only one signal. The answer usually comes from a pattern: clear services, clean local data, reviews, schema, and third-party mentions that all point to the same business.</p>
 
               {/* Data-rich proof strip */}
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -414,7 +414,7 @@ export default function HomeContent() {
                   <p className="text-sm text-white/60">In our testing across <span className="text-white font-medium">200+ local businesses</span>, the average AI Visibility Index score was <span className="text-amber-400 font-semibold">28 out of 100</span>. Most businesses appear in fewer than 1 in 5 AI-generated answers for their own services.</p>
                 </div>
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                  <p className="text-sm text-white/60"><span className="text-white font-medium">ChatGPT alone drives 87.4%</span> of AI referral traffic to local business websites, followed by Google AI Overviews at 7.2%. If ChatGPT does not recommend you, you are invisible to the majority of AI-assisted buyers.</p>
+                  <p className="text-sm text-white/60"><span className="text-white font-medium">ChatGPT alone drives 87.4%</span> of AI referral traffic to local business websites, followed by Gemini at 7.2%. If ChatGPT does not recommend you, you are invisible to the majority of AI-assisted buyers.</p>
                 </div>
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
                   <p className="text-sm text-white/60">Businesses with structured data (schema markup), an llms.txt file, and consistent NAP citations score <span className="text-emerald-400 font-semibold">3.6× higher</span> on average than those without. The fix is known. Most local businesses just have not done it yet.</p>
@@ -571,10 +571,10 @@ export default function HomeContent() {
               <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">Answers that make the next step easier.</h2>
             </div>
             <div className="mt-12 space-y-3">
-              <FAQItem q="Does VizBiz replace SEO?" a="No. VizBiz measures AI visibility — how often you appear in ChatGPT, Gemini, Claude, Perplexity, and Google AI answers. SEO is still critical for traditional search. We complement it by filling the gap that SEO tools don't address." />
+              <FAQItem q="Does VizBiz replace SEO?" a="No. VizBiz measures AI visibility — how often you appear in ChatGPT, Gemini, and Perplexity answers. SEO is still critical for traditional search. We complement it by filling the gap that SEO tools don't address." />
               <FAQItem q="What do I actually receive?" a="An AVI score (0–100) showing your AI visibility strength, a competitor comparison revealing which local businesses AI recommends instead of you, platform-specific findings, and a prioritized action plan ranked by impact." />
               <FAQItem q="How fast do I get results?" a="Your free mini report is delivered within minutes. Full reports are typically ready within 24–48 hours after we complete the multi-platform AI analysis across 20+ buyer-intent prompts." />
-              <FAQItem q="How does VizBiz track improvement over time?" a="We re-run the same prompt battery across all AI platforms monthly or quarterly, depending on your plan. This measures whether your business is appearing more often and closing gaps with competitors." />
+              <FAQItem q="How does VizBiz track improvement over time?" a="We re-run the same prompt battery across the AI platforms we test monthly or quarterly, depending on your plan. This measures whether your business is appearing more often and closing gaps with competitors." />
               <FAQItem q="Does it work with any CMS or website builder?" a="Yes. VizBiz evaluates AI visibility independently of your CMS. We analyze how AI platforms interpret your business across the web — your website, reviews, directories, and third-party sources." />
             </div>
           </div>
@@ -609,18 +609,14 @@ export default function HomeContent() {
             <div id="blog-track" className="mt-10 flex gap-4 overflow-x-auto pb-4 scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               {[
-                { title: 'AI Visibility for Med Spas', slug: '/ai-visibility-for-med-spas', desc: 'How med spas can become easier for ChatGPT, Google AI, Gemini, Claude, and Perplexity to understand and recommend.' },
+                { title: 'AI Visibility for Med Spas', slug: '/ai-visibility-for-med-spas', desc: 'How med spas can become easier for ChatGPT, Gemini, and Perplexity to understand and recommend.' },
                 { title: 'Best AI Visibility Tools for Local Businesses', slug: '/best-ai-visibility-tools-for-local-businesses', desc: 'The practical tooling stack for local businesses measuring AI visibility beyond traditional SEO.' },
                 { title: '90-Day AI Visibility Playbook for Car Dealerships', slug: 'geo-is-the-new-playbook-car-dealerships', desc: 'Step-by-step plan to go from invisible to AI-recommended in 90 days.' },
-                { title: '35+ AI Visibility Statistics Every Dealership Needs to Know', slug: 'ai-visibility-statistics-car-dealerships', desc: 'The data behind why AI visibility matters — traffic, buyer behavior, local impact.' },
-                { title: 'AI Visibility Tools for Car Dealerships Compared (2026)', slug: 'vizbiz-vs-metricus-vs-scope', desc: 'Side-by-side comparison of every tool that measures AI visibility.' },
-                { title: 'ChatGPT vs Gemini vs Perplexity: Which Recommends More Dealerships?', slug: 'chatgpt-vs-gemini-vs-perplexity-dealerships', desc: 'We tested all three. The differences are bigger than you think.' },
                 { title: 'Free AI Visibility Check for Your Dealership', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'How to run a quick self-audit before investing in a full report.' },
                 { title: 'GEO for Car Dealerships: The Complete Guide', slug: 'generative-engine-optimization-car-dealerships', desc: 'Everything about Generative Engine Optimization — the new SEO.' },
                 { title: 'How to Get Your Dealership Recommended by ChatGPT in 2026', slug: 'how-to-get-dealership-recommended-by-chatgpt', desc: 'Specific steps to make ChatGPT mention your dealership.' },
                 { title: 'Not Showing Up in ChatGPT? Here\'s Why', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'The most common reasons AI skips your store and what to fix first.' },
-                { title: 'We Audited 50 Ontario Dealerships — Here\'s What We Found', slug: 'ai-visibility-score-ontario-car-dealerships', desc: 'Full results from our Ontario dealership audit with scores and takeaways.' },
-                { title: 'VizBiz vs Metricus vs Scope: Which AI Visibility Tool?', slug: 'vizbiz-vs-metricus-vs-scope', desc: 'Honest comparison of the three tools built for dealership AI visibility.' },
+                
                 { title: 'What Is AI Visibility for Car Dealerships? (Complete Guide)', slug: 'what-is-ai-visibility-car-dealerships', desc: 'The fundamentals — what AI visibility is, why it matters, and where to start.' },
                 { title: 'Why Your Dealership Isn\'t Showing Up in ChatGPT', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'Diagnosing the visibility gap and the fixes that move the needle fastest.' },
               ].map((post, i) => (
@@ -691,7 +687,7 @@ export default function HomeContent() {
                   <img src="/vizbiz-icon-256.svg" alt="" className="h-9 w-9 object-contain" />
                   <span className="text-lg tracking-[-0.035em] text-white">VizBiz<span className="text-[#22D3EE]">.ai</span></span>
                 </Link>
-                <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/40">AI Visibility Intelligence for local businesses. See whether ChatGPT, Gemini, Claude, Perplexity, and Google AI recommend you.</p>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/40">AI Visibility Intelligence for local businesses. See whether ChatGPT, Gemini, and Perplexity recommend you.</p>
               </div>
               <div className="flex flex-wrap gap-x-10 gap-y-4 text-sm text-white/40">
                 <Link href="/sample-ai-visibility-report-for-car-dealerships" className="hover:text-white">Sample Report</Link>

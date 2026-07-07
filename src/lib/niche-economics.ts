@@ -23,6 +23,7 @@ export type NicheEconomics = {
 export const NICHE_ECONOMICS: Record<string, NicheEconomics> = {
   car_dealership: { label: "Car Dealership", avgLeadValue: 500, monthlyVolume: 150, currency: "USD", maxMonthlyGap: 150000 },
   electrical_contractor: { label: "Electrical Contractor", avgLeadValue: 450, monthlyVolume: 80, currency: "GBP", maxMonthlyGap: 80000 },
+  fashion_bag_store: { label: "Fashion Bag / Leather Handbag Store", avgLeadValue: 250, monthlyVolume: 80, currency: "PLN", maxMonthlyGap: 50000 },
   endermologie_clinic: { label: "Endermologie / Body Contouring Clinic", avgLeadValue: 180, monthlyVolume: 120, currency: "AUD", maxMonthlyGap: 40000 },
   fine_jewelry: { label: "Fine Jewelry", avgLeadValue: 1000, monthlyVolume: 50, currency: "USD", maxMonthlyGap: 80000 },
   spray_tanning: { label: "Spray Tanning", avgLeadValue: 80, monthlyVolume: 150, currency: "USD", maxMonthlyGap: 15000 },

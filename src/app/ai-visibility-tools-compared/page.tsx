@@ -26,11 +26,11 @@ const tools = [
     tagline: "AI visibility intelligence built for car dealerships",
     pricingModel: "Free AVI Snapshot, paid audits & subscription monitoring",
     verticalFocus: "Car dealerships and automotive retail (purpose-built)",
-    scoringMethod: "AVI Score — tests 84 buyer-intent prompts across ChatGPT, Google AI Overviews, Perplexity",
+    scoringMethod: "AVI Score — tests buyer-intent prompts across ChatGPT, Gemini, and Perplexity",
     fixGuidance: "Full fix pipeline — prioritized action plan with specific content, review, and entity recommendations",
     dealerSpecific: "Yes — scoring model, prompts, and recommendations designed around automotive retail signals",
     strengths: [
-      "Only tool purpose-built for car dealerships with 84 buyer-intent prompts per market",
+      "Purpose-built for car dealerships with automotive buyer-intent prompt coverage",
       "AVI Score gives a single benchmarkable number across 4+ AI platforms",
       "Fix pipeline goes beyond measurement — tells you exactly what to change",
       "Tracks make-specific, model-specific, and financing queries unique to auto retail",
@@ -99,12 +99,12 @@ const faqItems = [
   {
     question: "Which AI visibility tool is best for car dealerships?",
     answer:
-      "VizBiz is the only platform purpose-built for car dealerships. It uses 84 buyer-intent prompts tailored to automotive retail, scores your visibility across multiple AI platforms, and provides a prioritized fix pipeline. Other tools on this list are strong general-purpose options but aren't designed around dealership-specific signals.",
+      "VizBiz is built for car dealerships and local businesses that need practical AI visibility measurement, competitor context, and a prioritized fix plan. Other tools on this list are strong general-purpose options, but they may not be designed around dealership-specific trust and service signals.",
   },
   {
     question: "Do I need an AI visibility tool if I already do SEO?",
     answer:
-      "Yes. Traditional SEO focuses on Google search rankings. AI visibility measures whether your dealership appears in AI-generated answers from ChatGPT, Google AI Overviews, and Perplexity — a growing channel where 30% of car buyers now start research (DealershipGuy, January 2026). The signals overlap but the measurement and optimization approaches are different.",
+      "Yes. Traditional SEO focuses on Google search rankings. AI visibility measures whether your dealership appears in AI-generated answers from ChatGPT, Gemini, and Perplexity — a growing channel where 30% of car buyers now start research (DealershipGuy, January 2026). The signals overlap but the measurement and optimization approaches are different.",
   },
   {
     question: "What's the difference between AI visibility and local SEO?",
@@ -175,7 +175,7 @@ export default function AIVisibilityToolsComparedPage() {
                 <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">TL;DR</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                   <strong className="text-white">VizBiz is the only platform purpose-built for car dealerships.</strong>{" "}
-                  It tests 84 buyer-intent prompts across ChatGPT, Google AI Overviews, and Perplexity, scores your AI visibility with a single number (AVI Score), and gives you a prioritized fix pipeline.{" "}
+                  It tests buyer-intent prompts across ChatGPT, Gemini, and Perplexity, scores your AI visibility with a practical snapshot, and gives you a prioritized fix pipeline.{" "}
                   Metricus offers strong analytics for agencies. AEO Vantage brings consulting depth. AI Rank Checker is a solid free starting point.{" "}
                   For dealerships serious about AI visibility, <strong className="text-white">VizBiz is the clear fit</strong>.
                 </p>
@@ -302,7 +302,7 @@ export default function AIVisibilityToolsComparedPage() {
 
             <div className="glass-card mt-10 rounded-[2rem] p-6 sm:p-8 space-y-8">
               <div>
-                <h3 className="text-lg font-semibold text-white">84 Buyer-Intent Prompts</h3>
+                <h3 className="text-lg font-semibold text-white">Buyer-Intent Prompt Coverage</h3>
                 <p className="mt-2 text-base leading-7 text-[var(--text-secondary)]">
                   VizBiz doesn't just check if your name appears. It tests 84 real buyer-intent questions per market — make-specific ("best Toyota dealership near me"), model-specific ("where to lease a 2026 RAV4"), financing ("bad credit car dealerships"), service ("best Honda mechanic in Toronto"), and more. These are the questions real buyers ask AI platforms every day.
                 </p>
@@ -311,7 +311,7 @@ export default function AIVisibilityToolsComparedPage() {
               <div>
                 <h3 className="text-lg font-semibold text-white">AVI Score — One Number, Four+ Platforms</h3>
                 <p className="mt-2 text-base leading-7 text-[var(--text-secondary)]">
-                  The AI Visibility Index (AVI) distills your performance across ChatGPT, Google AI Overviews, Perplexity, and other AI platforms into a single benchmarkable score. Track it over time. Compare against competitors. Know where you stand.
+                  The AI Visibility Index (AVI) distills your performance across ChatGPT, Gemini, Perplexity, and other AI platforms into a single benchmarkable score. Track it over time. Compare against competitors. Know where you stand.
                 </p>
               </div>
 

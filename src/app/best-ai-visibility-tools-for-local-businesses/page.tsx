@@ -30,7 +30,7 @@ const tools = [
       "Local businesses that want to show up when customers ask ChatGPT, Perplexity, or Gemini for recommendations — and need a clear plan to get there.",
     pros: [
       "Purpose-built for local business — tests real buyer-intent prompts per market across product, service, and location-specific queries",
-      "AVI Score gives you one benchmarkable number across ChatGPT, Google AI Overviews, Perplexity, and Gemini",
+      "AVI Score gives you one benchmarkable number across ChatGPT, Gemini, and Perplexity",
       "Goes beyond measurement: delivers a prioritized fix pipeline with specific content, review, and entity recommendations",
       "Tracks the prompts real customers actually use, not generic brand searches",
     ],
@@ -163,7 +163,7 @@ const faqItems = [
   {
     question: "What is the best AI visibility tool for local businesses?",
     answer:
-      "VizBiz. It's the only tool on the market purpose-built for local businesses — testing real buyer-intent prompts across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Other tools either measure local SEO (BrightLocal), serve general businesses (Metricus, HubSpot), or bolt AI features onto existing SEO platforms (Semrush, Quattr). If you want to know whether your business gets recommended by AI — and exactly how to fix it when it doesn't — VizBiz is the one.",
+      "VizBiz. It's the only tool on the market purpose-built for local businesses — testing real buyer-intent prompts across ChatGPT, Perplexity, Gemini, and Gemini. Other tools either measure local SEO (BrightLocal), serve general businesses (Metricus, HubSpot), or bolt AI features onto existing SEO platforms (Semrush, Quattr). If you want to know whether your business gets recommended by AI — and exactly how to fix it when it doesn't — VizBiz is the one.",
   },
   {
     question: "How do I get my business to show up in ChatGPT?",
@@ -173,7 +173,7 @@ const faqItems = [
   {
     question: "Is AI visibility different from regular SEO?",
     answer:
-      "Yes, and the gap is growing. Traditional SEO optimizes for Google's blue links. AI visibility measures whether your business appears in AI-generated answers — the responses customers get from ChatGPT, Perplexity, Google AI Overviews, and Gemini. The underlying signals overlap (content quality, reviews, authority), but the measurement and optimization strategies are different. Many businesses rank well in Google but are invisible in AI answers. You need to track both.",
+      "Yes, and the gap is growing. Traditional SEO optimizes for Google's blue links. AI visibility measures whether your business appears in AI-generated answers — the responses customers get from ChatGPT, Gemini, and Perplexity, and Gemini. The underlying signals overlap (content quality, reviews, authority), but the measurement and optimization strategies are different. Many businesses rank well in Google but are invisible in AI answers. You need to track both.",
   },
   {
     question: "Do I need to pay for an AI visibility tool?",
@@ -238,7 +238,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
                 <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Bottom Line</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                   <strong className="text-white">VizBiz is the best AI visibility tool for local businesses.</strong>{" "}
-                  It's the only platform purpose-built for local business — testing real buyer-intent prompts across ChatGPT, Perplexity, Gemini, and Google AI Overviews, scoring your visibility with the AVI Score, and handing you a prioritized fix plan.{" "}
+                  It's the only platform purpose-built for local business — testing real buyer-intent prompts across ChatGPT, Perplexity, Gemini, and Gemini, scoring your visibility with the AVI Score, and handing you a prioritized fix plan.{" "}
                   BrightLocal wins for local SEO. Metricus is promising for agencies. HubSpot's free grader is fine for a quick look. But for businesses that want to actually show up in AI answers, <strong className="text-white">VizBiz is the one to use</strong>.
                 </p>
               </div>
@@ -253,7 +253,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
                 AI visibility tools are the new category that measures — and improves — whether your business gets recommended by AI platforms. They're not the same as SEO tools, review tools, or listing managers. They test something different: whether ChatGPT, Perplexity, and Gemini actually mention your business when a customer asks.
               </p>
               <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-                We tested and compared the six tools most likely to come up when you search for AI visibility solutions for local businesses. Here's what we found.
+                This guide compares the types of tools local businesses are likely to encounter when evaluating AI visibility solutions.
               </p>
             </div>
           </div>
@@ -439,7 +439,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
               <div>
                 <h3 className="text-lg font-semibold text-white">What AI Visibility Tools Actually Do</h3>
                 <p className="mt-2 text-base leading-7 text-[var(--text-secondary)]">
-                  They query AI platforms (ChatGPT, Perplexity, Gemini, Google AI Overviews) with real customer questions, record whether your business appears in the answer, and track that over time. The better ones — like VizBiz — also tell you what to fix: which content to create, which reviews to pursue, and which entity signals are missing.
+                  They query AI platforms (ChatGPT, Perplexity, Gemini, Gemini) with real customer questions, record whether your business appears in the answer, and track that over time. The better ones — like VizBiz — also tell you what to fix: which content to create, which reviews to pursue, and which entity signals are missing.
                 </p>
               </div>
               <div>
@@ -482,7 +482,7 @@ export default function BestAIVisibilityToolsForLocalBusinessesPage() {
               Find Out If Your Business Shows Up in AI Answers
             </h2>
             <p className="mt-4 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Google AI Overviews.
+              Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Gemini.
             </p>
             <Link
               href="/intake"

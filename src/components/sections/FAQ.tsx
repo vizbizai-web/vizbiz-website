@@ -15,7 +15,7 @@ const faqs = [
   {
     question: "What exactly do you test?",
     answer:
-      'We run 20-25 real buyer-intent questions across five AI platforms: ChatGPT, Gemini, Perplexity, Claude, and Copilot. Questions like "most trusted [service] in [your city]" and "best options near me." We record every response.',
+      'We run 5 real buyer-intent questions per engine across three AI platforms: ChatGPT, Gemini, and Perplexity. Questions like "most trusted [service] in [your city]" and "best options near me." We record every response.',
   },
   {
     question: "When will I see my results?",

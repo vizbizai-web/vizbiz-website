@@ -11,8 +11,8 @@ import PhoneMockup, {
 } from "@/components/PhoneMockup";
 
 const trustItems = [
-  "5 AI platforms tested",
-  "20-25 buyer prompts",
+  "3 AI platforms tested",
+  "5 buyer prompts per engine",
   "Local competitor benchmarking",
   "Human-reviewed findings, not raw screenshots",
 ];

@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "What Is GEO (Generative Engine Optimization)? | VizBiz",
   description:
-    "GEO is the practice of optimizing your business's presence so AI platforms like ChatGPT, Google AI Overviews, and Perplexity recommend you. Learn what GEO is, how it differs from SEO, and how to get started.",
+    "GEO is the practice of optimizing your business's presence so AI platforms like ChatGPT, Gemini, and Perplexity recommend you. Learn what GEO is, how it differs from SEO, and how to get started.",
   alternates: {
     canonical: "https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships/",
   },
@@ -52,7 +52,7 @@ const whyBusinessesNeed = [
 const geoVsSeo = [
   { dimension: "Goal", geo: "Appear in AI-generated answers and recommendations", seo: "Rank in traditional search engine results pages", data: "AI search traffic growing rapidly year-over-year" },
   { dimension: "Key signals", geo: "Entity clarity, review depth, content substance, authority mentions", seo: "Backlinks, keyword optimization, page speed, technical SEO", data: "Princeton GEO study: source credibility is #1 citation predictor" },
-  { dimension: "How success looks", geo: "Your business is named in ChatGPT, Perplexity, or AI Overviews responses", seo: "Your pages rank on page one of Google for target keywords", data: "Only 5–6 businesses per query get named" },
+  { dimension: "How success looks", geo: "Your business is named in ChatGPT, Perplexity, or Gemini responses", seo: "Your pages rank on page one of Google for target keywords", data: "Only 5–6 businesses per query get named" },
   { dimension: "Content approach", geo: "Answer real customer questions with depth and specificity", seo: "Optimize pages for target keywords and search intent", data: "Most businesses lack sufficient content depth" },
   { dimension: "Reviews", geo: "Detailed, specific reviews with story and substance", seo: "Star ratings and review count for local pack positioning", data: "Detailed reviews cited 2.3x more often by AI" },
   { dimension: "Technical focus", geo: "Consistent structured data, clear entity information, schema markup", seo: "Site speed, Core Web Vitals, crawlability, indexation", data: "Entity inconsistency reduces AI confidence by ~40%" },
@@ -62,7 +62,7 @@ const geoVsSeo = [
 const gettingStarted = [
   {
     title: "Audit your current AI visibility",
-    body: "Before investing effort, find out where you stand. Run the queries your customers would use — \"best [service] in [city]\", \"where to find [specialty] near [area]\" — across ChatGPT, Google AI Overviews, and Perplexity. Document whether you appear, how you're described, and which competitors show up. A VizBiz AI Visibility Snapshot automates this across dozens of queries and platforms.",
+    body: "Before investing effort, find out where you stand. Run the queries your customers would use — \"best [service] in [city]\", \"where to find [specialty] near [area]\" — across ChatGPT, Gemini, and Perplexity. Document whether you appear, how you're described, and which competitors show up. A VizBiz AI Visibility Snapshot automates this across dozens of queries and platforms.",
   },
   {
     title: "Fix your entity data",
@@ -86,7 +86,7 @@ const faqItems = [
   {
     question: "What does GEO stand for?",
     answer:
-      "GEO stands for Generative Engine Optimization. It's the practice of optimizing your business's online presence so that AI-powered platforms — ChatGPT, Google AI Overviews, Perplexity, and others — surface and recommend your business in their generated answers. The GEO market is projected to grow from $850M to $7.3B by 2031.",
+      "GEO stands for Generative Engine Optimization. It's the practice of optimizing your business's online presence so that AI-powered platforms — ChatGPT, Gemini, and Perplexity — surface and recommend your business in their generated answers. The GEO market is projected to grow from $850M to $7.3B by 2031.",
   },
   {
     question: "Is GEO replacing SEO for local businesses?",
@@ -96,7 +96,7 @@ const faqItems = [
   {
     question: "How is GEO different from local SEO?",
     answer:
-      "Local SEO focuses on ranking in Google's local pack and map results. GEO focuses on appearing in AI-generated answers across multiple platforms. There's overlap — consistent business data helps both — but the measurement, signals, and strategies differ. Local SEO is Google-centric; GEO spans ChatGPT, Perplexity, Google AI Overviews, and any platform where AI generates recommendations.",
+      "Local SEO focuses on ranking in Google's local pack and map results. GEO focuses on appearing in AI-generated answers across multiple platforms. There's overlap — consistent business data helps both — but the measurement, signals, and strategies differ. Local SEO is Google-centric; GEO spans ChatGPT, Gemini, and Perplexity, and any platform where AI generates recommendations.",
   },
   {
     question: "How do I measure GEO performance?",
@@ -147,7 +147,7 @@ export default function WhatIsGEOLocalBusinessPage() {
 
           <div className="glass-card mt-10 rounded-[2rem] p-6 sm:p-8">
             <p className="text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              GEO — Generative Engine Optimization — is the practice of shaping your business's online presence so that AI platforms like ChatGPT, Google AI Overviews, and Perplexity surface your business in their answers and recommendations. The GEO market is currently valued at $850M and projected to reach $7.3B by 2031, reflecting the massive shift toward AI-driven search.
+              GEO — Generative Engine Optimization — is the practice of shaping your business's online presence so that AI platforms like ChatGPT, Gemini, and Perplexity surface your business in their answers and recommendations. The GEO market is currently valued at $850M and projected to reach $7.3B by 2031, reflecting the massive shift toward AI-driven search.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               If SEO is about ranking in Google's blue links, GEO is about being named when AI generates an answer. People are shifting from typing keywords into Google to asking conversational questions in AI chatbots — and <strong className="text-white">AI-driven search traffic is growing dramatically</strong>. GEO is how you make sure your business is part of those conversations.
@@ -260,7 +260,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               VizBiz is purpose-built for local business GEO. Here's what it delivers:
             </p>
             <ul className="mt-5 space-y-3 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Automated AI visibility measurement across ChatGPT, Google AI Overviews, Perplexity, and more</li>
+              <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Automated AI visibility measurement across ChatGPT, Gemini, Perplexity, and more</li>
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Competitive benchmarking — see how you compare to local competitors on every signal</li>
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Scoring across entity clarity, review depth, content quality, and authority signals</li>
               <li className="flex items-start gap-3"><span className="mt-3 h-1.5 w-1.5 rounded-full bg-[var(--neon-cyan)]" />Prioritized action plans — your team gets a clear to-do list ranked by impact</li>
@@ -281,7 +281,7 @@ export default function WhatIsGEOLocalBusinessPage() {
               See Your Business's GEO Score
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Get a free AI Visibility Snapshot showing how your business performs across ChatGPT, Google AI Overviews, and Perplexity — with a clear action plan for improvement.
+              Get a free AI Visibility Snapshot showing how your business performs across ChatGPT, Gemini, and Perplexity — with a clear action plan for improvement.
             </p>
             <div className="mt-8">
               <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=geo-guide" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">

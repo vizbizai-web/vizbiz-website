@@ -32,7 +32,6 @@
 - [What is GEO?](https://vizbiz.ai/what-is-geo-generative-engine-optimization-dealerships/): Generative Engine Optimization explained.
 - [AI Visibility Tools Compared](https://vizbiz.ai/ai-visibility-tools-compared/): Comparison of tools for measuring AI visibility.
 - [Best AI Visibility Tools for Local Businesses](https://vizbiz.ai/best-ai-visibility-tools-for-local-businesses/): Tooling and measurement overview.
-- [AI Visibility Benchmark Report](https://vizbiz.ai/ai-visibility-benchmark-report-2026/): Benchmark report and methodology.
 
 ## Automotive / Dealership Resources
 VizBiz started with dealership-focused AI visibility resources and still supports dealerships as an important vertical.
@@ -43,7 +42,7 @@ VizBiz started with dealership-focused AI visibility resources and still support
 
 ## Blog and Resources
 - [Blog](https://vizbiz.ai/blog/): Guides on AI visibility, GEO, AEO, and recommendation readiness.
-- [Insights](https://vizbiz.ai/insights/): Visibility trends, research, and updates.
+- [Insights](https://vizbiz.ai/insights/): Practical notes on AI visibility, trust signals, and recommendation readiness.
 
 ## Trust and discovery files
 - Sitemap: https://vizbiz.ai/sitemap.xml

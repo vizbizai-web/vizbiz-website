@@ -232,7 +232,7 @@ export function generateYouTubeReport(
         "Your business does not have a discoverable YouTube presence. " +
         "According to research by Edward Sturm, YouTube is the #1 most-cited website in AI search results — " +
         "ahead of Wikipedia, Reddit, and major news outlets. " +
-        "This means AI tools like ChatGPT, Perplexity, and Google AI Overviews are heavily trained on YouTube content, " +
+        "This means AI tools like ChatGPT, Gemini, and Perplexity are heavily trained on YouTube content, " +
         "and businesses with YouTube presence get cited more often.",
       aiVisibilityImpact:
         "No YouTube presence = a significant gap in AI visibility. " +

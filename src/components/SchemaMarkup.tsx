@@ -8,7 +8,7 @@ export default function SchemaMarkup() {
     "alternateName": "VizBiz AI Visibility Solutions",
     "url": "https://vizbiz.ai",
     "logo": "https://vizbiz.ai/logo.jpg",
-    "description": "VizBiz is an AI visibility intelligence company for local businesses. We help businesses understand, improve, and track how they appear in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search experiences.",
+    "description": "VizBiz is an AI visibility intelligence company for local businesses. We help businesses understand, improve, and track how they appear in ChatGPT, Gemini, Gemini, Perplexity, and other AI-driven search experiences.",
     "foundingDate": "2025",
     "founders": [
       {
@@ -36,7 +36,7 @@ export default function SchemaMarkup() {
       "AI Visibility",
       "Generative Engine Optimization",
       "ChatGPT Optimization",
-      "Google AI Overviews",
+      "Gemini",
       "Local Business Marketing",
       "Local SEO",
       "Schema Markup"
@@ -105,7 +105,7 @@ export default function SchemaMarkup() {
           "itemOffered": {
             "@type": "Service",
             "name": "AI Visibility Audit for Local Businesses",
-            "description": "An AI visibility assessment showing how your business appears across ChatGPT, Google AI Overviews, Gemini, and Perplexity, where competitors are winning, and what to improve next."
+            "description": "An AI visibility assessment showing how your business appears across ChatGPT, Gemini, and Perplexity, where competitors are winning, and what to improve next."
           }
         },
         {
@@ -129,7 +129,7 @@ export default function SchemaMarkup() {
         "name": "What is an AI visibility audit?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "An AI visibility audit is a comprehensive analysis of how visible your business is across AI platforms like ChatGPT, Google AI Overviews, and Perplexity. It measures your presence, authority, sentiment, content, and technical factors that influence AI recommendations."
+          "text": "An AI visibility audit is a comprehensive analysis of how visible your business is across AI platforms like ChatGPT, Gemini, and Perplexity. It measures your presence, authority, sentiment, content, and technical factors that influence AI recommendations."
         }
       },
       {
@@ -166,7 +166,7 @@ export default function SchemaMarkup() {
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "url": "https://vizbiz.ai",
-    "description": "VizBiz is the AI visibility intelligence platform for local businesses. Audit, measure, and improve how your business appears in ChatGPT, Google AI Overviews, Gemini, Perplexity, and other AI-driven search. Includes proprietary AVI scoring, competitor gap analysis, and actionable improvement recommendations.",
+    "description": "VizBiz is the AI visibility intelligence platform for local businesses. Audit, measure, and improve how your business appears in ChatGPT, Gemini, Gemini, Perplexity, and other AI-driven search. Includes proprietary AVI scoring, competitor gap analysis, and actionable improvement recommendations.",
     "offers": {
       "@type": "Offer",
       "price": "0",

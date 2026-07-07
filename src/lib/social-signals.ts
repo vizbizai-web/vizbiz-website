@@ -280,7 +280,7 @@ function analyzeSocialVsVisibility(
   // Main narrative: social ≠ AI visibility
   parts.push(
     "Most agencies will tell you to grow your social following. But look at your data — " +
-    "AI platforms like ChatGPT and Google AI Overviews recommend businesses based on content quality, " +
+    "AI platforms like ChatGPT and Gemini recommend businesses based on content quality, " +
     "structured data, and local authority signals — not follower counts. " +
     "Social media is one signal among many, and it's rarely the strongest one for AI visibility."
   );

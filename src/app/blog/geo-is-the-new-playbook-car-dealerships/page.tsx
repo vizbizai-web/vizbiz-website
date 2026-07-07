@@ -154,13 +154,12 @@ export default function GEOPlaybookPost() {
           What Real Buyer-Intent Prompts Reveal About Local Business Visibility
         </h2>
         <p style={{ color: "#94a3b8", lineHeight: 1.8, marginBottom: 20 }}>
-          In our
+          A practical
           <Link 
-            href="/blog/ai-visibility-score-ontario-car-dealerships"
+            href="/blog/ai-visibility-audit-what-it-measures"
             style={{ color: "#25D1F2", textDecoration: "none" }}
-          >{" "}audit of 50 local businesses{" "}</Link>
-          across dozens of buyer-intent prompts, the average AVI score was 11 out of 100. Eighty-four percent scored below 60. 
-          Only a handful showed up consistently across ChatGPT, Gemini, and Perplexity.
+          >{" "}AI visibility audit{" "}</Link>
+          should show whether a business is clear, trusted, and easy for ChatGPT, Gemini, and Perplexity to understand.
         </p>
         <p style={{ color: "#94a3b8", lineHeight: 1.8, marginBottom: 20 }}>
           The businesses that did score well shared three traits — and none of them required a massive marketing budget:
@@ -339,10 +338,10 @@ export default function GEOPlaybookPost() {
             → What Is AI Visibility? (The Complete Guide)
           </Link>
           <Link 
-            href="/blog/ai-visibility-score-ontario-car-dealerships"
+            href="/blog/ai-visibility-audit-what-it-measures"
             style={{ color: "#25D1F2", textDecoration: "none", fontSize: "0.95rem" }}
           >
-            → We Scored 50 Local Businesses on AI Visibility — The Results Were Brutal
+            → AI Visibility Audit: What It Measures
           </Link>
           <Link 
             href="/blog/generative-engine-optimization-car-dealerships"

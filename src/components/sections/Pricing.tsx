@@ -10,7 +10,7 @@ const plans = [
     name: "Starter",
     price: "$497",
     description: "Best if you want a clear baseline on where your business stands now.",
-    features: ["Full audit", "20 prompts", "3 competitors", "PDF report"],
+    features: ["Full audit", "Up to 60 buyer questions per platform", "3 competitors", "PDF report"],
     featured: false,
     helper: "Good for a first look",
   },
@@ -20,7 +20,7 @@ const plans = [
     description: "Best fit for most businesses that want a fuller competitive picture.",
     features: [
       "Full audit",
-      "25 prompts",
+      "Up to 25 prompts",
       "5 competitors",
       "PDF report",
       "30-minute walkthrough call",

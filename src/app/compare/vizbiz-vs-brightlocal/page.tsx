@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 const comparisonRows = [
-  { dimension: "Primary focus", vizbiz: "AI visibility — appearing in ChatGPT, Google AI Overviews, Perplexity, and AI-generated answers", brightlocal: "Local SEO — ranking in Google local pack, managing citations and reviews" },
-  { dimension: "Platforms measured", vizbiz: "ChatGPT, Google AI Overviews, Perplexity, and expanding AI platforms", brightlocal: "Google (search, maps, local pack), major citation sources" },
+  { dimension: "Primary focus", vizbiz: "AI visibility — appearing in ChatGPT, Gemini, Perplexity, and AI-generated answers", brightlocal: "Local SEO — ranking in Google local pack, managing citations and reviews" },
+  { dimension: "Platforms measured", vizbiz: "ChatGPT, Gemini, Perplexity, and expanding AI platforms", brightlocal: "Google (search, maps, local pack), major citation sources" },
   { dimension: "Core measurement", vizbiz: "Whether your dealership appears in AI-generated recommendations and how it's described", brightlocal: "Local search rankings, citation accuracy, review sentiment" },
   { dimension: "Citation management", vizbiz: "Audit and scoring of entity consistency as an AI signal", brightlocal: "Full citation building, cleanup, and ongoing management across 80+ directories" },
   { dimension: "Review management", vizbiz: "Scoring review depth and substance for AI recommendation impact", brightlocal: "Review monitoring, response templates, generation tools, and sentiment analysis" },
@@ -35,7 +35,7 @@ const whereVizBizWins = [
   },
   {
     title: "Cross-platform AI visibility",
-    body: "VizBiz tracks your presence across ChatGPT, Google AI Overviews, Perplexity, and emerging AI platforms in a single view. As new AI platforms gain adoption, VizBiz adds them to tracking. BrightLocal focuses on Google's ecosystem.",
+    body: "VizBiz tracks your presence across ChatGPT, Gemini, Perplexity, and emerging AI platforms in a single view. As new AI platforms gain adoption, VizBiz adds them to tracking. BrightLocal focuses on Google's ecosystem.",
   },
 ];
 
@@ -56,7 +56,7 @@ const whereBrightLocalWins = [
 
 const useBoth = [
   "Use BrightLocal for citation management, local rank tracking, and Google Business Profile optimization — the traditional local SEO foundation.",
-  "Use VizBiz to measure and improve your AI visibility — making sure you appear when buyers ask ChatGPT, Google AI Overviews, and Perplexity for dealership recommendations.",
+  "Use VizBiz to measure and improve your AI visibility — making sure you appear when buyers ask ChatGPT, Gemini, and Perplexity for dealership recommendations.",
   "The two platforms address different parts of the modern search landscape. Most dealerships serious about being found everywhere their buyers search will benefit from both.",
 ];
 
@@ -64,7 +64,7 @@ const faqItems = [
   {
     question: "Is VizBiz a BrightLocal alternative?",
     answer:
-      "They solve different problems. BrightLocal is a local SEO platform focused on Google rankings and citation management across 80+ directories. VizBiz is an AI visibility platform focused on appearing in AI-generated answers across ChatGPT, Google AI Overviews, Perplexity, and other AI platforms. They're complementary, not competing.",
+      "They solve different problems. BrightLocal is a local SEO platform focused on Google rankings and citation management across 80+ directories. VizBiz is an AI visibility platform focused on appearing in AI-generated answers across ChatGPT, Gemini, Perplexity, and other AI platforms. They're complementary, not competing.",
   },
   {
     question: "Can VizBiz replace BrightLocal?",
@@ -128,7 +128,7 @@ export default function VizBizVsBrightLocalPage() {
               Both platforms help businesses get found — but in different places, for different reasons, using different signals. Here's an honest breakdown.
             </p>
             <p className="mt-6 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              <strong>VizBiz</strong> measures and improves your dealership's visibility in AI-generated answers — ChatGPT, Google AI Overviews, Perplexity, and other AI platforms where <strong className="text-white">30% of car buyers now start their research</strong> (DealershipGuy, January 2026).
+              <strong>VizBiz</strong> measures and improves your dealership's visibility in AI-generated answers — ChatGPT, Gemini, Perplexity, and other AI platforms where <strong className="text-white">30% of car buyers now start their research</strong> (DealershipGuy, January 2026).
             </p>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
               <strong>BrightLocal</strong> is a local SEO platform focused on Google search rankings, citation management across 80+ directories, and review monitoring. It's been a standard tool in local SEO for over a decade.
@@ -140,7 +140,7 @@ export default function VizBizVsBrightLocalPage() {
             <div className="mt-8 rounded-[1.5rem] border border-[var(--neon-cyan)]/15 bg-[var(--neon-cyan)]/5 p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[var(--neon-cyan)]">Key Takeaways</h2>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
-                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz measures AI visibility (ChatGPT, Google AI Overviews, Perplexity); BrightLocal manages local SEO (Google rankings, citations)</span></li>
+                <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz measures AI visibility (ChatGPT, Gemini, Perplexity); BrightLocal manages local SEO (Google rankings, citations)</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>They're <strong className="text-white">complementary</strong>, not competing — most dealerships benefit from both</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>VizBiz is <strong className="text-white">purpose-built for car dealerships</strong>; BrightLocal serves all local business types</span></li>
                 <li className="flex items-start gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--neon-cyan)]" /><span>If AI visibility is your priority, start with VizBiz. If Google local pack needs work, start with BrightLocal</span></li>
@@ -233,7 +233,7 @@ export default function VizBizVsBrightLocalPage() {
               See How Your Dealership Performs in AI Answers
             </h2>
             <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Get a free AI Visibility Snapshot showing where your dealership appears in ChatGPT, Google AI Overviews, and Perplexity — and where competitors are being recommended instead.
+              Get a free AI Visibility Snapshot showing where your dealership appears in ChatGPT, Gemini, and Perplexity — and where competitors are being recommended instead.
             </p>
             <div className="mt-8">
               <Link href="/intake/?utm_source=site&utm_medium=cta-button&utm_campaign=conversion" className="premium-button rounded-2xl px-6 py-3.5 text-sm font-semibold">

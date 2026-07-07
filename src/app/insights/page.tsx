@@ -6,13 +6,13 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "AI Visibility Insights for Car Dealerships | ChatGPT & AI Search Data | VizBiz",
   description:
-    "Real data on how car dealerships appear (or don't) in ChatGPT, Google AI Overviews, Gemini, and Perplexity. Scores, benchmarks, and what changes results.",
+    "Practical notes on how local businesses can become clearer, more trusted, and easier for AI systems to recommend.",
   keywords:
-    "AI visibility data, AI search research, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, VizBiz insights, AI search analytics",
+    "AI visibility, local business visibility, ChatGPT visibility, Gemini, Perplexity, VizBiz insights",
   openGraph: {
     title: "AI Visibility Insights for Car Dealerships | ChatGPT & AI Search Data",
     description:
-      "Real data on how dealerships show up in AI search. Scores, benchmarks, and what actually changes your results.",
+      "Practical guidance on AI visibility, recommendation readiness, and trust signals for local businesses.",
     type: "website",
     url: "https://vizbiz.ai/insights/",
   },
@@ -24,17 +24,17 @@ export const metadata: Metadata = {
 const tweets = [
   {
     id: 1,
-    text: "Ontario car dealerships score 11 out of 100 in AI visibility. That means ChatGPT, Gemini, and Google AI can't find most of them. We ran 84 prompts. 252 data points per dealership. The number is real. And it's bad.",
+    text: "Local businesses need clear service pages, structured data, review proof, and consistent profiles before AI systems can confidently understand and recommend them.",
     date: "2026-04-18",
   },
   {
     id: 2,
-    text: "47% of automotive search queries now show Google AI Overviews. Your Google Ads budget doesn't put you there. Your SEO doesn't either. This is a different game.",
+    text: "47% of automotive search queries now show Gemini. Your Google Ads budget doesn't put you there. Your SEO doesn't either. This is a different game.",
     date: "2026-04-16",
   },
   {
     id: 3,
-    text: "we ran 84 buyer-intent prompts across ChatGPT, Gemini, and Perplexity for Ontario dealerships. average score? 11 out of 100. the data is brutal.",
+    text: "local businesses need to be understandable to ChatGPT, Gemini, and Perplexity before those systems can confidently recommend them.",
     date: "2026-04-14",
   },
   {
@@ -93,7 +93,7 @@ export default function InsightsPage() {
               What We're Saying
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Data, findings, and takes on AI visibility for car dealerships — straight from the VizBiz team.
+              Guides and practical notes on AI visibility for local businesses — straight from the VizBiz team.
             </p>
           </div>
         </section>

@@ -20,8 +20,7 @@ const platformStatus: PlatformStatus[] = [
   { name: "ChatGPT", hit: true },
   { name: "Gemini", hit: false },
   { name: "Perplexity", hit: false },
-  { name: "Claude", hit: false },
-  { name: "Copilot", hit: true },
+  { name: "ChatGPT", hit: true },
 ];
 
 const competitorRows = [

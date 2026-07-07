@@ -13,7 +13,7 @@ const findings = [
   {
     icon: Search,
     title: "Platform-by-platform findings",
-    description: "See where you show up in ChatGPT, Gemini, Perplexity, Claude, and Copilot — and where you don't.",
+    description: "See where you show up in ChatGPT, Gemini, and Perplexity — and where you don't.",
   },
   {
     icon: CheckCircle2,

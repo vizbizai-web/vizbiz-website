@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import AnimateIn from "@/components/AnimateIn";
 import PhoneMockup, { AuditReportScreen, ScoreScreen } from "@/components/PhoneMockup";
 
-const proofPills = ["5 AI platforms tested", "20–25 buyer prompts", "Same-day audit delivery"];
+const proofPills = ["3 AI platforms tested", "5 buyer prompts per engine", "Same-day audit delivery"];
 const trustStats = [
   { value: "5", label: "AI platforms checked" },
   { value: "20–25", label: "Buyer-intent prompts" },

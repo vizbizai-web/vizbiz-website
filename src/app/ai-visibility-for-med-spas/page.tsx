@@ -7,7 +7,7 @@ const pageUrl = "https://vizbiz.ai/ai-visibility-for-med-spas/";
 export const metadata: Metadata = {
   title: "AI Visibility for Med Spas | Become the Med Spa AI Recommends | VizBiz",
   description:
-    "Learn how med spas can improve visibility in ChatGPT, Google AI, Gemini, Claude, Perplexity, maps, reviews, and answer engines when clients ask who to trust nearby.",
+    "Learn how med spas can improve visibility in ChatGPT, Google AI, Gemini, Gemini, Perplexity, maps, reviews, and answer engines when clients ask who to trust nearby.",
   alternates: {
     canonical: pageUrl,
   },
@@ -138,7 +138,7 @@ export default function AiVisibilityForMedSpasPage() {
             Become the med spa AI recommends.
           </h1>
           <p className="mt-7 max-w-3xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-            When someone asks ChatGPT, Google AI, Gemini, Claude, or Perplexity which med spa to trust nearby, the answer is shaped by more than a pretty website. AI systems look for clear treatments, credible proof, consistent local signals, reviews, safety context, and crawlable answers.
+            When someone asks ChatGPT, Google AI, Gemini, Gemini, or Perplexity which med spa to trust nearby, the answer is shaped by more than a pretty website. AI systems look for clear treatments, credible proof, consistent local signals, reviews, safety context, and crawlable answers.
           </p>
 
           <div className="mt-10 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">

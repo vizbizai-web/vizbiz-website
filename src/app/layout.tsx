@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   },
   title: "VizBiz — AI Visibility Intelligence for Local Businesses",
   description:
-    "VizBiz helps local businesses measure and improve how often they appear in AI-powered search results like ChatGPT, Google AI Overviews, Gemini, and Perplexity. Get your free AI visibility mini report.",
+    "VizBiz helps local businesses measure and improve how often they appear in AI-powered search results like ChatGPT, Gemini, and Perplexity. Get your free AI visibility mini report.",
   keywords:
-    "AI visibility for local businesses, AI search visibility, ChatGPT visibility, Google AI Overviews, Gemini, Perplexity, AI visibility report, local SEO, schema markup, llms.txt, competitor benchmarking",
+    "AI visibility for local businesses, AI search visibility, ChatGPT visibility, Gemini, Gemini, Perplexity, AI visibility report, local SEO, schema markup, llms.txt, competitor benchmarking",
   openGraph: {
     title: "VizBiz — AI Visibility Intelligence for Local Businesses",
     description:

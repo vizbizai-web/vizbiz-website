@@ -5,33 +5,19 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Blog — VizBiz AI Visibility Insights",
   description:
-    "Practical guides and insights on how car dealerships can improve their visibility in AI-powered search like ChatGPT, Google AI Overviews, and Gemini.",
+    "Practical guides on how local businesses can improve visibility in AI-powered search tools like ChatGPT, Gemini, and Perplexity.",
   alternates: {
     canonical: "https://vizbiz.ai/blog/",
   },
 };
 
-const posts = [
+const posts: Array<{ slug: string; title: string; description: string; date: string }> = [
   {
     slug: "geo-is-the-new-playbook-car-dealerships",
     title: "Why GEO Is the New Playbook for Car Dealerships in 2026",
     description:
-      "a16z just called GEO the successor to SEO. Here's what that means for car dealerships — and why AI visibility now decides who gets recommended.",
+      "A practical guide to generative engine optimization and dealership recommendation readiness.",
     date: "2026-05-11",
-  },
-  {
-    slug: "vizbiz-vs-metricus-vs-scope",
-    title: "VizBiz vs. Metricus vs. Scope",
-    description:
-      "A practical comparison of AI visibility tools and what local businesses should look for before choosing an audit platform.",
-    date: "2026-05-09",
-  },
-  {
-    slug: "chatgpt-vs-gemini-vs-perplexity-dealerships",
-    title: "ChatGPT vs. Gemini vs. Perplexity for Dealership Visibility",
-    description:
-      "How major AI assistants surface dealership recommendations differently — and why broad AI visibility matters more than one-tool optimization.",
-    date: "2026-05-08",
   },
   {
     slug: "how-to-show-up-in-chatgpt-recommendations",
@@ -42,9 +28,9 @@ const posts = [
   },
   {
     slug: "ai-visibility-audit-what-it-measures-dealership",
-    title: "AI Visibility Audit: What It Measures and Why Your Dealership Needs One",
+    title: "AI Visibility Audit for Dealerships: What It Measures",
     description:
-      "A real AI visibility audit tells you exactly why AI recommends your competitors instead of you. Here's what the methodology actually measures.",
+      "A practical guide to the dealership signals an AI visibility audit should inspect.",
     date: "2026-04-24",
   },
   {
@@ -62,32 +48,18 @@ const posts = [
     date: "2026-04-24",
   },
   {
-    slug: "ai-visibility-score-ontario-car-dealerships",
-    title: "We Scored 50 Ontario Dealerships on AI Visibility",
-    description:
-      "We ran buyer-intent prompts across major AI assistants for Ontario dealerships. The visibility gap is real — and fixable.",
-    date: "2026-04-22",
-  },
-  {
     slug: "generative-engine-optimization-car-dealerships",
     title: "Generative Engine Optimization (GEO) for Car Dealerships",
     description:
-      "The complete guide to GEO for dealerships — how to optimize for ChatGPT, Gemini, Google AI Overviews, and AI-powered search.",
+      "A practical guide to GEO for dealerships — how to optimize for ChatGPT, Gemini, Perplexity, and AI-powered search.",
     date: "2026-04-22",
   },
   {
     slug: "how-to-get-dealership-recommended-by-chatgpt",
     title: "How to Get Your Car Dealership Recommended by ChatGPT in 2026",
     description:
-      "Step-by-step guide to making your car dealership easier for ChatGPT, Gemini, Google AI Overviews, and other AI systems to recommend.",
+      "Step-by-step guidance to make your dealership easier for AI systems to understand and recommend.",
     date: "2026-04-22",
-  },
-  {
-    slug: "ai-visibility-statistics-car-dealerships",
-    title: "35+ AI Visibility Statistics Every Car Dealership Needs to Know in 2026",
-    description:
-      "Data-driven insights on how AI search is reshaping automotive retail and what it means for your dealership.",
-    date: "2026-04-21",
   },
 ];
 
@@ -100,7 +72,7 @@ export default function BlogIndex() {
           VizBiz Blog
         </h1>
         <p style={{ fontSize: "1.15rem", color: "#94a3b8", maxWidth: 600, margin: "0 auto" }}>
-          Practical guides and data-driven insights on AI visibility for car dealerships.
+          Practical guides on AI visibility, trust signals, and recommendation readiness for local businesses.
         </p>
       </section>
 

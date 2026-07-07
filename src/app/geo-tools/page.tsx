@@ -27,7 +27,7 @@ const geoTools = [
     tagline: "GEO and AI visibility intelligence for local businesses",
     price: "Free audit · Paid plans for monitoring",
     bestFor:
-      "Local businesses that want to measure and improve their presence in AI-generated answers across ChatGPT, Perplexity, Gemini, and Google AI Overviews.",
+      "Local businesses that want to measure and improve their presence in AI-generated answers across ChatGPT, Perplexity, Gemini, and Gemini.",
     geoFeatures: [
       "Tests real buyer-intent prompts per market (product, service, location-specific)",
       "AVI Score benchmarks visibility across 4+ AI platforms",
@@ -118,7 +118,7 @@ const faqItems = [
   {
     question: "What is a GEO tool?",
     answer:
-      "A GEO (Generative Engine Optimization) tool measures and improves whether your business appears in AI-generated answers from platforms like ChatGPT, Perplexity, Gemini, and Google AI Overviews. Unlike traditional SEO tools that track Google rankings, GEO tools test conversational queries, measure AI mentions, and provide specific guidance for improving AI visibility.",
+      "A GEO (Generative Engine Optimization) tool measures and improves whether your business appears in AI-generated answers from platforms like ChatGPT, Perplexity, Gemini, and Gemini. Unlike traditional SEO tools that track Google rankings, GEO tools test conversational queries, measure AI mentions, and provide specific guidance for improving AI visibility.",
   },
   {
     question: "Do I need a GEO tool if I already use SEO software?",
@@ -426,7 +426,7 @@ export default function GEOToolsPage() {
               Find Out If Your Business Shows Up in AI Answers
             </h2>
             <p className="mt-4 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-              Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Google AI Overviews.
+              Get a free AI visibility audit and see where your business stands across ChatGPT, Perplexity, Gemini, and Gemini.
             </p>
             <Link
               href="/intake"

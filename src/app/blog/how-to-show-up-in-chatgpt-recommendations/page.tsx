@@ -190,7 +190,7 @@ export default function ChatGPTRecommendationsPost() {
                 </div>
               </div>
               <p>
-                The average AVI score was 11 out of 100. Let that sink in. Most local businesses are functionally invisible to AI search — including businesses with strong Google rankings and healthy ad budgets. Traditional SEO simply doesn&apos;t transfer to AI recommendations.
+                Many local businesses are harder for AI systems to understand than they appear from the outside. Strong Google rankings and healthy ad budgets do not automatically translate into AI recommendations.
               </p>
               <p>
                 The businesses that did show up consistently shared a specific set of traits — and none of them required enterprise-level tools or big budgets. Here&apos;s exactly what they did differently.
@@ -312,7 +312,7 @@ export default function ChatGPTRecommendationsPost() {
                 <li>Published four FAQ pages addressing common dental questions</li>
               </ul>
               <p>
-                Their AVI score went from 8 to 47. They went from appearing in 3 out of 84 prompts to appearing in 31. Not perfect — but they went from invisible to competitive in two months, with no ad spend increase and no agency retainer.
+                When a business improves its listings, proof signals, and service-specific content, AI systems have more evidence to work with. The practical goal is to move from vague presence to clear recommendation readiness.
               </p>
               <p>
                 We&apos;ve seen similar results across industries. A roofing company in Atlanta went from AVI 12 to 54 after fixing their listings and publishing service-specific content. A family law firm in Chicago moved from 6 to 41 after adding schema markup and collecting detailed client reviews.

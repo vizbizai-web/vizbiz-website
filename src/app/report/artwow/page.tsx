@@ -81,7 +81,7 @@ export default function ARTWOWReport() {
       color: "green",
       items: [
         { icon: "👑", text: "Own top AI-recommended art business in London" },
-        { icon: "🌐", text: "Multi-platform presence (ChatGPT, Gemini, Perplexity, Google AI Overviews)" },
+        { icon: "🌐", text: "Multi-platform presence (ChatGPT, Gemini, and Perplexity)" },
         { icon: "📋", text: "Monthly competitor monitoring and response" },
         { icon: "🔄", text: "Ongoing content optimization cycle" },
         { icon: "📊", text: "Target AVI score: 98/100" },
@@ -95,16 +95,16 @@ export default function ARTWOWReport() {
     {
       name: "Snapshot",
       price: "Free",
-      description: "One-time audit, 20 prompts",
-      features: ["Single audit report", "Basic visibility analysis", "20 prompt coverage"],
+      description: "One-time audit, up to 60 buyer questions per platform",
+      features: ["Single audit report", "Basic visibility analysis", "Up to 60 buyer-question coverage per platform"],
       badge: "Your current plan",
       recommended: false
     },
     {
       name: "Growth",
       price: "$XXX/mo",
-      description: "Monthly audits, competitor tracking, content plan, 84 prompts",
-      features: ["Monthly audit reports", "Competitor tracking", "Content optimization plan", "84 prompt coverage", "Priority support"],
+      description: "Monthly audits, competitor tracking, content plan, paid-depth prompts",
+      features: ["Monthly audit reports", "Competitor tracking", "Content optimization plan", "Paid-depth prompt coverage across three engines", "Priority support"],
       badge: "Recommended",
       recommended: true
     },
