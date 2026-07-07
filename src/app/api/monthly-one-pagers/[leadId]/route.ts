@@ -35,9 +35,10 @@ async function buildPayload(leadId: string) {
   const lead = await getLeadByLeadId(leadId);
   if (!lead) throw new Error(`Lead not found: ${leadId}`);
   const snapshots = (await listAuditSnapshots(leadId)).filter((snapshot) => snapshot.status === 'complete');
-  if (snapshots.length < 2) throw new Error('Monthly one-pager requires at least two completed audit snapshots');
-  const current = snapshots.at(-1)!;
-  const previous = snapshots.at(-2)!;
+  const comparableSnapshots = snapshots.filter((snapshot) => snapshot.tier === 'paid' && snapshot.runType !== 'pulse' && (snapshot.promptPlan as any)?.runType !== 'pulse');
+  if (comparableSnapshots.length < 2) throw new Error('Monthly one-pager requires at least two completed paid audit snapshots');
+  const current = comparableSnapshots.at(-1)!;
+  const previous = comparableSnapshots.at(-2)!;
   const diff = diffSnapshots(current, previous);
   const fixKit = await getFixKit(leadId).catch(() => null);
   const fixDropTitles = (fixKit?.artifacts || []).slice(0, 2).map((a) => a.title);
