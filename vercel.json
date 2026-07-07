@@ -14,5 +14,10 @@
         { "key": "Content-Type", "value": "text/html" }
       ]
     }
+  ],
+  "crons": [
+    { "path": "/api/cron/process-reruns", "schedule": "0 10 * * *" },
+    { "path": "/api/cron/email-suite", "schedule": "15 10 * * *" },
+    { "path": "/api/cron/client-zero", "schedule": "*/5 * * * *" }
   ]
 }

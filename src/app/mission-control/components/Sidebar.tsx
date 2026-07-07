@@ -11,6 +11,7 @@ const dailyNavItems = [
 ];
 
 const projectNavItems = [
+  { id: 'client-zero', label: 'Client Zero', icon: '📈', href: '/mission-control/client-zero' },
   { id: 'visibility', label: 'Visibility Engine', icon: '🔭', href: '/mission-control/visibility-engine' },
 ];
 

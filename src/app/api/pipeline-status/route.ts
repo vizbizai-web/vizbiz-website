@@ -13,10 +13,15 @@ export async function GET(request: Request) {
   if (unauthorized) return unauthorized;
   try {
     const allLeads = await getAllLeads();
-    const leads = excludeQaLeads(allLeads).map((lead) => ({
+    const metricLeads = excludeQaLeads(allLeads).map((lead) => ({
       ...lead,
       triage: classifyLeadTriage(lead),
     }));
+    const clientZeroLeads = allLeads
+      .filter((lead) => (lead.source || '').toLowerCase() === 'client_zero')
+      .map((lead) => ({ ...lead, triage: classifyLeadTriage(lead) }));
+    const leads = metricLeads;
+    const operationalLeads = [...metricLeads, ...clientZeroLeads];
 
     // Group by status for pipeline view
     const byStatus = leads.reduce(
@@ -41,8 +46,8 @@ export async function GET(request: Request) {
       closed_lost: byStatus["closed_lost"]?.length || 0,
     };
 
-    const needsYou = buildNeedsYouQueue(leads);
-    const health = await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads));
+    const needsYou = buildNeedsYouQueue(operationalLeads);
+    const health = await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(operationalLeads));
 
     return NextResponse.json({
       stats,

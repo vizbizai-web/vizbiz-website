@@ -121,6 +121,11 @@ function getQualityBadges(lead: PipelineLead): NeedsYouBadge[] {
   if (/zero appearances|only \d+ competitor|prompts may not match|quality warning/i.test(warningBlob)) {
     badges.push({ label: 'Quality warning', tone: 'red', detail: 'Research payload flagged a low-quality or mismatch risk.' });
   }
+  if ((lead.source || '').toLowerCase() === 'client_zero') {
+    badges.push({ label: 'Client Zero', tone: 'cyan', detail: 'VizBiz self-audit data is excluded from operator metrics and shown in its own dashboard.' });
+    if (/CLIENT_ZERO_FIX_DROP_READY/i.test(lead.notes || '')) badges.push({ label: 'Client Zero fix ready', tone: 'cyan', detail: 'Self-audit Fix Drop is ready for implementation.' });
+  }
+
   if (lead.status === 'paid_intake_pending') {
     badges.push({ label: 'Paid intake stalled', tone: 'amber', detail: 'Client has paid but has not completed confirm-and-enrich intake.' });
     const hours = paidIntakeAgeHours(lead);

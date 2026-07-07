@@ -1,4 +1,5 @@
 import type { LeadRow } from "@/lib/google-sheets";
+import { isOperatorMetricExcludedSource } from "@/lib/client-zero";
 
 function text(value: unknown): string {
   return typeof value === "string" ? value : "";
@@ -12,6 +13,7 @@ function rawValue(lead: LeadRow, key: string): string {
 }
 
 export function isQaLead(lead: LeadRow): boolean {
+  if (isOperatorMetricExcludedSource(lead.source) || isOperatorMetricExcludedSource(rawValue(lead, 'source'))) return true;
   const haystack = [
     lead.source,
     lead.dealershipName,

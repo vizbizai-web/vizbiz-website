@@ -3,7 +3,7 @@ import { supabaseRest, isSupabaseRestConfigured, type SupabaseJson } from './sup
 import type { ResearchMode } from './pipeline-controller';
 import type { PlatformScore, ResearchResult } from './research-runner';
 
-export type AuditSnapshotRunType = 'baseline' | 'monthly' | 'rescan_after_fix' | 'manual';
+export type AuditSnapshotRunType = 'baseline' | 'monthly' | 'rescan_after_fix' | 'manual' | 'pulse';
 export type AuditSnapshotStatus = 'complete' | 'failed' | 'partial';
 
 export type SnapshotPromptResult = {
