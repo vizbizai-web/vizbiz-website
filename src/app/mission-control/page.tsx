@@ -238,8 +238,8 @@ function QueueRow({ item, ordinal, busy, onAction }: { item: NeedsYouItem; ordin
             <span className="text-xs text-slate-500">{age}</span>
             <span className="text-xs text-slate-500">{item.status}</span>
           </div>
-          <h3 className="mt-2 truncate text-lg font-bold text-white">{item.businessName}</h3>
-          <p className="mt-1 text-sm text-slate-400">{item.city || 'No location'} {item.email ? `· ${item.email}` : ''}</p>
+          <h3 className="mt-2 break-words text-lg font-bold text-white">{item.businessName}</h3>
+          <p className="mt-1 break-words text-sm text-slate-400">{item.city || 'No location'} {item.email ? `· ${item.email}` : ''}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {item.badges.length === 0 && <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-200">Quick-read candidate</span>}
             {item.badges.map((badge) => (
@@ -247,11 +247,11 @@ function QueueRow({ item, ordinal, busy, onAction }: { item: NeedsYouItem; ordin
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <Link href={item.reportPreviewUrl} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15">Open preview</Link>
-          <button disabled={busy} onClick={() => onAction(item, 'approve')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-40">{busy ? '...' : 'Approve → next'}</button>
-          <button disabled={busy} onClick={() => onAction(item, 'needs_revision')} className="rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-2 text-sm font-semibold text-orange-200 disabled:opacity-40">Needs-work → next</button>
-          <Link href={item.detailUrl} className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-300 hover:border-slate-500">Detail</Link>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
+          <Link href={item.reportPreviewUrl} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-3 text-center text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15 sm:py-2">Open preview</Link>
+          <button disabled={busy} onClick={() => onAction(item, 'approve')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-3 text-sm font-semibold text-emerald-200 disabled:opacity-40 sm:py-2">{busy ? '...' : 'Approve → next'}</button>
+          <button disabled={busy} onClick={() => onAction(item, 'needs_revision')} className="rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-3 text-sm font-semibold text-orange-200 disabled:opacity-40 sm:py-2">Needs-work → next</button>
+          <Link href={item.detailUrl} className="rounded-lg border border-slate-700 px-3 py-3 text-center text-sm font-semibold text-slate-300 hover:border-slate-500 sm:py-2">Detail</Link>
         </div>
       </div>
     </div>

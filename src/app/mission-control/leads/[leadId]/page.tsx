@@ -507,7 +507,7 @@ export default function LeadDetailPage() {
           </div>
 
           {/* Timeline */}
-          <div className="glass-card rounded-xl p-5">
+          <div className="glass-card overflow-hidden rounded-xl p-5">
             <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-4">Pipeline Progress</h2>
             <div className="flex items-center gap-0">
               {timeline.map((step, i) => (
@@ -527,7 +527,7 @@ export default function LeadDetailPage() {
             </div>
           </div>
 
-          <div className="glass-card rounded-xl p-5">
+          <div className="glass-card overflow-hidden rounded-xl p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-base text-white uppercase tracking-widest font-semibold">Diagnostics Timeline</h2>
@@ -548,7 +548,7 @@ export default function LeadDetailPage() {
                   {event.event_payload && (
                     <details className="mt-2">
                       <summary className="cursor-pointer text-[11px] uppercase tracking-[0.16em] text-slate-600">Payload</summary>
-                      <pre className="mt-2 max-h-32 overflow-auto rounded bg-black/30 p-2 text-[11px] text-slate-400">{JSON.stringify(event.event_payload, null, 2)}</pre>
+                      <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded bg-black/30 p-2 text-[11px] text-slate-400">{JSON.stringify(event.event_payload, null, 2)}</pre>
                     </details>
                   )}
                 </div>
@@ -565,7 +565,7 @@ export default function LeadDetailPage() {
           )}
 
           {paidIntake && (
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card overflow-hidden rounded-xl p-5">
               <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-3">Paid Intake</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                 <Info label="Plan" value={paidIntake.plan === 'monthly_growth' ? 'Monthly Growth Plan' : 'Full Report + Fix'} />
@@ -675,7 +675,7 @@ export default function LeadDetailPage() {
 
           {/* Contact Info */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card overflow-hidden rounded-xl p-5">
               <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-4">Contact</h2>
               <dl className="space-y-3">
                 <ContactRow label="Name" value={lead.contactName} />
@@ -687,7 +687,7 @@ export default function LeadDetailPage() {
               </dl>
             </div>
 
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card overflow-hidden rounded-xl p-5">
               <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-4">Details</h2>
               <dl className="space-y-3">
                 <ContactRow label="Lead ID" value={lead.leadId} />
@@ -702,7 +702,7 @@ export default function LeadDetailPage() {
 
           {/* Prompt Results (if available) */}
           {research?.promptResults && (
-            <div className="glass-card rounded-xl p-5">
+            <div className="glass-card overflow-hidden rounded-xl p-5">
               <h2 className="text-base text-white uppercase tracking-widest font-semibold mb-4">Prompt Results ({research.promptResults.length} queries)</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-y-auto">
                 {research.promptResults.map((pr: PromptResult, i: number) => (
@@ -755,7 +755,7 @@ function NicheParityPanel({ data, loading, onResolve }: {
 }) {
   const conflict = data.status === 'CONFLICT' || Boolean(data.conflictExplanation);
   return (
-    <div className="glass-card rounded-xl p-5">
+    <div className="glass-card overflow-hidden rounded-xl p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-base text-white uppercase tracking-widest font-semibold">Niche Resolution</p>
@@ -791,10 +791,10 @@ function NicheParityPanel({ data, loading, onResolve }: {
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-800/50 pt-4">
-        <button disabled={loading || !data.submittedNiche} onClick={() => onResolve('use_submitted')} className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200 disabled:opacity-40">Use declared</button>
-        <button disabled={loading || !data.websiteNiche} onClick={() => onResolve('use_website')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-40">Use website</button>
-        <button disabled={loading} onClick={() => onResolve('custom')} className="rounded-lg border border-violet-400/30 bg-violet-400/10 px-4 py-2 text-sm font-semibold text-violet-200 disabled:opacity-40">Custom niche</button>
+      <div className="mt-4 flex flex-col gap-2 border-t border-slate-800/50 pt-4 sm:flex-row sm:flex-wrap">
+        <button disabled={loading || !data.submittedNiche} onClick={() => onResolve('use_submitted')} className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm font-semibold text-cyan-200 disabled:opacity-40 sm:py-2">Use declared</button>
+        <button disabled={loading || !data.websiteNiche} onClick={() => onResolve('use_website')} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200 disabled:opacity-40 sm:py-2">Use website</button>
+        <button disabled={loading} onClick={() => onResolve('custom')} className="rounded-lg border border-violet-400/30 bg-violet-400/10 px-4 py-3 text-sm font-semibold text-violet-200 disabled:opacity-40 sm:py-2">Custom niche</button>
       </div>
     </div>
   );
@@ -811,7 +811,7 @@ function FixKitPanel({ fixKit, message, onGenerate, onApproveAll, onDeliver, onA
 }) {
   const approved = Boolean(fixKit?.artifacts?.length && fixKit.artifacts.every((a) => a.status === 'approved' || a.status === 'delivered'));
   return (
-    <div className="glass-card rounded-xl p-5">
+    <div className="glass-card overflow-hidden rounded-xl p-5">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h2 className="text-base text-white uppercase tracking-widest font-semibold">Fix Kit</h2>
@@ -858,7 +858,7 @@ function MonthlyOnePagerPanel({ onePager, message, onApprove, onSend }: { onePag
   if (!onePager) return null;
   const approved = onePager.status === 'approved' || onePager.status === 'sent';
   return (
-    <div className="glass-card rounded-xl p-5">
+    <div className="glass-card overflow-hidden rounded-xl p-5">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h2 className="text-base text-white uppercase tracking-widest font-semibold">Monthly One-Pager</h2>
@@ -893,9 +893,9 @@ function MonthlyOnePagerPanel({ onePager, message, onApprove, onSend }: { onePag
 
 function Info({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="rounded-lg border border-slate-800/60 bg-slate-950/30 p-3">
+    <div className="min-w-0 rounded-lg border border-slate-800/60 bg-slate-950/30 p-3">
       <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>
-      <p className="mt-1 text-sm text-slate-200">{value || '—'}</p>
+      <p className="mt-1 break-words text-sm text-slate-200">{value || '—'}</p>
     </div>
   );
 }

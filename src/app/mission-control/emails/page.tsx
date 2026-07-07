@@ -33,6 +33,17 @@ interface EmailDraft {
   status: DraftStatus;
 }
 
+interface GatedEmailCard {
+  leadId: string;
+  businessName: string;
+  city: string;
+  email: string;
+  primaryActionLabel: string;
+  reportPreviewUrl: string;
+  detailUrl: string;
+  badges?: Array<{ label: string; tone: string; detail?: string }>;
+}
+
 function parseResearch(notes: string): any | null {
   if (!notes) return null;
   try {
@@ -91,6 +102,7 @@ VizBiz.ai`;
 
 function useDrafts() {
   const [drafts, setEmailDrafts] = useState<EmailDraft[]>([]);
+  const [gatedCards, setGatedCards] = useState<GatedEmailCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,6 +130,7 @@ function useDrafts() {
       });
 
       setEmailDrafts(generated);
+      setGatedCards((json.needsYou || []).filter((item: any) => item.primaryAction === 'approve_gated_email'));
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load');
@@ -127,11 +140,11 @@ function useDrafts() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-  return { drafts, setEmailDrafts, loading, error, refetch: fetchData };
+  return { drafts, setEmailDrafts, gatedCards, setGatedCards, loading, error, refetch: fetchData };
 }
 
 export default function EmailsPage() {
-  const { drafts, setEmailDrafts, loading, error, refetch } = useDrafts();
+  const { drafts, setEmailDrafts, gatedCards, setGatedCards, loading, error, refetch } = useDrafts();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBody, setEditBody] = useState('');
@@ -172,6 +185,18 @@ export default function EmailsPage() {
     if (res.ok) { setConfirmId(null); refetch(); }
   };
 
+  const handleApproveGated = async (card: GatedEmailCard) => {
+    const res = await fetch('/mission-control/api/lead-actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: card.leadId, action: 'approve_gated_email', data: { templateId: 'E11_30_DAY_RESCAN' } }),
+    });
+    if (res.ok) {
+      setGatedCards((current) => current.filter((item) => item.leadId !== card.leadId));
+      refetch();
+    }
+  };
+
   const handleMarkSent = async (draft: EmailDraft) => {
     const res = await fetch('/mission-control/api/lead-actions', {
       method: 'POST',
@@ -193,8 +218,33 @@ export default function EmailsPage() {
       {loading && <div className="text-slate-500 text-sm">Generating drafts...</div>}
       {error && <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm">{error}</div>}
 
+      {/* Gated sends */}
+      {gatedCards.length > 0 && (
+        <section className="rounded-2xl border border-violet-400/25 bg-violet-400/5 p-4 sm:p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-violet-200">Gated sends</p>
+          <h2 className="mt-2 text-xl font-bold text-white">Operator approval required</h2>
+          <div className="mt-4 space-y-3">
+            {gatedCards.map((card) => (
+              <div key={card.leadId} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <Link href={card.detailUrl} className="break-words text-base font-semibold text-white hover:text-cyan-200">{card.businessName}</Link>
+                    <p className="mt-1 break-words text-xs text-slate-500">{card.city || 'No city'}{card.email ? ` · ${card.email}` : ''}</p>
+                    <p className="mt-2 text-sm text-slate-300">{card.primaryActionLabel}</p>
+                  </div>
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+                    <Link href={card.reportPreviewUrl} target="_blank" className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-center text-sm font-semibold text-cyan-100 hover:bg-cyan-300/15">Preview</Link>
+                    <button onClick={() => handleApproveGated(card)} className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">Approve send</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#0A0B14] rounded-lg border border-slate-800/40 p-1 w-fit">
+      <div className="flex w-full flex-wrap gap-1 bg-[#0A0B14] rounded-lg border border-slate-800/40 p-1 sm:w-fit">
         {(['all', 'generated', 'approved', 'sent'] as const).map(tab => (
           <button key={tab} onClick={() => setFilterTab(tab)}
             className={`text-sm px-4 py-2 rounded-md transition-colors ${filterTab === tab ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
@@ -223,19 +273,19 @@ export default function EmailsPage() {
             <div key={draft.lead.leadId} className="glass-card border-0 rounded-xl overflow-hidden">
               {/* Card header */}
               <div className="p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{
                       background: score / total > 0.3 ? 'rgba(34,197,94,0.1)' : score / total > 0.1 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
                       color: score / total > 0.3 ? '#22C55E' : score / total > 0.1 ? '#F59E0B' : '#EF4444',
                     }}>
                       {score}/{total}
                     </div>
-                    <div>
-                      <Link href={`/mission-control/leads/${draft.lead.leadId}`} className="text-white font-semibold text-base hover:text-slate-300 transition-colors">
+                    <div className="min-w-0">
+                      <Link href={`/mission-control/leads/${draft.lead.leadId}`} className="break-words text-white font-semibold text-base hover:text-slate-300 transition-colors">
                         {draft.lead.dealershipName || 'Unknown Business'}
                       </Link>
-                      <p className="text-[11px] text-slate-600">{draft.lead.contactName || 'No contact'} • {draft.lead.email || 'No email'} • {draft.lead.city || 'No city'}{niche ? ` • ${niche}` : ''}</p>
+                      <p className="text-[11px] text-slate-600 break-words">{draft.lead.contactName || 'No contact'} • {draft.lead.email || 'No email'} • {draft.lead.city || 'No city'}{niche ? ` • ${niche}` : ''}</p>
                     </div>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{
@@ -247,7 +297,7 @@ export default function EmailsPage() {
                 </div>
 
                 {/* Subject */}
-                <p className="text-base text-white font-semibold">{editingId === draft.lead.leadId ? editSubject : draft.subject}</p>
+                <p className="mt-3 break-words text-base text-white font-semibold">{editingId === draft.lead.leadId ? editSubject : draft.subject}</p>
 
                 {/* Preview */}
                 {!isExpanded && !isEditing && (
@@ -259,7 +309,7 @@ export default function EmailsPage() {
               {isExpanded && !isEditing && (
                 <div className="px-5 pb-4">
                   <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-800/20">
-                    <pre className="text-base text-white whitespace-pre-wrap font-sans">{draft.body}</pre>
+                    <pre className="text-base text-white whitespace-pre-wrap break-words font-sans">{draft.body}</pre>
                   </div>
                 </div>
               )}
@@ -287,33 +337,33 @@ export default function EmailsPage() {
               )}
 
               {/* Actions */}
-              <div className="px-5 py-3 border-t border-slate-800/30 flex flex-wrap items-center gap-2">
+              <div className="px-5 py-3 border-t border-slate-800/30 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <button onClick={() => { setExpandedId(isExpanded ? null : draft.lead.leadId); setEditingId(null); }}
-                  className="text-sm px-4 py-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-slate-300 transition-colors">
+                  className="text-sm px-4 py-3 rounded-lg bg-slate-800/50 text-slate-400 hover:text-slate-300 transition-colors sm:py-2">
                   {isExpanded ? 'Collapse' : 'Preview'}
                 </button>
                 <button onClick={() => {
                   if (isEditing) { setEditingId(null); }
                   else { setEditingId(draft.lead.leadId); setEditBody(draft.body); setEditSubject(draft.subject); setExpandedId(null); }
-                }} className="text-sm px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors">
+                }} className="text-sm px-4 py-3 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-colors sm:py-2">
                   Edit
                 </button>
 
                 {draft.status === 'generated' && (
                   <button onClick={() => setConfirmId(draft.lead.leadId)}
-                    className="text-sm px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">
+                    className="text-sm px-4 py-3 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors sm:py-2">
                     Approve → Drafts
                   </button>
                 )}
                 {draft.status === 'approved' && (
                   <button onClick={() => handleMarkSent(draft)}
-                    className="text-sm px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/30 hover:bg-violet-500/20 transition-colors">
+                    className="text-sm px-4 py-3 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/30 hover:bg-violet-500/20 transition-colors sm:py-2">
                     Mark Sent
                   </button>
                 )}
 
                 <a href={`mailto:${draft.lead.email}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}
-                  className="text-sm px-4 py-2 rounded-lg transition-colors ml-auto"
+                  className="text-center text-sm px-4 py-3 rounded-lg transition-colors sm:ml-auto sm:py-2"
                   style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', border: '1px solid rgba(37, 209, 242, 0.2)' }}>
                   Open in Mail App
                 </a>

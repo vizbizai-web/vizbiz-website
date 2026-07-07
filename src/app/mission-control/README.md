@@ -55,8 +55,7 @@ MISSION_CONTROL_PASSWORD=your-secure-password-here
 - `/mission-control/leads` — real lead pipeline
 - `/mission-control/leads/[leadId]` — individual lead review/action surface
 - `/mission-control/emails` — email hub generated from real lead statuses
-- `/mission-control/calendar` — local operator task list
-- `/mission-control/visibility-engine` — VizBiz SEO/GEO/AEO operating surface
+- `/mission-control/visibility-engine` — secondary Projects surface for VizBiz SEO/GEO/AEO work
 - `/mission-control/settings` — internal settings/status
 
 ## API contract

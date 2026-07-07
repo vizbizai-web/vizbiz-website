@@ -236,8 +236,8 @@ export default function VisibilityEnginePage() {
               </li>
             ))}
           </ul>
-          <Link href="/mission-control/calendar" className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/15 sm:w-auto">
-            View scheduled tasks
+          <Link href="/mission-control" className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/15 sm:w-auto">
+            Back to Needs-You queue
           </Link>
         </div>
       </section>

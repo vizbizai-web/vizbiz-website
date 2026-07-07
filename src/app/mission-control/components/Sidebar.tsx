@@ -3,14 +3,18 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
-const navItems = [
+const dailyNavItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '🏠', href: '/mission-control' },
   { id: 'pipeline', label: 'Pipeline', icon: '📋', href: '/mission-control/leads' },
   { id: 'emails', label: 'Emails', icon: '✉️', href: '/mission-control/emails', badge: 'draftCount' },
-  { id: 'calendar', label: 'Tasks', icon: '📅', href: '/mission-control/calendar' },
-  { id: 'visibility', label: 'Visibility Engine', icon: '🔭', href: '/mission-control/visibility-engine' },
   { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
 ];
+
+const projectNavItems = [
+  { id: 'visibility', label: 'Visibility Engine', icon: '🔭', href: '/mission-control/visibility-engine' },
+];
+
+type NavItem = (typeof dailyNavItems)[number] | (typeof projectNavItems)[number];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
@@ -41,6 +45,31 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
     if (onClose) onClose();
   };
 
+  const renderNavItem = (item: NavItem) => {
+    const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+    const badgeCount = 'badge' in item && item.badge === 'draftCount' ? draftCount : 0;
+    return (
+      <a
+        key={item.id}
+        href={item.href}
+        onClick={handleNav}
+        className={`
+          flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-base transition-all
+          ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-300'}
+        `}
+        style={isActive ? { background: 'rgba(37, 209, 242, 0.08)', borderLeft: '2px solid #25D1F2' } : {}}
+      >
+        <span className="text-base">{item.icon}</span>
+        <span className={isActive ? 'font-medium' : 'font-normal'}>{item.label}</span>
+        {badgeCount > 0 && (
+          <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ background: 'rgba(37, 209, 242, 0.15)', color: '#25D1F2' }}>
+            {badgeCount}
+          </span>
+        )}
+      </a>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full" style={{ background: 'rgba(6, 7, 15, 0.5)', backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)' }}>
       {/* Logo */}
@@ -68,30 +97,11 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-          const badgeCount = item.badge === 'draftCount' ? draftCount : 0;
-          return (
-            <a
-              key={item.id}
-              href={item.href}
-              onClick={handleNav}
-              className={`
-                flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-base transition-all
-                ${isActive ? 'text-white' : 'text-slate-500 hover:text-slate-300'}
-              `}
-              style={isActive ? { background: 'rgba(37, 209, 242, 0.08)', borderLeft: '2px solid #25D1F2' } : {}}
-            >
-              <span className="text-base">{item.icon}</span>
-              <span className={isActive ? 'font-medium' : 'font-normal'}>{item.label}</span>
-              {badgeCount > 0 && (
-                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded-full" style={{ background: 'rgba(37, 209, 242, 0.15)', color: '#25D1F2' }}>
-                  {badgeCount}
-                </span>
-              )}
-            </a>
-          );
-        })}
+        <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-600">Daily Ops</p>
+        {dailyNavItems.map(renderNavItem)}
+        <div className="my-3 border-t border-slate-800/50" />
+        <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-600">Projects</p>
+        {projectNavItems.map(renderNavItem)}
       </nav>
 
       {/* Footer */}
