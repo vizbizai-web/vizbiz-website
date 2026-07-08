@@ -153,14 +153,14 @@ export function renderClientEmail(id: ClientEmailId, ctx: ClientEmailContext): R
       const appeared = requiredNumber(ctx.appearedX, 'appeared_x');
       const total = requiredNumber(ctx.totalN, 'total_n');
       const reportUrl = required(ctx.reportUrl, 'report_url');
-      return finish(id, `${business}: your AI visibility snapshot is ready`, `${greeting(ctx)}I ran an AI visibility check on ${business} and put together your snapshot report.\n\nThe one number that matters: you appeared in ${appeared} of ${total} AI answers we tested${city ? ` for ${city}` : ''}.\n\nSee the full results: ${reportUrl}\n\nThe report groups similar customer questions into clear themes, shows where you appeared, and highlights what's keeping you out of the rest.\n\nAlex — VizBiz.ai`);
+      return finish(id, `${business}: your AI visibility snapshot is ready`, `${greeting(ctx)}I ran an AI visibility check on ${business} and put together your snapshot report.\n\nThe one number that matters: you appeared in ${appeared} of ${total} AI answers we tested${city ? ` for ${city}` : ''}.\n\nSee the full results: ${reportUrl}\n\nYour report page stays live and includes a downloadable dated PDF snapshot, so you can save the baseline before any fixes or monitoring begin.\n\nThe report groups similar customer questions into clear themes, shows where you appeared, and highlights what's keeping you out of the rest.\n\nAlex — VizBiz.ai`);
     }
     case 'E2B_STALE_DELIVERY': {
       const appeared = requiredNumber(ctx.appearedX, 'appeared_x');
       const total = requiredNumber(ctx.totalN, 'total_n');
       const reportUrl = required(ctx.reportUrl, 'report_url');
       const cityText = required(ctx.city, 'city');
-      return finish(id, `${business}: your AI visibility report — tested this week`, `${greeting(ctx)}You asked for an AI visibility check a few weeks back, and I owe you a straight sentence: we were rebuilding the system that runs these reports, and yours waited longer than it should have.\n\nThe upside — your report just ran on the finished version: real buyer questions tested this week across ChatGPT, Gemini, and Perplexity, not a single engine. You appeared in ${appeared} of ${total} answers we tested for ${cityText}.\n\nSee the full results: ${reportUrl}\n\nNo charge, no strings — it's the report you asked for, done properly.\n\nAlex — VizBiz.ai`);
+      return finish(id, `${business}: your AI visibility report — tested this week`, `${greeting(ctx)}You asked for an AI visibility check a few weeks back, and I owe you a straight sentence: we were rebuilding the system that runs these reports, and yours waited longer than it should have.\n\nThe upside — your report just ran on the finished version: real buyer questions tested this week across ChatGPT, Gemini, and Perplexity, not a single engine. You appeared in ${appeared} of ${total} answers we tested for ${cityText}.\n\nSee the full results: ${reportUrl}\n\nYour report page stays live and includes a downloadable dated PDF snapshot, so you can save the baseline before any fixes or monitoring begin.\n\nNo charge, no strings — it's the report you asked for, done properly.\n\nAlex — VizBiz.ai`);
     }
     case 'E3_NURTURE_ONE_FIX': {
       const fixCount = requiredNumber(ctx.fixCount, 'fix_count');

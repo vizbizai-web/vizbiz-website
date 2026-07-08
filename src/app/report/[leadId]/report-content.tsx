@@ -469,7 +469,7 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
 }
 
 /* ── Report Hero (premium fintech editorial) ── */
-function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
+function ReportHero({ data, theme, leadId }: { data: LeadData; theme: Theme; leadId: string }) {
   const t = getThemeStyles(theme);
   const accent = getScoreAccent(data.aviScore);
   const label = getScoreLabel(data.aviScore);
@@ -515,6 +515,23 @@ function ReportHero({ data, theme }: { data: LeadData; theme: Theme }) {
         <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 14, lineHeight: 1.7, color: t.textSecondary, marginBottom: 40, maxWidth: 600 }}>
           {summaryText}
         </p>
+
+        {/* Snapshot PDF CTA */}
+        <div className="mb-8 rounded-2xl p-4 sm:p-5" style={{ background: t.bgCard, border: `1px solid ${t.borderSubtle}`, boxShadow: t.shadow }}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Download your dated before snapshot</p>
+              <p className="mt-1 text-xs leading-6" style={{ color: t.textMuted }}>Save a dated copy of your before snapshot before any VizBiz fix plan, implementation, or monitoring begins.</p>
+            </div>
+            <a
+              href={`/api/reports/${encodeURIComponent(leadId)}/snapshot-pdf/`}
+              className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition-all"
+              style={{ background: 'linear-gradient(to right, #22D3EE, #06B6D4)', color: '#020617' }}
+            >
+              Download Before Snapshot PDF
+            </a>
+          </div>
+        </div>
 
         {/* Snapshot score - the only main 0–100 score in the free report */}
         <div style={{ marginBottom: 8 }}>
@@ -2217,7 +2234,7 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
 
         <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 space-y-12 sm:space-y-16">
           {/* 1. Hero */}
-          <ReportHero data={data} theme={theme} />
+          <ReportHero data={data} theme={theme} leadId={leadId} />
 
           {/* 2. Visibility signal breakdown */}
           <CategoryScores data={data} theme={theme} />

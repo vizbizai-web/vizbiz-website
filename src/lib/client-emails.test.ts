@@ -50,6 +50,7 @@ describe('client email suite v1', () => {
     expect(rendered.text).toContain('You asked for an AI visibility check a few weeks back, and I owe you a straight sentence: we were rebuilding the system that runs these reports, and yours waited longer than it should have.');
     expect(rendered.text).toContain('real buyer questions tested this week across ChatGPT, Gemini, and Perplexity, not a single engine. You appeared in 3 of 10 answers we tested for Toronto.');
     expect(rendered.text).toContain('See the full results: https://vizbiz.ai/report/lexhive/full');
+    expect(rendered.text).toContain('downloadable dated PDF snapshot');
     expect(rendered.text).toContain("No charge, no strings — it's the report you asked for, done properly.");
     expect(rendered.text).toContain('Alex — VizBiz.ai');
   });

@@ -67,4 +67,11 @@ describe('free report client copy safety', () => {
     expect(source).toContain("fetch('/api/stripe/checkout/',");
     expect(source).not.toContain('href="#"');
   });
+
+  it('offers a branded before-snapshot PDF download from the shared free report renderer', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).toContain('Download Before Snapshot PDF');
+    expect(source).toContain('Save a dated copy of your before snapshot');
+    expect(source).toContain('/snapshot-pdf/');
+  });
 });
