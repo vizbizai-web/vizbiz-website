@@ -58,7 +58,7 @@ async function processDueMonthlySubscription() {
         if (snapshot.tier !== 'paid' || snapshot.runType === 'pulse' || (snapshot.promptPlan as any)?.runType === 'pulse') return false;
         const plan = uniquePromptPlan(snapshot.promptPlan?.prompts || []);
         const planHash = snapshot.promptPlan?.hash || (plan.length ? hashPromptPlan(plan) : null);
-        return plan.length > 0 && planHash === hashPromptPlan(plan);
+        return plan.length > 0 && Boolean(planHash && /^[a-f0-9]{64}$/i.test(planHash));
       }) || null;
     const preflight = await preflightScan(lead.website, lead.city, lead.dealershipName);
     const currentProfileHash = hashProfile(stableProfileForMonthlyHash(preflight));
@@ -72,7 +72,7 @@ async function processDueMonthlySubscription() {
 
     const previousPromptPlan = uniquePromptPlan(previousSnapshot?.promptPlan?.prompts || []);
     const previousPromptPlanHash = previousSnapshot?.promptPlan?.hash || (previousPromptPlan.length ? hashPromptPlan(previousPromptPlan) : null);
-    if (previousSnapshot && (!previousPromptPlan.length || previousPromptPlanHash !== hashPromptPlan(previousPromptPlan))) {
+    if (previousSnapshot && (!previousPromptPlan.length || !previousPromptPlanHash || !/^[a-f0-9]{64}$/i.test(previousPromptPlanHash))) {
       const message = `⚠️ Monthly loop blocked for operator review\n\nID: ${lead.leadId}\nName: ${lead.dealershipName}\nReason: previous snapshot prompt plan hash is missing or invalid. Monthly prompts were not run.`;
       await markSubscriptionLoopFailure(subscription.stripe_subscription_id, 'prompt_plan_hash_invalid');
       await sendTelegramAlert({ message, topic: 'system' });

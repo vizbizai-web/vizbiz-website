@@ -162,6 +162,7 @@ describe('Phase 3 monthly loop acceptance suite', () => {
     expect(source).toContain("snapshot.runType === 'pulse'");
     expect(source).toContain('previousHashLooksReal');
     expect(source).toContain('/^[a-f0-9]{64}$/i.test(previousSnapshot.profileHash)');
-    expect(source).toContain('planHash === hashPromptPlan(plan)');
+    expect(source).toContain('/^[a-f0-9]{64}$/i.test(planHash)');
+    expect(source).toContain('/^[a-f0-9]{64}$/i.test(previousPromptPlanHash)');
   });
 });
