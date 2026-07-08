@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAllLeads, updateLeadResearchResults } from "@/lib/google-sheets";
 import type { LeadRow } from "@/lib/google-sheets";
 import { sendPipelineAlert } from "@/lib/telegram-alerts";
-import { recordActionAudit, requireMissionControlApiAuth } from "@/lib/mission-control-api-auth";
+import { recordActionAudit, requireMissionControlApiAuth, missionControlInternalHeaders } from "@/lib/mission-control-api-auth";
 import { buildMissionControlNicheResolution } from "@/lib/niche-resolution-actions";
 import { approveAndSendGatedEmail } from "@/lib/email-suite-automation";
 
@@ -198,7 +198,7 @@ export async function POST(request: Request) {
 
         const sendRes = await fetch(`${origin}/api/send-report-email`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...missionControlInternalHeaders() },
           body: JSON.stringify({
             to: lead.email,
             leadId,

@@ -190,6 +190,7 @@ describe('Mission Control production integrity', () => {
 
     expect(leadActions).toContain('APPROVED_FOR_FREE_SEND');
     expect(leadActions).toContain('/api/send-report-email');
+    expect(leadActions).toContain('missionControlInternalHeaders()');
     expect(leadActions).toContain('/api/pipeline/process');
     expect(leadActions).toContain('Research rerun started');
     expect(leadActions).toContain('Do not send —');
