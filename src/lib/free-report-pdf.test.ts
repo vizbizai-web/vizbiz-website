@@ -78,8 +78,10 @@ describe('free report PDF before snapshot', () => {
     const pdf = renderFreeReportPdf(model);
 
     expect(pdf.buffer.subarray(0, 5).toString('utf8')).toBe('%PDF-');
+    expect(pdf.buffer.includes(Buffer.from('/Subtype /Image'))).toBe(true);
+    expect(pdf.buffer.includes(Buffer.from('/Logo'))).toBe(true);
     expect(pdf.filename).toBe('vizbiz-before-snapshot-clinica-veterinaria-san-isidro-lead-1234.pdf');
     expect(pdf.contentType).toBe('application/pdf');
-    expect(pdf.buffer.byteLength).toBeGreaterThan(1000);
+    expect(pdf.buffer.byteLength).toBeGreaterThan(10000);
   });
 });

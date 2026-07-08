@@ -1,5 +1,7 @@
 import type { LeadPageData, ResearchData } from '@/app/report/[leadId]/page';
 import { buildQueryThemeGroups, type QueryThemeGroup } from './query-theme-groups';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 export type FreeReportPdfMetric = { label: string; value: string };
 
@@ -106,10 +108,31 @@ export function buildFreeReportPdfModel(input: BuildPdfInput): FreeReportPdfMode
 const PAGE_WIDTH = 612;
 const PAGE_HEIGHT = 792;
 const MARGIN = 54;
+const BRAND = {
+  nearBlackNavy: [2, 6, 23] as [number, number, number],
+  deepNavy: [15, 23, 42] as [number, number, number],
+  cyanLight: [34, 211, 238] as [number, number, number],
+  cyanIce: [224, 247, 250] as [number, number, number],
+  warmLinen: [250, 247, 242] as [number, number, number],
+  linenDeep: [242, 237, 228] as [number, number, number],
+  slateText: [15, 23, 42] as [number, number, number],
+  muted: [100, 116, 139] as [number, number, number],
+  white: [255, 255, 255] as [number, number, number],
+};
+const LOGO_JPEG = { path: join(process.cwd(), 'public', 'logo.jpg'), width: 2048, height: 1152 };
 
 type DrawTextOptions = { size?: number; bold?: boolean; color?: [number, number, number] };
 
 type PdfPage = { stream: string[] };
+type PdfImage = { name: 'Logo'; data: Buffer; width: number; height: number } | null;
+
+function loadLogoImage(): PdfImage {
+  try {
+    return { name: 'Logo', data: readFileSync(LOGO_JPEG.path), width: LOGO_JPEG.width, height: LOGO_JPEG.height };
+  } catch {
+    return null;
+  }
+}
 
 function rgb([r, g, b]: [number, number, number]) {
   return `${(r / 255).toFixed(3)} ${(g / 255).toFixed(3)} ${(b / 255).toFixed(3)}`;
@@ -155,6 +178,10 @@ function drawLine(page: PdfPage, x1: number, y1: number, x2: number, y2: number,
   page.stream.push(`${rgb(color)} RG ${width} w ${x1} ${y1} m ${x2} ${y2} l S`);
 }
 
+function drawImage(page: PdfPage, name: string, x: number, y: number, w: number, h: number) {
+  page.stream.push(`q ${w} 0 0 ${h} ${x} ${y} cm /${name} Do Q`);
+}
+
 function wrapText(text: string, maxChars: number) {
   const words = String(text || '').replace(/\s+/g, ' ').trim().split(' ');
   const lines: string[] = [];
@@ -182,43 +209,60 @@ function addWrappedText(page: PdfPage, text: string, x: number, y: number, maxCh
 }
 
 function sectionTitle(page: PdfPage, title: string, y: number) {
-  drawText(page, title, MARGIN, y, { size: 20, bold: true, color: [2, 6, 23] });
-  drawLine(page, MARGIN, y - 8, MARGIN + 40, y - 8, [34, 211, 238], 2);
+  drawText(page, title, MARGIN, y, { size: 20, bold: true, color: BRAND.nearBlackNavy });
+  drawLine(page, MARGIN, y - 8, MARGIN + 46, y - 8, BRAND.cyanLight, 2.5);
   return y - 34;
 }
 
-function newPage(): PdfPage {
+function drawHeaderLogo(page: PdfPage, logo: PdfImage) {
+  if (logo) {
+    drawImage(page, logo.name, MARGIN, PAGE_HEIGHT - 67, 118, 66);
+  } else {
+    drawText(page, 'VizBiz.ai', MARGIN, PAGE_HEIGHT - 42, { size: 18, bold: true, color: BRAND.cyanLight });
+  }
+}
+
+function newPage(logo: PdfImage): PdfPage {
   const page = { stream: [] as string[] };
-  drawRect(page, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, [248, 250, 252]);
-  drawRect(page, 0, PAGE_HEIGHT - 72, PAGE_WIDTH, 72, [2, 6, 23]);
-  drawText(page, 'VizBiz.ai', MARGIN, PAGE_HEIGHT - 44, { size: 18, bold: true, color: [34, 211, 238] });
-  drawText(page, 'AI visibility, local trust signals, and recommendation readiness', MARGIN + 92, PAGE_HEIGHT - 44, { size: 9, color: [203, 213, 225] });
+  drawRect(page, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, BRAND.warmLinen);
+  drawRect(page, 0, PAGE_HEIGHT - 82, PAGE_WIDTH, 82, BRAND.nearBlackNavy);
+  drawHeaderLogo(page, logo);
+  drawText(page, 'AI visibility intelligence', MARGIN + 136, PAGE_HEIGHT - 38, { size: 10, color: [203, 213, 225] });
+  drawText(page, 'Local trust signals · Recommendation readiness', MARGIN + 136, PAGE_HEIGHT - 56, { size: 8, color: [148, 163, 184] });
+  drawLine(page, 0, PAGE_HEIGHT - 83, PAGE_WIDTH, PAGE_HEIGHT - 83, BRAND.cyanLight, 1.2);
   drawLine(page, MARGIN, 46, PAGE_WIDTH - MARGIN, 46, [226, 232, 240]);
   drawText(page, 'vizbiz.ai', MARGIN, 28, { size: 9, color: [71, 85, 105] });
   return page;
 }
 
 function metricCard(page: PdfPage, metric: FreeReportPdfMetric, x: number, y: number, w: number) {
-  drawRect(page, x, y, w, 76, [255, 255, 255]);
-  drawLine(page, x, y + 76, x + w, y + 76, [34, 211, 238], 2);
-  drawText(page, metric.value, x + 14, y + 43, { size: 22, bold: true, color: [2, 6, 23] });
-  drawText(page, metric.label, x + 14, y + 19, { size: 9, color: [71, 85, 105] });
+  drawRect(page, x, y, w, 84, BRAND.cyanIce);
+  drawRect(page, x, y + 80, w, 4, BRAND.cyanLight);
+  drawText(page, metric.value, x + 16, y + 48, { size: 23, bold: true, color: BRAND.deepNavy });
+  drawText(page, metric.label, x + 16, y + 21, { size: 9, bold: true, color: [51, 65, 85] });
 }
 
-function buildPages(model: FreeReportPdfModel) {
+function buildPages(model: FreeReportPdfModel, logo: PdfImage) {
   const pages: PdfPage[] = [];
 
-  let page = newPage();
-  drawText(page, model.title, MARGIN, 650, { size: 30, bold: true, color: [2, 6, 23] });
-  drawText(page, model.preparedBeforeLine, MARGIN, 620, { size: 13, color: [6, 182, 212] });
-  drawText(page, model.businessName, MARGIN, 560, { size: 22, bold: true, color: [15, 23, 42] });
-  drawText(page, model.market, MARGIN, 536, { size: 13, color: [71, 85, 105] });
-  drawText(page, `Snapshot date: ${model.snapshotDate}`, MARGIN, 500, { size: 12, bold: true, color: [15, 23, 42] });
-  drawText(page, `Report ID: ${model.shortReportId}`, MARGIN, 480, { size: 10, color: [100, 116, 139] });
-  addWrappedText(page, 'This free snapshot records what AI-search systems surfaced before any VizBiz fix plan, implementation, or monitoring began. Keep it as the baseline for future before/after comparison.', MARGIN, 430, 78, { size: 12, color: [51, 65, 85] }, 18);
+  let page = { stream: [] as string[] };
+  drawRect(page, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, BRAND.nearBlackNavy);
+  drawRect(page, 0, 0, PAGE_WIDTH, 210, BRAND.deepNavy);
+  if (logo) drawImage(page, logo.name, MARGIN, 600, 236, 133);
+  else drawText(page, 'VizBiz.ai', MARGIN + 20, 642, { size: 26, bold: true, color: BRAND.cyanLight });
+  drawText(page, 'BEFORE SNAPSHOT', MARGIN, 554, { size: 10, bold: true, color: BRAND.cyanLight });
+  drawText(page, model.title, MARGIN, 508, { size: 34, bold: true, color: BRAND.white });
+  drawText(page, model.preparedBeforeLine, MARGIN, 478, { size: 13, color: [207, 250, 254] });
+  drawLine(page, MARGIN, 448, MARGIN + 160, 448, BRAND.cyanLight, 3);
+  drawText(page, model.businessName, MARGIN, 384, { size: 22, bold: true, color: BRAND.white });
+  drawText(page, model.market, MARGIN, 360, { size: 12, color: [203, 213, 225] });
+  drawRect(page, MARGIN, 286, PAGE_WIDTH - MARGIN * 2, 52, BRAND.cyanIce);
+  drawText(page, `Snapshot date: ${model.snapshotDate}`, MARGIN + 18, 318, { size: 12, bold: true, color: BRAND.deepNavy });
+  drawText(page, `Report ID: ${model.shortReportId} · Live report: vizbiz.ai`, MARGIN + 18, 298, { size: 9, color: [51, 65, 85] });
+  addWrappedText(page, 'This is the baseline before any VizBiz fix plan, implementation, or monitoring begins. Use it as the before-photo for your 30-day update and future monthly visibility tracking.', MARGIN, 172, 70, { size: 12, color: [226, 232, 240] }, 18);
   pages.push(page);
 
-  page = newPage();
+  page = newPage(logo);
   let y = sectionTitle(page, 'Executive Summary', 674);
   metricCard(page, model.metrics[0], MARGIN, y - 86, 236);
   metricCard(page, model.metrics[1], MARGIN + 260, y - 86, 236);
@@ -228,7 +272,7 @@ function buildPages(model: FreeReportPdfModel) {
   addWrappedText(page, `${model.businessName} appeared in ${model.metrics[1].value} tested AI buyer-style questions. This snapshot is a starting read, not a full implementation plan.`, MARGIN, y, 82, { size: 12, color: [51, 65, 85] }, 18);
   pages.push(page);
 
-  page = newPage();
+  page = newPage(logo);
   y = sectionTitle(page, 'Query Findings Summary', 674);
   drawText(page, 'Where You Appear', MARGIN, y, { size: 14, bold: true, color: [15, 23, 42] });
   y -= 28;
@@ -245,7 +289,7 @@ function buildPages(model: FreeReportPdfModel) {
   }
   pages.push(page);
 
-  page = newPage();
+  page = newPage(logo);
   y = sectionTitle(page, 'Local Trust Snapshot', 674);
   for (const line of model.localTrust) {
     drawText(page, `• ${line}`, MARGIN, y, { size: 12, color: [30, 41, 59] });
@@ -262,61 +306,80 @@ function buildPages(model: FreeReportPdfModel) {
   addWrappedText(page, 'Public rating, review volume, profile consistency, and proof signals help customers and AI systems understand whether a local business looks credible and active.', MARGIN, y, 78, { size: 11, color: [71, 85, 105] }, 16);
   pages.push(page);
 
-  page = newPage();
+  page = newPage(logo);
   y = sectionTitle(page, 'What To Do Next', 674);
   for (const step of model.nextSteps) {
     y = addWrappedText(page, `• ${step}`, MARGIN, y, 78, { size: 12, color: [30, 41, 59] }, 18) - 8;
   }
-  drawRect(page, MARGIN, 260, PAGE_WIDTH - MARGIN * 2, 136, [2, 6, 23]);
-  drawText(page, model.ctaPrimary, MARGIN + 24, 350, { size: 16, bold: true, color: [34, 211, 238] });
-  drawText(page, model.ctaSecondary, MARGIN + 24, 322, { size: 11, color: [226, 232, 240] });
-  addWrappedText(page, `Live report link: ${model.reportUrl}`, MARGIN + 24, 294, 66, { size: 10, color: [203, 213, 225] }, 14);
+  drawRect(page, MARGIN, 250, PAGE_WIDTH - MARGIN * 2, 154, BRAND.nearBlackNavy);
+  drawText(page, model.ctaPrimary, MARGIN + 24, 350, { size: 15, bold: true, color: BRAND.cyanLight });
+  drawText(page, model.ctaSecondary, MARGIN + 24, 296, { size: 11, color: [226, 232, 240] });
+  addWrappedText(page, `Live report link: ${model.reportUrl}`, MARGIN + 24, 274, 66, { size: 10, color: [203, 213, 225] }, 14);
   pages.push(page);
 
   return pages;
 }
 
-function pdfObject(body: string) {
-  return `${body}\n`;
+function pdfObject(body: string): Buffer {
+  return Buffer.from(`${body}\n`, 'binary');
+}
+
+function pdfStreamObject(dict: string, stream: Buffer): Buffer {
+  return Buffer.concat([
+    Buffer.from(`<< ${dict} /Length ${stream.length} >>\nstream\n`, 'binary'),
+    stream,
+    Buffer.from('\nendstream\n', 'binary'),
+  ], Buffer.byteLength(`<< ${dict} /Length ${stream.length} >>\nstream\n`, 'binary') + stream.length + Buffer.byteLength('\nendstream\n', 'binary'));
 }
 
 function buildPdfBuffer(model: FreeReportPdfModel): Buffer {
-  const pages = buildPages(model);
-  const objects: string[] = [];
+  const logo = loadLogoImage();
+  const pages = buildPages(model, logo);
+  const objects: Buffer[] = [];
   objects.push(pdfObject('<< /Type /Catalog /Pages 2 0 R >>'));
 
   const fontObjStart = 3;
-  objects.push('PAGES_PLACEHOLDER');
+  objects.push(Buffer.from('PAGES_PLACEHOLDER'));
   objects.push(pdfObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'));
   objects.push(pdfObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'));
+  const logoObjNo = logo ? objects.length + 1 : null;
+  if (logo) {
+    objects.push(pdfStreamObject(`/Type /XObject /Subtype /Image /Width ${logo.width} /Height ${logo.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode`, logo.data));
+  }
 
   const pageObjNumbers: number[] = [];
   for (const page of pages) {
     const pageObjNo = objects.length + 1;
     const streamObjNo = objects.length + 2;
     pageObjNumbers.push(pageObjNo);
-    objects.push(pdfObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 ${fontObjStart} 0 R /F2 ${fontObjStart + 1} 0 R >> >> /Contents ${streamObjNo} 0 R >>`));
-    const stream = page.stream.join('\n');
-    objects.push(pdfObject(`<< /Length ${Buffer.byteLength(stream, 'utf8')} >>\nstream\n${stream}\nendstream`));
+    const xObjectResource = logoObjNo ? ` /XObject << /Logo ${logoObjNo} 0 R >>` : '';
+    objects.push(pdfObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 ${fontObjStart} 0 R /F2 ${fontObjStart + 1} 0 R >>${xObjectResource} >> /Contents ${streamObjNo} 0 R >>`));
+    const stream = Buffer.from(page.stream.join('\n'), 'binary');
+    objects.push(pdfStreamObject('', stream));
   }
 
   objects[1] = pdfObject(`<< /Type /Pages /Kids [${pageObjNumbers.map((n) => `${n} 0 R`).join(' ')}] /Count ${pageObjNumbers.length} >>`);
   const infoObjNo = objects.length + 1;
   objects.push(pdfObject(`<< /Title <${utf16Hex(model.title)}> /Author <${utf16Hex('VizBiz.ai')}> /Subject <${utf16Hex(model.preparedBeforeLine)}> /Creator <${utf16Hex('VizBiz.ai')}> >>`));
 
-  let pdf = '%PDF-1.7\n%\xE2\xE3\xCF\xD3\n';
+  const chunks: Buffer[] = [Buffer.from('%PDF-1.7\n%\xE2\xE3\xCF\xD3\n', 'binary')];
   const offsets: number[] = [0];
+  let position = chunks[0].length;
   for (let i = 0; i < objects.length; i += 1) {
-    offsets.push(Buffer.byteLength(pdf, 'binary'));
-    pdf += `${i + 1} 0 obj\n${objects[i]}endobj\n`;
+    offsets.push(position);
+    const prefix = Buffer.from(`${i + 1} 0 obj\n`, 'binary');
+    const suffix = Buffer.from('endobj\n', 'binary');
+    chunks.push(prefix, objects[i], suffix);
+    position += prefix.length + objects[i].length + suffix.length;
   }
-  const xrefOffset = Buffer.byteLength(pdf, 'binary');
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  const xrefOffset = position;
+  let trailer = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
   for (let i = 1; i < offsets.length; i += 1) {
-    pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+    trailer += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
   }
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R /Info ${infoObjNo} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
-  return Buffer.from(pdf, 'binary');
+  trailer += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R /Info ${infoObjNo} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  chunks.push(Buffer.from(trailer, 'binary'));
+  return Buffer.concat(chunks);
 }
 
 export function renderFreeReportPdf(model: FreeReportPdfModel): { buffer: Buffer; filename: string; contentType: 'application/pdf' } {
