@@ -153,7 +153,7 @@ export function renderClientEmail(id: ClientEmailId, ctx: ClientEmailContext): R
       const appeared = requiredNumber(ctx.appearedX, 'appeared_x');
       const total = requiredNumber(ctx.totalN, 'total_n');
       const reportUrl = required(ctx.reportUrl, 'report_url');
-      return finish(id, `${business}: your AI visibility snapshot is ready`, `${greeting(ctx)}I ran an AI visibility check on ${business} and put together your snapshot report.\n\nThe one number that matters: you appeared in ${appeared} of ${total} AI answers we tested${city ? ` for ${city}` : ''}.\n\nSee the full results: ${reportUrl}\n\nThe report shows each question we asked, which platforms named you, and what's keeping you out of the rest.\n\nAlex — VizBiz.ai`);
+      return finish(id, `${business}: your AI visibility snapshot is ready`, `${greeting(ctx)}I ran an AI visibility check on ${business} and put together your snapshot report.\n\nThe one number that matters: you appeared in ${appeared} of ${total} AI answers we tested${city ? ` for ${city}` : ''}.\n\nSee the full results: ${reportUrl}\n\nThe report groups similar customer questions into clear themes, shows where you appeared, and highlights what's keeping you out of the rest.\n\nAlex — VizBiz.ai`);
     }
     case 'E2B_STALE_DELIVERY': {
       const appeared = requiredNumber(ctx.appearedX, 'appeared_x');

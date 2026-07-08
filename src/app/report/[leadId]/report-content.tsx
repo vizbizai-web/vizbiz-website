@@ -10,6 +10,7 @@ import { isJunkCompetitor } from '@/lib/junk-filter';
 import { getSeparateCompetitorNames, hasVerifiedLocalTrustData } from '@/lib/funnel-logic';
 import { getReportRankDisplay } from '@/lib/report-rank';
 import { buildStripeCheckoutFallbackUrl } from '@/lib/stripe-checkout-logic';
+import { buildQueryThemeGroups, type QueryThemeGroup } from '@/lib/query-theme-groups';
 import {
   RadarChart,
   PolarGrid,
@@ -75,6 +76,8 @@ interface LeadData {
   categories: Category[];
   visibleQueries: string[];
   invisibleQueries: string[];
+  visibleQueryThemes: QueryThemeGroup[];
+  invisibleQueryThemes: QueryThemeGroup[];
   competitors: Competitor[];
   recommendations: Recommendation[];
   socialPresence: SocialPresence;
@@ -996,8 +999,10 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
   const [showAllVisible, setShowAllVisible] = useState(false);
   const [showAllInvisible, setShowAllInvisible] = useState(false);
 
-  const visibleToShow = isMobile && !showAllVisible ? 5 : data.visibleQueries.length;
-  const invisibleToShow = isMobile && !showAllInvisible ? 5 : data.invisibleQueries.length;
+  const visibleThemes = data.visibleQueryThemes?.length ? data.visibleQueryThemes : buildQueryThemeGroups(data.visibleQueries, { businessName: data.businessName, location: data.location });
+  const invisibleThemes = data.invisibleQueryThemes?.length ? data.invisibleQueryThemes : buildQueryThemeGroups(data.invisibleQueries, { businessName: data.businessName, location: data.location });
+  const visibleToShow = isMobile && !showAllVisible ? Math.min(4, visibleThemes.length) : visibleThemes.length;
+  const invisibleToShow = isMobile && !showAllInvisible ? Math.min(4, invisibleThemes.length) : invisibleThemes.length;
 
   const invisibleCount = data.invisibleQueries.length;
   const totalCount = data.visibleQueries.length + invisibleCount;
@@ -1025,26 +1030,40 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
                 </h3>
               </div>
               <p className="text-xs mb-4" style={{ color: t.textMuted }}>
-                {data.visibleQueries.length} queries where AI mentions you
+                {data.visibleQueries.length} AI mentions, grouped into {visibleThemes.length} readable theme{visibleThemes.length === 1 ? '' : 's'}
               </p>
-              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${t.borderSubtle}`, background: t.barTrack }}>
-                <table className="w-full">
-                  <tbody>
-                    {data.visibleQueries.slice(0, visibleToShow).map((q, i) => (
-                      <tr key={i} className={i > 0 ? `border-t` : ''} style={{ borderColor: t.borderSubtle }}>
-                        <td className="py-2.5 px-3 text-sm" style={{ color: t.textSecondary }}>{q}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-3">
+                {visibleThemes.slice(0, visibleToShow).map((theme) => (
+                  <div key={theme.key} className="rounded-xl p-4" style={{ border: `1px solid ${t.borderSubtle}`, background: t.barTrack }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>{theme.label}</p>
+                        <p className="mt-1 text-xs" style={{ color: t.textMuted }}>
+                          {theme.count} mention{theme.count === 1 ? '' : 's'} in this theme
+                        </p>
+                      </div>
+                      <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: 'rgba(34,197,94,0.12)', color: '#16A34A' }}>
+                        {theme.count}×
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed" style={{ color: t.textSecondary }}>
+                      “{theme.example}”
+                    </p>
+                  </div>
+                ))}
               </div>
-              {isMobile && data.visibleQueries.length > 5 && (
+              {visibleThemes.length > 0 && (
+                <p className="mt-3 text-xs leading-5" style={{ color: t.textMuted }}>
+                  Similar or repeated AI questions are grouped here so the pattern is clear without showing duplicate query lines.
+                </p>
+              )}
+              {isMobile && visibleThemes.length > 4 && (
                 <button
                   onClick={() => setShowAllVisible(!showAllVisible)}
                   className="mt-2 text-xs font-medium"
                   style={{ color: '#22D3EE' }}
                 >
-                  {showAllVisible ? 'Show less' : `+ ${data.visibleQueries.length - 5} more`}
+                  {showAllVisible ? 'Show less' : `+ ${visibleThemes.length - 4} more themes`}
                 </button>
               )}
             </div>
@@ -1058,26 +1077,35 @@ function QueryLists({ data, theme }: { data: LeadData; theme: Theme }) {
                 </h3>
               </div>
               <p className="text-xs mb-4" style={{ color: t.textMuted }}>
-                {invisibleCount} queries where your business was not clearly found
+                {invisibleCount} missed mentions, grouped into {invisibleThemes.length} theme{invisibleThemes.length === 1 ? '' : 's'} to review
               </p>
-              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${t.borderSubtle}`, background: t.barTrack }}>
-                <table className="w-full">
-                  <tbody>
-                    {data.invisibleQueries.slice(0, invisibleToShow).map((q, i) => (
-                      <tr key={i} className={i > 0 ? `border-t` : ''} style={{ borderColor: t.borderSubtle }}>
-                        <td className="py-2.5 px-3 text-sm" style={{ color: t.textSecondary }}>{q}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-3">
+                {invisibleThemes.slice(0, invisibleToShow).map((theme) => (
+                  <div key={theme.key} className="rounded-xl p-4" style={{ border: `1px solid ${t.borderSubtle}`, background: t.barTrack }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>{theme.label}</p>
+                        <p className="mt-1 text-xs" style={{ color: t.textMuted }}>
+                          {theme.count} missed mention{theme.count === 1 ? '' : 's'} in this theme
+                        </p>
+                      </div>
+                      <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#DC2626' }}>
+                        {theme.count}×
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed" style={{ color: t.textSecondary }}>
+                      “{theme.example}”
+                    </p>
+                  </div>
+                ))}
               </div>
-              {isMobile && data.invisibleQueries.length > 5 && (
+              {isMobile && invisibleThemes.length > 4 && (
                 <button
                   onClick={() => setShowAllInvisible(!showAllInvisible)}
                   className="mt-2 text-xs font-medium"
                   style={{ color: '#22D3EE' }}
                 >
-                  {showAllInvisible ? 'Show less' : `+ ${data.invisibleQueries.length - 5} more`}
+                  {showAllInvisible ? 'Show less' : `+ ${invisibleThemes.length - 4} more themes`}
                 </button>
               )}
             </div>
@@ -1946,6 +1974,8 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
     const invisibleQueries = researchData.promptResults
       .filter(r => !r.businessAppeared)
       .map(r => r.prompt);
+    const visibleQueryThemes = buildQueryThemeGroups(visibleQueries, { businessName: researchData.businessName, location: researchData.city, nicheLabel: researchData.nicheLabel || researchData.niche });
+    const invisibleQueryThemes = buildQueryThemeGroups(invisibleQueries, { businessName: researchData.businessName, location: researchData.city, nicheLabel: researchData.nicheLabel || researchData.niche });
 
     const compScore = hasRealCompetitor
       ? researchData.promptResults.filter(r => r.competitorAppeared).length
@@ -1991,6 +2021,8 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
       categories,
       visibleQueries,
       invisibleQueries,
+      visibleQueryThemes,
+      invisibleQueryThemes,
       competitors: (() => {
         // Client-only mode: only show the business itself, no competitor comparison
         if (researchData.competitorMode === 'client_only') {
@@ -2088,6 +2120,8 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
       categories: fallbackCategories,
       visibleQueries: [],
       invisibleQueries: [],
+      visibleQueryThemes: [],
+      invisibleQueryThemes: [],
       competitors: fallbackCompetitorMode === 'client_only'
         ? [{ name: `${leadData.businessName} (You)`, score: promptsAppeared, isYou: true }]
         : [
@@ -2123,6 +2157,8 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
       categories: [],
       visibleQueries: [],
       invisibleQueries: [],
+      visibleQueryThemes: [],
+      invisibleQueryThemes: [],
       competitors: [],
       recommendations: [],
       socialPresence: { googleReviews: 0, overallScore: 0 },
