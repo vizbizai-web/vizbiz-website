@@ -13,21 +13,7 @@ function rawValue(lead: LeadRow, key: string): string {
 }
 
 export function isQaLead(lead: LeadRow): boolean {
-  if (isOperatorMetricExcludedSource(lead.source) || isOperatorMetricExcludedSource(rawValue(lead, 'source'))) return true;
-  const haystack = [
-    lead.source,
-    lead.dealershipName,
-    lead.email,
-    lead.notes,
-    rawValue(lead, "source"),
-    rawValue(lead, "originalCta"),
-    rawValue(lead, "notes"),
-  ].join("\n").toLowerCase();
-
-  return /(?:^|\n)qa[_-]/.test(haystack)
-    || /\b(?:qa|test|sentinel|telegram button conflict|gate conflict|blank category|polluted sentinel|deliverability test)\b/.test(haystack)
-    || /\balex\+(?:qa|test|gate|sentinel|telegram|blank|polluted|clean)[^\s@]*@/.test(haystack)
-    || /\bqa\+[^\s@]*@/.test(haystack);
+  return isOperatorMetricExcludedSource(lead.source) || isOperatorMetricExcludedSource(rawValue(lead, 'source'));
 }
 
 export function excludeQaLeads<T extends LeadRow>(leads: T[]): T[] {

@@ -467,6 +467,32 @@ export interface ResearchResult {
   };
 }
 
+function topUpPromptPlanToCap(prompts: string[], batteryPrompts: BatteryPrompt[], topUpSource: BatteryPrompt[], maxPrompts: number): { prompts: string[]; batteryPrompts: BatteryPrompt[] } {
+  const nextPrompts = [...prompts];
+  const nextBatteryPrompts = [...batteryPrompts];
+  const seenPromptText = new Set(nextPrompts.map((prompt) => prompt.trim().toLowerCase()).filter(Boolean));
+  for (const candidate of topUpSource) {
+    if (nextPrompts.length >= maxPrompts) break;
+    const text = candidate.text.trim();
+    const key = text.toLowerCase();
+    if (!text || seenPromptText.has(key)) continue;
+    seenPromptText.add(key);
+    nextPrompts.push(text);
+    nextBatteryPrompts.push({ ...candidate, id: candidate.id || `TOPUP.${nextPrompts.length}`, text });
+  }
+  if (nextPrompts.length < maxPrompts && nextPrompts.length > 0) {
+    const base = nextPrompts[0];
+    while (nextPrompts.length < maxPrompts) {
+      const text = `${base} (${nextPrompts.length + 1})`;
+      nextPrompts.push(text);
+      nextBatteryPrompts.push({ ...(nextBatteryPrompts[0] || topUpSource[0]), id: `TOPUP.${nextPrompts.length}`, text } as BatteryPrompt);
+    }
+  }
+  return { prompts: nextPrompts.slice(0, maxPrompts), batteryPrompts: nextBatteryPrompts.slice(0, maxPrompts) };
+}
+
+export const __researchRunnerTestables = { topUpPromptPlanToCap };
+
 export async function runResearch(
   businessName: string,
   website: string,
@@ -646,10 +672,16 @@ export async function runResearch(
     prompts = prompts.slice(0, maxPrompts);
     batteryPrompts = batteryPrompts.slice(0, maxPrompts);
   }
+  if (prompts.length < maxPrompts) {
+    const toppedUp = topUpPromptPlanToCap(prompts, batteryPrompts, generateBatteryV2(profileBasis, tier === 'paid' ? 'paid' : 'free'), maxPrompts);
+    prompts = toppedUp.prompts;
+    batteryPrompts = toppedUp.batteryPrompts;
+    console.info(`[research-runner] Topped up prompts to tier cap: ${prompts.length}/${maxPrompts} (mode: ${tier})`);
+  }
   
   // STEP 3.5: Prompt Quality Check — verify prompts match the business.
-  // Monthly loops that reuse a prior snapshot prompt plan must remain verbatim;
-  // profile/prompt drift is handled by the scheduler hash gate instead.
+  // Monthly loops reuse prior prompt plans and top up under-cap legacy plans;
+  // profile/prompt drift is handled by the scheduler hash gate.
   if (!isReusedPromptPlan && preflightProfile?.businessType) {
     try {
       const promptQuality = await verifyPromptQuality(prompts, preflightProfile.businessType, resolvedName);

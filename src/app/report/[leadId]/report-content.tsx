@@ -119,6 +119,7 @@ interface LeadData {
     googleProfileFound?: boolean;
     warnings?: string[];
   } | null;
+  googlePlaceMatchState?: { status: 'matched' | 'not_confidently_matched' | 'not_found' | 'unavailable'; label: string; warnings: string[] };
   localEntityTrustScore?: number | null;
   competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
   platformScores?: { provider: string; label: string; appearedCount: number; totalPrompts: number; appearanceRate: number; status: string }[];
@@ -1690,6 +1691,24 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
   const trustScore = data.localEntityTrustScore;
   const compValidations = data.competitorValidations || [];
   const isClientOnly = data.competitorMode === "client_only";
+  const matchState = data.googlePlaceMatchState;
+
+  if (matchState?.status === 'not_confidently_matched') {
+    return (
+      <FadeIn>
+        <section className="py-12">
+          <div className="max-w-4xl mx-auto">
+            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <div className="p-4 rounded-xl border" style={{ background: t.barTrack, borderColor: 'rgba(245,158,11,0.35)' }}>
+              <p className="text-sm font-semibold" style={{ color: '#F59E0B' }}>Google profile not confidently matched</p>
+              <p className="text-sm mt-2" style={{ color: t.textMuted }}>We found a possible Google listing, but it did not confidently match this business, website, or region. This should be checked before treating ratings or reviews as verified trust evidence.</p>
+              {matchState.warnings.length > 0 && <p className="text-xs mt-2" style={{ color: t.textMuted }}>{matchState.warnings.join(' ')}</p>}
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+    );
+  }
 
   return (
     <FadeIn>
@@ -2022,6 +2041,7 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
       competitorMode: researchData.competitorMode,
       // Google Places enrichment
       googlePlaceEnrichment: researchData.googlePlaceEnrichment || null,
+      googlePlaceMatchState: researchData.googlePlaceMatchState,
       localEntityTrustScore: researchData.localEntityTrustScore ?? null,
       competitorValidations: researchData.competitorValidations || [],
       platformScores: researchData.platformScores,

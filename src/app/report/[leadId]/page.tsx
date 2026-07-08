@@ -71,7 +71,8 @@ export type ResearchData = {
   suppliedCompetitors?: { name: string; website?: string }[];
   internalCompetitorSuggestions?: { name: string; appearances: number; urls: string[] }[];
   // Google Places enrichment
-  googlePlaceEnrichment?: { placeId: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null } | null;
+  googlePlaceEnrichment?: { placeId: string | null; displayName?: string | null; rating: number | null; userReviewCount: number | null; websiteMatch: boolean | null; validationStatus?: 'validated' | 'needs_review' | 'not_found' | 'unavailable'; confidence?: 'high' | 'medium' | 'low' | 'none'; googleProfileFound?: boolean; warnings?: string[] } | null;
+  googlePlaceMatchState?: { status: 'matched' | 'not_confidently_matched' | 'not_found' | 'unavailable'; label: string; warnings: string[] };
   localEntityTrustScore?: number | null;
   competitorValidations?: { name: string; validationStatus: string; rating: number | null; userReviewCount: number | null; distanceFromClientKm: number | null }[];
 };
