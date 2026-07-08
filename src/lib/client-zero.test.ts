@@ -85,6 +85,7 @@ describe('Client Zero spec fixtures', () => {
     expect(ordinaryClientProfile.niche).toBe('tenant rights legal intake software');
     expect(ordinaryClientProfile.nicheLabel).toBe('tenant rights legal intake software');
     expect(ordinaryClientProfile.businessType).toBe('tenant rights legal intake software');
+    expect(clientZeroProfile.services).toEqual([]);
   });
 
   it('8. full v2 fixture keeps stable executed platform totals twice', () => {

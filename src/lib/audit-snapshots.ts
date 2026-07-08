@@ -137,7 +137,11 @@ export function stableProfileForMonthlyHash(profile: unknown): unknown {
     niche: specificNiche || cleanProfileText(p.niche) || businessType || null,
     nicheLabel: specificNiche || cleanProfileText(p.nicheLabel) || businessType || null,
     businessType: businessType || null,
-    services: Array.isArray(p.services) ? p.services.map(String).map((s) => s.trim()).filter(Boolean).sort() : [],
+    // Services are intentionally excluded from the monthly profile hash because
+    // LLM/service extraction can rephrase equivalent service lists between runs.
+    // The prompt-plan hash protects comparability; the profile hash protects the
+    // stable entity/niche/market/language identity.
+    services: [],
     serviceAreas: Array.isArray(p.serviceAreas) ? p.serviceAreas.map(String).map((s) => s.trim()).filter(Boolean).sort() : [],
     primaryMarket: cleanProfileText(p.primaryMarket) || cleanProfileText(p.market) || null,
     searchLanguage: cleanProfileText(p.searchLanguage) || null,
