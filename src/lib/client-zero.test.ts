@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildNeedsYouQueue } from './mission-control-needs-you';
 import { appendClientZeroFixtureSnapshot, buildFixtureResearchResult, clientZeroLeadPayload, ensureSampleClientZeroFixDrop, isOperatorMetricExcludedSource } from './client-zero';
 import { diffSnapshots } from './snapshot-diff';
-import type { AuditSnapshot } from './audit-snapshots';
+import { stableProfileForMonthlyHash, type AuditSnapshot } from './audit-snapshots';
 
 function snapshot(sequence: number, runType: AuditSnapshot['runType'], tier: AuditSnapshot['tier'], appeared: number, total = tier === 'free' ? 15 : 180): AuditSnapshot {
   const result = buildFixtureResearchResult(total, appeared);
@@ -60,7 +60,34 @@ describe('Client Zero spec fixtures', () => {
     expect(isOperatorMetricExcludedSource('snapshot funnel')).toBe(false);
   });
 
-  it('7. full v2 fixture keeps stable executed platform totals twice', () => {
+  it('7. stable monthly profile keeps specific service-shaped niches instead of degrading to a generic label', () => {
+    const clientZeroProfile = stableProfileForMonthlyHash({
+      niche: 'local_business',
+      nicheLabel: 'Local Business',
+      businessType: 'AI visibility reports for local businesses',
+      services: ['AI visibility reports', 'monthly AI visibility monitoring'],
+      primaryMarket: 'Ontario, Canada',
+      searchLanguage: 'English',
+      nicheResolution: { businessNiche: { value: 'AI visibility reports for local businesses' } },
+    }) as any;
+    expect(clientZeroProfile.niche).toBe('AI visibility reports for local businesses');
+    expect(clientZeroProfile.nicheLabel).toBe('AI visibility reports for local businesses');
+    expect(clientZeroProfile.businessType).toBe('AI visibility reports for local businesses');
+
+    const ordinaryClientProfile = stableProfileForMonthlyHash({
+      niche: 'local_business',
+      nicheLabel: 'Local Business',
+      businessType: 'tenant rights legal intake software',
+      services: ['case intake automation', 'legal lead qualification'],
+      primaryMarket: 'New York, NY',
+      businessNiche: { value: 'tenant rights legal intake software' },
+    }) as any;
+    expect(ordinaryClientProfile.niche).toBe('tenant rights legal intake software');
+    expect(ordinaryClientProfile.nicheLabel).toBe('tenant rights legal intake software');
+    expect(ordinaryClientProfile.businessType).toBe('tenant rights legal intake software');
+  });
+
+  it('8. full v2 fixture keeps stable executed platform totals twice', () => {
     const a = buildFixtureResearchResult(180, 27);
     const b = buildFixtureResearchResult(180, 31);
     expect(a.platformScores.map((p) => p.totalPrompts)).toEqual([60, 60, 60]);

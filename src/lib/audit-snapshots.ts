@@ -90,16 +90,57 @@ export function uniquePromptPlan(prompts: Array<string | { text?: string }>): Ar
   return out;
 }
 
+function cleanProfileText(value: unknown): string | null {
+  const text = String(value || '').trim();
+  return text || null;
+}
+
+function normalizedProfileText(value: unknown): string {
+  return String(value || '').trim().toLowerCase().replace(/[\s_-]+/g, ' ');
+}
+
+const GENERIC_STABLE_PROFILE_LABELS = new Set([
+  'local business',
+  'local businesses',
+  'business',
+  'businesses',
+  'service business',
+  'services',
+  'unknown',
+]);
+
+function isGenericStableProfileLabel(value: unknown): boolean {
+  const normalized = normalizedProfileText(value);
+  return !normalized || GENERIC_STABLE_PROFILE_LABELS.has(normalized);
+}
+
+function specificProfileNiche(profile: Record<string, any>): string | null {
+  const candidates = [
+    profile.businessNiche?.value,
+    profile.resolvedNiche?.businessNiche?.value,
+    profile.nicheResolution?.businessNiche?.value,
+    profile.businessType,
+    profile.submittedPrimaryService,
+    profile.clientDeclaredNiche,
+    profile.nicheLabel,
+    profile.niche,
+    profile.category,
+  ];
+  return candidates.map(cleanProfileText).find((candidate) => candidate && !isGenericStableProfileLabel(candidate)) || null;
+}
+
 export function stableProfileForMonthlyHash(profile: unknown): unknown {
   const p = (profile || {}) as Record<string, any>;
+  const specificNiche = specificProfileNiche(p);
+  const businessType = cleanProfileText(p.businessType) || specificNiche || cleanProfileText(p.category);
   return {
-    niche: p.niche || p.businessNiche?.value || p.businessType || null,
-    nicheLabel: p.nicheLabel || p.businessNiche?.value || p.businessType || null,
-    businessType: p.businessType || p.category || null,
-    services: Array.isArray(p.services) ? p.services.map(String).sort() : [],
-    serviceAreas: Array.isArray(p.serviceAreas) ? p.serviceAreas.map(String).sort() : [],
-    primaryMarket: p.primaryMarket || p.market || null,
-    searchLanguage: p.searchLanguage || null,
+    niche: specificNiche || cleanProfileText(p.niche) || businessType || null,
+    nicheLabel: specificNiche || cleanProfileText(p.nicheLabel) || businessType || null,
+    businessType: businessType || null,
+    services: Array.isArray(p.services) ? p.services.map(String).map((s) => s.trim()).filter(Boolean).sort() : [],
+    serviceAreas: Array.isArray(p.serviceAreas) ? p.serviceAreas.map(String).map((s) => s.trim()).filter(Boolean).sort() : [],
+    primaryMarket: cleanProfileText(p.primaryMarket) || cleanProfileText(p.market) || null,
+    searchLanguage: cleanProfileText(p.searchLanguage) || null,
   };
 }
 

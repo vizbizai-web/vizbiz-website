@@ -108,14 +108,7 @@ export async function appendClientZeroFixtureSnapshot(input: { leadId: string; r
     promptPlan: { prompts: research.promptPlanMetadata.prompts, version: research.promptPlanMetadata.version, hash: research.promptPlanMetadata.hash, batteryVersion: research.batteryVersion, runType: input.runType },
     platformScores: research.platformScores, blendedScore: input.appeared / total, band: research.statusBand, promptResults: research.promptResults, competitorScores: [], readiness: { hasLlmsTxt: true, hasSchema: true }, costEstimate: input.tier === 'free' ? 0.05 : 0.75, status: 'complete' as const, errorMessage: null, source: CLIENT_ZERO_SOURCE,
   };
-  try {
-    return await appendAuditSnapshot(payload);
-  } catch (error) {
-    if (input.runType === 'pulse' && String(error).includes('audit_snapshots_run_type_check')) {
-      return appendAuditSnapshot({ ...payload, runType: 'manual' as any, source: 'client_zero:pulse' });
-    }
-    throw error;
-  }
+  return appendAuditSnapshot(payload);
 }
 
 function monthLabel(iso?: string, seq?: number) {
