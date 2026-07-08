@@ -155,4 +155,12 @@ describe('Phase 3 monthly loop acceptance suite', () => {
     const alert = buildCompetitorMovementAlert({ leadId: 'lead-1', businessName: 'QA Plumbing', diff: diffSnapshots(snapshot(1), snapshot(2)) });
     expect(alert?.triggers.length).toBeGreaterThan(0);
   });
+
+  it('13. monthly subscription baseline ignores free pulse snapshots and fixture hashes', () => {
+    const source = require('node:fs').readFileSync('src/app/api/cron/process-reruns/route.ts', 'utf8');
+    expect(source).toContain("snapshot.tier === 'paid'");
+    expect(source).toContain("snapshot.runType !== 'pulse'");
+    expect(source).toContain('previousHashLooksReal');
+    expect(source).toContain('/^[a-f0-9]{64}$/i.test(previousSnapshot.profileHash)');
+  });
 });

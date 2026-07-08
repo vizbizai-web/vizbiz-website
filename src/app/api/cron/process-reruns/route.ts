@@ -16,7 +16,7 @@ import { sendLeadAlertTelegram } from "@/lib/telegram-alerts";
 import { dueFixKitRescans, markFixKitRescanQueued, markFixKitRescanCompleted, saveFixKit } from "@/lib/fix-kit-store";
 import { buildFixKitInputFromLead } from "@/lib/fix-kit-input";
 import { generateFixKit } from "@/lib/fix-kit-generator";
-import { appendResearchSnapshot, getLatestAuditSnapshot, getLatestCompletedAuditSnapshot, hashProfile, hashPromptPlan, stableProfileForMonthlyHash, uniquePromptPlan } from "@/lib/audit-snapshots";
+import { appendResearchSnapshot, getLatestAuditSnapshot, listAuditSnapshots, hashProfile, hashPromptPlan, stableProfileForMonthlyHash, uniquePromptPlan } from "@/lib/audit-snapshots";
 import { diffSnapshots, renderMovementCopy } from "@/lib/snapshot-diff";
 import { listDueSubscriptions, markSubscriptionAfterMonthlyRun, markSubscriptionLoopFailure, nextRunAfter } from "@/lib/subscription-loop";
 import { buildCompetitorMovementAlert, sendCompetitorMovementApprovalTelegram } from "@/lib/competitor-movement-alerts";
@@ -50,10 +50,15 @@ async function processDueMonthlySubscription() {
 
   const startTime = Date.now();
   try {
-    const previousSnapshot = await getLatestCompletedAuditSnapshot(lead.leadId);
+    const completedSnapshots = (await listAuditSnapshots(lead.leadId))
+      .filter((snapshot) => snapshot.status === 'complete');
+    const previousSnapshot = [...completedSnapshots]
+      .reverse()
+      .find((snapshot) => snapshot.tier === 'paid' && snapshot.runType !== 'pulse' && (snapshot.promptPlan as any)?.runType !== 'pulse') || null;
     const preflight = await preflightScan(lead.website, lead.city, lead.dealershipName);
     const currentProfileHash = hashProfile(stableProfileForMonthlyHash(preflight));
-    if (previousSnapshot?.profileHash && previousSnapshot.runType !== 'manual' && previousSnapshot.profileHash !== currentProfileHash) {
+    const previousHashLooksReal = Boolean(previousSnapshot?.profileHash && /^[a-f0-9]{64}$/i.test(previousSnapshot.profileHash));
+    if (previousSnapshot?.profileHash && previousHashLooksReal && previousSnapshot.profileHash !== currentProfileHash) {
       const message = `⚠️ Monthly loop blocked for operator review\n\nID: ${lead.leadId}\nName: ${lead.dealershipName}\nReason: niche/profile hash changed. Monthly prompts were not run against stale profile data.`;
       await markSubscriptionLoopFailure(subscription.stripe_subscription_id, 'profile_hash_changed');
       await sendTelegramAlert({ message, topic: 'system' });
