@@ -258,6 +258,52 @@ export async function sendPipelineAlert(message: string): Promise<void> {
   console.info("[telegram-alert] pipeline alert sent");
 }
 
+export async function sendGatedNeedsYouTelegramPing(card: {
+  leadId: string;
+  businessName: string;
+  templateId: string;
+  subject?: string;
+  trigger?: string;
+  mcUrl?: string;
+}): Promise<{ ok: boolean; messageId?: number; channel: 'intake_topic' | 'alex_dm_fallback' } | null> {
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("[telegram-alert] TELEGRAM_BOT_TOKEN not configured");
+    return null;
+  }
+  const mcUrl = card.mcUrl || `https://vizbiz.ai/mission-control/leads/${encodeURIComponent(card.leadId)}`;
+  const text = [
+    `🟣 GATED email card needs approval — ${card.businessName}`,
+    `Template: ${card.templateId}`,
+    card.subject ? `Subject: ${card.subject}` : null,
+    card.trigger ? `Trigger: ${card.trigger}` : null,
+    `Open MC: ${mcUrl}`,
+  ].filter(Boolean).join("\n");
+
+  const send = (body: Record<string, unknown>) => fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let res = await send({
+    chat_id: VIZBIZ_HQ_GROUP,
+    message_thread_id: LEADS_TOPIC_ID,
+    text,
+    disable_web_page_preview: true,
+  });
+  let json = await res.json().catch(() => ({}));
+  let channel: 'intake_topic' | 'alex_dm_fallback' = 'intake_topic';
+  if (!res.ok || json?.ok === false) {
+    console.warn("[telegram-alert] gated Needs-You intake topic ping failed; falling back to Alex DM", { status: res.status, description: json?.description });
+    channel = 'alex_dm_fallback';
+    res = await send({ chat_id: ALEX_DM, text: `${text}\n\nFallback: intake topic was unavailable to the bot.`, disable_web_page_preview: true });
+    json = await res.json().catch(() => ({}));
+  }
+  if (!res.ok || json?.ok === false) throw new Error(`Telegram gated ping failed: ${res.status}`);
+
+  console.info("[telegram-alert] gated Needs-You ping sent", { leadId: card.leadId, templateId: card.templateId, messageId: json?.result?.message_id, channel });
+  return { ok: true, messageId: json?.result?.message_id, channel };
+}
+
 /**
  * Revenue alert — for CTA clicks, payments, abandoned checkouts
  */

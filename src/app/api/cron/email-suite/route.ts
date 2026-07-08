@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
 import { runEmailSuiteAutomation } from '@/lib/email-suite-automation';
+import { sendDailyEmailOpsDigest } from '@/lib/email-ops';
 import { requireMissionControlApiAuth } from '@/lib/mission-control-api-auth';
 
 export const runtime = 'nodejs';
@@ -25,7 +26,8 @@ export async function GET(request: Request) {
   if (Number.isNaN(now.getTime())) return NextResponse.json({ success: false, error: 'Invalid now timestamp' }, { status: 400 });
   const leads = await getAllLeads();
   const actions = await runEmailSuiteAutomation(leads, { now, dryRun });
-  return NextResponse.json({ success: true, dryRun, processed: actions.length, actions });
+  const digest = dryRun ? { sent: false } : await sendDailyEmailOpsDigest(leads, now).catch((error) => ({ sent: false, error: error instanceof Error ? error.message : 'digest_failed' }));
+  return NextResponse.json({ success: true, dryRun, processed: actions.length, actions, digest });
 }
 
 export async function POST(request: Request) {

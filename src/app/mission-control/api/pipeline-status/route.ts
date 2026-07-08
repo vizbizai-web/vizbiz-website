@@ -3,6 +3,7 @@ import { getAllLeads } from '@/lib/google-sheets';
 import { excludeQaLeads } from '@/lib/qa-leads';
 import { classifyLeadTriage } from '@/lib/lead-triage';
 import { buildMcHealthStrip, buildNeedsYouQueue, enrichProviderStatusFromLatestSnapshot } from '@/lib/mission-control-needs-you';
+import { buildEmailOpsSummary, fetchEmailOpsEvents } from '@/lib/email-ops';
 
 export const revalidate = 0;
 
@@ -41,7 +42,8 @@ export async function GET() {
     );
 
     const needsYou = buildNeedsYouQueue(leads);
-    const health = await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads));
+    const emailOps = buildEmailOpsSummary(await fetchEmailOpsEvents(), leads).health24h;
+    const health = { ...(await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads))), emailOps };
 
     return NextResponse.json({
       source: 'vizbiz-leads',

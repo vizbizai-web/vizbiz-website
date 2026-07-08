@@ -13,6 +13,7 @@ type HealthStrip = {
   spendEstimateTodayUsd: number;
   deployedSha: string;
   pipelineFlow: Array<{ status: string; count: number }>;
+  emailOps?: { sent: number; failed: number };
 };
 
 type NeedsYouItem = {
@@ -208,8 +209,9 @@ function HealthStripView({ health }: { health: HealthStrip }) {
   const shortSha = health.deployedSha && health.deployedSha !== 'unknown' ? health.deployedSha.slice(0, 7) : 'unknown';
   return (
     <LiquidGlass borderRadius={16} preset="card" tint="rgba(37, 209, 242, 0.03)" className="p-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
         <HealthCell label="Today" value={`${health.today.leadsIn} in / ${health.today.completed} done / ${health.today.failed} failed`} />
+        <HealthLinkCell href="/mission-control/email-ops" label="Email Ops" value={`📧 ${health.emailOps?.sent || 0} sent · ${health.emailOps?.failed || 0} failed`} accent={health.emailOps?.failed ? '#F87171' : '#22D3EE'} />
         <HealthCell label="Pass 1 failure rate" value={`${health.pass1FailureRate7d.label} (${health.pass1FailureRate7d.failed}/${health.pass1FailureRate7d.total})`} accent={health.pass1FailureRate7d.rate && health.pass1FailureRate7d.rate > 0.1 ? '#F97316' : '#22C55E'} />
         <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
           <p className="text-[10px] uppercase tracking-widest text-slate-500">Providers</p>
@@ -226,6 +228,15 @@ function HealthStripView({ health }: { health: HealthStrip }) {
         <HealthCell label="Deployed SHA" value={shortSha} accent="#A78BFA" />
       </div>
     </LiquidGlass>
+  );
+}
+
+function HealthLinkCell({ label, value, href, accent = '#E2E8F0' }: { label: string; value: string; href: string; accent?: string }) {
+  return (
+    <Link href={href} className="rounded-xl border border-slate-800 bg-slate-950/40 p-3 transition hover:border-cyan-300/30">
+      <p className="text-[10px] uppercase tracking-widest text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-white" style={{ color: accent }}>{value}</p>
+    </Link>
   );
 }
 

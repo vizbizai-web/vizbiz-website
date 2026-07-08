@@ -5,6 +5,7 @@ import { listAuditSnapshots, appendResearchSnapshot } from '@/lib/audit-snapshot
 import { preflightScan } from '@/lib/preflight-engine';
 import { runResearch } from '@/lib/research-runner';
 import { updateLead } from '@/lib/google-sheets';
+import { notifyGatedEmailCardEnteredNeedsYou } from '@/lib/email-suite-automation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -50,6 +51,7 @@ export async function GET(request: Request) {
     written.push(await appendClientZeroFixtureSnapshot({ leadId: lead.leadId, runType: 'monthly', tier: 'paid', appeared: 31, total: 180 }));
     await ensureSampleClientZeroFixDrop(lead.leadId);
     await updateLead(lead.leadId, { notes: `${lead.notes || ''}\n[CLIENT_ZERO_FIX_DROP_READY ${now.toISOString()}]\n[monthly_one_pager awaiting approve]` });
+    await notifyGatedEmailCardEnteredNeedsYou(lead, { templateId: 'MONTHLY_ONE_PAGER', subject: `${lead.dealershipName}: monthly one-pager ready`, trigger: 'monthly_one_pager', cardKey: `MONTHLY_ONE_PAGER:${now.toISOString().slice(0, 10)}` }).catch((error) => console.warn('[cron/client-zero] monthly gated ping failed', error));
     return NextResponse.json({ success: true, action, leadId: lead.leadId, snapshotsWritten: written.length });
   }
 
@@ -61,6 +63,7 @@ export async function GET(request: Request) {
   if (action === 'fix-drop') {
     const fixKit = await ensureSampleClientZeroFixDrop(lead.leadId);
     await updateLead(lead.leadId, { notes: `${lead.notes || ''}\n[CLIENT_ZERO_FIX_DROP_READY ${now.toISOString()}]\n[monthly_one_pager awaiting approve]` });
+    await notifyGatedEmailCardEnteredNeedsYou(lead, { templateId: 'MONTHLY_ONE_PAGER', subject: `${lead.dealershipName}: monthly one-pager ready`, trigger: 'monthly_one_pager', cardKey: `MONTHLY_ONE_PAGER:${now.toISOString().slice(0, 10)}` }).catch((error) => console.warn('[cron/client-zero] monthly gated ping failed', error));
     return NextResponse.json({ success: true, action, leadId: lead.leadId, artifactCount: fixKit.artifacts.length });
   }
 

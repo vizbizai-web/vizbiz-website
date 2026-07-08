@@ -37,6 +37,10 @@ describe('email suite automation layer', () => {
     expect(read('src/app/api/cron/process-reruns/route.ts')).toContain('createE11GatedCard');
     expect(read('src/app/api/lead-actions/route.ts')).toContain('approve_gated_email');
     expect(read('src/lib/mission-control-needs-you.ts')).toContain('Approve 30-day re-test email');
+    expect(read('src/lib/email-suite-automation.ts')).toContain('notifyGatedEmailCardEnteredNeedsYou');
+    expect(read('src/lib/telegram-alerts.ts')).toContain('sendGatedNeedsYouTelegramPing');
+    expect(read('src/app/api/cron/client-zero/route.ts')).toContain('MONTHLY_ONE_PAGER');
+    expect(read('src/lib/competitor-movement-alerts.ts')).toContain('COMPETITOR_MOVEMENT_ALERT');
   });
 
   it('keeps Mission Control prompt diagnostics labeled by engine and category', () => {

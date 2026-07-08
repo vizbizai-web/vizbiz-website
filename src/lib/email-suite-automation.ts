@@ -9,8 +9,9 @@ import {
   sendRenderedClientEmail,
   shouldSuppressClientEmail,
 } from './client-emails';
+import { sendGatedNeedsYouTelegramPing } from './telegram-alerts';
 
-export type EmailSuiteEventType = 'email_scheduled' | 'email_suppressed' | 'email_skipped' | 'gated_email_ready' | 'gated_email_approved' | 'email_suite_error';
+export type EmailSuiteEventType = 'email_scheduled' | 'email_suppressed' | 'email_skipped' | 'gated_email_ready' | 'gated_email_approved' | 'telegram_gated_card_ping' | 'email_failed' | 'email_suite_error';
 
 export type LeadEventRow = {
   id?: string;
@@ -201,6 +202,26 @@ export async function scheduleNurtureAfterE2(lead: LeadRow, sentAt = new Date())
   }
 }
 
+export async function notifyGatedEmailCardEnteredNeedsYou(lead: Pick<LeadRow, 'leadId' | 'dealershipName'>, card: { templateId: string; subject?: string; trigger?: string; cardKey?: string }) {
+  const events = await getLeadEmailEvents(lead.leadId);
+  const cardKey = card.cardKey || `${card.templateId}:${card.trigger || 'gated'}`;
+  const alreadyPinged = events.some((event) => event.event_type === 'telegram_gated_card_ping' && event.event_payload?.cardKey === cardKey);
+  if (alreadyPinged) return false;
+  const telegram = await sendGatedNeedsYouTelegramPing({
+    leadId: lead.leadId,
+    businessName: lead.dealershipName || 'Unknown Business',
+    templateId: card.templateId,
+    subject: card.subject,
+    trigger: card.trigger,
+  });
+  await recordEmailSuiteEvent({
+    leadId: lead.leadId,
+    eventType: 'telegram_gated_card_ping',
+    payload: { templateId: card.templateId, subject: card.subject, trigger: card.trigger, cardKey, sentAt: new Date().toISOString(), telegramMessageId: telegram?.messageId, telegramChannel: telegram?.channel },
+  }).catch(() => undefined);
+  return true;
+}
+
 export async function createE11GatedCard(lead: LeadRow, payload: Record<string, any> = {}) {
   const events = await getLeadEmailEvents(lead.leadId);
   if (hasTemplateEvent(events, 'gated_email_ready', 'E11_30_DAY_RESCAN')) return false;
@@ -219,6 +240,12 @@ export async function createE11GatedCard(lead: LeadRow, payload: Record<string, 
   await updateLead(lead.leadId, {
     notes: `${lead.notes || ''}\n[GATED_EMAIL_READY ${new Date().toISOString()} templateId=E11_30_DAY_RESCAN trigger=rescan_after_fix]`,
   }).catch(() => false);
+  await notifyGatedEmailCardEnteredNeedsYou(lead, {
+    templateId: 'E11_30_DAY_RESCAN',
+    subject: rendered.subject,
+    trigger: 'rescan_after_fix',
+    cardKey: `E11_30_DAY_RESCAN:${payload.rescanId || payload.fixKitId || 'rescan_after_fix'}`,
+  }).catch((error) => console.warn('[email-suite] gated Needs-You Telegram ping failed', error));
   return true;
 }
 
@@ -237,8 +264,17 @@ async function suppressOrSend(input: { lead: LeadRow; rendered: RenderedClientEm
     await recordEmailSuiteEvent({ leadId: input.lead.leadId, eventType: 'email_suppressed', payload: { templateId: input.templateId, reason: suppression.reason, evaluatedAt: new Date().toISOString() } });
     return { sent: false, suppressed: true, reason: suppression.reason };
   }
-  const messageId = await sendRenderedClientEmail({ leadId: input.lead.leadId, to: input.lead.email, rendered: input.rendered });
-  return { sent: true, messageId };
+  try {
+    const messageId = await sendRenderedClientEmail({ leadId: input.lead.leadId, to: input.lead.email, rendered: input.rendered });
+    return { sent: true, messageId };
+  } catch (error) {
+    await recordEmailSuiteEvent({
+      leadId: input.lead.leadId,
+      eventType: 'email_failed',
+      payload: { templateId: input.templateId, reason: error instanceof Error ? error.message : 'send_failed', evaluatedAt: new Date().toISOString() },
+    }).catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function runEmailSuiteAutomation(leads: LeadRow[], opts: { now?: Date; dryRun?: boolean } = {}) {

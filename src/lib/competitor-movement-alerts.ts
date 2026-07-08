@@ -1,4 +1,5 @@
 import type { SnapshotDiff } from './snapshot-diff';
+import { sendGatedNeedsYouTelegramPing } from './telegram-alerts';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ALEX_DM = '6960754854';
@@ -70,4 +71,11 @@ export async function sendCompetitorMovementApprovalTelegram(alert: CompetitorMo
       },
     }),
   });
+  await sendGatedNeedsYouTelegramPing({
+    leadId: alert.leadId,
+    businessName: alert.businessName,
+    templateId: 'COMPETITOR_MOVEMENT_ALERT',
+    subject: alert.proposedSubject,
+    trigger: 'competitor_movement_alert',
+  }).catch((error) => console.warn('[competitor-alert] intake-channel gated ping failed', error));
 }

@@ -7,6 +7,7 @@ const dailyNavItems = [
   { id: 'dashboard', label: 'Dashboard', icon: '🏠', href: '/mission-control' },
   { id: 'pipeline', label: 'Pipeline', icon: '📋', href: '/mission-control/leads' },
   { id: 'emails', label: 'Emails', icon: '✉️', href: '/mission-control/emails', badge: 'draftCount' },
+  { id: 'email-ops', label: 'Email Ops', icon: '📧', href: '/mission-control/email-ops' },
   { id: 'activity', label: 'Activity', icon: '⚡', href: '/mission-control/activity' },
 ];
 
