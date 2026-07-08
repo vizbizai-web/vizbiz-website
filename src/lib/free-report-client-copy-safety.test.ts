@@ -43,4 +43,21 @@ describe('free report client copy safety', () => {
     expect(source).not.toContain('visibility opportunity');
     expect(source).toContain('customers are finding competitors instead');
   });
+
+  it('uses one Local Trust Snapshot and does not render the duplicate social media reviews section', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).toContain('<GoogleTrustSignals data={data} theme={theme} />');
+    expect(source).not.toContain('<SocialMedia data={data} theme={theme} />');
+    expect(source).not.toContain('Social Media Presence');
+    expect(source).not.toContain('How you compare on social platforms');
+    expect(source).toContain('Local Trust Snapshot');
+    expect(source).toContain('Google profiles, ratings, review volume, and profile consistency');
+  });
+
+  it('clearly promises the one-time 88 dollar plan includes one 30-day update without weakening monthly positioning', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).toContain('One 30-day re-test/update included');
+    expect(source).toContain('Get Full Report + 30-Day Update — $88');
+    expect(source).toContain('Monthly keeps monitoring competitor movement and new fixes as AI results change');
+  });
 });

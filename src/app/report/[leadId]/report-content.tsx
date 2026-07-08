@@ -1190,7 +1190,7 @@ function Recommendations({ data, theme }: { data: LeadData; theme: Theme }) {
   );
 }
 
-/* ── Social Media ────────────────────────────── */
+/* ── Deprecated local-trust duplicate (not rendered) ───────────────────── */
 function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
   const t = getThemeStyles(theme);
   const isMobile = useIsMobile();
@@ -1228,10 +1228,10 @@ function SocialMedia({ data, theme }: { data: LeadData; theme: Theme }) {
       <section className="py-12">
         <div className="max-w-4xl mx-auto">
           <SectionTitle style={{ color: t.textPrimary }}>
-            Social Media Presence
+            Local Trust Snapshot
           </SectionTitle>
           <p className="text-xs sm:text-sm mt-2 mb-6" style={{ color: t.textMuted }}>
-            How you compare on social platforms
+            How your public reputation compares against nearby competitors
           </p>
 
           {/* Your profiles */}
@@ -1499,8 +1499,8 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
     {
       name: 'One-Time Full Report + Fix',
       price: 88,
-      description: 'Turn this snapshot into a focused audit and 30-day fix plan',
-      features: ['Full AI visibility audit across buyer-style questions', 'Website and content fixes prioritized by impact', 'Google/listing and schema trust-signal review', 'Local competitor gap analysis when competitors are supplied', '30-day prioritized action plan'],
+      description: 'Turn this snapshot into a full audit, fix plan, and 30-day visibility update',
+      features: ['Full AI visibility audit across buyer-style questions', 'Website and content fixes prioritized by impact', 'Google/listing and schema trust-signal review', 'Local competitor gap analysis when competitors are supplied', '30-day prioritized action plan', 'One 30-day re-test/update included'],
       highlighted: false,
     },
     {
@@ -1610,13 +1610,13 @@ function PricingCards({ data, theme, leadId }: { data: LeadData; theme: Theme; l
                     }
                   }}
                 >
-                  {plan.name === 'One-Time Full Report + Fix' ? 'Get the Full Report + Fix — $88' : 'Start Monthly Growth — $188/mo'}
+                  {plan.name === 'One-Time Full Report + Fix' ? 'Get Full Report + 30-Day Update — $88' : 'Start Monthly Growth — $188/mo'}
                 </a>
               </div>
             ))}
           </div>
           <p className="text-xs sm:text-sm text-center mt-6" style={{ color: t.textMuted }}>
-            Both plans include the full audit report. Cancel anytime. No setup fee.
+            The one-time plan includes a 30-day re-test/update. Monthly keeps monitoring competitor movement and new fixes as AI results change. Cancel anytime. No setup fee.
           </p>
         </div>
       </section>
@@ -1701,7 +1701,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
       <FadeIn>
         <section className="py-12">
           <div className="max-w-4xl mx-auto">
-            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <SectionTitle style={{ color: t.textPrimary }}>Local Trust Snapshot</SectionTitle>
             <div className="p-4 rounded-xl" style={{ background: t.barTrack }}>
               <p className="text-sm" style={{ color: t.textMuted }}>Google Business Profile not detected — we couldn't verify a matching listing for this location. This is a key visibility gap we can help you fix.</p>
             </div>
@@ -1720,7 +1720,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
       <FadeIn>
         <section className="py-12">
           <div className="max-w-4xl mx-auto">
-            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <SectionTitle style={{ color: t.textPrimary }}>Local Trust Snapshot</SectionTitle>
             <div className="p-4 rounded-xl" style={{ background: t.barTrack }}>
               <p className="text-sm" style={{ color: t.textMuted }}>{statusMsg}</p>
             </div>
@@ -1740,7 +1740,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
       <FadeIn>
         <section className="py-12">
           <div className="max-w-4xl mx-auto">
-            <SectionTitle style={{ color: t.textPrimary }}>Google Profile Signal</SectionTitle>
+            <SectionTitle style={{ color: t.textPrimary }}>Local Trust Snapshot</SectionTitle>
             <div className="p-4 rounded-xl border" style={{ background: t.barTrack, borderColor: 'rgba(245,158,11,0.35)' }}>
               <p className="text-sm font-semibold" style={{ color: '#F59E0B' }}>Google profile not confidently matched</p>
               <p className="text-sm mt-2" style={{ color: t.textMuted }}>We found a possible Google listing, but it did not confidently match this business, website, or region. This should be checked before treating ratings or reviews as verified trust evidence.</p>
@@ -1757,10 +1757,10 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
       <section className="py-12">
         <div className="max-w-4xl mx-auto">
           <SectionTitle style={{ color: t.textPrimary }}>
-            Google Profile & Trust Signals
+            Local Trust Snapshot
           </SectionTitle>
           <p className="text-xs sm:text-sm mt-2 mb-6" style={{ color: t.textMuted }}>
-            How your business appears on Google — a key signal AI platforms use to evaluate credibility.
+            Google profiles, ratings, review volume, and profile consistency help customers and AI systems understand whether a local business looks credible and active.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -1779,7 +1779,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
             {gpe.websiteMatch !== null && (
               <div className="text-center p-3 rounded-xl" style={{ background: t.barTrack }}>
                 <p className="text-xl sm:text-2xl font-light" style={{ color: gpe.websiteMatch ? '#22C55E' : '#F59E0B' }}>{gpe.websiteMatch ? '✓' : '✗'}</p>
-                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Website Match</p>
+                <p className="text-[10px] sm:text-xs" style={{ color: t.textMuted }}>Profile Match</p>
               </div>
             )}
             {trustScore !== null && trustScore !== undefined && (
@@ -1793,7 +1793,7 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
           {/* Competitor comparison — only when client provided competitors */}
           {!isClientOnly && compValidations.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>Competitor Google Comparison</p>
+              <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: t.textMuted }}>Competitor Benchmarks</p>
               <div className="space-y-2">
                 {compValidations.map((cv, i) => (
                   <div key={cv.name} className="flex items-center justify-between p-3 rounded-lg" style={{ background: t.barTrack }}>
@@ -1806,6 +1806,11 @@ function GoogleTrustSignals({ data, theme }: { data: LeadData; theme: Theme }) {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="mt-4 rounded-xl p-4" style={{ background: t.barTrack, borderLeft: '3px solid #22D3EE' }}>
+                <p className="text-sm leading-7" style={{ color: t.textSecondary }}>
+                  Your rating is strong, but nearby competitors may show more review volume. More recent reviews and a complete Google profile can strengthen trust signals for customers and AI-assisted discovery.
+                </p>
               </div>
             </div>
           )}
@@ -2243,8 +2248,7 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
           {/* 7. Priority Actions */}
           <Recommendations data={data} theme={theme} />
 
-          {/* 8. Social Context */}
-          <SocialMedia data={data} theme={theme} />
+          {/* 8. Local trust is covered above in Local Trust Snapshot; duplicate social/review card removed. */}
 
           {/* 8. Full Report Teaser */}
           <FullReportTeaser data={data} theme={theme} />
