@@ -241,7 +241,8 @@ describe('Mission Control production integrity', () => {
     expect(emailHub).not.toContain('Mark Sent');
     const emailDraftsRoute = repoFile('src/app/mission-control/api/email-drafts/route.ts');
     expect(emailDraftsRoute).toContain('renderClientEmail');
-    expect(emailDraftsRoute).toContain('buildReportUrl(lead.leadId)');
+    expect(emailDraftsRoute).toContain('buildFreeReportDeliveryContext');
+    expect(emailDraftsRoute).toContain('selectFreeReportDeliveryTemplate');
     expect(emailDraftsRoute).not.toContain('`/report/${lead.leadId}`');
   });
 

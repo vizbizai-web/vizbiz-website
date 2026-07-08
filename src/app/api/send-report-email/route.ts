@@ -5,8 +5,8 @@ import { getLeadByLeadId } from '@/lib/google-sheets';
 import { buildReportEmailHtml, buildReportEmailSubject } from '@/lib/report-email';
 import { verifyReportCta } from '@/lib/report-cta-verifier';
 import { recordActionAudit, requireMissionControlApiAuth } from '@/lib/mission-control-api-auth';
-import { recordClientEmailSent } from '@/lib/client-emails';
-import { scheduleNurtureAfterE2 } from '@/lib/email-suite-automation';
+import { recordClientEmailSent, renderClientEmail, type ClientEmailId } from '@/lib/client-emails';
+import { scheduleNurtureAfterE2, selectFreeReportDeliveryTemplate, assertStaleDeliveryFreshness, buildFreeReportDeliveryContext } from '@/lib/email-suite-automation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -111,7 +111,12 @@ export async function POST(req: NextRequest) {
     const totalPrompts = numberValue(body.totalPrompts) ?? numberValue(research?.totalPrompts) ?? snapshotCounts.totalPrompts;
     const competitors = splitCompetitors(lead.clientProvidedCompetitors || lead.competitor || body.competitorName);
 
-    const html = buildReportEmailHtml({
+    const freeTemplateId = !isPaidSend ? selectFreeReportDeliveryTemplate(lead, { override: body.templateId }) : null;
+    if (freeTemplateId) assertStaleDeliveryFreshness(lead, freeTemplateId);
+    const templateId = (isPaidSend ? 'E9_PAID_REPORT_FIX_KIT_DELIVERY' : freeTemplateId) as ClientEmailId;
+
+    const freeRendered = freeTemplateId ? renderClientEmail(freeTemplateId, buildFreeReportDeliveryContext(lead)) : null;
+    const html = freeRendered?.html || buildReportEmailHtml({
       businessName,
       contactName,
       city,
@@ -126,13 +131,13 @@ export async function POST(req: NextRequest) {
       isPaid: isPaidSend,
     });
 
-    const subject = buildReportEmailSubject({ businessName, reportUrl });
+    const subject = freeRendered?.subject || buildReportEmailSubject({ businessName, reportUrl });
     const messageId = await sendEmail(to, subject, html);
     console.info(`[send-report-email] Sent to ${to}, id=${messageId}`);
     await recordActionAudit({ leadId, action: "send_report_email", channel: "mission_control", metadata: { to, messageId } });
     await recordClientEmailSent({
       leadId,
-      templateId: isPaidSend ? 'E9_PAID_REPORT_FIX_KIT_DELIVERY' : 'E2_FREE_REPORT_DELIVERY',
+      templateId,
       messageId,
       emailClass: 'transactional',
       automation: 'gated',
@@ -140,7 +145,7 @@ export async function POST(req: NextRequest) {
     });
     if (!isPaidSend) await scheduleNurtureAfterE2(lead);
 
-    return NextResponse.json({ success: true, emailId: messageId, reportUrl });
+    return NextResponse.json({ success: true, emailId: messageId, reportUrl, templateId });
   } catch (err) {
     console.error('[send-report-email] Failed:', err);
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed to send email' }, { status: 500 });

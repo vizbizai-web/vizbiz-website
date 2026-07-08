@@ -466,6 +466,8 @@ export default function LeadDetailPage() {
                     Operator Report Preview
                   </Link>
                   <ActionBtn label="✓ Approve & Send Free" color="#22C55E" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'free' })} />
+                  <ActionBtn label="Send Standard E2" color="#14B8A6" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'free', templateId: 'E2_FREE_REPORT_DELIVERY' })} />
+                  <ActionBtn label="Send Stale E2B" color="#A78BFA" loading={actionLoading} onClick={() => handleAction('approve_and_send', { reportType: 'free', templateId: 'E2B_STALE_DELIVERY' })} />
                   <ActionBtn label="Needs Fix" color="#F97316" loading={actionLoading} onClick={() => handleNeedsFix('free')} />
                   <ActionBtn label="Do Not Send" color="#EF4444" loading={actionLoading} onClick={handleDoNotSend} />
                   <ActionBtn label="Rerun Research" color="#3B82F6" loading={actionLoading} onClick={() => handleAction('rerun')} />

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAllLeads } from '@/lib/google-sheets';
 import { excludeQaLeads } from '@/lib/qa-leads';
 import { renderClientEmail } from '@/lib/client-emails';
-import { buildReportUrl } from '@/lib/report-token';
+import { buildFreeReportDeliveryContext, selectFreeReportDeliveryTemplate } from '@/lib/email-suite-automation';
 
 export const revalidate = 0;
 
@@ -47,20 +47,14 @@ export async function GET() {
 
     const drafts = draftable.map((lead) => {
       const counts = parseSnapshotCounts(lead.snapshotAppeared, lead.notes);
-      const reportUrl = lead.reportUrl || buildReportUrl(lead.leadId);
-      const rendered = counts ? renderClientEmail('E2_FREE_REPORT_DELIVERY', {
-        business: lead.dealershipName || 'your business',
-        contactName: lead.contactName,
-        city: lead.city,
-        appearedX: counts.appeared,
-        totalN: counts.total,
-        reportUrl,
-      }) : null;
+      const templateId = counts ? selectFreeReportDeliveryTemplate(lead) : null;
+      const context = counts ? buildFreeReportDeliveryContext(lead) : null;
+      const rendered = templateId && context ? renderClientEmail(templateId, context) : null;
       return {
         lead,
         research: parseResearch(lead.notes || ''),
         status: draftStatus(lead.status),
-        reportUrl,
+        reportUrl: context?.reportUrl || lead.reportUrl || null,
         emailSentAt: lead.emailSentAt || null,
         templateName: rendered?.id || null,
         subject: rendered?.subject || null,

@@ -4,6 +4,7 @@ import { supabaseRest, isSupabaseRestConfigured } from './supabase-rest';
 export type ClientEmailId =
   | 'E1_INTAKE_CONFIRMATION'
   | 'E2_FREE_REPORT_DELIVERY'
+  | 'E2B_STALE_DELIVERY'
   | 'E3_NURTURE_ONE_FIX'
   | 'E4_NURTURE_COMPETITOR_ANGLE'
   | 'E5_NURTURE_CLOSE_LOOP'
@@ -59,6 +60,7 @@ export type RenderedClientEmail = {
 const TEMPLATE_META: Record<ClientEmailId, { emailClass: EmailClass; automation: AutomationClass }> = {
   E1_INTAKE_CONFIRMATION: { emailClass: 'transactional', automation: 'auto' },
   E2_FREE_REPORT_DELIVERY: { emailClass: 'transactional', automation: 'gated' },
+  E2B_STALE_DELIVERY: { emailClass: 'transactional', automation: 'gated' },
   E3_NURTURE_ONE_FIX: { emailClass: 'commercial', automation: 'auto' },
   E4_NURTURE_COMPETITOR_ANGLE: { emailClass: 'commercial', automation: 'auto' },
   E5_NURTURE_CLOSE_LOOP: { emailClass: 'commercial', automation: 'auto' },
@@ -152,6 +154,13 @@ export function renderClientEmail(id: ClientEmailId, ctx: ClientEmailContext): R
       const total = requiredNumber(ctx.totalN, 'total_n');
       const reportUrl = required(ctx.reportUrl, 'report_url');
       return finish(id, `${business}: your AI visibility snapshot is ready`, `${greeting(ctx)}I ran an AI visibility check on ${business} and put together your snapshot report.\n\nThe one number that matters: you appeared in ${appeared} of ${total} AI answers we tested${city ? ` for ${city}` : ''}.\n\nSee the full results: ${reportUrl}\n\nThe report shows each question we asked, which platforms named you, and what's keeping you out of the rest.\n\nAlex — VizBiz.ai`);
+    }
+    case 'E2B_STALE_DELIVERY': {
+      const appeared = requiredNumber(ctx.appearedX, 'appeared_x');
+      const total = requiredNumber(ctx.totalN, 'total_n');
+      const reportUrl = required(ctx.reportUrl, 'report_url');
+      const cityText = required(ctx.city, 'city');
+      return finish(id, `${business}: your AI visibility report — tested this week`, `${greeting(ctx)}You asked for an AI visibility check a few weeks back, and I owe you a straight sentence: we were rebuilding the system that runs these reports, and yours waited longer than it should have.\n\nThe upside — your report just ran on the finished version: real buyer questions tested this week across ChatGPT, Gemini, and Perplexity, not a single engine. You appeared in ${appeared} of ${total} answers we tested for ${cityText}.\n\nSee the full results: ${reportUrl}\n\nNo charge, no strings — it's the report you asked for, done properly.\n\nAlex — VizBiz.ai`);
     }
     case 'E3_NURTURE_ONE_FIX': {
       const fixCount = requiredNumber(ctx.fixCount, 'fix_count');

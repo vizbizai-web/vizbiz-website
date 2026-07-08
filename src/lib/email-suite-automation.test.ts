@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildE11Context, parseEmailSuiteState } from './email-suite-automation';
+import { buildE11Context, parseEmailSuiteState, selectFreeReportDeliveryTemplate, assertStaleDeliveryFreshness } from './email-suite-automation';
 import type { LeadRow } from './google-sheets';
 
 function read(path: string) { return readFileSync(path, 'utf8'); }
@@ -45,6 +45,37 @@ describe('email suite automation layer', () => {
     expect(page).toContain('pr.categoryId');
     expect(page).toContain('Diagnostics Timeline');
     expect(read('src/app/mission-control/api/lead-events/[leadId]/route.ts')).toContain('/lead_events?select=');
+  });
+
+  it('selects stale-lead E2B by original intake timestamp and allows override either direction', () => {
+    const now = new Date('2026-07-20T12:00:00.000Z');
+    const freshLead = { ...lead, timestamp: '2026-07-10T12:00:00.000Z', researchCompletedAt: '2026-07-20T11:00:00.000Z' };
+    const staleLead = { ...lead, timestamp: '2026-07-01T12:00:00.000Z', researchCompletedAt: '2026-07-20T11:00:00.000Z' };
+    expect(selectFreeReportDeliveryTemplate(freshLead, { now })).toBe('E2_FREE_REPORT_DELIVERY');
+    expect(selectFreeReportDeliveryTemplate(staleLead, { now })).toBe('E2B_STALE_DELIVERY');
+    expect(selectFreeReportDeliveryTemplate(staleLead, { now, override: 'E2_FREE_REPORT_DELIVERY' })).toBe('E2_FREE_REPORT_DELIVERY');
+    expect(selectFreeReportDeliveryTemplate(freshLead, { now, override: 'E2B_STALE_DELIVERY' })).toBe('E2B_STALE_DELIVERY');
+  });
+
+  it('keeps original intake date authoritative after a same-day rerun and enforces E2B freshness', () => {
+    const now = new Date('2026-07-20T12:00:00.000Z');
+    const rerunToday = { ...lead, timestamp: '2026-07-01T12:00:00.000Z', researchCompletedAt: '2026-07-20T11:00:00.000Z', reportGeneratedAt: '' };
+    const selected = selectFreeReportDeliveryTemplate(rerunToday, { now });
+    expect(selected).toBe('E2B_STALE_DELIVERY');
+    expect(() => assertStaleDeliveryFreshness(rerunToday, selected, now)).not.toThrow();
+    const staleResearch = { ...lead, timestamp: '2026-07-01T12:00:00.000Z', researchCompletedAt: '2026-07-10T11:00:00.000Z', reportGeneratedAt: '' };
+    expect(() => assertStaleDeliveryFreshness(staleResearch, 'E2B_STALE_DELIVERY', now)).toThrow(/rerun first/i);
+    expect(() => assertStaleDeliveryFreshness(staleResearch, 'E2_FREE_REPORT_DELIVERY', now)).not.toThrow();
+  });
+
+  it('keeps E2B on the same send tracking and nurture scheduling rail as E2', () => {
+    const sendRoute = read('src/app/api/send-report-email/route.ts');
+    expect(sendRoute).toContain('selectFreeReportDeliveryTemplate');
+    expect(sendRoute).toContain('assertStaleDeliveryFreshness');
+    expect(sendRoute).toContain('recordClientEmailSent');
+    expect(sendRoute).toContain('templateId,');
+    expect(sendRoute).toContain('scheduleNurtureAfterE2(lead)');
+    expect(read('src/app/mission-control/leads/[leadId]/page.tsx')).toContain('E2B_STALE_DELIVERY');
   });
 
   it('records E10 install-detected skips instead of silently doing nothing', () => {

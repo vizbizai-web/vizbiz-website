@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireMissionControlApiAuth } from "@/lib/mission-control-api-auth";
-import { getAllLeads } from "@/lib/google-sheets";
+import { getAllLeads, type LeadRow } from "@/lib/google-sheets";
 import { excludeQaLeads } from "@/lib/qa-leads";
 import { renderClientEmail } from '@/lib/client-emails';
-import { buildReportUrl } from '@/lib/report-token';
+import { buildFreeReportDeliveryContext, selectFreeReportDeliveryTemplate } from '@/lib/email-suite-automation';
 
 
 
@@ -53,31 +53,12 @@ export async function GET(request: Request) {
   }
 }
 
-function generateEmailTemplate(lead: {
-  leadId?: string;
-  dealershipName?: string;
-  contactName?: string;
-  email?: string;
-  city?: string;
-  website?: string;
-  competitor?: string;
-  visibilityBand?: string;
-  snapshotAppeared?: string;
-  status: string;
-  notes?: string;
-}): { name: string; subject: string; body: string } | null {
+function generateEmailTemplate(lead: LeadRow): { name: string; subject: string; body: string } | null {
   const business = lead.dealershipName || "your business";
   const counts = parseSnapshotCounts(lead.snapshotAppeared, lead.notes);
   if ((lead.status === "email_drafted" || lead.status === "approved") && lead.leadId && counts) {
-    const rendered = renderClientEmail('E2_FREE_REPORT_DELIVERY', {
-      business,
-      contactName: lead.contactName,
-      city: lead.city,
-      appearedX: counts.appeared,
-      totalN: counts.total,
-      reportUrl: buildReportUrl(lead.leadId),
-    });
-    return { name: 'E2 Free report delivery', subject: rendered.subject, body: rendered.text };
+  const rendered = renderClientEmail(selectFreeReportDeliveryTemplate(lead), buildFreeReportDeliveryContext(lead));
+  return { name: rendered.id, subject: rendered.subject, body: rendered.text };
   }
 
   return null;

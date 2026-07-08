@@ -211,6 +211,7 @@ export async function POST(request: Request) {
             totalPrompts,
             competitorName: lead.competitor.split(",")[0]?.trim() || "",
             competitorScore: 0,
+            templateId: data?.templateId,
           }),
         });
         const sendResult = await sendRes.json().catch(() => ({}));

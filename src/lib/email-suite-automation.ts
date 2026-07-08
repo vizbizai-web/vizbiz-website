@@ -79,7 +79,39 @@ function due(scheduledAt: string | undefined, now: Date) {
   return Boolean(scheduledAt && Date.parse(scheduledAt) <= now.getTime());
 }
 
-export function buildE2Context(lead: LeadRow) {
+const FREE_REPORT_DELIVERY_TEMPLATE_IDS = ['E2_FREE_REPORT_DELIVERY', 'E2B_STALE_DELIVERY'] as const;
+export type FreeReportDeliveryTemplateId = typeof FREE_REPORT_DELIVERY_TEMPLATE_IDS[number];
+
+function isFreeReportDeliveryTemplateId(value: unknown): value is FreeReportDeliveryTemplateId {
+  return typeof value === 'string' && (FREE_REPORT_DELIVERY_TEMPLATE_IDS as readonly string[]).includes(value);
+}
+
+export function selectFreeReportDeliveryTemplate(lead: Pick<LeadRow, 'timestamp'>, opts: { now?: Date; override?: unknown } = {}): FreeReportDeliveryTemplateId {
+  if (isFreeReportDeliveryTemplateId(opts.override)) return opts.override;
+  const now = opts.now || new Date();
+  const createdAt = Date.parse(lead.timestamp || '');
+  if (Number.isFinite(createdAt) && createdAt < now.getTime() - 14 * 24 * 60 * 60 * 1000) return 'E2B_STALE_DELIVERY';
+  return 'E2_FREE_REPORT_DELIVERY';
+}
+
+export function latestResearchRunAt(lead: Pick<LeadRow, 'researchCompletedAt' | 'reportGeneratedAt'>): string | null {
+  const candidates = [lead.researchCompletedAt, lead.reportGeneratedAt]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .filter((value) => Number.isFinite(Date.parse(value)))
+    .sort((a, b) => Date.parse(b) - Date.parse(a));
+  return candidates[0] || null;
+}
+
+export function assertStaleDeliveryFreshness(lead: Pick<LeadRow, 'leadId' | 'researchCompletedAt' | 'reportGeneratedAt'>, templateId: FreeReportDeliveryTemplateId, now = new Date()) {
+  if (templateId !== 'E2B_STALE_DELIVERY') return;
+  const latest = latestResearchRunAt(lead);
+  if (!latest || Date.parse(latest) < now.getTime() - 7 * 24 * 60 * 60 * 1000) {
+    throw new Error('E2B_STALE_DELIVERY blocked: rerun first. This template says the report was tested this week, so latest research must be under 7 days old.');
+  }
+}
+
+export function buildFreeReportDeliveryContext(lead: LeadRow) {
   const counts = parseCounts(lead.snapshotAppeared);
   if (!counts) throw new Error(`Cannot render E2 for ${lead.leadId}: missing appeared/total counts`);
   return {
@@ -90,6 +122,10 @@ export function buildE2Context(lead: LeadRow) {
     totalN: counts.total,
     reportUrl: lead.reportUrl || buildReportUrl(lead.leadId),
   };
+}
+
+export function buildE2Context(lead: LeadRow) {
+  return buildFreeReportDeliveryContext(lead);
 }
 
 export function buildNurtureContext(lead: LeadRow, templateId: ClientEmailId) {

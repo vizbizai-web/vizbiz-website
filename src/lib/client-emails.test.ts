@@ -16,6 +16,7 @@ const base = {
 const renderCases = [
   ['E1_INTAKE_CONFIRMATION', {}],
   ['E2_FREE_REPORT_DELIVERY', { appearedX: 3, totalN: 10 }],
+  ['E2B_STALE_DELIVERY', { appearedX: 3, totalN: 10 }],
   ['E3_NURTURE_ONE_FIX', { fixCount: 4, topFixPlain: 'Your site is missing structured data that confirms the services LexHive offers.' }],
   ['E4_NURTURE_COMPETITOR_ANGLE', { findingPrompt: 'best legal intake service in Toronto', rival: 'BridgeLegal' }],
   ['E4_NURTURE_COMPETITOR_ANGLE', { findingPrompt: 'best legal intake service in Toronto', rival: '' }],
@@ -39,6 +40,18 @@ describe('client email suite v1', () => {
     for (const blocked of ['manual review', 'operator approval', 'auto-discovered competitors', 'internal only', 'the client named']) {
       expect(combined.toLowerCase()).not.toContain(blocked);
     }
+  });
+
+  it('renders E2B stale delivery with the approved load-bearing copy', () => {
+    const rendered = renderClientEmail('E2B_STALE_DELIVERY', { ...base, business: 'LexHive', contactName: 'Jordan Patel', appearedX: 3, totalN: 10 });
+    expect(rendered.subject).toBe('LexHive: your AI visibility report — tested this week');
+    expect(rendered.emailClass).toBe('transactional');
+    expect(rendered.automation).toBe('gated');
+    expect(rendered.text).toContain('You asked for an AI visibility check a few weeks back, and I owe you a straight sentence: we were rebuilding the system that runs these reports, and yours waited longer than it should have.');
+    expect(rendered.text).toContain('real buyer questions tested this week across ChatGPT, Gemini, and Perplexity, not a single engine. You appeared in 3 of 10 answers we tested for Toronto.');
+    expect(rendered.text).toContain('See the full results: https://vizbiz.ai/report/lexhive/full');
+    expect(rendered.text).toContain("No charge, no strings — it's the report you asked for, done properly.");
+    expect(rendered.text).toContain('Alex — VizBiz.ai');
   });
 
   it('uses the VizBiz greeting guard instead of greeting a business as a person', () => {
