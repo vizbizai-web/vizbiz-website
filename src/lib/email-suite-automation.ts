@@ -217,7 +217,7 @@ export async function notifyGatedEmailCardEnteredNeedsYou(lead: Pick<LeadRow, 'l
   await recordEmailSuiteEvent({
     leadId: lead.leadId,
     eventType: 'telegram_gated_card_ping',
-    payload: { templateId: card.templateId, subject: card.subject, trigger: card.trigger, cardKey, sentAt: new Date().toISOString(), telegramMessageId: telegram?.messageId, telegramChannel: telegram?.channel },
+    payload: { templateId: card.templateId, subject: card.subject, trigger: card.trigger, cardKey, sentAt: new Date().toISOString(), telegramMessageId: telegram?.messageId, telegramChannel: telegram?.channel, telegramChatId: telegram?.chatId },
   }).catch(() => undefined);
   return true;
 }

@@ -10,6 +10,9 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const VIZBIZ_HQ_GROUP = "-1003708779177";
 const LEADS_TOPIC_ID = 355;
 const ALEX_DM = "6960754854";
+// Existing working intake/conflict alerts use the same bot token and Alex DM chat.
+// The old HQ group/topic pair is not reachable by the production bot at the moment.
+const INTAKE_ALERT_CHAT_ID = process.env.TELEGRAM_INTAKE_CHAT_ID || ALEX_DM;
 
 type LeadAlert = {
   leadId: string;
@@ -265,7 +268,7 @@ export async function sendGatedNeedsYouTelegramPing(card: {
   subject?: string;
   trigger?: string;
   mcUrl?: string;
-}): Promise<{ ok: boolean; messageId?: number; channel: 'intake_topic' | 'alex_dm_fallback' } | null> {
+}): Promise<{ ok: boolean; messageId?: number; channel: 'intake_alert_chat'; chatId: string } | null> {
   if (!TELEGRAM_BOT_TOKEN) {
     console.warn("[telegram-alert] TELEGRAM_BOT_TOKEN not configured");
     return null;
@@ -279,29 +282,21 @@ export async function sendGatedNeedsYouTelegramPing(card: {
     `Open MC: ${mcUrl}`,
   ].filter(Boolean).join("\n");
 
-  const send = (body: Record<string, unknown>) => fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      chat_id: INTAKE_ALERT_CHAT_ID,
+      text,
+      disable_web_page_preview: true,
+    }),
   });
-  let res = await send({
-    chat_id: VIZBIZ_HQ_GROUP,
-    message_thread_id: LEADS_TOPIC_ID,
-    text,
-    disable_web_page_preview: true,
-  });
-  let json = await res.json().catch(() => ({}));
-  let channel: 'intake_topic' | 'alex_dm_fallback' = 'intake_topic';
-  if (!res.ok || json?.ok === false) {
-    console.warn("[telegram-alert] gated Needs-You intake topic ping failed; falling back to Alex DM", { status: res.status, description: json?.description });
-    channel = 'alex_dm_fallback';
-    res = await send({ chat_id: ALEX_DM, text: `${text}\n\nFallback: intake topic was unavailable to the bot.`, disable_web_page_preview: true });
-    json = await res.json().catch(() => ({}));
-  }
-  if (!res.ok || json?.ok === false) throw new Error(`Telegram gated ping failed: ${res.status}`);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.ok === false) throw new Error(`Telegram gated ping failed: ${res.status} ${json?.description || ''}`.trim());
 
-  console.info("[telegram-alert] gated Needs-You ping sent", { leadId: card.leadId, templateId: card.templateId, messageId: json?.result?.message_id, channel });
-  return { ok: true, messageId: json?.result?.message_id, channel };
+  const deliveredChatId = String(json?.result?.chat?.id || INTAKE_ALERT_CHAT_ID);
+  console.info("[telegram-alert] gated Needs-You ping sent", { leadId: card.leadId, templateId: card.templateId, messageId: json?.result?.message_id, channel: 'intake_alert_chat', chatId: deliveredChatId });
+  return { ok: true, messageId: json?.result?.message_id, channel: 'intake_alert_chat', chatId: deliveredChatId };
 }
 
 /**
