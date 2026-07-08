@@ -98,6 +98,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Lead not found" }, { status: 404 });
     }
 
+    if (lead.notes && /\[NICHE_RESOLUTION[^\]]*\]/i.test(lead.notes) && !['preflight_failed', 'needs_revision'].includes(String(lead.status || ''))) {
+      if (callbackId) await answerCallback(callbackId, "Already resolved — no rerun started.");
+      if (chatId && messageId) {
+        await editCallbackMessage(chatId, messageId, `${messageText}\n\n✅ Already resolved earlier. No duplicate rerun started.`);
+      }
+      await recordActionAudit({ leadId: resolution.leadId, action: "niche_resolution_already_resolved", channel: "telegram", metadata: { callbackData } });
+      return NextResponse.json({ ok: true, action: "already_resolved", leadId: resolution.leadId, harmless: true });
+    }
+
     if (resolution.action === "custom") {
       await updateLead(resolution.leadId, {
         status: "needs_revision",

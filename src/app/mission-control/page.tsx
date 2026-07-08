@@ -26,6 +26,7 @@ type NeedsYouItem = {
   reportPreviewUrl: string;
   detailUrl: string;
   nextLeadId?: string;
+  ordinalTotal?: number;
   badges: Array<{ label: string; tone: 'red' | 'amber' | 'blue' | 'cyan' | 'slate'; detail?: string }>;
   city: string;
   email: string;
@@ -84,6 +85,7 @@ function usePipelineData() {
 function useLeadAction(refetch: () => Promise<void>) {
   const [busyLeadId, setBusyLeadId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [clearedCount, setClearedCount] = useState(0);
 
   const runAction = async (item: NeedsYouItem, action: 'approve' | 'needs_revision') => {
     setBusyLeadId(item.leadId);
@@ -104,10 +106,16 @@ function useLeadAction(refetch: () => Promise<void>) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json?.success === false) throw new Error(json?.error || `HTTP ${res.status}`);
-      setMessage(action === 'approve' ? `Approved ${item.businessName}` : `Marked needs-work: ${item.businessName}`);
+      const nextCleared = clearedCount + 1;
+      setClearedCount(nextCleared);
+      setMessage(action === 'approve'
+        ? `Approved ${item.businessName}. ${nextCleared} of ${item.ordinalTotal || '?'} cleared this session.`
+        : `Marked needs-work: ${item.businessName}. ${nextCleared} of ${item.ordinalTotal || '?'} cleared this session.`);
       await refetch();
       if (item.nextLeadId) {
         window.history.replaceState(null, '', `/mission-control?next=${item.nextLeadId}`);
+        const nextRow = document.querySelector(`[data-lead-id="${item.nextLeadId}"]`);
+        if (nextRow instanceof HTMLElement) nextRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     } catch (err: unknown) {
       setMessage(err instanceof Error ? err.message : 'Action failed');
@@ -184,8 +192,8 @@ export default function MissionControlDashboard() {
         </div>
 
         <div className="mt-5 space-y-3">
-          {filteredQueue.map((item, index) => (
-            <QueueRow key={item.leadId} item={item} ordinal={index + 1} busy={busyLeadId === item.leadId} onAction={runAction} />
+            {filteredQueue.map((item, index) => (
+            <QueueRow key={item.leadId} item={{ ...item, ordinalTotal: filteredQueue.length }} ordinal={index + 1} busy={busyLeadId === item.leadId} onAction={runAction} />
           ))}
           {!loading && filteredQueue.length === 0 && (
             <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-8 text-center text-slate-500">Nothing needs you in this filter. This is the product goal.</div>
@@ -234,7 +242,7 @@ function QueueRow({ item, ordinal, busy, onAction }: { item: NeedsYouItem; ordin
   const tier = TIER_STYLES[item.tier];
   const age = item.ageHours == null ? 'age unknown' : item.ageHours < 24 ? `${Math.round(item.ageHours)}h old` : `${Math.floor(item.ageHours / 24)}d old`;
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-[#080B14] p-4 transition hover:border-cyan-300/25">
+    <div data-lead-id={item.leadId} className="rounded-2xl border border-slate-800/80 bg-[#080B14] p-4 transition hover:border-cyan-300/25">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

@@ -151,6 +151,8 @@ export default function EmailsPage() {
   const [editSubject, setEditSubject] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'all' | 'generated' | 'approved' | 'sent'>('all');
+  const [sendMessage, setSendMessage] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
 
   const filtered = drafts.filter(d => filterTab === 'all' || d.status === filterTab);
   const counts = {
@@ -197,13 +199,22 @@ export default function EmailsPage() {
     }
   };
 
-  const handleMarkSent = async (draft: EmailDraft) => {
+  const handleSendInApp = async (draft: EmailDraft) => {
+    setSendingId(draft.lead.leadId);
+    setSendMessage(null);
     const res = await fetch('/mission-control/api/lead-actions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId: draft.lead.leadId, action: 'update_status', data: { status: 'contacted' } }),
+      body: JSON.stringify({ leadId: draft.lead.leadId, action: 'approve_and_send', data: { reportType: 'free' } }),
     });
-    if (res.ok) refetch();
+    const payload = await res.json().catch(() => ({}));
+    setSendingId(null);
+    if (!res.ok || payload?.success === false) {
+      setSendMessage(payload?.error || `Send blocked (${res.status})`);
+      return;
+    }
+    setSendMessage(`Sent through VizBiz/Resend to ${draft.lead.email}. Tracking and nurture are active.`);
+    refetch();
   };
 
   return (
@@ -217,6 +228,7 @@ export default function EmailsPage() {
 
       {loading && <div className="text-slate-500 text-sm">Generating drafts...</div>}
       {error && <div className="text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm">{error}</div>}
+      {sendMessage && <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 p-4 text-sm text-cyan-100">{sendMessage}</div>}
 
       {/* Gated sends */}
       {gatedCards.length > 0 && (
@@ -356,17 +368,15 @@ export default function EmailsPage() {
                   </button>
                 )}
                 {draft.status === 'approved' && (
-                  <button onClick={() => handleMarkSent(draft)}
-                    className="text-sm px-4 py-3 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/30 hover:bg-violet-500/20 transition-colors sm:py-2">
-                    Mark Sent
+                  <button onClick={() => handleSendInApp(draft)} disabled={sendingId === draft.lead.leadId}
+                    className="text-sm px-4 py-3 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 sm:py-2">
+                    {sendingId === draft.lead.leadId ? 'Sending via Resend…' : 'Send in VizBiz'}
                   </button>
                 )}
 
-                <a href={`mailto:${draft.lead.email}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}
-                  className="text-center text-sm px-4 py-3 rounded-lg transition-colors sm:ml-auto sm:py-2"
-                  style={{ background: 'rgba(37, 209, 242, 0.08)', color: '#25D1F2', border: '1px solid rgba(37, 209, 242, 0.2)' }}>
-                  Open in Mail App
-                </a>
+                <span className="text-xs leading-5 text-slate-500 sm:ml-auto">
+                  External compose removed: sending outside VizBiz would bypass Resend, E2 gates, tracking, watchdog, and nurture scheduling.
+                </span>
               </div>
             </div>
           );

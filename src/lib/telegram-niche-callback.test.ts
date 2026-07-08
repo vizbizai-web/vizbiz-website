@@ -38,4 +38,12 @@ describe('telegram niche callback resolution', () => {
     expect(resolution.selectedNiche).toBe('');
     expect(resolution.noteLine).toContain('CUSTOM_NICHE_REQUIRED');
   });
+
+  it('has a stale-button already-resolved guard in the Telegram webhook', () => {
+    const source = require('node:fs').readFileSync('src/app/api/telegram/webhook/route.ts', 'utf8');
+    expect(source).toContain('Already resolved — no rerun started.');
+    expect(source).toContain('niche_resolution_already_resolved');
+    expect(source).toContain('action: "already_resolved"');
+    expect(source).toContain('harmless: true');
+  });
 });

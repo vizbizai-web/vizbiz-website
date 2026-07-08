@@ -233,6 +233,11 @@ describe('Mission Control production integrity', () => {
     expect(leadActions).toContain('[EMAIL_DRAFT_SAVED');
     expect(leadActions).toContain('[EMAIL_DRAFT_APPROVED');
     expect(emailHub).not.toContain('your-site');
+    expect(emailHub).not.toContain('mailto:');
+    expect(emailHub).toContain("action: 'approve_and_send'");
+    expect(emailHub).toContain('Send in VizBiz');
+    expect(emailHub).toContain('sending outside VizBiz would bypass Resend');
+    expect(emailHub).not.toContain('Mark Sent');
     const emailDraftsRoute = repoFile('src/app/mission-control/api/email-drafts/route.ts');
     expect(emailDraftsRoute).toContain('renderClientEmail');
     expect(emailDraftsRoute).toContain('buildReportUrl(lead.leadId)');
