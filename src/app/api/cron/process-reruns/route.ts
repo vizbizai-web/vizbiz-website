@@ -54,7 +54,12 @@ async function processDueMonthlySubscription() {
       .filter((snapshot) => snapshot.status === 'complete');
     const previousSnapshot = [...completedSnapshots]
       .reverse()
-      .find((snapshot) => snapshot.tier === 'paid' && snapshot.runType !== 'pulse' && (snapshot.promptPlan as any)?.runType !== 'pulse') || null;
+      .find((snapshot) => {
+        if (snapshot.tier !== 'paid' || snapshot.runType === 'pulse' || (snapshot.promptPlan as any)?.runType === 'pulse') return false;
+        const plan = uniquePromptPlan(snapshot.promptPlan?.prompts || []);
+        const planHash = snapshot.promptPlan?.hash || (plan.length ? hashPromptPlan(plan) : null);
+        return plan.length > 0 && planHash === hashPromptPlan(plan);
+      }) || null;
     const preflight = await preflightScan(lead.website, lead.city, lead.dealershipName);
     const currentProfileHash = hashProfile(stableProfileForMonthlyHash(preflight));
     const previousHashLooksReal = Boolean(previousSnapshot?.profileHash && /^[a-f0-9]{64}$/i.test(previousSnapshot.profileHash));
