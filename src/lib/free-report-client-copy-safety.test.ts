@@ -60,4 +60,11 @@ describe('free report client copy safety', () => {
     expect(source).toContain('Get Full Report + 30-Day Update — $88');
     expect(source).toContain('Monthly keeps monitoring competitor movement and new fixes as AI results change');
   });
+
+  it('uses real checkout fallbacks for report CTAs instead of dead hash links', () => {
+    const source = readFileSync('src/app/report/[leadId]/report-content.tsx', 'utf8');
+    expect(source).toContain("const fallbackUrl = buildStripeCheckoutFallbackUrl('fix');");
+    expect(source).toContain("fetch('/api/stripe/checkout/',");
+    expect(source).not.toContain('href="#"');
+  });
 });

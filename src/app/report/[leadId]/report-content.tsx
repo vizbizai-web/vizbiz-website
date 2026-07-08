@@ -1424,6 +1424,7 @@ function FullReportTeaser({ data, theme }: { data: LeadData; theme: Theme }) {
 function BlurredReportPreview({ theme, leadId }: { theme: Theme; leadId: string }) {
   const t = getThemeStyles(theme);
   const isMobile = useIsMobile();
+  const fallbackUrl = buildStripeCheckoutFallbackUrl('fix');
 
   return (
     <FadeIn>
@@ -1475,8 +1476,8 @@ function BlurredReportPreview({ theme, leadId }: { theme: Theme; leadId: string 
             <p className="text-xs mt-1" style={{ color: t.textMuted }}>Full audit: deeper questions, competitor analysis, prioritized fix plan</p>
           </div>
           <a
-            href="#"
-            onClick={async (e) => { e.preventDefault(); try { const r = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: leadId, tier: 'fix' }) }); const d = await r.json(); if (d.url) window.location.href = d.url; } catch { window.location.href = 'https://buy.stripe.com/eVqbJ2gzd3g275ifzy24002'; } }}
+            href={fallbackUrl}
+            onClick={async (e) => { e.preventDefault(); try { const r = await fetch('/api/stripe/checkout/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: leadId, tier: 'fix' }) }); const d = await r.json(); window.location.href = r.ok && d.url ? d.url : fallbackUrl; } catch { window.location.href = fallbackUrl; } }}
             className="px-6 py-2.5 text-sm font-semibold rounded-xl transition-all"
             style={{
               background: 'linear-gradient(to right, #22D3EE, #06B6D4)',
