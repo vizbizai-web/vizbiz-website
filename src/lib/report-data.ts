@@ -99,6 +99,8 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
     const parsed = JSON.parse(jsonBlob);
     if (!parsed?.research) return null;
     const clientSafeResearch = sanitizeClientResearch(parsed.research as Record<string, unknown>);
+    const googlePlaceEnrichment = parsed.preflight?.googlePlaceEnrichment || parsed.research.googlePlaceEnrichment;
+    const googlePlaceState = googlePlaceMatchState(googlePlaceEnrichment);
     return {
       ...clientSafeResearch,
       nicheLabel: parsed.preflight?.nicheLabel,
@@ -123,7 +125,8 @@ export function parseResearchDataFromNotes(notes?: string | null): ResearchData 
         : (parsed.competitors || []).map((name: string) => ({ name, website: '' })).slice(0, 2),
       internalCompetitorSuggestions: parsed.research.internalCompetitorSuggestions,
       competitorValidations: parsed.research.competitorValidations,
-      googlePlaceEnrichment: parsed.research.googlePlaceEnrichment,
+      googlePlaceEnrichment,
+      googlePlaceMatchState: googlePlaceState,
       localEntityTrustScore: parsed.research.localEntityTrustScore,
     } as ResearchData;
   } catch {

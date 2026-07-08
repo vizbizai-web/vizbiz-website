@@ -253,6 +253,20 @@ const formatCompetitorDisplayName = (name: string): string => {
   try {
     const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
     const host = url.hostname.replace(/^www\./, '');
+    if (host.includes('instagram.com')) {
+      const handle = url.pathname.split('/').filter(Boolean)[0] || '';
+      if (handle) {
+        return handle
+          .replace(/\.cl$/i, '')
+          .replace(/^clinica/i, 'clinica ')
+          .replace(/^veterinaria/i, 'veterinaria ')
+          .replace(/[-_.]+/g, ' ')
+          .trim()
+          .split(/\s+/)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+      }
+    }
     const base = host.split('.')[0] || host;
     const knownDomainLabels: Record<string, string> = {
       juliachien: 'Julia Chien',
@@ -824,7 +838,7 @@ function CompetitorComparison({ data, theme }: { data: LeadData; theme: Theme })
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
                       <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: t.textPrimary }}>
                         {entry.score > 0 ? entry.name : `${entry.name} (not visible)`}
-                        {entry.website ? <span style={{ color: t.textMuted }}> · {formatCompetitorDisplayName(entry.website)}</span> : null}
+                        {entry.website && !/instagram\.com/i.test(entry.website) ? <span style={{ color: t.textMuted }}> · {formatCompetitorDisplayName(entry.website)}</span> : null}
                       </span>
                       <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: '#A78BFA', fontVariantNumeric: 'tabular-nums' }}>{entry.score}/{totalQ}</span>
                     </div>
@@ -2035,16 +2049,20 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
         const suppliedCompetitors = researchData.suppliedCompetitors?.length
           ? researchData.suppliedCompetitors
           : getSeparateCompetitorNames(leadData?.competitor || '').map((name) => ({ name, website: '' }));
-        const userCompWithScores = suppliedCompetitors.slice(0, 2).map((competitor) => {
-          const uc = competitor.name;
-          const ucKey = uc.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split('.')[0];
+        const userCompWithScores = suppliedCompetitors.slice(0, 2).map((competitor, index) => {
+          const validation = researchData.competitorValidations?.[index];
+          const rawName = competitor.name;
+          const displayName = validation?.name || formatCompetitorDisplayName(rawName);
+          const website = competitor.website || (/^https?:\/\//i.test(rawName) ? rawName : '');
+          const ucKey = [displayName, rawName]
+            .map((value) => value.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').split(/[./?]/)[0])
+            .filter(Boolean);
           let appearances = 0;
           for (const r of researchData.promptResults) {
-            if (r.competitorName && r.competitorName.toLowerCase().includes(ucKey)) {
-              appearances++;
-            }
+            const compName = (r.competitorName || '').toLowerCase();
+            if (ucKey.some((key) => key && compName.includes(key))) appearances++;
           }
-          return { name: uc, website: competitor.website, score: appearances, isYours: true } as Competitor;
+          return { name: displayName, website, score: appearances, isYours: true } as Competitor;
         });
         return [
           { name: `${researchData.businessName} (You)`, score: researchData.appearedCount, isYou: true },

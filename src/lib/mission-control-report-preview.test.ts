@@ -57,6 +57,45 @@ describe('Mission Control report preview', () => {
     ]);
   });
 
+  it('prefers richer preflight Google Places enrichment when research stores a compact Places summary', () => {
+    const notes = JSON.stringify({
+      preflight: {
+        googlePlaceEnrichment: {
+          placeId: 'ChIJB0bwHFsrFZYRcS-dMTs8LfM',
+          displayName: 'Clínica Veterinaria San Isidro',
+          formattedAddress: 'Av. Los Raulies 0132, Labranza, Temuco, Araucanía, Chile',
+          cityMatch: true,
+          websiteUri: 'https://www.instagram.com/clinicavetsanisidro.cl/',
+          websiteMatch: true,
+          googleMapsUri: 'https://maps.google.com/?cid=17522727950101589873',
+          rating: 4.7,
+          userReviewCount: 15,
+          googleProfileFound: true,
+          validationStatus: 'validated',
+          confidence: 'high',
+          warnings: [],
+        },
+      },
+      competitorMode: 'client_provided',
+      competitors: ['https://www.instagram.com/veterinariafriendlyvets/?hl=es'],
+      research: {
+        businessName: 'Clínica Veterinaria San Isidro',
+        website: 'https://www.instagram.com/clinicavetsanisidro.cl/',
+        city: 'Temuco',
+        appearedCount: 1,
+        totalPrompts: 1,
+        statusBand: 'Strong',
+        serviceVisibility: 'Visible in this snapshot.',
+        promptResults: [{ prompt: 'Clínica Veterinaria San Isidro Temuco', businessAppeared: true, competitorAppeared: false }],
+        niche: 'veterinary clinic',
+        googlePlaceEnrichment: { placeId: 'ChIJB0bwHFsrFZYRcS-dMTs8LfM', rating: 4.7, userReviewCount: 15, websiteMatch: true },
+      },
+    });
+    const parsed = parseResearchDataFromNotes(notes);
+    expect(parsed?.googlePlaceEnrichment?.displayName).toBe('Clínica Veterinaria San Isidro');
+    expect(parsed?.googlePlaceMatchState?.status).toBe('matched');
+  });
+
   it('does not send pending-review operators to the client-gated public report URL', () => {
     const leadPage = readFileSync('src/app/mission-control/leads/[leadId]/page.tsx', 'utf8');
     expect(leadPage).toContain('/mission-control/report-preview/');
