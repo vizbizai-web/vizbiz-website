@@ -210,8 +210,12 @@ export default function GEOToolsPage() {
                 <strong className="text-white">These are different games with different rules.</strong>
               </p>
               <p className="mt-5 text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-                We evaluated the four GEO tools most likely to come up when local businesses search for AI visibility solutions. Here's how they compare.
+                For broader sourced vendor lists, use the two comparison guides below. They cover AI visibility platforms and local-business fit beyond traditional GEO definitions.
               </p>
+              <div className="mt-6 flex flex-wrap gap-3 text-sm">
+                <Link href="/best-ai-visibility-tools-for-local-businesses/" className="rounded-full border border-white/15 px-4 py-2 text-white hover:border-[#22D3EE]/40">Best AI visibility tools list</Link>
+                <Link href="/ai-visibility-tools-compared/" className="rounded-full border border-white/15 px-4 py-2 text-white hover:border-[#22D3EE]/40">AI visibility tools compared</Link>
+              </div>
             </div>
           </div>
         </section>

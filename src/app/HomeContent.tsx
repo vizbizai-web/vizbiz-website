@@ -611,6 +611,7 @@ export default function HomeContent() {
               {[
                 { title: 'AI Visibility for Med Spas', slug: '/ai-visibility-for-med-spas', desc: 'How med spas can become easier for ChatGPT, Gemini, and Perplexity to understand and recommend.' },
                 { title: 'Best AI Visibility Tools for Local Businesses', slug: '/best-ai-visibility-tools-for-local-businesses', desc: 'The practical tooling stack for local businesses measuring AI visibility beyond traditional SEO.' },
+                { title: 'AI Visibility Tools Compared', slug: '/ai-visibility-tools-compared', desc: 'A sourced comparison of VizBiz, OtterlyAI, Peec AI, Profound, Scrunch AI, AthenaHQ, and BrightLocal.' },
                 { title: '90-Day AI Visibility Playbook for Car Dealerships', slug: 'geo-is-the-new-playbook-car-dealerships', desc: 'Step-by-step plan to go from invisible to AI-recommended in 90 days.' },
                 { title: 'Free AI Visibility Check for Your Dealership', slug: 'how-to-show-up-in-chatgpt-recommendations', desc: 'How to run a quick self-audit before investing in a full report.' },
                 { title: 'GEO for Car Dealerships: The Complete Guide', slug: 'generative-engine-optimization-car-dealerships', desc: 'Everything about Generative Engine Optimization — the new SEO.' },
@@ -693,6 +694,7 @@ export default function HomeContent() {
                 <Link href="/sample-ai-visibility-report-for-car-dealerships" className="hover:text-white">Sample Report</Link>
                 <Link href="/ai-visibility-for-med-spas" className="hover:text-white">Med Spas</Link>
                 <Link href="/best-ai-visibility-tools-for-local-businesses" className="hover:text-white">Local AI Tools</Link>
+                <Link href="/ai-visibility-tools-compared" className="hover:text-white">Tools Compared</Link>
                 <Link href="/blog" className="hover:text-white">Blog</Link>
                 <Link href="/faq-ai-visibility-for-car-dealerships" className="hover:text-white">FAQ</Link>
                 <Link href="/about" className="hover:text-white">About</Link>
