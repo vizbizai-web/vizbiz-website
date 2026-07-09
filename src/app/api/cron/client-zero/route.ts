@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireMissionControlApiAuth } from '@/lib/mission-control-api-auth';
+import { authorizeCronRequest, recordCronHeartbeat } from '@/lib/cron-heartbeats';
 import { ensureClientZeroLead, ensureClientZeroSubscription, appendClientZeroFixtureSnapshot, ensureSampleClientZeroFixDrop } from '@/lib/client-zero';
 import { listAuditSnapshots, appendResearchSnapshot } from '@/lib/audit-snapshots';
 import { preflightScan } from '@/lib/preflight-engine';
@@ -9,16 +9,6 @@ import { notifyGatedEmailCardEnteredNeedsYou } from '@/lib/email-suite-automatio
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
-
-function authorized(request: Request) {
-  const secret = process.env.CRON_SECRET || '';
-  const auth = request.headers.get('authorization') || '';
-  const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const header = request.headers.get('x-cron-secret') || '';
-  const query = new URL(request.url).searchParams.get('secret') || '';
-  if ([bearer, header, query].some((value) => value && value === secret)) return true;
-  return requireMissionControlApiAuth(request) === null;
-}
 
 async function runPulse(lead: Awaited<ReturnType<typeof ensureClientZeroLead>>) {
   const preflight = await preflightScan(lead.website, lead.city, lead.dealershipName);
@@ -30,8 +20,7 @@ async function runPulse(lead: Awaited<ReturnType<typeof ensureClientZeroLead>>) 
   return appendResearchSnapshot({ leadId: lead.leadId, tier: 'free', researchResult: result, preflightProfile: preflight, runType: 'pulse', source: 'client_zero' });
 }
 
-export async function GET(request: Request) {
-  if (!authorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+async function runClientZeroCron(request: Request) {
   try {
   const url = new URL(request.url);
   const action = url.searchParams.get('action') || 'dispatch';
@@ -74,6 +63,13 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
+}
+
+export async function GET(request: Request) {
+  const auth = authorizeCronRequest(request, { allowQuerySecret: true, allowMissionControlSession: true });
+  if (!auth.authorized) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  await recordCronHeartbeat(request, '/api/cron/client-zero/', auth.authMethod);
+  return runClientZeroCron(request);
 }
 
 export async function POST(request: Request) {

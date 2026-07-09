@@ -21,6 +21,7 @@ import { diffSnapshots, renderMovementCopy } from "@/lib/snapshot-diff";
 import { listDueSubscriptions, markSubscriptionAfterMonthlyRun, markSubscriptionLoopFailure, nextRunAfter } from "@/lib/subscription-loop";
 import { buildCompetitorMovementAlert, sendCompetitorMovementApprovalTelegram } from "@/lib/competitor-movement-alerts";
 import { createE11GatedCard } from "@/lib/email-suite-automation";
+import { authorizeCronRequest, recordCronHeartbeat } from "@/lib/cron-heartbeats";
 
 // Wrapper for the cron endpoint
 async function sendTelegramAlert({ message, topic }: { message: string; topic?: string }) {
@@ -158,21 +159,7 @@ async function processDueMonthlySubscription() {
 // Allow up to 5 minutes for processing
 export const maxDuration = 300;
 
-export async function GET(request: Request) {
-  // Simple auth check — verify cron secret if configured
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const authHeader = request.headers.get("authorization");
-    const xCronSecret = request.headers.get("x-cron-secret");
-    const isAuthorized = authHeader === `Bearer ${cronSecret}` || xCronSecret === cronSecret;
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-  }
-
+async function runProcessRerunsCron(request: Request) {
   console.info("[cron/process-reruns] Starting cron job");
 
   try {
@@ -360,4 +347,15 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: Request) {
+  const auth = authorizeCronRequest(request);
+  if (!auth.authorized) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  await recordCronHeartbeat(request, '/api/cron/process-reruns/', auth.authMethod);
+  return runProcessRerunsCron(request);
+}
+
+export async function POST(request: Request) {
+  return GET(request);
 }

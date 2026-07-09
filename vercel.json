@@ -16,8 +16,6 @@
     }
   ],
   "crons": [
-    { "path": "/api/cron/process-reruns", "schedule": "0 10 * * *" },
-    { "path": "/api/cron/email-suite", "schedule": "15 10 * * *" },
-    { "path": "/api/cron/client-zero", "schedule": "24 23 * * *" }
+    { "path": "/api/cron/daily/", "schedule": "0 10 * * *" }
   ]
 }

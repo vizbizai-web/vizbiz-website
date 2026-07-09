@@ -4,6 +4,7 @@ import { excludeQaLeads } from '@/lib/qa-leads';
 import { classifyLeadTriage } from '@/lib/lead-triage';
 import { buildMcHealthStrip, buildNeedsYouQueue, enrichProviderStatusFromLatestSnapshot } from '@/lib/mission-control-needs-you';
 import { buildEmailOpsSummary, fetchEmailOpsEvents } from '@/lib/email-ops';
+import { formatCronAge, getLatestCronHeartbeat } from '@/lib/cron-heartbeats';
 
 export const revalidate = 0;
 
@@ -43,7 +44,19 @@ export async function GET() {
 
     const needsYou = buildNeedsYouQueue(leads);
     const emailOps = buildEmailOpsSummary(await fetchEmailOpsEvents(), leads).health24h;
-    const health = { ...(await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads))), emailOps };
+    const latestCronHeartbeat = await getLatestCronHeartbeat();
+    const cronAge = formatCronAge(latestCronHeartbeat?.created_at);
+    const health = {
+      ...(await enrichProviderStatusFromLatestSnapshot(buildMcHealthStrip(leads))),
+      emailOps,
+      cron: {
+        lastTickAt: latestCronHeartbeat?.created_at || null,
+        route: latestCronHeartbeat?.event_payload?.route || null,
+        ageLabel: cronAge.label,
+        ageHours: cronAge.ageHours,
+        alarm: cronAge.alarm,
+      },
+    };
 
     return NextResponse.json({
       source: 'vizbiz-leads',

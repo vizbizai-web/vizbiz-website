@@ -13,10 +13,14 @@ describe('credentialed surface invalid-value rejection standard', () => {
   });
 
   it('requires exact CRON_SECRET equality and rejects wrong bearer or x-cron-secret values', () => {
+    const helper = read('src/lib/cron-heartbeats.ts');
     const source = read('src/app/api/cron/process-reruns/route.ts');
-    expect(source).toContain('const cronSecret = process.env.CRON_SECRET');
-    expect(source).toContain('authHeader === `Bearer ${cronSecret}`');
-    expect(source).toContain('xCronSecret === cronSecret');
+    expect(helper).toContain('process.env.CRON_SECRET');
+    expect(helper).toContain('bearer === secret');
+    expect(helper).toContain('header === secret');
+    expect(helper).toContain("authMethod: 'bearer'");
+    expect(helper).toContain("authMethod: 'x-cron-secret'");
+    expect(source).toContain('authorizeCronRequest(request)');
     expect(source).toContain('Unauthorized');
   });
 

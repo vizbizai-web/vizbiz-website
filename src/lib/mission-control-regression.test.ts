@@ -258,11 +258,12 @@ describe('Mission Control production integrity', () => {
     expect(preflight).toContain('if (!valueProposition && businessType)');
   });
 
-  it('uses honest unavailable state for unwired MC task/cron integrations', () => {
+  it('uses durable Supabase evidence for wired MC cron status instead of fake scheduled-task stubs', () => {
     const route = repoFile('src/app/mission-control/api/cron-status/route.ts');
 
-    expect(route).toContain("status: 'unavailable'");
-    expect(route).toContain('missingIntegration');
+    expect(route).toContain("source: 'lead_events.cron_invoked'");
+    expect(route).toContain('getLatestCronHeartbeat');
+    expect(route).toContain('No durable cron heartbeat has been recorded yet.');
     expect(route).not.toContain('Dogfood Audit');
     expect(route).not.toContain('TODO');
   });
