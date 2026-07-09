@@ -60,10 +60,10 @@ function installHappyMock(language = 'English', seenArtifacts?: string[]) {
 afterEach(() => setFixKitLLMForTests(null));
 
 describe('Fix Kit generator', () => {
-  it('generates A1-A7 with deterministic crawler/schema/category artifacts and no placeholders', async () => {
+  it('generates A1-A8 with deterministic crawler/schema/category/decision artifacts and no placeholders', async () => {
     installHappyMock();
     const kit = await generateFixKit(fixture());
-    expect(kit.artifacts.map(a => a.key)).toEqual(['A1_SCHEMA','A2_LLMS','A3_CRAWLER','A4_META','A5_FAQ','A6_GBP','A7_ROADMAP']);
+    expect(kit.artifacts.map(a => a.key)).toEqual(['A1_SCHEMA','A2_LLMS','A3_CRAWLER','A4_META','A5_FAQ','A6_GBP','A7_ROADMAP','A8_DECISION_FRAMEWORK']);
     expect(kit.status).toBe('ready_for_approval');
     expect(kit.artifacts.flatMap(a => a.validationErrors)).toEqual([]);
     expect(kit.artifacts.map(a => a.content).join('\n')).not.toMatch(/TODO|EXAMPLE|Lorem|INSERT|dealership/i);
@@ -71,6 +71,12 @@ describe('Fix Kit generator', () => {
     expect(schema['@graph'][0].name).toBe('Clearpath Tax Relief');
     expect(kit.artifacts.find(a => a.key === 'A3_CRAWLER')!.content).toContain('GPTBot | blocked');
     expect(kit.artifacts.find(a => a.key === 'A6_GBP')!.content).toContain('Primary: Tax preparation service');
+    const a8 = kit.artifacts.find(a => a.key === 'A8_DECISION_FRAMEWORK')!;
+    expect(a8.content).toContain('Publish-ready HTML');
+    expect(a8.content).toContain('Plain text version');
+    expect(a8.content).toContain('FAQ maps to lost prompt: best tax debt help in Kitchener');
+    expect(a8.content).toContain('FAQPage');
+    expect(a8.content).not.toMatch(/#1|number one|top ranked|guaranteed/i);
   });
 
   it('surfaces validation failure as needs_operator_edit instead of silently shipping', async () => {
@@ -84,6 +90,8 @@ describe('Fix Kit generator', () => {
     installHappyMock('Spanish');
     const kit = await generateFixKit(fixture({ profile: { ...fixture().profile, businessName: 'Suministros Madrid', niche: 'spanish_supplier', nicheLabel: 'Proveedor de suministros industriales', businessType: 'proveedor de suministros industriales', searchLanguage: 'Spanish', services: ['suministros industriales','entrega local','catálogo mayorista'], primaryMarket: 'Madrid', serviceAreas: ['Madrid'] } }));
     expect(kit.artifacts.find(a => a.key === 'A2_LLMS')?.content).toContain('Proveedor local de suministros industriales');
+    expect(kit.artifacts.find(a => a.key === 'A8_DECISION_FRAMEWORK')?.content).toContain('Cómo elegir');
+    expect(kit.artifacts.find(a => a.key === 'A8_DECISION_FRAMEWORK')?.content).toContain('Marco de decisión');
   });
 
   it('drop mode generates only targeted 1-2 artifacts and does not run full Fix Kit LLM set', async () => {

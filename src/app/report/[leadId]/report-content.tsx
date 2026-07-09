@@ -247,6 +247,24 @@ const getScoreAccent = (score: number): string => {
 const formatCurrency = (val: number, sym: string): string =>
   sym + Math.round(val).toLocaleString();
 
+
+const reportDateLabel = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+function strongestCategory(data: LeadData) {
+  return data.categories.length ? [...data.categories].sort((a, b) => b.score - a.score)[0] : null;
+}
+function weakestCategory(data: LeadData) {
+  return data.categories.length ? [...data.categories].sort((a, b) => a.score - b.score)[0] : null;
+}
+function fastestFix(data: LeadData) {
+  const weak = weakestCategory(data)?.name.toLowerCase() || '';
+  if (weak.includes('trust') || weak.includes('review')) return 'add clearer review, profile, and proof signals where customers and AI systems can verify them';
+  if (weak.includes('service')) return 'publish clearer service answers for the buyer questions where the business did not appear';
+  if (weak.includes('brand')) return 'make the business name, category, city, and core services clearer on the homepage and profile pages';
+  if (weak.includes('content') || weak.includes('authority')) return 'add answer-ready FAQ content tied to the missed buyer questions';
+  return data.recommendations[0]?.description?.replace(/[.]+$/, '') || 'make the highest-impact website and profile fix first';
+}
+
 const formatCompetitorDisplayName = (name: string): string => {
   const raw = (name || '').trim();
   if (!raw) return 'Competitor';
@@ -620,6 +638,131 @@ function ReportHero({ data, theme, leadId }: { data: LeadData; theme: Theme; lea
             <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#FCA5A5', margin: '6px 0 0' }}>Visibility Gap</p>
           </div>
         </div>
+      </section>
+    </FadeIn>
+  );
+}
+
+
+function QuickAnswerBlock({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const strong = strongestCategory(data);
+  const weak = weakestCategory(data);
+  const total = Math.max(data.totalPrompts || 0, 0);
+  const appeared = Math.max(data.promptsAppeared || 0, 0);
+  return (
+    <FadeIn>
+      <Section style={{ padding: 24 }}>
+        <p className="text-xs uppercase tracking-[0.22em]" style={{ color: '#22D3EE' }}>Quick answer</p>
+        <h2 className="mt-2 text-2xl font-semibold" style={{ color: t.textPrimary }}>What this snapshot says first</h2>
+        <p className="mt-4 text-sm leading-7" style={{ color: t.textSecondary }}>
+          {data.businessName} appeared in <strong style={{ color: t.textPrimary }}>{appeared} of {total}</strong> tested buyer-intent prompts, producing a snapshot score of <strong style={{ color: t.textPrimary }}>{data.aviScore}/100</strong>.
+          {' '}The strongest category is <strong style={{ color: t.textPrimary }}>{strong?.name || 'not enough data'}</strong>{strong ? ` at ${strong.score}/100` : ''}, while the weakest category is <strong style={{ color: t.textPrimary }}>{weak?.name || 'not enough data'}</strong>{weak ? ` at ${weak.score}/100` : ''}.
+          {' '}The fastest fix is to {fastestFix(data)}.
+        </p>
+      </Section>
+    </FadeIn>
+  );
+}
+
+function MethodologyBox({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const engines = data.platformScores?.length ? data.platformScores.map(p => p.label).join(', ') : 'ChatGPT, Gemini, and Perplexity where available';
+  return (
+    <FadeIn>
+      <Section style={{ padding: 24 }}>
+        <p className="text-xs uppercase tracking-[0.22em]" style={{ color: '#22D3EE' }}>Methodology</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {[
+            ['Engines', engines],
+            ['Prompt count', `Up to ${data.totalPrompts} buyer-intent prompts in this snapshot`],
+            ['Category framework', data.categories.map(c => c.name).join(', ') || 'Visibility, trust, service, competition, content'],
+            ['Tested date', reportDateLabel()],
+            ['Author', 'Alex at VizBiz.ai'],
+            ['Scope', 'This block uses approved scorecard fields only; detailed research evidence is summarized below.'],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-2xl p-4" style={{ background: t.barTrack, border: `1px solid ${t.borderSubtle}` }}>
+              <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: t.textMuted }}>{label}</p>
+              <p className="mt-2 text-sm leading-6" style={{ color: t.textPrimary }}>{value}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+    </FadeIn>
+  );
+}
+
+function CompetitorDecisionTable({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const total = Math.max(data.totalPrompts || 0, 1);
+  const rows = data.competitors.filter(c => !c.isYou && !c.isYours ? !isJunkCompetitor(c.name) : !c.isYou).map(c => {
+    const pct = Math.round((c.score / total) * 100);
+    const clientPct = Math.round(((data.promptsAppeared || 0) / total) * 100);
+    const gap = Math.max(0, pct - clientPct);
+    return {
+      name: formatCompetitorDisplayName(c.name),
+      appearsFor: `${c.score}/${total} prompts`,
+      strength: pct >= 60 ? 'Broad visibility in this sample' : pct >= 25 ? 'Partial visibility in this sample' : 'Limited visibility in this sample',
+      gap: gap > 0 ? `${gap} percentage-point visibility gap` : 'No visibility gap in this sample',
+    };
+  });
+  if (data.competitorMode === 'client_only' || rows.length === 0) return <CompetitorFallback theme={theme} />;
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <Section style={{ padding: 24 }}>
+          <SectionTitle style={{ color: t.textPrimary }}>Competitor decision table</SectionTitle>
+          <p className="mt-2 text-sm leading-7" style={{ color: t.textSecondary }}>Client-facing comparison uses named/supplied competitor context only.</p>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm" style={{ borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${t.borderSubtle}` }}>
+                  {['Competitor','Appears for','Strength','Your gap'].map(h => <th key={h} className="py-3 pr-4 text-xs uppercase tracking-[0.16em]" style={{ color: t.textMuted }}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(row => (
+                  <tr key={row.name} style={{ borderBottom: `1px solid ${t.borderSubtle}` }}>
+                    <td className="py-4 pr-4 font-semibold" style={{ color: t.textPrimary }}>{row.name}</td>
+                    <td className="py-4 pr-4" style={{ color: t.textSecondary }}>{row.appearsFor}</td>
+                    <td className="py-4 pr-4" style={{ color: t.textSecondary }}>{row.strength}</td>
+                    <td className="py-4 pr-4" style={{ color: t.textSecondary }}>{row.gap}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      </section>
+    </FadeIn>
+  );
+}
+
+function DecisionFrameworkRoadmap({ data, theme }: { data: LeadData; theme: Theme }) {
+  const t = getThemeStyles(theme);
+  const weak = weakestCategory(data)?.name || 'the weakest signal';
+  const high = data.recommendations.find(r => r.impact === 'High') || data.recommendations[0];
+  const medium = data.recommendations.find(r => r.impact === 'Medium') || data.recommendations[1] || high;
+  const items = [
+    { label: `Fix ${weak} first if…`, body: `the goal is the fastest visibility lift. Start by ${fastestFix(data)}.` },
+    { label: `${high?.title || 'Improve answer-ready content'} if…`, body: high?.description || 'missed buyer questions need clearer public answers.' },
+    { label: `Hold ${medium?.title || 'secondary optimizations'} until…`, body: 'the first fix is live and the 30-day re-test shows which gaps remain.' },
+  ];
+  return (
+    <FadeIn>
+      <section className="py-12">
+        <Section style={{ padding: 24 }}>
+          <SectionTitle style={{ color: t.textPrimary }}>Decision framework roadmap</SectionTitle>
+          <div className="mt-6 grid gap-4">
+            {items.map((item, index) => (
+              <div key={item.label} className="rounded-2xl p-5" style={{ background: t.barTrack, border: `1px solid ${t.borderSubtle}` }}>
+                <p className="text-xs uppercase tracking-[0.18em]" style={{ color: '#22D3EE' }}>Decision {index + 1}</p>
+                <h3 className="mt-2 text-lg font-semibold" style={{ color: t.textPrimary }}>{item.label}</h3>
+                <p className="mt-2 text-sm leading-7" style={{ color: t.textSecondary }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
       </section>
     </FadeIn>
   );
@@ -2236,6 +2379,10 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
           {/* 1. Hero */}
           <ReportHero data={data} theme={theme} leadId={leadId} />
 
+          {/* 1b. Quick answer + methodology */}
+          <QuickAnswerBlock data={data} theme={theme} />
+          <MethodologyBox data={data} theme={theme} />
+
           {/* 2. Visibility signal breakdown */}
           <CategoryScores data={data} theme={theme} />
           <PlatformVisibilityCards data={data} theme={theme} />
@@ -2248,11 +2395,7 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
           <GoogleTrustSignals data={data} theme={theme} />
 
           {/* 3. How You Compare — only show when client provided competitors */}
-          {data.competitorMode !== "client_only" ? (
-            <CompetitorComparison data={data} theme={theme} />
-          ) : (
-            <CompetitorFallback theme={theme} />
-          )}
+          <CompetitorDecisionTable data={data} theme={theme} />
 
           {/* 4. Where You Appear / Where You're Invisible */}
           <QueryLists data={data} theme={theme} />
@@ -2264,6 +2407,7 @@ export default function ReportContent({ leadId, leadData, researchData, monthlyT
           <AIDiscoveryAnalysis data={data} theme={theme} />
 
           {/* 7. Priority Actions */}
+          <DecisionFrameworkRoadmap data={data} theme={theme} />
           <Recommendations data={data} theme={theme} />
 
           {/* 8. Local trust is covered above in Local Trust Snapshot; duplicate social/review card removed. */}

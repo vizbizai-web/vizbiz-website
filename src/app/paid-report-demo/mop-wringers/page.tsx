@@ -11,6 +11,11 @@ const report = mopWringersPaidReportDemo;
 const readiness = paidReportReadinessSummary(report);
 const blockers = validatePaidReportForClient(report);
 
+function strongestMetric() { return report.metrics.find((m) => m.tone === 'strong') || report.metrics[0]; }
+function weakestMetric() { return report.metrics.find((m) => m.tone === 'weak') || report.metrics.at(-1) || report.metrics[0]; }
+function fastestPaidFix() { return report.findings.find((f) => f.impact === 'High') || report.findings[0]!; }
+
+
 function Badge({ children, tone = 'cyan' }: { children: ReactNode; tone?: 'cyan' | 'amber' | 'emerald' | 'slate' }) {
   const classes = {
     cyan: 'border-cyan-300/30 bg-cyan-300/10 text-cyan-100',
@@ -32,6 +37,100 @@ function SectionLabel({ number, label }: { number: string; label: string }) {
         <h2 className="text-2xl font-semibold text-white md:text-3xl">{label}</h2>
       </div>
     </div>
+  );
+}
+
+
+function QuickAnswer() {
+  const strongest = strongestMetric();
+  const weakest = weakestMetric();
+  const firstFix = fastestPaidFix();
+  const tested = report.promptClusters.reduce((sum, cluster) => sum + cluster.tested, 0);
+  const appeared = report.promptClusters.reduce((sum, cluster) => sum + cluster.targetAppeared, 0);
+  return (
+    <section className="relative mx-auto max-w-7xl px-5 pb-8 md:px-8">
+      <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-6 shadow-[0_0_60px_rgba(34,211,238,0.08)]">
+        <p className="text-xs font-bold uppercase tracking-[0.28em] text-cyan-100/80">Quick answer</p>
+        <p className="mt-4 text-base leading-8 text-slate-100">
+          {report.businessName} appeared in {appeared} of {tested} paid buyer-question checks across the current prompt clusters. The strongest category is {strongest.label.toLowerCase()}, while the weakest category is {weakest.label.toLowerCase()}. The fastest fix is: {firstFix.fixFirstStep}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function Methodology() {
+  const tested = report.promptClusters.reduce((sum, cluster) => sum + cluster.tested, 0);
+  const cards = [
+    ['Engines', 'AI/search recommendation checks where available'],
+    ['Prompt count', `Up to ${tested} buyer-intent prompts`],
+    ['Category framework', report.metrics.map((m) => m.label).join(', ')],
+    ['Tested date', report.dateLabel],
+    ['Author', 'Alex at VizBiz.ai'],
+    ['Sources', 'Client intake, website/profile evidence, prompt clusters, and approved client-facing report data'],
+  ];
+  return (
+    <section className="relative mx-auto max-w-7xl px-5 py-8 md:px-8">
+      <SectionLabel number="0" label="Methodology" />
+      <div className="grid gap-4 md:grid-cols-3">
+        {cards.map(([label, value]) => (
+          <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">{label}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-100">{value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CompetitorTable() {
+  const total = report.promptClusters.reduce((sum, cluster) => sum + cluster.tested, 0);
+  return (
+    <section className="relative mx-auto max-w-7xl px-5 py-10 md:px-8">
+      <SectionLabel number="3b" label="Competitor benchmark table" />
+      <div className="overflow-x-auto rounded-[2rem] border border-white/10 bg-slate-900/80">
+        <table className="w-full min-w-[680px] text-left text-sm">
+          <thead className="bg-white/[0.04] text-xs uppercase tracking-[0.2em] text-slate-400">
+            <tr><th className="p-4">Competitor</th><th className="p-4">Appears for</th><th className="p-4">Strength</th><th className="p-4">Your gap</th></tr>
+          </thead>
+          <tbody>
+            {report.competitors.map((competitor) => (
+              <tr key={competitor.name} className="border-t border-white/10">
+                <td className="p-4 font-semibold text-white">{competitor.name}</td>
+                <td className="p-4 text-slate-300">{competitor.status === 'needed' ? 'Not scored yet' : `Compared across up to ${total} prompts`}</td>
+                <td className="p-4 text-slate-300">{competitor.note}</td>
+                <td className="p-4 text-slate-300">{competitor.status === 'needed' ? 'Provide this competitor before scoring the gap.' : 'Gap calculated in paid benchmark.'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function DecisionRoadmap() {
+  const first = fastestPaidFix();
+  const second = report.findings.find((f) => f.title !== first.title && f.impact === 'High') || report.findings[1] || first;
+  const hold = report.findings.find((f) => f.difficulty === 'Developer') || report.findings.at(-1) || first;
+  const rows = [
+    [`Fix ${first.title} first if…`, first.whyItMatters],
+    [`Fix ${second.title} if…`, second.whyItMatters],
+    [`Hold ${hold.title} until…`, 'the easier visible-content and trust-proof changes are live, then verify what still blocks AI/search understanding.'],
+  ];
+  return (
+    <section className="relative mx-auto max-w-7xl px-5 py-10 md:px-8">
+      <SectionLabel number="6b" label="Decision framework roadmap" />
+      <div className="grid gap-4 md:grid-cols-3">
+        {rows.map(([label, body]) => (
+          <div key={label} className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6">
+            <h3 className="text-lg font-bold text-white">{label}</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-300">{body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -123,6 +222,9 @@ export default function MopWringersPaidReportDemoPage() {
         </aside>
       </section>
 
+      <QuickAnswer />
+      <Methodology />
+
       <section className="relative mx-auto max-w-7xl px-5 pb-10 md:px-8">
         <SectionLabel number="1" label="What the score means" />
         <div className="grid gap-4 md:grid-cols-4">
@@ -173,6 +275,8 @@ export default function MopWringersPaidReportDemoPage() {
         </div>
       </section>
 
+      <CompetitorTable />
+
       <section className="relative mx-auto max-w-7xl px-5 py-10 md:px-8">
         <SectionLabel number="4" label="Top fixes, shown visually" />
         <div className="grid gap-5 lg:grid-cols-5">
@@ -207,6 +311,8 @@ export default function MopWringersPaidReportDemoPage() {
           ))}
         </div>
       </section>
+
+      <DecisionRoadmap />
 
       <section className="relative mx-auto max-w-7xl px-5 py-10 md:px-8">
         <SectionLabel number="6" label="Action tracker" />
