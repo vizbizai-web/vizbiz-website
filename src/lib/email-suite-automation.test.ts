@@ -39,6 +39,10 @@ describe('email suite automation layer', () => {
     expect(read('src/lib/mission-control-needs-you.ts')).toContain('Approve 30-day re-test email');
     expect(read('src/lib/email-suite-automation.ts')).toContain('notifyGatedEmailCardEnteredNeedsYou');
     expect(read('src/lib/telegram-alerts.ts')).toContain('sendGatedNeedsYouTelegramPing');
+    expect(read('src/lib/telegram-alerts.ts')).toContain('const INTAKE_ALERT_CHAT_ID');
+    expect(read('src/lib/telegram-alerts.ts')).toContain('TELEGRAM_INTAKE_CHAT_ID');
+    expect(read('src/lib/telegram-alerts.ts')).toContain('const gatedPayload');
+    expect(read('src/lib/telegram-alerts.ts')).toContain('chat_id: INTAKE_ALERT_CHAT_ID');
     expect(read('src/app/api/cron/client-zero/route.ts')).toContain('MONTHLY_ONE_PAGER');
     expect(read('src/lib/competitor-movement-alerts.ts')).toContain('COMPETITOR_MOVEMENT_ALERT');
   });

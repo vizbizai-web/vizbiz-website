@@ -10,9 +10,13 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const VIZBIZ_HQ_GROUP = "-1003708779177";
 const LEADS_TOPIC_ID = 355;
 const ALEX_DM = "6960754854";
-// Existing working intake/conflict alerts use the same bot token and Alex DM chat.
-// The old HQ group/topic pair is not reachable by the production bot at the moment.
-const INTAKE_ALERT_CHAT_ID = process.env.TELEGRAM_INTAKE_CHAT_ID || ALEX_DM;
+// Canonical intake alert target: the real chat where VizBizIntakeBot posts.
+// Production currently has no TELEGRAM_INTAKE_CHAT_ID configured, so the working
+// intake-alert pair is VizBizIntakeBot -> Alex DM. If Alex adds the bot to a
+// group/channel, set TELEGRAM_INTAKE_CHAT_ID to that chat ID and optional
+// TELEGRAM_INTAKE_TOPIC_ID to the topic/thread ID; gated-card pings follow it.
+const INTAKE_ALERT_CHAT_ID = process.env.TELEGRAM_INTAKE_CHAT_ID || process.env.TELEGRAM_CHAT_ID || ALEX_DM;
+const INTAKE_ALERT_TOPIC_ID = process.env.TELEGRAM_INTAKE_TOPIC_ID ? Number(process.env.TELEGRAM_INTAKE_TOPIC_ID) : undefined;
 
 type LeadAlert = {
   leadId: string;
@@ -82,21 +86,32 @@ export async function sendLeadAlertTelegram(lead: LeadAlert): Promise<void> {
     lead.referrer ? `↩️ Referrer: ${lead.referrer.substring(0, 80)}` : "",
   ].join("\n");
 
-  await fetch(
+  const intakeAlertPayload: Record<string, unknown> = {
+    chat_id: INTAKE_ALERT_CHAT_ID,
+    text: groupMessage,
+  };
+  if (INTAKE_ALERT_TOPIC_ID && INTAKE_ALERT_CHAT_ID.startsWith('-100')) intakeAlertPayload.message_thread_id = INTAKE_ALERT_TOPIC_ID;
+
+  const intakeRes = await fetch(
     `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: VIZBIZ_HQ_GROUP,
-        message_thread_id: LEADS_TOPIC_ID,
-        text: groupMessage,
-      }),
+      body: JSON.stringify(intakeAlertPayload),
     },
   );
+  const intakeJson = await intakeRes.json().catch(() => ({}));
+  if (!intakeRes.ok || intakeJson?.ok === false) {
+    console.warn("[telegram-alert] intake alert chat send failed", { chatId: INTAKE_ALERT_CHAT_ID, status: intakeRes.status, description: intakeJson?.description });
+  }
 
   // -- 2. DM alert (operator context and next steps) --
-  // Sent ONLY when lead is confirmed in the CRM (dataStored=true)
+  // Sent ONLY when lead is confirmed in the CRM (dataStored=true), and only as a
+  // second copy when the canonical intake target is not already Alex's DM.
+  if (INTAKE_ALERT_CHAT_ID === ALEX_DM) {
+    console.info("[telegram-alert] lead intake alert sent to Alex DM", { dealership: lead.dealershipName });
+    return;
+  }
   if (!lead.dataStored) {
     console.warn("[telegram-alert] Skipping DM alert — lead not stored in CRM", { dealership: lead.dealershipName });
     return;
@@ -282,14 +297,17 @@ export async function sendGatedNeedsYouTelegramPing(card: {
     `Open MC: ${mcUrl}`,
   ].filter(Boolean).join("\n");
 
+  const gatedPayload: Record<string, unknown> = {
+    chat_id: INTAKE_ALERT_CHAT_ID,
+    text,
+    disable_web_page_preview: true,
+  };
+  if (INTAKE_ALERT_TOPIC_ID && INTAKE_ALERT_CHAT_ID.startsWith('-100')) gatedPayload.message_thread_id = INTAKE_ALERT_TOPIC_ID;
+
   const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: INTAKE_ALERT_CHAT_ID,
-      text,
-      disable_web_page_preview: true,
-    }),
+    body: JSON.stringify(gatedPayload),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok || json?.ok === false) throw new Error(`Telegram gated ping failed: ${res.status} ${json?.description || ''}`.trim());
